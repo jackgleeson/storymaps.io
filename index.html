@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>StoryMaps.io</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="header">
+        <a href="/" class="logo">
+            <svg class="logo-icon" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+            <span class="logo-text">StoryMaps.io</span>
+        </a>
+        <input type="text" class="board-name" id="boardName" placeholder="Untitled Story Map">
+        <div class="header-actions">
+            <div class="dropdown">
+                <button class="btn btn-secondary" id="samplesBtn">Samples</button>
+                <div class="dropdown-menu" id="samplesMenu">
+                    <button class="dropdown-item" data-sample="tutorial">Learn User Story Mapping</button>
+                    <button class="dropdown-item" data-sample="brochure-site">Build Brochure Site</button>
+                    <button class="dropdown-item" data-sample="website-search">Implement Website Search</button>
+                    <button class="dropdown-item" data-sample="ecommerce">Add E-Commerce to Site</button>
+                    <button class="dropdown-item" data-sample="application-logging">Upgrade Application Logging</button>
+                    <button class="dropdown-item" data-sample="how-this-was-built">Bonus: How This App Was Built</button>
+                </div>
+            </div>
+            <button class="btn btn-secondary" id="newMapBtn">New</button>
+            <button class="btn btn-secondary" id="importMap">Import</button>
+            <button class="btn btn-secondary" id="exportMap">Export</button>
+            <button class="btn btn-secondary" id="printMap">Print</button>
+        </div>
+        <input type="file" id="fileInput" accept=".json" hidden>
+    </header>
+
+    <div class="story-map-wrapper" id="storyMapWrapper">
+        <div class="story-map" id="storyMap">
+            <!-- Story map content rendered here -->
+        </div>
+    </div>
+
+    <div class="zoom-controls">
+        <button class="zoom-btn" id="zoomIn" title="Zoom in">+</button>
+        <button class="zoom-btn zoom-level" id="zoomReset" title="Reset zoom">100%</button>
+        <button class="zoom-btn" id="zoomOut" title="Zoom out">−</button>
+    </div>
+
+    <footer class="footer">
+        Thanks to Jeff Patton for pioneering user story mapping. <a href="https://jpattonassociates.com/story-mapping/" target="_blank" rel="noopener">Learn more</a>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

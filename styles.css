@@ -1,0 +1,1162 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #f8fafc;
+    min-height: 100vh;
+    padding: 24px;
+}
+
+/* Header */
+.header {
+    max-width: 1400px;
+    margin: 0 auto 24px;
+    padding: 16px 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 1px solid #ddd;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+
+.logo-icon {
+    color: #14b8a6;
+}
+
+.logo-text {
+    font-size: 20px;
+    font-weight: 700;
+    color: #333;
+    letter-spacing: -0.5px;
+}
+
+.board-name {
+    flex: 1;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 8px 12px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+    background: transparent;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.board-name:hover {
+    background-color: #f0f2f5;
+}
+
+.board-name:focus {
+    outline: none;
+    border-color: #5eead4;
+    background-color: #fff;
+}
+
+.board-name::placeholder {
+    color: #aaa;
+    font-weight: 400;
+}
+
+.header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Dropdown */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 4px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    min-width: 200px;
+    padding: 6px 0;
+    z-index: 100;
+    display: none;
+    white-space: nowrap;
+}
+
+.dropdown-menu.visible {
+    display: block;
+}
+
+.dropdown-item {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #f0f2f5;
+}
+
+.btn {
+    background-color: #14b8a6;
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.btn:hover {
+    background-color: #0d9488;
+}
+
+.btn-secondary {
+    background-color: #fff;
+    color: #0f766e;
+    border: 1px solid #5eead4;
+}
+
+.btn-secondary:hover {
+    background-color: #f0fdfa;
+}
+
+/* Zoom Controls */
+.story-map-wrapper {
+    overflow: auto;
+    flex: 1;
+    padding-bottom: 60px;
+}
+
+.zoom-controls {
+    position: fixed;
+    bottom: 20px;
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    right: 20px;
+    display: flex;
+    gap: 4px;
+    background: white;
+    padding: 6px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+}
+
+.zoom-btn {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 6px;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    transition: background-color 0.15s ease;
+}
+
+.zoom-btn:hover {
+    background-color: #f0f2f5;
+}
+
+.zoom-btn.zoom-level {
+    width: auto;
+    padding: 0 12px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* Story Map Container */
+.story-map {
+    display: flex;
+    flex-direction: column;
+    max-width: 1400px;
+    margin: 0 auto;
+    transform-origin: top left;
+    transition: transform 0.15s ease;
+}
+
+/* Steps Row (Backbone) */
+.steps-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.steps-row-spacer {
+    width: 80px;
+    flex-shrink: 0;
+    padding-right: 12px;
+    display: flex;
+    align-items: center;
+}
+
+/* Step Card (Backbone) */
+.step {
+    background-color: #86efac;
+    padding: 20px 16px;
+    border-radius: 2px;
+    min-height: 100px;
+    width: 180px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        1px 1px 3px rgba(0, 0, 0, 0.12),
+        2px 2px 8px rgba(0, 0, 0, 0.08);
+    position: relative;
+}
+
+.step::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0) 50%,
+        rgba(0, 0, 0, 0.06) 50%);
+    border-radius: 0 0 2px 0;
+}
+
+.step-text {
+    color: #0f3d3a;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.4;
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: none;
+    font-family: inherit;
+    cursor: text;
+    caret-color: #134e4a;
+}
+
+.step-text::placeholder {
+    color: rgba(19, 78, 74, 0.5);
+}
+
+/* Step Placeholder (hidden header) - click to show */
+.step-placeholder {
+    width: 180px;
+    min-height: 100px;
+    flex-shrink: 0;
+    border: 1px dashed transparent;
+    border-radius: 2px;
+    background-color: transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.step-placeholder:hover {
+    border-color: #ccc;
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* Add Step Button (inline) */
+.btn-add-step-inline {
+    width: 32px;
+    min-height: 32px;
+    flex-shrink: 0;
+    background-color: rgba(0, 0, 0, 0.02);
+    border: 1px dashed #ccc;
+    border-radius: 2px;
+    color: #bbb;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    align-self: flex-start;
+    margin-top: 4px;
+}
+
+.btn-add-step-inline:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-color: #aaa;
+    color: #666;
+}
+
+/* Slice Container */
+.slice-container {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    border-top: 2px solid #d0d0d0;
+    margin-top: 12px;
+    padding-top: 12px;
+}
+
+.slice-container:first-of-type {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+}
+
+/* Backbone rows (Personas, Activities) */
+.personas-row,
+.activities-row,
+.backbone-row {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+/* Empty backbone rows (placeholder state) */
+.empty-backbone-row .row-type-label {
+    color: #ccc;
+}
+
+.empty-backbone-row:hover .row-type-label {
+    color: #999;
+}
+
+.empty-backbone-row .story-column {
+    min-height: 40px;
+    border: 1px dashed transparent;
+    border-radius: 2px;
+    transition: all 0.15s ease;
+}
+
+.empty-backbone-row .story-column:hover {
+    border-color: #ccc;
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* Slice Label on Left */
+.slice-label-container {
+    width: 80px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding-top: 8px;
+    padding-right: 16px;
+    border-right: 1px solid #ddd;
+    position: relative;
+}
+
+.slice-label {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 0;
+    border-radius: 3px;
+    width: 100%;
+    text-align: left;
+    resize: none;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    line-height: 1.4;
+    cursor: text;
+    caret-color: #888;
+}
+
+.slice-label:focus {
+    background-color: #fff;
+    padding: 4px;
+    margin: -4px;
+    margin-bottom: 0;
+    width: calc(100% + 8px);
+    box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.3);
+}
+
+.slice-label::placeholder {
+    color: #bbb;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+/* Slice Stories Area */
+.slice-stories-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.add-slice-row {
+    padding: 8px 0;
+}
+
+/* Row label container (for backbone rows) */
+.row-label-container {
+    width: 80px;
+    flex-shrink: 0;
+    padding-right: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding-top: 4px;
+}
+
+.row-label-container .btn-delete {
+    position: static;
+    opacity: 0;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+}
+
+.personas-row:hover .row-label-container .btn-delete,
+.activities-row:hover .row-label-container .btn-delete,
+.backbone-row:hover .row-label-container .btn-delete {
+    opacity: 1;
+}
+
+/* Row type label */
+.row-type-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Stories Row */
+.stories-row {
+    display: flex;
+    gap: 10px;
+}
+
+/* Story Column */
+.story-column {
+    width: 180px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 60px;
+}
+
+/* Story Card (User Stories) */
+.story-card {
+    background-color: #fef08a;
+    padding: 16px 14px;
+    border-radius: 2px;
+    min-height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        1px 1px 3px rgba(0, 0, 0, 0.12),
+        2px 2px 8px rgba(0, 0, 0, 0.08);
+    position: relative;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.story-card:hover {
+    transform: translateY(-1px) rotate(0.3deg);
+    box-shadow:
+        2px 2px 4px rgba(0, 0, 0, 0.15),
+        3px 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.story-card.dragging {
+    opacity: 0.5;
+    transform: rotate(2deg);
+    box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.story-column.drag-over {
+    background-color: rgba(20, 184, 166, 0.1);
+    border-radius: 2px;
+}
+
+.story-card::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 16px;
+    height: 16px;
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0) 50%,
+        rgba(0, 0, 0, 0.05) 50%);
+    border-radius: 0 0 2px 0;
+}
+
+.story-text {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1a1a1a;
+    text-align: center;
+    line-height: 1.4;
+    cursor: text;
+    caret-color: #1a1a1a;
+}
+
+.story-text::placeholder {
+    color: rgba(51, 51, 51, 0.5);
+}
+
+/* Story Placeholder (hidden card in backbone rows) - click to show */
+.story-placeholder {
+    width: 100%;
+    min-height: 40px;
+    border: 1px dashed transparent;
+    border-radius: 2px;
+    background-color: transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.story-placeholder:hover {
+    border-color: #ccc;
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* Add Story Button */
+.btn-add-story {
+    background-color: rgba(254, 240, 138, 0.3);
+    border: 2px dashed rgba(250, 204, 21, 0.5);
+    color: rgba(161, 98, 7, 0.6);
+    padding: 8px;
+    border-radius: 2px;
+    font-size: 18px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    min-height: 40px;
+}
+
+.btn-add-story:hover {
+    background-color: rgba(254, 240, 138, 0.5);
+    border-color: rgba(250, 204, 21, 0.8);
+    color: #a16207;
+}
+
+/* Hide add buttons in backbone rows */
+.personas-row .btn-add-story,
+.activities-row .btn-add-story,
+.backbone-row .btn-add-story {
+    display: none;
+}
+
+/* Empty columns in backbone rows - clickable to add card */
+.empty-backbone-column {
+    min-height: 40px;
+    border: 1px dashed transparent;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.empty-backbone-column:hover {
+    border-color: #ccc;
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Add Column Button for backbone rows */
+.btn-add-column-inline {
+    width: 32px;
+    min-height: 32px;
+    flex-shrink: 0;
+    background-color: rgba(0, 0, 0, 0.02);
+    border: 1px dashed #ccc;
+    border-radius: 2px;
+    color: #bbb;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    align-self: flex-start;
+    margin-top: 4px;
+}
+
+.btn-add-column-inline:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    border-color: #aaa;
+    color: #666;
+}
+
+.btn-add-slice {
+    background: transparent;
+    border: 1px dashed #ccc;
+    color: #999;
+    padding: 6px 12px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-add-slice:hover {
+    border-color: #14b8a6;
+    color: #0d9488;
+    background-color: rgba(20, 184, 166, 0.1);
+}
+
+/* Delete Button */
+.btn-delete {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease, background-color 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+}
+
+.btn-delete:hover {
+    background-color: #fee2e2;
+    border-color: #fca5a5;
+}
+
+.step:hover .btn-delete,
+.story-card:hover .btn-delete,
+.slice-label-container:hover .btn-delete {
+    opacity: 1;
+}
+
+/* Slice delete button - static positioning */
+.slice-label-container .btn-delete {
+    position: static;
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+}
+
+/* Slice drag handle */
+.slice-drag-handle {
+    cursor: grab;
+    color: #bbb;
+    font-size: 12px;
+    letter-spacing: -2px;
+    padding: 4px 2px;
+    border-radius: 2px;
+    transition: color 0.15s ease, background-color 0.15s ease;
+    user-select: none;
+}
+
+.slice-drag-handle:hover {
+    color: #888;
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.slice-container.slice-dragging,
+.personas-row.slice-dragging,
+.activities-row.slice-dragging,
+.backbone-row.slice-dragging {
+    opacity: 0.5;
+}
+
+.slice-container.slice-drag-over,
+.personas-row.slice-drag-over,
+.activities-row.slice-drag-over,
+.backbone-row.slice-drag-over {
+    background-color: rgba(20, 184, 166, 0.08);
+    border-radius: 4px;
+}
+
+/* Card Options Menu */
+.card-options {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    z-index: 10;
+}
+
+.btn-options {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease, background-color 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+}
+
+.btn-options:hover {
+    background-color: #f0f0f0;
+}
+
+.step:hover .btn-options,
+.story-card:hover .btn-options {
+    opacity: 1;
+}
+
+.step.menu-open,
+.story-card.menu-open {
+    z-index: 50;
+}
+
+.options-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 4px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 150px;
+    padding: 6px 0;
+    display: none;
+    z-index: 100;
+}
+
+.options-menu.visible {
+    display: block;
+}
+
+.options-item {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+}
+
+.options-item:hover {
+    background-color: #f5f5f5;
+}
+
+.options-color {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    cursor: default;
+}
+
+.options-color:hover {
+    background-color: transparent;
+}
+
+.options-color span {
+    font-size: 13px;
+    color: #333;
+}
+
+.color-swatches {
+    display: flex;
+    gap: 4px;
+}
+
+.color-swatch {
+    width: 22px;
+    height: 22px;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.1s ease, border-color 0.1s ease;
+}
+
+.color-swatch:hover {
+    transform: scale(1.1);
+}
+
+.color-swatch.selected {
+    border-color: #333;
+}
+
+/* Status swatches in options menu */
+.options-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+}
+
+.status-swatches {
+    display: flex;
+    gap: 4px;
+}
+
+.status-swatch {
+    width: 18px;
+    height: 18px;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.1s ease, border-color 0.1s ease;
+}
+
+.status-swatch:hover {
+    transform: scale(1.15);
+}
+
+.status-swatch.selected {
+    border-color: #333;
+}
+
+.status-swatch.status-none {
+    background-color: #e5e5e5;
+    color: #999;
+    font-size: 12px;
+    line-height: 14px;
+    text-align: center;
+}
+
+/* Status indicator on cards */
+.status-indicator {
+    position: absolute;
+    bottom: 6px;
+    left: 6px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    z-index: 5;
+}
+
+.options-delete {
+    color: #dc2626;
+    border-top: 1px solid #eee;
+    margin-top: 4px;
+    padding-top: 10px;
+}
+
+.options-delete:hover {
+    background-color: #fef2f2;
+}
+
+.options-delete-column {
+    color: #dc2626;
+    font-weight: 500;
+}
+
+.options-delete-column:hover {
+    background-color: #fef2f2;
+}
+
+/* URL Indicator */
+.url-indicator {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    font-size: 14px;
+    text-decoration: none;
+    opacity: 0.7;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    z-index: 5;
+}
+
+.url-indicator:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Footer */
+.footer {
+    max-width: 1400px;
+    margin: 48px auto 0;
+    padding: 24px 0;
+    border-top: 1px solid #ddd;
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+}
+
+.footer a {
+    color: #14b8a6;
+    text-decoration: none;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive - Tablet */
+@media (max-width: 900px) {
+    .steps-row-spacer,
+    .slice-label-container {
+        width: 60px;
+        padding-right: 12px;
+    }
+
+    .slice-label {
+        font-size: 10px;
+    }
+
+    .logo-text {
+        font-size: 18px;
+    }
+
+    .step,
+    .step-placeholder {
+        width: 140px;
+        min-height: 80px;
+    }
+
+    .step {
+        padding: 16px 12px;
+    }
+
+    .step-text {
+        font-size: 12px;
+    }
+
+    .story-column {
+        width: 140px;
+    }
+
+    .story-card {
+        min-height: 75px;
+        padding: 14px 10px;
+    }
+
+    .story-text {
+        font-size: 12px;
+    }
+
+    .btn-add-step-inline {
+        width: 28px;
+        min-height: 28px;
+        font-size: 14px;
+    }
+
+    .btn-add-column-inline {
+        width: 28px;
+        min-height: 28px;
+        font-size: 14px;
+    }
+
+    .row-label-container {
+        width: 60px;
+        padding-right: 8px;
+    }
+
+    .row-type-label {
+        font-size: 9px;
+    }
+}
+
+/* Responsive - Mobile */
+@media (max-width: 600px) {
+    body {
+        padding: 12px;
+    }
+
+    .header {
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 12px 0;
+        margin-bottom: 16px;
+    }
+
+    .logo {
+        order: 1;
+    }
+
+    .header-actions {
+        order: 2;
+        gap: 6px;
+    }
+
+    .board-name {
+        order: 3;
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        padding: 6px 10px;
+        font-size: 14px;
+    }
+
+    .btn {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .story-map-wrapper {
+        margin: 0 -12px;
+        padding: 0 12px 60px;
+        width: calc(100% + 24px);
+    }
+
+    .story-map {
+        max-width: none;
+    }
+
+    .steps-row-spacer,
+    .slice-label-container,
+    .row-label-container {
+        width: 50px;
+        padding-right: 8px;
+    }
+
+    .slice-label,
+    .row-type-label {
+        font-size: 9px;
+    }
+
+    .step,
+    .step-placeholder {
+        width: 120px;
+        min-height: 70px;
+    }
+
+    .step {
+        padding: 12px 10px;
+    }
+
+    .step-text {
+        font-size: 11px;
+    }
+
+    .story-column {
+        width: 120px;
+    }
+
+    .story-card {
+        min-height: 65px;
+        padding: 12px 8px;
+    }
+
+    .story-text {
+        font-size: 11px;
+    }
+
+    .zoom-controls {
+        bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+        right: 12px;
+        padding: 4px;
+    }
+
+    .zoom-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+
+    .zoom-btn.zoom-level {
+        padding: 0 8px;
+        font-size: 12px;
+    }
+
+    .footer {
+        margin-top: 32px;
+        padding: 16px 0;
+        font-size: 12px;
+    }
+
+    .dropdown-menu {
+        right: auto;
+        left: 0;
+    }
+}
+
+
+/* Print Styles */
+@media print {
+    body {
+        padding: 0;
+        background: white;
+    }
+
+    .header {
+        padding: 12px 0;
+        margin-bottom: 16px;
+    }
+
+    .header-actions,
+    .btn-add-story,
+    .btn-add-slice,
+    .btn-add-column-inline,
+    .btn-add-step-inline,
+    .btn-delete,
+    .options-menu,
+    .empty-backbone-row,
+    .zoom-controls,
+    footer {
+        display: none !important;
+    }
+
+    .story-map {
+        max-width: none;
+        transform: none !important;
+    }
+
+    .story-column {
+        break-inside: avoid;
+    }
+
+    .slice-container {
+        break-inside: avoid;
+    }
+
+    .step,
+    .story-card {
+        box-shadow: none;
+        border: 1px solid #ccc;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .step::before,
+    .story-card::before {
+        display: none;
+    }
+
+    .status-indicator {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
