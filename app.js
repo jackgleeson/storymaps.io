@@ -292,11 +292,32 @@ const createUrlIndicator = (url) => {
 };
 
 const createTextarea = (className, placeholder, value, onChange) => {
-    const textarea = el('textarea', className, { placeholder, value, rows: 2 });
-    textarea.addEventListener('input', (e) => {
-        onChange(e.target.value);
-        debouncedSave();
-    });
+    const isCardText = className === 'step-text' || className === 'story-text';
+    const textarea = el('textarea', className, { placeholder, value, rows: isCardText ? 1 : 2 });
+
+    if (isCardText) {
+        const autoResize = () => {
+            textarea.rows = 1;
+            const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 18;
+            const neededRows = Math.ceil(textarea.scrollHeight / lineHeight);
+            textarea.rows = Math.min(Math.max(neededRows, 1), 3);
+        };
+
+        textarea.addEventListener('input', (e) => {
+            onChange(e.target.value);
+            autoResize();
+            debouncedSave();
+        });
+
+        // Auto-resize on initial render
+        requestAnimationFrame(autoResize);
+    } else {
+        textarea.addEventListener('input', (e) => {
+            onChange(e.target.value);
+            debouncedSave();
+        });
+    }
+
     return textarea;
 };
 

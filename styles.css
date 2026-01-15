@@ -219,7 +219,7 @@ body {
 /* Step Card (Backbone) */
 .step {
     background-color: #86efac;
-    padding: 20px 16px;
+    padding: 12px 14px;
     border-radius: 2px;
     min-height: 100px;
     width: 180px;
@@ -469,7 +469,7 @@ body {
 /* Story Card (User Stories) */
 .story-card {
     background-color: #fef08a;
-    padding: 16px 14px;
+    padding: 10px 12px;
     border-radius: 2px;
     min-height: 90px;
     display: flex;
@@ -947,7 +947,7 @@ body {
     }
 
     .step {
-        padding: 16px 12px;
+        padding: 10px 10px;
     }
 
     .step-text {
@@ -960,7 +960,7 @@ body {
 
     .story-card {
         min-height: 75px;
-        padding: 14px 10px;
+        padding: 8px 8px;
     }
 
     .story-text {
@@ -1054,7 +1054,7 @@ body {
     }
 
     .step {
-        padding: 12px 10px;
+        padding: 8px 8px;
     }
 
     .step-text {
@@ -1067,7 +1067,7 @@ body {
 
     .story-card {
         min-height: 65px;
-        padding: 12px 8px;
+        padding: 6px 6px;
     }
 
     .story-text {
