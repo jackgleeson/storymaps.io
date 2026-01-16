@@ -1,4 +1,31 @@
 // =============================================================================
+// Firebase
+// =============================================================================
+
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
+import { initializeAppCheck, ReCaptchaV3Provider } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app-check.js';
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+import { firebaseConfig, recaptchaSiteKey } from './config.js';
+
+const firebaseApp = initializeApp(firebaseConfig);
+
+// App Check - verifies requests come from your domain
+const appCheck = initializeAppCheck(firebaseApp, {
+    provider: new ReCaptchaV3Provider(recaptchaSiteKey),
+    isTokenAutoRefreshEnabled: true
+});
+
+const db = getFirestore(firebaseApp);
+
+// Session ID to track who made changes (for real-time sync)
+const getSessionId = () => {
+    if (!sessionStorage.sessionId) {
+        sessionStorage.sessionId = crypto.randomUUID();
+    }
+    return sessionStorage.sessionId;
+};
+
+// =============================================================================
 // Utils
 // =============================================================================
 
@@ -29,6 +56,8 @@ const STATUS_OPTIONS = {
     'in-progress': { label: 'In Progress', color: '#eab308' },
     planned: { label: 'Planned', color: '#f97316' }
 };
+
+const DEBOUNCE_DELAY = 300;
 
 const el = (tag, className, attrs = {}) => {
     const element = document.createElement(tag);
@@ -62,9 +91,51 @@ const el = (tag, className, attrs = {}) => {
 // =============================================================================
 
 const state = {
+    mapId: null,
     name: '',
     columns: [],
     slices: []
+};
+
+// Undo/Redo stack (in-memory, lost on refresh)
+const undoStack = [];
+const redoStack = [];
+const MAX_UNDO = 50;
+
+const pushUndo = () => {
+    undoStack.push(JSON.stringify(serialize()));
+    if (undoStack.length > MAX_UNDO) undoStack.shift();
+    redoStack.length = 0; // Clear redo on new action
+    updateUndoRedoButtons();
+};
+
+const undo = () => {
+    if (undoStack.length === 0) return;
+    redoStack.push(JSON.stringify(serialize()));
+    const previous = JSON.parse(undoStack.pop());
+    deserialize(previous);
+    dom.boardName.value = state.name;
+    render();
+    saveToStorage();
+    if (state.mapId) saveMapToFirestore(state.mapId, serialize());
+    updateUndoRedoButtons();
+};
+
+const redo = () => {
+    if (redoStack.length === 0) return;
+    undoStack.push(JSON.stringify(serialize()));
+    const next = JSON.parse(redoStack.pop());
+    deserialize(next);
+    dom.boardName.value = state.name;
+    render();
+    saveToStorage();
+    if (state.mapId) saveMapToFirestore(state.mapId, serialize());
+    updateUndoRedoButtons();
+};
+
+const updateUndoRedoButtons = () => {
+    if (dom.undoBtn) dom.undoBtn.disabled = undoStack.length === 0;
+    if (dom.redoBtn) dom.redoBtn.disabled = redoStack.length === 0;
 };
 
 const initState = () => {
@@ -107,6 +178,7 @@ const createSlice = (name = '', separator = true, rowType = null) => {
 // =============================================================================
 
 const dom = {
+    logoLink: document.getElementById('logoLink'),
     storyMap: document.getElementById('storyMap'),
     boardName: document.getElementById('boardName'),
     newMapBtn: document.getElementById('newMapBtn'),
@@ -114,11 +186,34 @@ const dom = {
     exportBtn: document.getElementById('exportMap'),
     printBtn: document.getElementById('printMap'),
     fileInput: document.getElementById('fileInput'),
-    samplesBtn: document.getElementById('samplesBtn'),
-    samplesMenu: document.getElementById('samplesMenu'),
+    menuBtn: document.getElementById('menuBtn'),
+    mainMenu: document.getElementById('mainMenu'),
     zoomIn: document.getElementById('zoomIn'),
     zoomOut: document.getElementById('zoomOut'),
-    zoomReset: document.getElementById('zoomReset')
+    zoomReset: document.getElementById('zoomReset'),
+    undoBtn: document.getElementById('undoBtn'),
+    redoBtn: document.getElementById('redoBtn'),
+    shareBtn: document.getElementById('shareBtn'),
+    welcomeScreen: document.getElementById('welcomeScreen'),
+    welcomeNewBtn: document.getElementById('welcomeNewBtn'),
+    storyMapWrapper: document.getElementById('storyMapWrapper'),
+    samplesSubmenuTrigger: document.getElementById('samplesSubmenuTrigger'),
+    samplesSubmenu: document.getElementById('samplesSubmenu')
+};
+
+// Menu helpers
+const closeMainMenu = () => {
+    dom.mainMenu.classList.remove('visible');
+    dom.samplesSubmenu.classList.remove('visible');
+    dom.samplesSubmenuTrigger.classList.remove('expanded');
+};
+
+const closeAllOptionsMenus = () => {
+    document.querySelectorAll('.options-menu.visible').forEach(m => {
+        m.classList.remove('visible');
+        m.closest('.step, .story-card')?.classList.remove('menu-open');
+        m.parentElement?.querySelector('.btn-options')?.setAttribute('aria-expanded', 'false');
+    });
 };
 
 // Zoom state
@@ -789,6 +884,7 @@ const focusLastElement = (selector, textareaClass) => {
 };
 
 const addColumn = (hidden = true) => {
+    pushUndo();
     const column = createColumn('', null, null, hidden);
     state.columns.push(column);
     state.slices.forEach(slice => slice.stories[column.id] = []);
@@ -810,6 +906,8 @@ const addStory = (columnId, sliceId) => {
     const slice = state.slices.find(s => s.id === sliceId);
     if (!slice) return;
 
+    pushUndo();
+
     // Set default color based on row type
     const defaultColor = slice.rowType ? DEFAULT_COLORS[slice.rowType] : null;
 
@@ -826,6 +924,7 @@ const addStory = (columnId, sliceId) => {
 };
 
 const addSlice = (afterIndex, separator = true, rowType = null) => {
+    pushUndo();
     const slice = createSlice('', separator, rowType);
     state.slices.splice(afterIndex, 0, slice);
     render();
@@ -845,6 +944,7 @@ const deleteColumn = (columnId) => {
     const index = state.columns.findIndex(s => s.id === columnId);
     if (index === -1) return;
 
+    pushUndo();
     state.columns.splice(index, 1);
     state.slices.forEach(slice => delete slice.stories[columnId]);
     render();
@@ -858,6 +958,7 @@ const deleteStory = (columnId, sliceId, storyId) => {
 
     const index = stories.findIndex(s => s.id === storyId);
     if (index > -1) {
+        pushUndo();
         stories.splice(index, 1);
         render();
         saveToStorage();
@@ -865,6 +966,7 @@ const deleteStory = (columnId, sliceId, storyId) => {
 };
 
 const moveStory = (storyId, fromColumnId, fromSliceId, toColumnId, toSliceId, toIndex) => {
+    pushUndo();
     const fromSlice = state.slices.find(s => s.id === fromSliceId);
     const toSlice = state.slices.find(s => s.id === toSliceId);
     if (!fromSlice || !toSlice) return;
@@ -895,6 +997,7 @@ const deleteSlice = (sliceId) => {
 
     const index = state.slices.findIndex(s => s.id === sliceId);
     if (index > -1) {
+        pushUndo();
         state.slices.splice(index, 1);
         render();
         saveToStorage();
@@ -902,6 +1005,7 @@ const deleteSlice = (sliceId) => {
 };
 
 const moveSlice = (fromSliceId, toSliceId) => {
+    pushUndo();
     const fromIndex = state.slices.findIndex(s => s.id === fromSliceId);
     const toIndex = state.slices.findIndex(s => s.id === toSliceId);
     if (fromIndex === -1 || toIndex === -1) return;
@@ -918,16 +1022,81 @@ const moveSlice = (fromSliceId, toSliceId) => {
 
 const STORAGE_KEY = 'storymap';
 
+// Firestore functions
+// Store map data as JSON string to avoid Firestore's nested array limitation
+const saveMapToFirestore = async (mapId, data) => {
+    try {
+        await setDoc(doc(db, 'maps', mapId), {
+            mapData: JSON.stringify(data),
+            updatedAt: serverTimestamp(),
+            updatedBy: getSessionId()
+        });
+    } catch (err) {
+        console.error('Failed to save to Firestore:', err);
+    }
+};
+
+const loadMapFromFirestore = async (mapId) => {
+    try {
+        const docSnap = await getDoc(doc(db, 'maps', mapId));
+        if (docSnap.exists()) {
+            const { mapData } = docSnap.data();
+            return mapData ? JSON.parse(mapData) : null;
+        }
+    } catch (err) {
+        console.error('Failed to load from Firestore:', err);
+    }
+    return null;
+};
+
+const createNewMapInFirestore = async (pushHistory = true) => {
+    const mapId = generateId();
+    state.mapId = mapId;
+    await saveMapToFirestore(mapId, serialize());
+    if (pushHistory) {
+        history.pushState({ mapId }, '', `/${mapId}`);
+    } else {
+        history.replaceState({ mapId }, '', `/${mapId}`);
+    }
+    return mapId;
+};
+
+// Subscribe to real-time updates
+let unsubscribe = null;
+const subscribeToMap = (mapId) => {
+    if (unsubscribe) unsubscribe();
+
+    unsubscribe = onSnapshot(doc(db, 'maps', mapId), (docSnap) => {
+        if (docSnap.exists()) {
+            const { mapData, updatedBy } = docSnap.data();
+            // Only update if change came from another session
+            if (updatedBy !== getSessionId() && mapData) {
+                deserialize(JSON.parse(mapData));
+                dom.boardName.value = state.name;
+                render();
+            }
+        }
+    }, (err) => {
+        console.error('Firestore subscription error:', err);
+    });
+};
+
+// Local storage save (also syncs to Firestore)
 const saveToStorage = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(serialize()));
+    if (state.mapId) {
+        saveMapToFirestore(state.mapId, serialize());
+    }
 };
 
 // Debounced save for frequent updates (e.g., typing)
 let saveTimeout = null;
+
 const debouncedSave = () => {
     clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(saveToStorage, 300);
+    saveTimeout = setTimeout(saveToStorage, DEBOUNCE_DELAY);
 };
+
 const flushSave = () => {
     clearTimeout(saveTimeout);
     saveToStorage();
@@ -1042,11 +1211,17 @@ const importMap = (file) => {
     if (!confirmOverwrite()) return;
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
         try {
+            pushUndo(); // Save state before import
             deserialize(JSON.parse(e.target.result));
+            dom.boardName.value = state.name;
             render();
             saveToStorage();
+            // Sync to Firestore
+            if (state.mapId) {
+                await saveMapToFirestore(state.mapId, serialize());
+            }
         } catch {
             alert('Failed to import: Invalid file format');
         }
@@ -1055,28 +1230,47 @@ const importMap = (file) => {
 };
 
 const loadSample = async (name) => {
+    // If on welcome screen (no map yet), use startWithSample instead
+    if (!state.mapId) {
+        return startWithSample(name);
+    }
+
     flushSave();
     if (!confirmOverwrite()) return;
 
     try {
         const response = await fetch(`samples/${name}.json`);
         if (!response.ok) throw new Error();
+        pushUndo(); // Save state before loading sample
         deserialize(await response.json());
+        dom.boardName.value = state.name;
         render();
         saveToStorage();
+        // Sync to current map in Firestore (collaborators see it)
+        await saveMapToFirestore(state.mapId, serialize());
     } catch {
         alert('Failed to load sample');
     }
 };
 
-const newMap = () => {
+const newMap = async () => {
     flushSave();
-    if (hasContent() && !confirm('Create a new story map?\n\nYour current work will be lost. Use Export to save it first if you want to keep your current board.')) {
+    if (hasContent() && !confirm('Create a new story map?\n\nYou can return to this map using the back button.')) {
         return;
     }
+    // Unsubscribe from current map
+    if (unsubscribe) unsubscribe();
+
+    // Clear mapId BEFORE initState to prevent overwriting old map
+    state.mapId = null;
+
     initState();
     dom.boardName.value = '';
     render();
+
+    // Create new map in Firestore with new URL, then save
+    await createNewMapInFirestore();
+    subscribeToMap(state.mapId);
     saveToStorage();
 };
 
@@ -1085,6 +1279,42 @@ const newMap = () => {
 // =============================================================================
 
 const initEventListeners = () => {
+    // Logo click - confirm before leaving current map
+    dom.logoLink.addEventListener('click', (e) => {
+        // If on welcome screen already, just reload
+        if (!state.mapId) return;
+
+        e.preventDefault();
+        if (!hasContent() || confirm('Go to home page?\n\nYou can return to this map using the back button.')) {
+            window.location.href = '/';
+        }
+    });
+
+    // Welcome screen buttons
+    dom.welcomeNewBtn.addEventListener('click', startNewMap);
+
+    // Welcome screen sample buttons (using event delegation)
+    document.querySelector('.welcome-samples-list')?.addEventListener('click', (e) => {
+        const btn = e.target.closest('.btn-sample');
+        if (btn?.dataset.sample) {
+            e.stopPropagation();
+            startWithSample(btn.dataset.sample);
+        }
+    });
+
+    // Handle browser back/forward
+    window.addEventListener('popstate', async (e) => {
+        const mapId = window.location.pathname.slice(1) || null;
+        if (mapId) {
+            await loadMapById(mapId);
+            hideWelcomeScreen();
+            dom.boardName.value = state.name;
+            render();
+        } else {
+            showWelcomeScreen();
+        }
+    });
+
     dom.boardName.addEventListener('input', (e) => {
         state.name = e.target.value;
         debouncedSave();
@@ -1097,10 +1327,38 @@ const initEventListeners = () => {
         }
     });
 
-    dom.newMapBtn.addEventListener('click', newMap);
-    dom.exportBtn.addEventListener('click', exportMap);
-    dom.printBtn.addEventListener('click', () => window.print());
-    dom.importBtn.addEventListener('click', () => dom.fileInput.click());
+    dom.newMapBtn.addEventListener('click', () => {
+        closeMainMenu();
+        newMap();
+    });
+    dom.exportBtn.addEventListener('click', () => {
+        closeMainMenu();
+        exportMap();
+    });
+    dom.printBtn.addEventListener('click', () => {
+        closeMainMenu();
+        window.print();
+    });
+    dom.importBtn.addEventListener('click', () => {
+        closeMainMenu();
+        dom.fileInput.click();
+    });
+
+    // Share button - copy URL to clipboard
+    dom.shareBtn.addEventListener('click', async () => {
+        const url = window.location.href;
+        try {
+            await navigator.clipboard.writeText(url);
+            dom.shareBtn.textContent = 'Copied!';
+            setTimeout(() => dom.shareBtn.textContent = 'Share', 2000);
+        } catch {
+            prompt('Copy this link to share:', url);
+        }
+    });
+
+    // Undo/Redo buttons
+    dom.undoBtn.addEventListener('click', undo);
+    dom.redoBtn.addEventListener('click', redo);
 
     // Zoom controls
     dom.zoomIn.addEventListener('click', () => {
@@ -1122,37 +1380,50 @@ const initEventListeners = () => {
         }
     });
 
-    // Samples dropdown
-    dom.samplesBtn.addEventListener('click', (e) => {
+    // Main menu dropdown
+    dom.menuBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        dom.samplesMenu.classList.toggle('visible');
+        dom.mainMenu.classList.toggle('visible');
     });
 
-    document.addEventListener('click', () => {
-        dom.samplesMenu.classList.remove('visible');
-        document.querySelectorAll('.options-menu.visible').forEach(m => {
-            m.classList.remove('visible');
-            m.closest('.step, .story-card')?.classList.remove('menu-open');
-            m.parentElement?.querySelector('.btn-options')?.setAttribute('aria-expanded', 'false');
-        });
+    // Samples submenu toggle
+    dom.samplesSubmenuTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dom.samplesSubmenuTrigger.classList.toggle('expanded');
+        dom.samplesSubmenu.classList.toggle('visible');
     });
 
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            dom.samplesMenu.classList.remove('visible');
-            document.querySelectorAll('.options-menu.visible').forEach(m => {
-                m.classList.remove('visible');
-                m.closest('.step, .story-card')?.classList.remove('menu-open');
-                m.parentElement?.querySelector('.btn-options')?.setAttribute('aria-expanded', 'false');
-            });
-        }
-    });
-
-    dom.samplesMenu.addEventListener('click', (e) => {
+    // Handle clicks on sample items in main menu
+    dom.mainMenu.addEventListener('click', (e) => {
         const item = e.target.closest('.dropdown-item');
         if (item?.dataset.sample) {
             loadSample(item.dataset.sample);
-            dom.samplesMenu.classList.remove('visible');
+            closeMainMenu();
+        }
+    });
+
+    document.addEventListener('click', () => {
+        closeMainMenu();
+        closeAllOptionsMenus();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        // Skip undo/redo if focused on a text input (let browser handle it)
+        const isTextInput = e.target.matches('input, textarea');
+
+        // Undo: Ctrl+Z (or Cmd+Z on Mac)
+        if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey && !isTextInput) {
+            e.preventDefault();
+            undo();
+        }
+        // Redo: Ctrl+Y or Ctrl+Shift+Z (or Cmd+Shift+Z on Mac)
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey)) && !isTextInput) {
+            e.preventDefault();
+            redo();
+        }
+        if (e.key === 'Escape') {
+            closeMainMenu();
+            closeAllOptionsMenus();
         }
     });
 };
@@ -1161,13 +1432,86 @@ const initEventListeners = () => {
 // Initialize
 // =============================================================================
 
-const init = () => {
-    if (!loadFromStorage()) {
-        initState();
+// Load a map by ID (used by init and popstate)
+const loadMapById = async (mapId) => {
+    if (unsubscribe) unsubscribe();
+
+    if (mapId) {
+        const mapData = await loadMapFromFirestore(mapId);
+        if (mapData) {
+            deserialize(mapData);
+            state.mapId = mapId;
+            subscribeToMap(mapId);
+            return true;
+        }
     }
+    return false;
+};
+
+const showWelcomeScreen = () => {
+    dom.welcomeScreen.classList.add('visible');
+    dom.storyMapWrapper.classList.remove('visible');
+    dom.boardName.classList.add('hidden');
+};
+
+const hideWelcomeScreen = () => {
+    dom.welcomeScreen.classList.remove('visible');
+    dom.storyMapWrapper.classList.add('visible');
+    dom.boardName.classList.remove('hidden');
+};
+
+const startNewMap = async () => {
+    hideWelcomeScreen();
+    initState();
+    await createNewMapInFirestore(false);
+    subscribeToMap(state.mapId);
     dom.boardName.value = state.name;
-    initEventListeners();
     render();
+};
+
+const startWithSample = async (sampleName) => {
+    hideWelcomeScreen();
+    initState();
+    await createNewMapInFirestore(false);
+    subscribeToMap(state.mapId);
+
+    // Load sample data
+    try {
+        const response = await fetch(`samples/${sampleName}.json`);
+        if (!response.ok) throw new Error();
+        deserialize(await response.json());
+        dom.boardName.value = state.name;
+        render();
+        saveToStorage();
+        await saveMapToFirestore(state.mapId, serialize());
+    } catch {
+        alert('Failed to load sample');
+        dom.boardName.value = state.name;
+        render();
+    }
+};
+
+const init = async () => {
+    // Get map ID from URL path (e.g., /abc123 -> abc123)
+    const mapId = window.location.pathname.slice(1) || null;
+
+    initEventListeners();
+
+    if (mapId) {
+        // Try to load existing map from Firestore
+        const loaded = await loadMapById(mapId);
+        if (loaded) {
+            hideWelcomeScreen();
+            dom.boardName.value = state.name;
+            render();
+        } else {
+            // Map not found - show welcome screen
+            showWelcomeScreen();
+        }
+    } else {
+        // No ID in URL - show welcome screen for first-time visitors
+        showWelcomeScreen();
+    }
 };
 
 init();

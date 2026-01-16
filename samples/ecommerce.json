@@ -1,0 +1,74 @@
+{
+  "app": "storymap",
+  "v": 1,
+  "name": "Add E-Commerce to Site",
+  "a": [
+    {"n": "Search Products", "c": "#86efac"},
+    {"n": "Browse Catalog", "c": "#86efac"},
+    {"n": "View Product", "c": "#86efac"},
+    {"n": "Add to Cart", "c": "#86efac"},
+    {"n": "Checkout", "c": "#86efac"},
+    {"n": "Track Order", "c": "#86efac"},
+    {"n": "Admin Tasks", "c": "#86efac"}
+  ],
+  "s": [{
+    "sep": false,
+    "rt": "Personas",
+    "n": "",
+    "t": [
+      [{"n": "Shopper", "c": "#fda4af"}],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [{"n": "Store Admin", "c": "#fda4af"}]
+    ]
+  }, {
+    "sep": false,
+    "rt": "Activities",
+    "n": "",
+    "t": [
+      [{"n": "Buy Products", "c": "#93c5fd"}],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [{"n": "Manage Store", "c": "#93c5fd"}]
+    ]
+  }, {
+    "n": "Release 1",
+    "t": [
+      [{"n": "Keyword search", "st": "done"}, {"n": "Search results page", "st": "done"}],
+      [{"n": "Category pages", "st": "done"}, {"n": "Product grid", "st": "done"}],
+      [{"n": "Product images", "st": "done"}, {"n": "Price display", "st": "done"}, {"n": "Add to cart button", "st": "done"}],
+      [{"n": "Cart page", "st": "done"}, {"n": "Update quantity", "st": "done"}, {"n": "Remove item", "st": "done"}],
+      [{"n": "Shipping address", "st": "done"}, {"n": "Card payment", "st": "done"}, {"n": "Order confirmation", "st": "done"}],
+      [{"n": "Order status page", "st": "done"}, {"n": "Email notifications", "st": "done"}],
+      [{"n": "View orders", "st": "done"}, {"n": "Update order status", "st": "done"}, {"n": "Daily sales report", "st": "done"}]
+    ]
+  }, {
+    "n": "Release 2",
+    "t": [
+      [{"n": "Search filters", "st": "done"}, {"n": "Sort options", "st": "done"}, {"n": "Search suggestions", "st": "in-progress"}],
+      [{"n": "Subcategories", "st": "done"}, {"n": "Featured products", "st": "in-progress"}],
+      [{"n": "Image zoom", "st": "done"}, {"n": "Customer reviews", "st": "in-progress"}, {"n": "Related products", "st": "planned"}],
+      [{"n": "Save for later", "st": "in-progress"}, {"n": "Cart persistence", "st": "done"}],
+      [{"n": "Guest checkout", "st": "done"}, {"n": "Multiple payment options", "st": "planned"}],
+      [{"n": "Shipment tracking", "st": "in-progress"}, {"n": "Delivery updates", "st": "planned"}],
+      [{"n": "Inventory management", "st": "in-progress"}, {"n": "Export CSV", "st": "done"}]
+    ]
+  }, {
+    "n": "Release 3",
+    "t": [
+      [{"n": "Voice search", "st": "planned"}, {"n": "Visual search", "st": "planned"}],
+      [{"n": "Personalized recommendations", "st": "planned"}, {"n": "Recently viewed", "st": "planned"}],
+      [{"n": "Size guide", "st": "planned"}, {"n": "360° product view", "st": "planned"}, {"n": "Compare products", "st": "planned"}],
+      [{"n": "Wishlist", "st": "planned"}, {"n": "Share cart", "st": "planned"}],
+      [{"n": "Apple Pay", "st": "planned", "u": "https://developer.apple.com/apple-pay/"}, {"n": "Buy now pay later", "st": "planned"}, {"n": "Gift cards", "st": "planned"}],
+      [{"n": "Returns portal", "st": "planned"}, {"n": "Reorder button", "st": "planned"}],
+      [{"n": "Analytics dashboard", "st": "planned"}, {"n": "Automated reports", "st": "planned"}]
+    ]
+  }]
+}

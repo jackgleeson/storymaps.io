@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Storymaps.io</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,7 +12,7 @@
 </head>
 <body>
     <header class="header">
-        <a href="/" class="logo">
+        <a href="/" class="logo" id="logoLink">
             <svg class="logo-icon" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="3" width="7" height="7" rx="1"/>
                 <rect x="14" y="3" width="7" height="7" rx="1"/>
@@ -22,24 +23,55 @@
         </a>
         <input type="text" class="board-name" id="boardName" placeholder="Untitled Story Map">
         <div class="header-actions">
+            <button class="btn btn-secondary btn-icon" id="undoBtn" title="Undo (Ctrl+Z)" aria-label="Undo" disabled>&#8630;</button>
+            <button class="btn btn-secondary btn-icon" id="redoBtn" title="Redo (Ctrl+Y)" aria-label="Redo" disabled>&#8631;</button>
+            <button class="btn" id="shareBtn">Share</button>
             <div class="dropdown">
-                <button class="btn btn-secondary" id="samplesBtn">Samples</button>
-                <div class="dropdown-menu" id="samplesMenu">
-                    <button class="dropdown-item" data-sample="tutorial">Learn User Story Mapping</button>
-                    <button class="dropdown-item" data-sample="brochure-site">Build Brochure Site</button>
-                    <button class="dropdown-item" data-sample="website-search">Implement Website Search</button>
-                    <button class="dropdown-item" data-sample="ecommerce">Add E-Commerce to Site</button>
-                    <button class="dropdown-item" data-sample="application-logging">Upgrade Application Logging</button>
-                    <button class="dropdown-item" data-sample="how-this-was-built">Bonus: How This App Was Built</button>
+                <button class="btn btn-secondary btn-icon" id="menuBtn" title="Menu" aria-label="Menu">&#9776;</button>
+                <div class="dropdown-menu" id="mainMenu">
+                    <button class="dropdown-item" id="newMapBtn">New</button>
+                    <div class="dropdown-submenu">
+                        <button class="dropdown-item dropdown-submenu-trigger" id="samplesSubmenuTrigger">Samples</button>
+                        <div class="dropdown-submenu-content" id="samplesSubmenu">
+                            <button class="dropdown-item" data-sample="tutorial">Learn User Story Mapping</button>
+                            <button class="dropdown-item" data-sample="donation-form">Add Donation Form</button>
+                            <button class="dropdown-item" data-sample="brochure-site">Build Brochure Site</button>
+                            <button class="dropdown-item" data-sample="ecommerce">Add E-Commerce to Site</button>
+                            <button class="dropdown-item" data-sample="application-logging">Upgrade Application Logging</button>
+                            <button class="dropdown-item" data-sample="how-this-was-built">Bonus: How This App Was Built</button>
+                        </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <button class="dropdown-item" id="importMap">Import</button>
+                    <button class="dropdown-item" id="exportMap">Export</button>
+                    <button class="dropdown-item" id="printMap">Print</button>
                 </div>
             </div>
-            <button class="btn btn-secondary" id="newMapBtn">New</button>
-            <button class="btn btn-secondary" id="importMap">Import</button>
-            <button class="btn btn-secondary" id="exportMap">Export</button>
-            <button class="btn btn-secondary" id="printMap">Print</button>
         </div>
         <input type="file" id="fileInput" accept=".json" hidden>
     </header>
+
+    <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-content">
+            <h1>Welcome to Storymaps.io</h1>
+            <p>Create, share, and collaborate on user story maps in real-time</p>
+            <div class="welcome-actions">
+                <button class="btn btn-large" id="welcomeNewBtn">New Story Map</button>
+                <div class="welcome-divider">or</div>
+                <div class="welcome-samples">
+                    <p class="welcome-samples-label">Try a sample:</p>
+                    <div class="welcome-samples-list">
+                        <button class="btn btn-secondary btn-sample" data-sample="tutorial">Learn User Story Mapping</button>
+                        <button class="btn btn-secondary btn-sample" data-sample="donation-form">Add Donation Form</button>
+                        <button class="btn btn-secondary btn-sample" data-sample="brochure-site">Build Brochure Site</button>
+                        <button class="btn btn-secondary btn-sample" data-sample="ecommerce">Add E-Commerce to Site</button>
+                        <button class="btn btn-secondary btn-sample" data-sample="application-logging">Upgrade Application Logging</button>
+                        <button class="btn btn-secondary btn-sample" data-sample="how-this-was-built">Bonus: How This App Was Built</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="story-map-wrapper" id="storyMapWrapper">
         <div class="story-map" id="storyMap">
@@ -59,6 +91,6 @@
         Thanks to Jeff Patton for pioneering user story mapping. <a href="https://jpattonassociates.com/story-mapping/" target="_blank" rel="noopener">Learn more</a>
     </footer>
 
-    <script src="app.js"></script>
+    <script type="module" src="app.js"></script>
 </body>
 </html>

@@ -1,0 +1,68 @@
+{
+  "app": "storymap",
+  "v": 1,
+  "name": "Upgrade Application Logging",
+  "a": [
+    {"n": "Add Log Statements", "c": "#86efac"},
+    {"n": "Collect Logs", "c": "#86efac"},
+    {"n": "Store Logs", "c": "#86efac"},
+    {"n": "Search Logs", "c": "#86efac"},
+    {"n": "View Dashboards", "c": "#86efac"},
+    {"n": "Get Alerts", "c": "#86efac"}
+  ],
+  "s": [{
+    "sep": false,
+    "rt": "Personas",
+    "n": "",
+    "t": [
+      [{"n": "Developer", "c": "#fda4af"}],
+      [],
+      [],
+      [],
+      [],
+      [{"n": "On-Call Engineer", "c": "#fda4af"}]
+    ]
+  }, {
+    "sep": false,
+    "rt": "Activities",
+    "n": "",
+    "t": [
+      [{"n": "Debug Issues", "c": "#93c5fd"}],
+      [],
+      [],
+      [],
+      [],
+      [{"n": "Respond to Incidents", "c": "#93c5fd"}]
+    ]
+  }, {
+    "n": "Release 1",
+    "t": [
+      [{"n": "Choose logging library", "st": "done"}, {"n": "Define log levels", "st": "done"}, {"n": "Add error logging", "st": "done"}],
+      [{"n": "Capture stdout/stderr", "st": "done"}, {"n": "Request logging", "st": "done"}],
+      [{"n": "Write to files", "st": "done"}, {"n": "Log rotation", "st": "done"}],
+      [{"n": "Grep log files", "st": "done"}, {"n": "Tail -f for live view", "st": "done"}],
+      [{"n": "Basic log viewer", "st": "done"}],
+      [{"n": "Email on errors", "st": "done"}]
+    ]
+  }, {
+    "n": "Release 2",
+    "t": [
+      [{"n": "Structured JSON logs", "st": "in-progress"}, {"n": "Correlation IDs", "st": "in-progress"}, {"n": "Context fields", "st": "planned"}],
+      [{"n": "Async log shipping", "st": "done"}, {"n": "Log sampling", "st": "planned"}],
+      [{"n": "Centralized storage", "st": "in-progress"}, {"n": "Retention policies", "st": "done"}, {"n": "Index optimization", "st": "planned"}],
+      [{"n": "Full-text search", "st": "in-progress"}, {"n": "Filter by service", "st": "done"}, {"n": "Time range queries", "st": "done"}],
+      [{"n": "Error rate charts", "st": "in-progress"}, {"n": "Request latency graphs", "st": "planned"}],
+      [{"n": "Threshold alerts", "st": "planned"}, {"n": "PagerDuty integration", "st": "planned", "u": "https://developer.pagerduty.com/docs/"}]
+    ]
+  }, {
+    "n": "Release 3",
+    "t": [
+      [{"n": "Distributed tracing", "st": "planned"}, {"n": "Performance profiling", "st": "planned"}],
+      [{"n": "Multi-region collection", "st": "planned"}, {"n": "Edge buffering", "st": "planned"}],
+      [{"n": "Long-term archival", "st": "planned"}, {"n": "Compliance exports", "st": "planned"}],
+      [{"n": "Saved searches", "st": "planned"}, {"n": "Query templates", "st": "planned"}, {"n": "Log anomaly detection", "st": "planned"}],
+      [{"n": "Custom dashboards", "st": "planned"}, {"n": "SLO tracking", "st": "planned"}],
+      [{"n": "Runbook automation", "st": "planned"}, {"n": "Incident timeline", "st": "planned"}]
+    ]
+  }]
+}

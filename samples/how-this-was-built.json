@@ -1,0 +1,215 @@
+{
+  "app": "storymap",
+  "v": 1,
+  "exported": "2026-01-15T10:00:00.000Z",
+  "name": "How This App Was Built",
+  "a": [{
+    "n": "Watch User Story Mapping video",
+    "c": "#86efac",
+    "u": "https://www.youtube.com/watch?v=AorAgSrHjKM"
+  }, {
+    "n": "Read Jeff's book",
+    "c": "#86efac",
+    "u": "https://jpattonassociates.com/story-mapping/"
+  }, {
+    "n": "Features",
+    "c": "#86efac"
+  }, {
+    "n": "Persistence & Sharing",
+    "c": "#86efac"
+  }, {
+    "n": "Polish",
+    "c": "#86efac"
+  }],
+  "s": [{
+    "n": "",
+    "t": [
+      [{
+        "n": "User Story Mapping Fan",
+        "c": "#fda4af"
+      }],
+      [],
+      [],
+      [],
+      []
+    ],
+    "sep": false,
+    "rt": "Personas"
+  }, {
+    "n": "",
+    "t": [
+      [{
+        "n": "Learn the framework",
+        "c": "#93c5fd"
+      }],
+      [],
+      [{
+        "n": "Build a User Story Mapping Tool",
+        "c": "#93c5fd"
+      }],
+      [],
+      []
+    ],
+    "sep": false,
+    "rt": "Activities"
+  }, {
+    "n": "Basics",
+    "t": [
+      [{
+        "n": "Understand concept",
+        "st": "done"
+      }, {
+        "n": "Understand Activities, Steps and Stories",
+        "st": "done"
+      }],
+      [{
+        "n": "Understand Personas",
+        "st": "done"
+      }, {
+        "n": "Understand release slices",
+        "st": "done"
+      }],
+      [{
+        "n": "Editable cards",
+        "st": "done"
+      }, {
+        "n": "Add & delete buttons",
+        "st": "done"
+      }],
+      [{
+        "n": "Export to JSON",
+        "st": "done"
+      }, {
+        "n": "Import from JSON",
+        "st": "done"
+      }],
+      [{
+        "n": "Basic layout CSS",
+        "st": "done"
+      }]
+    ]
+  }, {
+    "n": "Better",
+    "t": [
+      [{
+        "n": "Realise this fixes Agile's flat backlog problem",
+        "st": "done"
+      }],
+      [{
+        "n": "Test out with sticky notes",
+        "st": "done"
+      }],
+      [{
+        "n": "Drag & drop",
+        "st": "done"
+      }, {
+        "n": "Options menu",
+        "st": "done"
+      }, {
+        "n": "Color picker",
+        "st": "done"
+      }, {
+        "n": "Sample maps",
+        "st": "done"
+      }],
+      [{
+        "n": "LocalStorage auto-save",
+        "st": "done"
+      }],
+      [{
+        "n": "Post-it styling",
+        "st": "done"
+      }, {
+        "n": "Status indicators",
+        "st": "done"
+      }]
+    ]
+  }, {
+    "n": "Collaboration",
+    "t": [
+      [],
+      [],
+      [{
+        "n": "Undo/Redo (in-memory)",
+        "st": "done"
+      }, {
+        "n": "Auto-resize textareas",
+        "st": "done"
+      }],
+      [{
+        "n": "Firestore integration",
+        "st": "done"
+      }, {
+        "n": "Shareable URLs",
+        "st": "done"
+      }, {
+        "n": "Real-time sync",
+        "st": "done"
+      }, {
+        "n": "Share button",
+        "st": "done"
+      }],
+      [{
+        "n": "Firebase App Check",
+        "st": "done"
+      }, {
+        "n": "Print view",
+        "st": "done"
+      }, {
+        "n": "Zoom controls",
+        "st": "done"
+      }]
+    ]
+  }, {
+    "n": "Onboarding",
+    "t": [
+      [],
+      [],
+      [{
+        "n": "Welcome screen",
+        "st": "done"
+      }, {
+        "n": "Sample buttons on welcome",
+        "st": "done"
+      }],
+      [{
+        "n": "Navigation confirmations",
+        "st": "done"
+      }, {
+        "n": "Back button support",
+        "st": "done"
+      }],
+      [{
+        "n": "Hamburger menu",
+        "st": "done"
+      }, {
+        "n": "Samples submenu",
+        "st": "done"
+      }]
+    ]
+  }, {
+    "n": "Dream Big",
+    "t": [
+      [],
+      [],
+      [{
+        "n": "Offline support",
+        "st": "planned"
+      }],
+      [{
+        "n": "User logins",
+        "st": "planned"
+      }, {
+        "n": "Password-protected maps",
+        "st": "planned"
+      }],
+      [{
+        "n": "Themes",
+        "st": "planned"
+      }, {
+        "n": "Mobile app",
+        "st": "planned"
+      }]
+    ]
+  }]
+}

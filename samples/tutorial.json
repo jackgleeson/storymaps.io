@@ -1,0 +1,63 @@
+{
+  "app": "storymap",
+  "v": 1,
+  "name": "Learn User Story Mapping",
+  "a": [
+    {"n": "Understand Users", "c": "#86efac"},
+    {"n": "Tell the Story", "c": "#86efac"},
+    {"n": "Map Activities", "c": "#86efac"},
+    {"n": "Define Steps", "c": "#86efac"},
+    {"n": "Write Stories", "c": "#86efac"},
+    {"n": "Plan Releases", "c": "#86efac"},
+    {"n": "Build & Deliver", "c": "#86efac"}
+  ],
+  "s": [{
+    "sep": false,
+    "rt": "Personas",
+    "n": "",
+    "t": [
+      [{"n": "Team", "c": "#fda4af"}],
+      [],
+      [],
+      [],
+      [],
+      [{"n": "Product Owner", "c": "#fda4af"}],
+      [{"n": "Engineers", "c": "#fda4af"}]
+    ]
+  }, {
+    "sep": false,
+    "rt": "Activities",
+    "n": "",
+    "t": [
+      [{"n": "Learn Framework", "c": "#93c5fd"}],
+      [{"n": "Capture the Journey", "c": "#93c5fd"}],
+      [],
+      [{"n": "Build the Map", "c": "#93c5fd"}],
+      [],
+      [{"n": "Plan Delivery", "c": "#93c5fd"}],
+      [{"n": "Implement Features", "c": "#93c5fd"}]
+    ]
+  }, {
+    "n": "Getting Started",
+    "t": [
+      [{"n": "Identify your target users", "st": "done"}, {"n": "Create persona cards", "st": "done", "u": "https://www.nngroup.com/articles/persona/"}],
+      [{"n": "Walk through the journey", "st": "done"}, {"n": "Talk out loud together", "st": "done"}],
+      [{"n": "List user goals", "st": "done"}, {"n": "Arrange left to right", "st": "done"}],
+      [{"n": "Break activities into steps", "st": "done"}, {"n": "Add step cards", "st": "done"}],
+      [{"n": "Write user stories", "st": "in-progress"}, {"n": "Place under steps", "st": "done"}],
+      [{"n": "Draw the walking skeleton", "st": "in-progress"}, {"n": "Define MVP scope", "st": "planned"}],
+      [{"n": "Pick up stories from map", "st": "planned"}, {"n": "Understand context", "st": "planned"}]
+    ]
+  }, {
+    "n": "Going Deeper",
+    "t": [
+      [{"n": "Interview real users", "st": "planned", "u": "https://www.nngroup.com/articles/user-interviews/"}, {"n": "Validate assumptions", "st": "planned"}],
+      [{"n": "Narrate from user's perspective", "st": "planned"}, {"n": "Capture emotions & pain points", "st": "planned"}],
+      [{"n": "Identify pain points", "st": "planned"}, {"n": "Find opportunities", "st": "planned"}],
+      [{"n": "Group related steps", "st": "planned"}, {"n": "Add color coding", "st": "planned"}],
+      [{"n": "Add acceptance criteria", "st": "planned"}, {"n": "Link to task management tool", "st": "planned", "u": "https://www.atlassian.com/software/jira"}],
+      [{"n": "Create release slices", "st": "planned"}, {"n": "Prioritize by value", "st": "planned"}],
+      [{"n": "Reference map in standups", "st": "planned"}, {"n": "Update as you learn", "st": "planned"}]
+    ]
+  }]
+}
