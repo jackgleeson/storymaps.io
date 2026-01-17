@@ -23,6 +23,7 @@
         </a>
         <input type="text" class="board-name" id="boardName" placeholder="Untitled Story Map">
         <div class="header-actions">
+            <span class="viewer-count" id="viewerCount" title="People viewing this map"></span>
             <button class="btn btn-secondary btn-icon" id="undoBtn" title="Undo (Ctrl+Z)" aria-label="Undo" disabled>&#8630;</button>
             <button class="btn btn-secondary btn-icon" id="redoBtn" title="Redo (Ctrl+Y)" aria-label="Redo" disabled>&#8631;</button>
             <button class="btn" id="shareBtn">Share</button>
@@ -87,30 +88,41 @@
                 </div>
             </div>
         </div>
+        <footer class="footer welcome-footer">
+            <div class="footer-text">
+                This software is free and open-source. <a href="https://github.com/jackgleeson/storymaps.io" target="_blank" rel="noopener">View on GitHub</a>
+                <br>
+                Thanks to Jeff Patton for pioneering user story mapping. <a href="https://jpattonassociates.com/story-mapping/" target="_blank" rel="noopener">Learn more</a>
+            </div>
+            <div class="footer-support">
+                <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="jackgleeson" data-color="#FFDD00" data-emoji="" data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff"></script>
+            </div>
+        </footer>
     </div>
 
     <div class="story-map-wrapper" id="storyMapWrapper">
+        <button class="nav-arrow nav-arrow-left" id="navArrowLeft" aria-label="Scroll left">&#8249;</button>
         <div class="story-map" id="storyMap">
             <!-- Story map content rendered here -->
         </div>
+        <button class="nav-arrow nav-arrow-right" id="navArrowRight" aria-label="Scroll right">&#8250;</button>
+        <footer class="footer">
+            <div class="footer-text">
+                This software is free and open-source. <a href="https://github.com/jackgleeson/storymaps.io" target="_blank" rel="noopener">View on GitHub</a>
+                <br>
+                Thanks to Jeff Patton for pioneering user story mapping. <a href="https://jpattonassociates.com/story-mapping/" target="_blank" rel="noopener">Learn more</a>
+            </div>
+            <div class="footer-support">
+                <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="jackgleeson" data-color="#FFDD00" data-emoji="" data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff"></script>
+            </div>
+        </footer>
     </div>
 
-    <div class="zoom-controls">
+    <div class="zoom-controls" id="zoomControls">
         <button class="zoom-btn" id="zoomIn" title="Zoom in">+</button>
         <button class="zoom-btn zoom-level" id="zoomReset" title="Reset zoom">100%</button>
         <button class="zoom-btn" id="zoomOut" title="Zoom out">−</button>
     </div>
-
-    <footer class="footer">
-        <div class="footer-text">
-            This software is free and open-source. <a href="https://github.com/jackgleeson/storymaps.io" target="_blank" rel="noopener">View on GitHub</a>
-            <br>
-            Thanks to Jeff Patton for pioneering user story mapping. <a href="https://jpattonassociates.com/story-mapping/" target="_blank" rel="noopener">Learn more</a>
-        </div>
-        <div class="footer-support">
-            <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="jackgleeson" data-color="#FFDD00" data-emoji="" data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff"></script>
-        </div>
-    </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
     <script type="module" src="app.js"></script>

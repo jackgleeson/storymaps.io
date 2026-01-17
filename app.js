@@ -5,6 +5,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
 import { initializeAppCheck, ReCaptchaV3Provider } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app-check.js';
 import { getFirestore, doc, getDoc, setDoc, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
+import { getDatabase, ref, set, onValue, onDisconnect, serverTimestamp as rtdbTimestamp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js';
 import { firebaseConfig, recaptchaSiteKey } from './config.js';
 
 const firebaseApp = initializeApp(firebaseConfig);
@@ -16,6 +17,7 @@ const appCheck = initializeAppCheck(firebaseApp, {
 });
 
 const db = getFirestore(firebaseApp);
+const rtdb = getDatabase(firebaseApp);
 
 // Session ID to track who made changes (for real-time sync)
 const getSessionId = () => {
@@ -23,6 +25,63 @@ const getSessionId = () => {
         sessionStorage.sessionId = crypto.randomUUID();
     }
     return sessionStorage.sessionId;
+};
+
+// =============================================================================
+// Presence Tracking
+// =============================================================================
+
+let presenceUnsubscribe = null;
+let viewerCount = 0;
+
+const updateViewerCountUI = (count) => {
+    viewerCount = count;
+    const badge = document.getElementById('viewerCount');
+    if (badge) {
+        if (count > 1) {
+            badge.textContent = count;
+            badge.classList.add('visible');
+        } else {
+            badge.classList.remove('visible');
+        }
+    }
+};
+
+const trackPresence = (mapId) => {
+    if (!mapId) return;
+
+    const sessionId = getSessionId();
+    const presenceRef = ref(rtdb, `presence/${mapId}/${sessionId}`);
+    const mapPresenceRef = ref(rtdb, `presence/${mapId}`);
+
+    // Set presence data
+    set(presenceRef, {
+        online: true,
+        lastSeen: rtdbTimestamp()
+    });
+
+    // Remove presence on disconnect
+    onDisconnect(presenceRef).remove();
+
+    // Clean up previous listener
+    if (presenceUnsubscribe) {
+        presenceUnsubscribe();
+    }
+
+    // Listen for all presence changes on this map
+    presenceUnsubscribe = onValue(mapPresenceRef, (snapshot) => {
+        const presenceData = snapshot.val();
+        const count = presenceData ? Object.keys(presenceData).length : 0;
+        updateViewerCountUI(count);
+    });
+};
+
+const clearPresence = () => {
+    if (presenceUnsubscribe) {
+        presenceUnsubscribe();
+        presenceUnsubscribe = null;
+    }
+    updateViewerCountUI(0);
 };
 
 // =============================================================================
@@ -198,7 +257,10 @@ const dom = {
     welcomeNewBtn: document.getElementById('welcomeNewBtn'),
     storyMapWrapper: document.getElementById('storyMapWrapper'),
     samplesSubmenuTrigger: document.getElementById('samplesSubmenuTrigger'),
-    samplesSubmenu: document.getElementById('samplesSubmenu')
+    samplesSubmenu: document.getElementById('samplesSubmenu'),
+    navArrowLeft: document.getElementById('navArrowLeft'),
+    navArrowRight: document.getElementById('navArrowRight'),
+    zoomControls: document.getElementById('zoomControls')
 };
 
 // Menu helpers
@@ -225,6 +287,100 @@ const ZOOM_MAX = 1.5;
 const updateZoom = () => {
     dom.storyMap.style.transform = `scale(${zoomLevel})`;
     dom.zoomReset.textContent = `${Math.round(zoomLevel * 100)}%`;
+    updatePanMode();
+};
+
+// =============================================================================
+// Navigation Helpers
+// =============================================================================
+
+// Scroll element into view with padding
+const scrollElementIntoView = (element) => {
+    if (!element) return;
+    const wrapper = dom.storyMapWrapper;
+    const rect = element.getBoundingClientRect();
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const padding = 100;
+
+    // Check if element is outside visible area (accounting for zoom)
+    const effectiveRight = (rect.right - wrapperRect.left) / zoomLevel;
+    const effectiveBottom = (rect.bottom - wrapperRect.top) / zoomLevel;
+    const visibleWidth = wrapper.clientWidth;
+    const visibleHeight = wrapper.clientHeight;
+
+    // Scroll right if element is beyond right edge
+    if (effectiveRight > visibleWidth - padding) {
+        wrapper.scrollLeft += (effectiveRight - visibleWidth + padding) * zoomLevel;
+    }
+    // Scroll down if element is beyond bottom edge
+    if (effectiveBottom > visibleHeight - padding) {
+        wrapper.scrollTop += (effectiveBottom - visibleHeight + padding) * zoomLevel;
+    }
+};
+
+// Update navigation arrow visibility based on scroll position
+const updateNavArrows = () => {
+    const wrapper = dom.storyMapWrapper;
+    const scrollLeft = wrapper.scrollLeft;
+    const maxScroll = wrapper.scrollWidth - wrapper.clientWidth;
+
+    // Show/hide arrows based on scroll position
+    if (maxScroll > 10) {
+        dom.navArrowLeft.classList.toggle('visible', scrollLeft > 10);
+        dom.navArrowRight.classList.toggle('visible', scrollLeft < maxScroll - 10);
+    } else {
+        dom.navArrowLeft.classList.remove('visible');
+        dom.navArrowRight.classList.remove('visible');
+    }
+};
+
+// Scroll by amount with smooth animation
+const scrollByAmount = (amount) => {
+    dom.storyMapWrapper.scrollBy({ left: amount, behavior: 'smooth' });
+};
+
+// Pan/drag state
+let isPanning = false;
+let panStartX = 0;
+let panStartY = 0;
+let panScrollLeft = 0;
+let panScrollTop = 0;
+
+// Update pan mode based on zoom level
+const updatePanMode = () => {
+    if (zoomLevel < 1) {
+        dom.storyMapWrapper.classList.add('pan-enabled');
+    } else {
+        dom.storyMapWrapper.classList.remove('pan-enabled');
+    }
+};
+
+// Pan handlers
+const startPan = (e) => {
+    // Only enable pan when zoomed out and not clicking on interactive elements
+    if (zoomLevel >= 1) return;
+    if (e.target.closest('button, textarea, input, .story-card, .step, .options-menu')) return;
+
+    isPanning = true;
+    panStartX = e.clientX;
+    panStartY = e.clientY;
+    panScrollLeft = dom.storyMapWrapper.scrollLeft;
+    panScrollTop = dom.storyMapWrapper.scrollTop;
+    dom.storyMapWrapper.classList.add('panning');
+};
+
+const doPan = (e) => {
+    if (!isPanning) return;
+    e.preventDefault();
+    const dx = e.clientX - panStartX;
+    const dy = e.clientY - panStartY;
+    dom.storyMapWrapper.scrollLeft = panScrollLeft - dx;
+    dom.storyMapWrapper.scrollTop = panScrollTop - dy;
+};
+
+const endPan = () => {
+    isPanning = false;
+    dom.storyMapWrapper.classList.remove('panning');
 };
 
 // =============================================================================
@@ -776,6 +932,9 @@ const render = () => {
 
     // Initialize Sortable for drag and drop
     initSortable();
+
+    // Update navigation arrows after DOM settles
+    setTimeout(updateNavArrows, 0);
 };
 
 // Store Sortable instances to destroy on re-render
@@ -855,7 +1014,10 @@ const initSortable = () => {
 const focusLastElement = (selector, textareaClass) => {
     const elements = dom.storyMap.querySelectorAll(selector);
     const last = elements[elements.length - 1];
-    last?.querySelector(textareaClass)?.focus();
+    if (last) {
+        scrollElementIntoView(last);
+        last.querySelector(textareaClass)?.focus();
+    }
 };
 
 const addColumn = (hidden = true) => {
@@ -865,9 +1027,19 @@ const addColumn = (hidden = true) => {
     state.slices.forEach(slice => slice.stories[column.id] = []);
     render();
     saveToStorage();
-    if (!hidden) {
-        focusLastElement('.step', '.step-text');
-    }
+
+    // Scroll to the new step after DOM settles
+    setTimeout(() => {
+        const steps = dom.storyMap.querySelectorAll('.step');
+        const lastStep = steps[steps.length - 1];
+        if (lastStep) {
+            scrollElementIntoView(lastStep);
+            if (!hidden) {
+                lastStep.querySelector('.step-text')?.focus();
+            }
+        }
+        updateNavArrows();
+    }, 0);
 };
 
 // Default colors for card types
@@ -891,11 +1063,19 @@ const addStory = (columnId, sliceId) => {
     render();
     saveToStorage();
 
-    const column = dom.storyMap.querySelector(
-        `.story-column[data-column-id="${columnId}"][data-slice-id="${sliceId}"]`
-    );
-    column?.querySelectorAll('.story-card')[slice.stories[columnId].length - 1]
-        ?.querySelector('.story-text')?.focus();
+    // Scroll to new card after DOM settles
+    const storyIndex = slice.stories[columnId].length - 1;
+    setTimeout(() => {
+        const column = dom.storyMap.querySelector(
+            `.story-column[data-column-id="${columnId}"][data-slice-id="${sliceId}"]`
+        );
+        const newCard = column?.querySelectorAll('.story-card')[storyIndex];
+        if (newCard) {
+            scrollElementIntoView(newCard);
+            newCard.querySelector('.story-text')?.focus();
+        }
+        updateNavArrows();
+    }, 0);
 };
 
 const addSlice = (afterIndex, separator = true, rowType = null) => {
@@ -904,10 +1084,17 @@ const addSlice = (afterIndex, separator = true, rowType = null) => {
     state.slices.splice(afterIndex, 0, slice);
     render();
     saveToStorage();
-    if (separator) {
-        dom.storyMap.querySelectorAll('.slice-container')[afterIndex]
-            ?.querySelector('.slice-label')?.focus();
-    }
+
+    // Scroll to new slice after DOM settles
+    setTimeout(() => {
+        const sliceElement = dom.storyMap.querySelectorAll('.slice-container')[afterIndex];
+        if (sliceElement) {
+            scrollElementIntoView(sliceElement);
+            if (separator) {
+                sliceElement.querySelector('.slice-label')?.focus();
+            }
+        }
+    }, 0);
     return slice;
 };
 
@@ -1048,6 +1235,9 @@ const subscribeToMap = (mapId) => {
     }, (err) => {
         console.error('Firestore subscription error:', err);
     });
+
+    // Track presence for this map
+    trackPresence(mapId);
 };
 
 // Local storage save (also syncs to Firestore)
@@ -1159,6 +1349,9 @@ const deserialize = (data) => {
 // =============================================================================
 
 const exportMap = () => {
+    // Don't export from welcome screen
+    if (dom.welcomeScreen.classList.contains('visible')) return;
+
     flushSave();
     const filename = prompt('Enter filename:', 'story-map');
     if (!filename) return;
@@ -1339,7 +1532,14 @@ const initEventListeners = () => {
         updateZoom();
     });
     dom.zoomReset.addEventListener('click', () => {
-        zoomLevel = 1;
+        // Cycle through 100% -> 75% -> 50% -> 100%
+        if (zoomLevel === 1) {
+            zoomLevel = 0.75;
+        } else if (zoomLevel === 0.75) {
+            zoomLevel = 0.5;
+        } else {
+            zoomLevel = 1;
+        }
         updateZoom();
     });
     dom.fileInput.addEventListener('change', (e) => {
@@ -1395,6 +1595,18 @@ const initEventListeners = () => {
             closeAllOptionsMenus();
         }
     });
+
+    // Navigation arrows
+    dom.navArrowLeft.addEventListener('click', () => scrollByAmount(-300));
+    dom.navArrowRight.addEventListener('click', () => scrollByAmount(300));
+
+    // Update nav arrows on scroll
+    dom.storyMapWrapper.addEventListener('scroll', updateNavArrows);
+
+    // Pan/drag navigation when zoomed out
+    dom.storyMapWrapper.addEventListener('mousedown', startPan);
+    document.addEventListener('mousemove', doPan);
+    document.addEventListener('mouseup', endPan);
 };
 
 // =============================================================================
@@ -1421,12 +1633,15 @@ const showWelcomeScreen = () => {
     dom.welcomeScreen.classList.add('visible');
     dom.storyMapWrapper.classList.remove('visible');
     dom.boardName.classList.add('hidden');
+    dom.zoomControls.classList.add('hidden');
+    clearPresence();
 };
 
 const hideWelcomeScreen = () => {
     dom.welcomeScreen.classList.remove('visible');
     dom.storyMapWrapper.classList.add('visible');
     dom.boardName.classList.remove('hidden');
+    dom.zoomControls.classList.remove('hidden');
 };
 
 const startNewMap = async () => {

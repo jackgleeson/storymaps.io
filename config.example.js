@@ -7,11 +7,13 @@
 // 3. Add a web app to your project
 // 4. Copy the configuration values from the Firebase console
 // 5. Enable Firestore Database in your project
-// 6. Set up App Check with reCAPTCHA v3 (https://console.cloud.google.com/security/recaptcha)
+// 6. Enable Realtime Database in your project (for presence/viewer count)
+// 7. Set up App Check with reCAPTCHA v3 (https://console.cloud.google.com/security/recaptcha)
 
 export const firebaseConfig = {
     apiKey: "your-api-key",
     authDomain: "your-project.firebaseapp.com",
+    databaseURL: "https://your-project-default-rtdb.firebaseio.com",
     projectId: "your-project-id",
     storageBucket: "your-project.appspot.com",
     messagingSenderId: "123456789",

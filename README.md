@@ -23,6 +23,7 @@ By mapping out the backbone of the user experience, you can instantly spot funct
 
 ## App Features
 - **Real-time Collaboration** - Multiple users can edit the same map simultaneously
+- **Live Viewer Count** - See how many people are viewing the map in real-time
 - **Shareable URLs** - Each map gets a unique URL for easy sharing
 - **Personas** - Add context rows showing who does what
 - **Activities & Steps (Backbone)** - Define activities & steps representing the user journey left-to-right
@@ -44,10 +45,11 @@ This app uses Firebase for real-time collaboration and cloud storage. To run you
 
 1. Create a Firebase project at [console.firebase.google.com](https://console.firebase.google.com/)
 2. Enable Firestore Database in your project
-3. Set up App Check with reCAPTCHA v3 at [console.cloud.google.com/security/recaptcha](https://console.cloud.google.com/security/recaptcha)
-4. Copy `config.example.js` to `config.js`
-5. Add your Firebase credentials and reCAPTCHA site key to `config.js`
-6. Serve the files with any static web server
+3. Enable Realtime Database in your project (for live viewer count)
+4. Set up App Check with reCAPTCHA v3 at [console.cloud.google.com/security/recaptcha](https://console.cloud.google.com/security/recaptcha)
+5. Copy `config.example.js` to `config.js`
+6. Add your Firebase credentials, database URL, and reCAPTCHA site key to `config.js`
+7. Serve the files with any static web server
 
 Note: Data is always saved to local storage. Real-time collaboration and cloud sync require Firebase.
 

@@ -15,19 +15,24 @@
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: #f8fafc;
-    min-height: 100vh;
+    height: 100vh;
     padding: 24px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 /* Header */
 .header {
     max-width: 1400px;
+    width: 100%;
     margin: 0 auto 24px;
     padding: 16px 0;
     display: flex;
     align-items: center;
     gap: 16px;
     border-bottom: 1px solid #ddd;
+    flex-shrink: 0;
 }
 
 .logo {
@@ -87,6 +92,31 @@ body {
 .header-actions {
     display: flex;
     gap: 8px;
+    align-items: center;
+}
+
+.viewer-count {
+    display: none;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    background: #e0f2fe;
+    color: #0369a1;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.viewer-count::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: #22c55e;
+    border-radius: 50%;
+}
+
+.viewer-count.visible {
+    display: flex;
 }
 
 /* Dropdown */
@@ -210,11 +240,89 @@ body {
     display: none;
     overflow: auto;
     flex: 1;
-    padding-bottom: 60px;
+    min-height: 0;
+    position: relative;
+
+    /* Firefox scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+/* Webkit scrollbar (Chrome, Safari, Edge) */
+.story-map-wrapper::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.story-map-wrapper::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 5px;
+}
+
+.story-map-wrapper::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 5px;
+}
+
+.story-map-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+
+.story-map-wrapper::-webkit-scrollbar-corner {
+    background: #f1f1f1;
 }
 
 .story-map-wrapper.visible {
     display: block;
+}
+
+.story-map-wrapper.panning {
+    cursor: grabbing;
+    user-select: none;
+}
+
+.story-map-wrapper.pan-enabled {
+    cursor: grab;
+}
+
+/* Navigation Arrows */
+.nav-arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 28px;
+    color: #666;
+    cursor: pointer;
+    z-index: 900;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, background-color 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-arrow:hover {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+.nav-arrow.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.nav-arrow-left {
+    left: 20px;
+}
+
+.nav-arrow-right {
+    right: 20px;
 }
 
 .zoom-controls {
@@ -229,6 +337,10 @@ body {
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     z-index: 1000;
+}
+
+.zoom-controls.hidden {
+    display: none;
 }
 
 .zoom-btn {
@@ -968,10 +1080,12 @@ body {
 /* Welcome Screen */
 .welcome-screen {
     display: none;
-    align-items: center;
-    justify-content: center;
-    min-height: 60vh;
-    padding: 40px 20px;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    padding: 40px 20px 20px;
+    overflow-y: auto;
 }
 
 .welcome-screen.visible {
@@ -981,6 +1095,7 @@ body {
 .welcome-content {
     text-align: center;
     max-width: 500px;
+    margin: 0 auto;
 }
 
 .welcome-content h1 {
@@ -1084,17 +1199,24 @@ body {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
+.welcome-footer {
+    margin-top: auto;
+    padding-top: 20px;
+    max-width: none;
+}
+
 /* Footer */
 .footer {
     max-width: 1400px;
-    margin: 48px auto 0;
-    padding: 24px 0;
+    width: 100%;
+    margin: 24px auto 0;
+    padding: 16px 0;
     border-top: 1px solid #ddd;
     display: flex;
-    flex-direction: column;
+    justify-content: center;
     align-items: center;
     gap: 16px;
-    font-size: 14px;
+    font-size: 13px;
     color: #666;
 }
 
@@ -1102,8 +1224,9 @@ body {
     text-align: center;
 }
 
-.footer-support img {
-    height: 28px !important;
+.footer-support {
+    display: flex;
+    align-items: center;
 }
 
 .footer a {
@@ -1177,6 +1300,78 @@ body {
 
     .row-type-label {
         font-size: 9px;
+    }
+
+    .footer {
+        flex-wrap: wrap;
+    }
+
+    .story-map-wrapper {
+        padding-bottom: 60px;
+    }
+
+    .welcome-screen {
+        padding: 16px 20px 10px;
+    }
+
+    .welcome-content h1 {
+        font-size: 22px;
+        margin-bottom: 4px;
+    }
+
+    .welcome-content > p {
+        font-size: 14px;
+        margin-bottom: 16px;
+    }
+
+    .welcome-actions {
+        gap: 10px;
+    }
+
+    .welcome-samples-list {
+        gap: 6px;
+    }
+
+    .btn-sample {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+
+    .btn-large {
+        padding: 10px 24px;
+        font-size: 14px;
+    }
+
+    .welcome-divider {
+        font-size: 12px;
+    }
+
+    .welcome-samples-label {
+        font-size: 12px;
+    }
+
+    .welcome-learn-links {
+        gap: 12px;
+    }
+
+    .welcome-learn-card {
+        padding: 10px 14px;
+        font-size: 12px;
+    }
+
+    .welcome-learn-icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .welcome-learn-book {
+        height: 44px;
+    }
+
+    .welcome-footer {
+        margin-top: auto;
+        padding-top: 10px;
+        font-size: 11px;
     }
 
 }
@@ -1284,14 +1479,35 @@ body {
     }
 
     .footer {
-        margin-top: 32px;
-        padding: 16px 0;
-        font-size: 12px;
+        margin-top: 16px;
+        padding: 10px 0;
+        font-size: 11px;
+        flex-wrap: wrap;
     }
 
-    .dropdown-menu {
-        right: auto;
-        left: 0;
+    .nav-arrow {
+        display: none !important;
+    }
+
+    .viewer-count {
+        display: none !important;
+    }
+
+    .welcome-screen {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .welcome-screen {
+        padding-bottom: 20px;
+    }
+
+    .welcome-screen::-webkit-scrollbar {
+        display: none;
+    }
+
+    .welcome-footer {
+        margin-top: 16px;
     }
 
 }
