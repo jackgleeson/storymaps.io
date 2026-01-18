@@ -369,6 +369,15 @@ body {
     font-weight: 500;
 }
 
+.zoom-btn.magnifier-toggle {
+    font-size: 14px;
+    display: none;
+}
+
+.zoom-btn.magnifier-toggle.visible {
+    display: flex;
+}
+
 /* Magnifier Lens (desktop only) */
 .magnifier {
     position: fixed;

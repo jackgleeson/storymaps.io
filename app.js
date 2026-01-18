@@ -260,7 +260,8 @@ const dom = {
     samplesSubmenu: document.getElementById('samplesSubmenu'),
     navArrowLeft: document.getElementById('navArrowLeft'),
     navArrowRight: document.getElementById('navArrowRight'),
-    zoomControls: document.getElementById('zoomControls')
+    zoomControls: document.getElementById('zoomControls'),
+    magnifierToggle: document.getElementById('magnifierToggle')
 };
 
 // Menu helpers
@@ -288,6 +289,8 @@ const updateZoom = () => {
     dom.storyMap.style.transform = `scale(${zoomLevel})`;
     dom.zoomReset.textContent = `${Math.round(zoomLevel * 100)}%`;
     updatePanMode();
+    // Show magnifier toggle only when zoom is below threshold
+    dom.magnifierToggle.classList.toggle('visible', zoomLevel < 0.75);
 };
 
 // =============================================================================
@@ -389,6 +392,7 @@ const endPan = () => {
 
 let magnifier = null;
 let magnifierContent = null;
+let magnifierEnabled = true;
 const MAGNIFIER_WIDTH = 350;
 const MAGNIFIER_HEIGHT = 200;
 const MAGNIFIER_SCALE = 0.75;
@@ -406,7 +410,7 @@ const createMagnifier = () => {
 };
 
 const updateMagnifier = (e) => {
-    if (!magnifier || zoomLevel >= 0.75 || isPanning) {
+    if (!magnifier || !magnifierEnabled || zoomLevel >= 0.75 || isPanning) {
         magnifier?.classList.remove('active');
         return;
     }
@@ -458,6 +462,15 @@ const updateMagnifier = (e) => {
 
 const hideMagnifier = () => {
     magnifier?.classList.remove('active');
+};
+
+const toggleMagnifier = () => {
+    magnifierEnabled = !magnifierEnabled;
+    // Show X when enabled (to indicate clicking will disable), no X when disabled
+    dom.magnifierToggle.innerHTML = magnifierEnabled ? '&#128269;&#10005;' : '&#128269;';
+    if (!magnifierEnabled) {
+        hideMagnifier();
+    }
 };
 
 const refreshMagnifierContent = () => {
@@ -1700,6 +1713,7 @@ const initEventListeners = () => {
     createMagnifier();
     document.addEventListener('mousemove', updateMagnifier);
     dom.storyMapWrapper.addEventListener('mouseleave', hideMagnifier);
+    dom.magnifierToggle.addEventListener('click', toggleMagnifier);
 };
 
 // =============================================================================
