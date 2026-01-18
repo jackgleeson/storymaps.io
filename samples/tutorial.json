@@ -7,7 +7,7 @@
     {"n": "Tell the Story", "c": "#86efac"},
     {"n": "Map Activities", "c": "#86efac"},
     {"n": "Define Steps", "c": "#86efac"},
-    {"n": "Write Stories", "c": "#86efac"},
+    {"n": "Add Detail Cards", "c": "#86efac"},
     {"n": "Plan Releases", "c": "#86efac"},
     {"n": "Build & Deliver", "c": "#86efac"}
   ],
@@ -44,9 +44,9 @@
       [{"n": "Walk through the journey", "st": "done"}, {"n": "Talk out loud together", "st": "done"}],
       [{"n": "List user goals", "st": "done"}, {"n": "Arrange left to right", "st": "done"}],
       [{"n": "Break activities into steps", "st": "done"}, {"n": "Add step cards", "st": "done"}],
-      [{"n": "Write user stories", "st": "in-progress"}, {"n": "Place under steps", "st": "done"}],
+      [{"n": "Add detail cards", "st": "in-progress"}, {"n": "Place under steps", "st": "done"}],
       [{"n": "Draw the walking skeleton", "st": "in-progress"}, {"n": "Define MVP scope", "st": "planned"}],
-      [{"n": "Pick up stories from map", "st": "planned"}, {"n": "Understand context", "st": "planned"}]
+      [{"n": "Pick up details from map", "st": "planned"}, {"n": "Understand context", "st": "planned"}]
     ]
   }, {
     "n": "Going Deeper",

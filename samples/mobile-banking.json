@@ -1,31 +1,23 @@
 {
   "app": "storymap",
   "v": 1,
-  "name": "Mobile Banking App",
+  "name": "Mobile Banking: Send Money",
   "a": [
-    {"n": "Download & Install", "c": "#86efac"},
-    {"n": "Create Account", "c": "#86efac"},
-    {"n": "Verify Identity", "c": "#86efac"},
-    {"n": "Link Bank Account", "c": "#86efac"},
-    {"n": "View Dashboard", "c": "#86efac"},
-    {"n": "Check Balances", "c": "#86efac"},
-    {"n": "View Transactions", "c": "#86efac"},
-    {"n": "Transfer Money", "c": "#86efac"},
-    {"n": "Pay Bills", "c": "#86efac"},
-    {"n": "Set Up Alerts", "c": "#86efac"},
-    {"n": "Manage Cards", "c": "#86efac"},
-    {"n": "Get Support", "c": "#86efac"}
+    {"n": "Open App", "c": "#86efac"},
+    {"n": "Log In", "c": "#86efac"},
+    {"n": "Tap Transfer", "c": "#86efac"},
+    {"n": "Choose Recipient", "c": "#86efac"},
+    {"n": "Enter Amount", "c": "#86efac"},
+    {"n": "Review Transfer", "c": "#86efac"},
+    {"n": "Confirm & Send", "c": "#86efac"},
+    {"n": "See Confirmation", "c": "#86efac"}
   ],
   "s": [{
     "sep": false,
     "rt": "Personas",
     "n": "",
     "t": [
-      [{"n": "New Customer", "c": "#fda4af"}],
-      [],
-      [],
-      [],
-      [{"n": "Existing Customer", "c": "#fda4af"}],
+      [{"n": "Bank Customer", "c": "#fda4af"}],
       [],
       [],
       [],
@@ -39,66 +31,50 @@
     "rt": "Activities",
     "n": "",
     "t": [
-      [{"n": "Get Started", "c": "#93c5fd"}],
-      [],
-      [],
-      [],
-      [{"n": "Manage Finances", "c": "#93c5fd"}],
+      [{"n": "Send Money to Friend", "c": "#93c5fd"}],
       [],
       [],
       [],
       [],
       [],
       [],
-      [{"n": "Get Help", "c": "#93c5fd"}]
+      []
     ]
   }, {
     "n": "MVP",
     "t": [
-      [{"n": "App store listing", "st": "done"}, {"n": "Download tracking", "st": "done"}],
-      [{"n": "Email signup", "st": "done"}, {"n": "Password creation", "st": "done"}, {"n": "Terms acceptance", "st": "done"}],
-      [{"n": "ID upload", "st": "done"}, {"n": "Selfie verification", "st": "done"}],
-      [{"n": "Manual account entry", "st": "done"}, {"n": "Micro-deposit verification", "st": "done"}],
-      [{"n": "Account overview", "st": "done"}, {"n": "Quick actions", "st": "done"}],
-      [{"n": "Account list", "st": "done"}, {"n": "Balance display", "st": "done"}],
-      [{"n": "Transaction list", "st": "done"}, {"n": "Search transactions", "st": "done"}],
-      [{"n": "Internal transfer", "st": "done"}, {"n": "Transfer confirmation", "st": "done"}],
-      [{"n": "Add payee", "st": "done"}, {"n": "One-time payment", "st": "done"}],
-      [{"n": "Low balance alert", "st": "done"}, {"n": "Push notifications", "st": "done"}],
-      [{"n": "View card details", "st": "done"}, {"n": "Lock/unlock card", "st": "done"}],
-      [{"n": "FAQ section", "st": "done"}, {"n": "Contact form", "st": "done"}]
+      [{"n": "App icon on home screen", "st": "done"}, {"n": "Splash screen", "st": "done"}],
+      [{"n": "Email/password login", "st": "done"}, {"n": "Remember me option", "st": "done"}],
+      [{"n": "Transfer button on dashboard", "st": "done"}, {"n": "Quick action shortcut", "st": "done"}],
+      [{"n": "Search contacts", "st": "done"}, {"n": "Recent recipients list", "st": "done"}],
+      [{"n": "Amount input field", "st": "done"}, {"n": "Currency display", "st": "done"}, {"n": "Available balance shown", "st": "done"}],
+      [{"n": "Summary screen", "st": "done"}, {"n": "Edit option", "st": "done"}, {"n": "Fee disclosure", "st": "done"}],
+      [{"n": "Confirm button", "st": "done"}, {"n": "Processing indicator", "st": "done"}],
+      [{"n": "Success message", "st": "done"}, {"n": "Transaction reference", "st": "done"}, {"n": "Done button", "st": "done"}]
     ]
   }, {
     "n": "V1",
     "t": [
-      [{"n": "Deep linking", "st": "in-progress"}, {"n": "Referral tracking", "st": "planned"}],
-      [{"n": "Social login", "st": "done"}, {"n": "Biometric setup", "st": "in-progress"}],
-      [{"n": "Document scanning", "st": "in-progress"}, {"n": "Video verification", "st": "planned"}],
-      [{"n": "Plaid integration", "st": "done"}, {"n": "Instant verification", "st": "in-progress"}],
-      [{"n": "Spending insights", "st": "in-progress"}, {"n": "Budget widget", "st": "planned"}, {"n": "Goals tracker", "st": "planned"}],
-      [{"n": "Hide accounts", "st": "done"}, {"n": "Balance trends", "st": "in-progress"}],
-      [{"n": "Category filters", "st": "done"}, {"n": "Export statements", "st": "in-progress"}, {"n": "Receipt upload", "st": "planned"}],
-      [{"n": "External transfer", "st": "in-progress"}, {"n": "Scheduled transfers", "st": "planned"}, {"n": "Transfer templates", "st": "planned"}],
-      [{"n": "Recurring payments", "st": "in-progress"}, {"n": "Payment reminders", "st": "planned"}],
-      [{"n": "Large transaction alert", "st": "done"}, {"n": "Custom alert rules", "st": "in-progress"}],
-      [{"n": "Order new card", "st": "in-progress"}, {"n": "Set PIN", "st": "planned"}, {"n": "Travel notifications", "st": "planned"}],
-      [{"n": "Live chat", "st": "in-progress"}, {"n": "Callback request", "st": "planned"}]
+      [{"n": "Push notification deep link", "st": "in-progress"}, {"n": "Widget shortcut", "st": "planned"}],
+      [{"n": "Biometric login (Face/Touch ID)", "st": "done"}, {"n": "PIN fallback", "st": "in-progress"}],
+      [{"n": "Favorite recipients", "st": "in-progress"}, {"n": "Transfer from notification", "st": "planned"}],
+      [{"n": "Add new recipient inline", "st": "done"}, {"n": "Recipient photos", "st": "in-progress"}],
+      [{"n": "Preset amount buttons", "st": "done"}, {"n": "Add note/memo", "st": "in-progress"}, {"n": "Choose source account", "st": "done"}],
+      [{"n": "Scheduled transfer option", "st": "planned"}, {"n": "Recurring option", "st": "planned"}],
+      [{"n": "Face ID to confirm", "st": "in-progress"}, {"n": "SMS verification", "st": "done"}],
+      [{"n": "Share receipt", "st": "in-progress"}, {"n": "Add to calendar", "st": "planned"}, {"n": "Send another prompt", "st": "planned"}]
     ]
   }, {
     "n": "V2",
     "t": [
-      [{"n": "Smart banners", "st": "planned"}, {"n": "A/B testing", "st": "planned"}],
+      [{"n": "Instant app (no install)", "st": "planned"}, {"n": "Apple Watch app", "st": "planned"}],
       [{"n": "Passwordless login", "st": "planned"}, {"n": "Multi-device sync", "st": "planned"}],
-      [{"n": "Auto-verification", "st": "planned"}, {"n": "Fraud detection", "st": "planned"}],
-      [{"n": "Open banking API", "st": "planned"}, {"n": "Multi-bank view", "st": "planned"}],
-      [{"n": "AI insights", "st": "planned"}, {"n": "Predictive balance", "st": "planned"}, {"n": "Smart savings", "st": "planned"}],
-      [{"n": "Account comparison", "st": "planned"}, {"n": "Net worth view", "st": "planned"}],
-      [{"n": "Smart categories", "st": "planned"}, {"n": "Subscription tracker", "st": "planned"}, {"n": "Merchant insights", "st": "planned"}],
-      [{"n": "International transfer", "st": "planned"}, {"n": "Multi-currency", "st": "planned"}, {"n": "Transfer limits", "st": "planned"}],
-      [{"n": "Bill negotiation", "st": "planned"}, {"n": "Auto-pay setup", "st": "planned"}, {"n": "Split bills", "st": "planned"}],
-      [{"n": "Spending alerts", "st": "planned"}, {"n": "Goal alerts", "st": "planned"}, {"n": "Weekly digest", "st": "planned"}],
-      [{"n": "Virtual cards", "st": "planned"}, {"n": "Card rewards", "st": "planned"}, {"n": "Apple Pay setup", "st": "planned"}],
-      [{"n": "Video support", "st": "planned"}, {"n": "AI assistant", "st": "planned"}, {"n": "Branch finder", "st": "planned"}]
+      [{"n": "Siri shortcut", "st": "planned"}, {"n": "Voice command transfer", "st": "planned"}],
+      [{"n": "QR code scan to pay", "st": "planned"}, {"n": "NFC tap to pay", "st": "planned"}],
+      [{"n": "Multi-currency conversion", "st": "planned"}, {"n": "Split amount", "st": "planned"}, {"n": "Request money option", "st": "planned"}],
+      [{"n": "Compare exchange rates", "st": "planned"}, {"n": "Delivery speed options", "st": "planned"}],
+      [{"n": "Hardware key support", "st": "planned"}, {"n": "Spending limit warnings", "st": "planned"}],
+      [{"n": "PDF receipt download", "st": "planned"}, {"n": "Transaction dispute", "st": "planned"}, {"n": "Rate the experience", "st": "planned"}]
     ]
   }]
 }

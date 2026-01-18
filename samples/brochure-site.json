@@ -7,8 +7,7 @@
     {"n": "Learn About Company", "c": "#86efac"},
     {"n": "View Services", "c": "#86efac"},
     {"n": "See Social Proof", "c": "#86efac"},
-    {"n": "Get in Touch", "c": "#86efac"},
-    {"n": "Dev Tasks", "c": "#86efac"}
+    {"n": "Get in Touch", "c": "#86efac"}
   ],
   "s": [{
     "sep": false,
@@ -19,8 +18,7 @@
       [],
       [],
       [],
-      [],
-      [{"n": "Developer", "c": "#fda4af"}]
+      []
     ]
   }, {
     "sep": false,
@@ -31,38 +29,34 @@
       [],
       [],
       [],
-      [],
-      [{"n": "Build & Maintain", "c": "#93c5fd"}]
+      []
     ]
   }, {
-    "n": "Release 1",
+    "n": "MVP",
     "t": [
       [{"n": "Hero section", "st": "done"}, {"n": "Navigation menu", "st": "done"}, {"n": "Clear value proposition", "st": "done"}],
       [{"n": "Company intro", "st": "done"}, {"n": "Mission statement", "st": "done"}],
       [{"n": "Service list", "st": "done"}, {"n": "Basic descriptions", "st": "done"}],
       [{"n": "Client logos", "st": "done"}],
-      [{"n": "Contact form", "st": "done"}, {"n": "Email address", "st": "done"}, {"n": "Phone number", "st": "done"}],
-      [{"n": "Responsive layout", "st": "done"}, {"n": "SEO basics", "st": "done"}]
+      [{"n": "Contact form", "st": "done"}, {"n": "Email address", "st": "done"}, {"n": "Phone number", "st": "done"}]
     ]
   }, {
-    "n": "Release 2",
+    "n": "V1",
     "t": [
       [{"n": "Animated hero", "st": "in-progress"}, {"n": "Call to action button", "st": "done"}],
       [{"n": "Team photos", "st": "in-progress"}, {"n": "Company history", "st": "planned"}],
       [{"n": "Service detail pages", "st": "in-progress"}, {"n": "Pricing info", "st": "planned"}],
       [{"n": "Written testimonials", "st": "in-progress"}, {"n": "Case studies", "st": "planned"}],
-      [{"n": "Location map", "st": "done"}, {"n": "Social media links", "st": "in-progress"}],
-      [{"n": "Performance optimization", "st": "in-progress"}, {"n": "Analytics setup", "st": "done", "u": "https://analytics.google.com/"}]
+      [{"n": "Location map", "st": "done"}, {"n": "Social media links", "st": "in-progress"}]
     ]
   }, {
-    "n": "Release 3",
+    "n": "V2",
     "t": [
       [{"n": "Video background", "st": "planned"}, {"n": "Live chat widget", "st": "planned"}],
       [{"n": "Blog section", "st": "planned"}, {"n": "News/updates", "st": "planned"}],
       [{"n": "Service comparison table", "st": "planned"}, {"n": "FAQ section", "st": "planned"}],
       [{"n": "Video testimonials", "st": "planned"}, {"n": "Awards & certifications", "st": "planned"}],
-      [{"n": "Booking calendar", "st": "planned"}, {"n": "Newsletter signup", "st": "planned"}],
-      [{"n": "CMS integration", "st": "planned"}, {"n": "A/B testing", "st": "planned"}]
+      [{"n": "Booking calendar", "st": "planned"}, {"n": "Newsletter signup", "st": "planned"}]
     ]
   }]
 }
