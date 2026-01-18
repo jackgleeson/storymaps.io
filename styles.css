@@ -1526,6 +1526,11 @@ body {
         display: none !important;
     }
 
+    .magnifier-toggle,
+    .magnifier {
+        display: none !important;
+    }
+
     .welcome-screen {
         scrollbar-width: none;
         -ms-overflow-style: none;
