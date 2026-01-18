@@ -265,7 +265,8 @@ const dom = {
     navArrowLeft: document.getElementById('navArrowLeft'),
     navArrowRight: document.getElementById('navArrowRight'),
     zoomControls: document.getElementById('zoomControls'),
-    magnifierToggle: document.getElementById('magnifierToggle')
+    magnifierToggle: document.getElementById('magnifierToggle'),
+    loadingIndicator: document.getElementById('loadingIndicator')
 };
 
 // Menu helpers
@@ -1752,6 +1753,14 @@ const hideWelcomeScreen = () => {
     dom.zoomControls.classList.remove('hidden');
 };
 
+const showLoading = () => {
+    dom.loadingIndicator.classList.add('visible');
+};
+
+const hideLoading = () => {
+    dom.loadingIndicator.classList.remove('visible');
+};
+
 const startNewMap = () => {
     hideWelcomeScreen();
     initState();
@@ -1800,8 +1809,10 @@ const init = async () => {
     initEventListeners();
 
     if (mapId) {
-        // Try to load existing map from Firestore
+        // Show loading indicator while fetching from Firestore
+        showLoading();
         const loaded = await loadMapById(mapId);
+        hideLoading();
         if (loaded) {
             hideWelcomeScreen();
             dom.boardName.value = state.name;
