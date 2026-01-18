@@ -1,9 +1,28 @@
 :root {
+    /* Colors */
     --color-teal: #14b8a6;
     --color-hover-bg: #f0f2f5;
     --color-border: #ddd;
+
+    /* Spacing scale */
+    --spacing-xs: 4px;
+    --spacing-sm: 6px;
+    --spacing-md: 8px;
+    --spacing-lg: 12px;
+    --spacing-xl: 16px;
+    --spacing-2xl: 24px;
+
+    /* Shadows */
     --shadow-card: 1px 1px 3px rgba(0, 0, 0, 0.12), 2px 2px 8px rgba(0, 0, 0, 0.08);
     --shadow-dropdown: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --shadow-hover: 2px 2px 8px rgba(0, 0, 0, 0.15);
+    --shadow-modal: 0 4px 24px rgba(0, 0, 0, 0.15);
+
+    /* Sizing */
+    --card-width: 180px;
+    --label-width: 80px;
+    --border-radius: 6px;
+    --border-radius-sm: 4px;
 }
 
 * {
@@ -420,7 +439,7 @@ body {
 }
 
 .steps-row-spacer {
-    width: 80px;
+    width: var(--label-width);
     flex-shrink: 0;
     padding-right: 12px;
     display: flex;
@@ -433,7 +452,7 @@ body {
     padding: 12px 14px;
     border-radius: 2px;
     min-height: 100px;
-    width: 180px;
+    width: var(--card-width);
     flex-shrink: 0;
     display: flex;
     align-items: center;
@@ -477,7 +496,7 @@ body {
 
 /* Step Placeholder (hidden header) - click to show */
 .step-placeholder {
-    width: 180px;
+    width: var(--card-width);
     min-height: 100px;
     flex-shrink: 0;
     border: 1px dashed transparent;
@@ -563,7 +582,7 @@ body {
 
 /* Slice Label on Left */
 .slice-label-container {
-    width: 80px;
+    width: var(--label-width);
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -626,7 +645,7 @@ body {
 
 /* Row label container (for backbone rows) */
 .row-label-container {
-    width: 80px;
+    width: var(--label-width);
     flex-shrink: 0;
     padding-right: 12px;
     display: flex;
@@ -669,7 +688,7 @@ body {
 
 /* Story Column */
 .story-column {
-    width: 180px;
+    width: var(--card-width);
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -677,7 +696,7 @@ body {
     min-height: 60px;
 }
 
-/* Story Card (User Stories) */
+/* Story Card (Details) */
 .story-card {
     background-color: #fef08a;
     padding: 10px 12px;
@@ -1559,11 +1578,11 @@ body {
     display: none;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
+    gap: var(--spacing-xl);
     padding: 32px 48px;
     background: white;
     border-radius: 12px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-modal);
     z-index: 3000;
     font-size: 14px;
     color: #666;

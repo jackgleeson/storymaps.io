@@ -114,6 +114,13 @@ const CARD_COLORS = {
     orange: '#fed7aa'
 };
 
+// Default colors for card types (references CARD_COLORS values)
+const DEFAULT_CARD_COLORS = {
+    Personas: '#fda4af',    // pink
+    Activities: '#93c5fd',  // blue
+    story: '#fef08a'        // yellow
+};
+
 const STATUS_OPTIONS = {
     done: { label: 'Done', color: '#22c55e' },
     'in-progress': { label: 'In Progress', color: '#eab308' },
@@ -121,6 +128,8 @@ const STATUS_OPTIONS = {
 };
 
 const DEBOUNCE_DELAY = 300;
+const MAGNIFIER_THRESHOLD = 0.75;
+const ZOOM_LEVELS = [1, 0.75, 0.5, 0.25];
 
 const el = (tag, className, attrs = {}) => {
     const element = document.createElement(tag);
@@ -178,9 +187,7 @@ const undo = () => {
     const previous = JSON.parse(undoStack.pop());
     deserialize(previous);
     dom.boardName.value = state.name;
-    render();
-    saveToStorage();
-    if (state.mapId) saveMapToFirestore(state.mapId, serialize());
+    renderAndSave();
     updateUndoRedoButtons();
 };
 
@@ -190,9 +197,7 @@ const redo = () => {
     const next = JSON.parse(redoStack.pop());
     deserialize(next);
     dom.boardName.value = state.name;
-    render();
-    saveToStorage();
-    if (state.mapId) saveMapToFirestore(state.mapId, serialize());
+    renderAndSave();
     updateUndoRedoButtons();
 };
 
@@ -208,7 +213,7 @@ const initState = () => {
     state.slices = [
         { id: generateId(), name: '', separator: false, rowType: 'Personas', stories: { [column.id]: [createStory('User Type', '#fda4af')] } },
         { id: generateId(), name: '', separator: false, rowType: 'Activities', stories: { [column.id]: [createStory('New Activity', '#93c5fd')] } },
-        { id: generateId(), name: '', separator: true, rowType: null, stories: { [column.id]: [createStory('New User Story')] } }
+        { id: generateId(), name: '', separator: true, rowType: null, stories: { [column.id]: [createStory('New Detail')] } }
     ];
 };
 
@@ -295,7 +300,7 @@ const updateZoom = () => {
     dom.zoomReset.textContent = `${Math.round(zoomLevel * 100)}%`;
     updatePanMode();
     // Show magnifier toggle only when zoom is below threshold
-    dom.magnifierToggle.classList.toggle('visible', zoomLevel < 0.75);
+    dom.magnifierToggle.classList.toggle('visible', zoomLevel < MAGNIFIER_THRESHOLD);
 };
 
 // =============================================================================
@@ -415,7 +420,7 @@ const createMagnifier = () => {
 };
 
 const updateMagnifier = (e) => {
-    if (!magnifier || !magnifierEnabled || zoomLevel >= 0.75 || isPanning) {
+    if (!magnifier || !magnifierEnabled || zoomLevel >= MAGNIFIER_THRESHOLD || isPanning) {
         magnifier?.classList.remove('active');
         return;
     }
@@ -683,8 +688,7 @@ const createColumnPlaceholder = (column) => {
     // Click to show the step
     placeholder.addEventListener('click', () => {
         column.hidden = false;
-        render();
-        saveToStorage();
+        renderAndSave();
     });
 
     return placeholder;
@@ -707,24 +711,20 @@ const createColumnCard = (column) => {
         CARD_COLORS,
         () => {
             column.hidden = true;
-            render();
-            saveToStorage();
+            renderAndSave();
         },
         `Delete "${column.name || 'this step'}"?`,
         (color) => {
             column.color = color;
-            render();
-            saveToStorage();
+            renderAndSave();
         },
         (url) => {
             column.url = url || null;
-            render();
-            saveToStorage();
+            renderAndSave();
         },
         (status) => {
             column.status = status;
-            render();
-            saveToStorage();
+            renderAndSave();
         },
         null, // onHide - not used for step cards (Delete already hides)
         () => deleteColumn(column.id)
@@ -751,8 +751,7 @@ const createStoryPlaceholder = (story) => {
     // Click to show the card
     placeholder.addEventListener('click', () => {
         story.hidden = false;
-        render();
-        saveToStorage();
+        renderAndSave();
     });
 
     return placeholder;
@@ -771,17 +770,17 @@ const createStoryCard = (story, columnId, sliceId, isBackboneRow = false) => {
     });
     if (story.color) card.style.backgroundColor = story.color;
 
-    const placeholderText = isBackboneRow ? 'Card...' : 'User story...';
+    const placeholderText = isBackboneRow ? 'Card...' : 'Detail...';
     const textarea = createTextarea('story-text', placeholderText, story.name,
         (val) => story.name = val);
 
     // For backbone rows, delete just hides; for regular slices, delete removes
     const onDelete = isBackboneRow
-        ? () => { story.hidden = true; render(); saveToStorage(); }
+        ? () => { story.hidden = true; renderAndSave(); }
         : () => deleteStory(columnId, sliceId, story.id);
     const deleteMessage = isBackboneRow
         ? `Delete "${story.name || 'this card'}"?`
-        : `Delete "${story.name || 'this story'}"?`;
+        : `Delete "${story.name || 'this detail'}"?`;
 
     const optionsMenu = createOptionsMenu(
         story,
@@ -790,18 +789,15 @@ const createStoryCard = (story, columnId, sliceId, isBackboneRow = false) => {
         deleteMessage,
         (color) => {
             story.color = color;
-            render();
-            saveToStorage();
+            renderAndSave();
         },
         (url) => {
             story.url = url || null;
-            render();
-            saveToStorage();
+            renderAndSave();
         },
         (status) => {
             story.status = status;
-            render();
-            saveToStorage();
+            renderAndSave();
         },
         null, // onHide - not used
         isBackboneRow ? () => deleteColumn(columnId) : null
@@ -1132,8 +1128,7 @@ const addColumn = (hidden = true) => {
     const column = createColumn('', null, null, hidden);
     state.columns.push(column);
     state.slices.forEach(slice => slice.stories[column.id] = []);
-    render();
-    saveToStorage();
+    renderAndSave();
 
     // Scroll to the new step after DOM settles
     setTimeout(() => {
@@ -1149,13 +1144,6 @@ const addColumn = (hidden = true) => {
     }, 0);
 };
 
-// Default colors for card types
-const DEFAULT_COLORS = {
-    Personas: '#fda4af',    // pink
-    Activities: '#93c5fd',  // blue
-    story: '#fef08a'        // yellow (user stories)
-};
-
 const addStory = (columnId, sliceId) => {
     const slice = state.slices.find(s => s.id === sliceId);
     if (!slice) return;
@@ -1163,12 +1151,11 @@ const addStory = (columnId, sliceId) => {
     pushUndo();
 
     // Set default color based on row type
-    const defaultColor = slice.rowType ? DEFAULT_COLORS[slice.rowType] : null;
+    const defaultColor = slice.rowType ? DEFAULT_CARD_COLORS[slice.rowType] : null;
 
     slice.stories[columnId] = slice.stories[columnId] || [];
     slice.stories[columnId].push(createStory('', defaultColor));
-    render();
-    saveToStorage();
+    renderAndSave();
 
     // Scroll to new card after DOM settles
     const storyIndex = slice.stories[columnId].length - 1;
@@ -1189,8 +1176,7 @@ const addSlice = (afterIndex, separator = true, rowType = null) => {
     pushUndo();
     const slice = createSlice('', separator, rowType);
     state.slices.splice(afterIndex, 0, slice);
-    render();
-    saveToStorage();
+    renderAndSave();
 
     // Scroll to new slice after DOM settles
     setTimeout(() => {
@@ -1216,8 +1202,7 @@ const deleteColumn = (columnId) => {
     pushUndo();
     state.columns.splice(index, 1);
     state.slices.forEach(slice => delete slice.stories[columnId]);
-    render();
-    saveToStorage();
+    renderAndSave();
 };
 
 const deleteStory = (columnId, sliceId, storyId) => {
@@ -1229,8 +1214,7 @@ const deleteStory = (columnId, sliceId, storyId) => {
     if (index > -1) {
         pushUndo();
         stories.splice(index, 1);
-        render();
-        saveToStorage();
+        renderAndSave();
     }
 };
 
@@ -1251,8 +1235,7 @@ const moveStory = (storyId, fromColumnId, fromSliceId, toColumnId, toSliceId, to
     if (!toSlice.stories[toColumnId]) toSlice.stories[toColumnId] = [];
 
     toSlice.stories[toColumnId].splice(toIndex, 0, story);
-    render();
-    saveToStorage();
+    renderAndSave();
 };
 
 const deleteSlice = (sliceId) => {
@@ -1262,8 +1245,7 @@ const deleteSlice = (sliceId) => {
     if (index > -1) {
         pushUndo();
         state.slices.splice(index, 1);
-        render();
-        saveToStorage();
+        renderAndSave();
     }
 };
 
@@ -1275,8 +1257,7 @@ const moveSlice = (fromSliceId, toSliceId) => {
 
     const [slice] = state.slices.splice(fromIndex, 1);
     state.slices.splice(toIndex, 0, slice);
-    render();
-    saveToStorage();
+    renderAndSave();
 };
 
 // =============================================================================
@@ -1343,6 +1324,12 @@ const saveToStorage = () => {
     if (state.mapId) {
         saveMapToFirestore(state.mapId, serialize());
     }
+};
+
+// Combined render and save - used after state mutations
+const renderAndSave = () => {
+    render();
+    saveToStorage();
 };
 
 // Debounced save for frequent updates (e.g., typing)
@@ -1470,17 +1457,12 @@ const importMap = (file) => {
     if (!confirmOverwrite()) return;
 
     const reader = new FileReader();
-    reader.onload = async (e) => {
+    reader.onload = (e) => {
         try {
             pushUndo(); // Save state before import
             deserialize(JSON.parse(e.target.result));
             dom.boardName.value = state.name;
-            render();
-            saveToStorage();
-            // Sync to Firestore
-            if (state.mapId) {
-                await saveMapToFirestore(state.mapId, serialize());
-            }
+            renderAndSave();
         } catch {
             alert('Failed to import: Invalid file format');
         }
@@ -1503,10 +1485,7 @@ const loadSample = async (name) => {
         pushUndo(); // Save state before loading sample
         deserialize(await response.json());
         dom.boardName.value = state.name;
-        render();
-        saveToStorage();
-        // Sync to current map in Firestore (collaborators see it)
-        await saveMapToFirestore(state.mapId, serialize());
+        renderAndSave();
     } catch {
         alert('Failed to load sample');
     }
@@ -1633,16 +1612,9 @@ const initEventListeners = () => {
         updateZoom();
     });
     dom.zoomReset.addEventListener('click', () => {
-        // Cycle through 100% -> 75% -> 50% -> 25% -> 100%
-        if (zoomLevel === 1) {
-            zoomLevel = 0.75;
-        } else if (zoomLevel === 0.75) {
-            zoomLevel = 0.5;
-        } else if (zoomLevel === 0.5) {
-            zoomLevel = 0.25;
-        } else {
-            zoomLevel = 1;
-        }
+        // Cycle through zoom levels: 100% -> 75% -> 50% -> 25% -> 100%
+        const currentIndex = ZOOM_LEVELS.indexOf(zoomLevel);
+        zoomLevel = ZOOM_LEVELS[(currentIndex + 1) % ZOOM_LEVELS.length];
         updateZoom();
     });
     dom.fileInput.addEventListener('change', (e) => {
@@ -1789,10 +1761,7 @@ const startWithSample = async (sampleName) => {
         if (!response.ok) throw new Error();
         deserialize(await response.json());
         dom.boardName.value = state.name;
-        render();
-        saveToStorage();
-        // Save to Firestore in background (non-blocking)
-        saveMapToFirestore(mapId, serialize());
+        renderAndSave();
         subscribeToMap(mapId);
     } catch {
         alert('Failed to load sample');
