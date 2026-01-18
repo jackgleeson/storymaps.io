@@ -9,15 +9,19 @@ import { getDatabase, ref, set, onValue, onDisconnect, serverTimestamp as rtdbTi
 import { firebaseConfig, recaptchaSiteKey } from './config.js';
 
 const firebaseApp = initializeApp(firebaseConfig);
-
-// App Check - verifies requests come from your domain
-const appCheck = initializeAppCheck(firebaseApp, {
-    provider: new ReCaptchaV3Provider(recaptchaSiteKey),
-    isTokenAutoRefreshEnabled: true
-});
-
 const db = getFirestore(firebaseApp);
 const rtdb = getDatabase(firebaseApp);
+
+// App Check - initialized lazily to speed up initial page load
+let appCheckInitialized = false;
+const initAppCheck = () => {
+    if (appCheckInitialized) return;
+    appCheckInitialized = true;
+    initializeAppCheck(firebaseApp, {
+        provider: new ReCaptchaV3Provider(recaptchaSiteKey),
+        isTokenAutoRefreshEnabled: true
+    });
+};
 
 // Session ID to track who made changes (for real-time sync)
 const getSessionId = () => {
@@ -436,11 +440,13 @@ const updateMagnifier = (e) => {
     magnifier.style.left = `${magLeft}px`;
     magnifier.style.top = `${magTop}px`;
 
-    // Clone the story map content if not already done
-    if (!magnifierContent.hasChildNodes()) {
+    // Clone the story map content if needed (lazy clone)
+    if (magnifierContent.dataset.stale === 'true' || !magnifierContent.hasChildNodes()) {
+        magnifierContent.innerHTML = '';
         const clone = dom.storyMap.cloneNode(true);
         clone.style.transform = 'none';
         magnifierContent.appendChild(clone);
+        magnifierContent.dataset.stale = 'false';
     }
 
     // Get the map's position within the wrapper (accounts for margin: auto centering)
@@ -474,8 +480,9 @@ const toggleMagnifier = () => {
 };
 
 const refreshMagnifierContent = () => {
+    // Mark as stale - actual refresh happens lazily when magnifier is shown
     if (magnifierContent) {
-        magnifierContent.innerHTML = '';
+        magnifierContent.dataset.stale = 'true';
     }
 };
 
@@ -1280,6 +1287,7 @@ const STORAGE_KEY = 'storymap';
 // Firestore functions
 // Store map data as JSON string to avoid Firestore's nested array limitation
 const saveMapToFirestore = async (mapId, data) => {
+    initAppCheck();
     try {
         await setDoc(doc(db, 'maps', mapId), {
             mapData: JSON.stringify(data),
@@ -1292,6 +1300,7 @@ const saveMapToFirestore = async (mapId, data) => {
 };
 
 const loadMapFromFirestore = async (mapId) => {
+    initAppCheck();
     try {
         const docSnap = await getDoc(doc(db, 'maps', mapId));
         if (docSnap.exists()) {
@@ -1302,18 +1311,6 @@ const loadMapFromFirestore = async (mapId) => {
         console.error('Failed to load from Firestore:', err);
     }
     return null;
-};
-
-const createNewMapInFirestore = async (pushHistory = true) => {
-    const mapId = generateId();
-    state.mapId = mapId;
-    await saveMapToFirestore(mapId, serialize());
-    if (pushHistory) {
-        history.pushState({ mapId }, '', `/${mapId}`);
-    } else {
-        history.replaceState({ mapId }, '', `/${mapId}`);
-    }
-    return mapId;
 };
 
 // Subscribe to real-time updates
@@ -1514,7 +1511,7 @@ const loadSample = async (name) => {
     }
 };
 
-const newMap = async () => {
+const newMap = () => {
     flushSave();
     if (hasContent() && !confirm('Create a new story map?\n\nYou can return to this map using the back button.')) {
         return;
@@ -1529,10 +1526,14 @@ const newMap = async () => {
     dom.boardName.value = '';
     render();
 
-    // Create new map in Firestore with new URL, then save
-    await createNewMapInFirestore();
-    subscribeToMap(state.mapId);
+    // Generate map ID and update URL immediately
+    const mapId = generateId();
+    state.mapId = mapId;
+    history.pushState({ mapId }, '', `/${mapId}`);
     saveToStorage();
+    // Save to Firestore in background (non-blocking)
+    saveMapToFirestore(mapId, serialize());
+    subscribeToMap(mapId);
 };
 
 // =============================================================================
@@ -1751,22 +1752,29 @@ const hideWelcomeScreen = () => {
     dom.zoomControls.classList.remove('hidden');
 };
 
-const startNewMap = async () => {
+const startNewMap = () => {
     hideWelcomeScreen();
     initState();
-    await createNewMapInFirestore(false);
-    subscribeToMap(state.mapId);
+    // Generate map ID and update URL immediately
+    const mapId = generateId();
+    state.mapId = mapId;
+    history.replaceState({ mapId }, '', `/${mapId}`);
     dom.boardName.value = state.name;
     render();
+    // Save to Firestore in background (non-blocking)
+    saveMapToFirestore(mapId, serialize());
+    subscribeToMap(mapId);
 };
 
 const startWithSample = async (sampleName) => {
     hideWelcomeScreen();
     initState();
-    await createNewMapInFirestore(false);
-    subscribeToMap(state.mapId);
+    // Generate map ID and update URL immediately
+    const mapId = generateId();
+    state.mapId = mapId;
+    history.replaceState({ mapId }, '', `/${mapId}`);
 
-    // Load sample data
+    // Load sample data (local fetch is fast)
     try {
         const response = await fetch(`samples/${sampleName}.json`);
         if (!response.ok) throw new Error();
@@ -1774,11 +1782,14 @@ const startWithSample = async (sampleName) => {
         dom.boardName.value = state.name;
         render();
         saveToStorage();
-        await saveMapToFirestore(state.mapId, serialize());
+        // Save to Firestore in background (non-blocking)
+        saveMapToFirestore(mapId, serialize());
+        subscribeToMap(mapId);
     } catch {
         alert('Failed to load sample');
         dom.boardName.value = state.name;
         render();
+        subscribeToMap(mapId);
     }
 };
 
