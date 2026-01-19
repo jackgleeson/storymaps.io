@@ -207,13 +207,13 @@ const updateUndoRedoButtons = () => {
 };
 
 const initState = () => {
-    const column = createColumn('New Step/Task', null, null, false);
+    const column = createColumn('New Step', null, null, false);
     state.name = '';
     state.columns = [column];
     state.slices = [
         { id: generateId(), name: '', separator: false, rowType: 'Personas', stories: { [column.id]: [createStory('User Type', '#fda4af')] } },
         { id: generateId(), name: '', separator: false, rowType: 'Activities', stories: { [column.id]: [createStory('New Activity', '#93c5fd')] } },
-        { id: generateId(), name: '', separator: true, rowType: null, stories: { [column.id]: [createStory('New Detail')] } }
+        { id: generateId(), name: '', separator: true, rowType: null, stories: { [column.id]: [createStory('New Task')] } }
     ];
 };
 
@@ -770,7 +770,7 @@ const createStoryCard = (story, columnId, sliceId, isBackboneRow = false) => {
     });
     if (story.color) card.style.backgroundColor = story.color;
 
-    const placeholderText = isBackboneRow ? 'Card...' : 'Detail...';
+    const placeholderText = isBackboneRow ? 'Card...' : 'Task...';
     const textarea = createTextarea('story-text', placeholderText, story.name,
         (val) => story.name = val);
 
@@ -780,7 +780,7 @@ const createStoryCard = (story, columnId, sliceId, isBackboneRow = false) => {
         : () => deleteStory(columnId, sliceId, story.id);
     const deleteMessage = isBackboneRow
         ? `Delete "${story.name || 'this card'}"?`
-        : `Delete "${story.name || 'this detail'}"?`;
+        : `Delete "${story.name || 'this task'}"?`;
 
     const optionsMenu = createOptionsMenu(
         story,

@@ -18,7 +18,7 @@ By mapping out the backbone of the user experience, you can instantly spot funct
 - **Personas** - Who are the users? e.g. first-time shopper
 - **Activities** - What are they trying to achieve? e.g. find a product
 - **Steps** - The journey they take to achieve their goals from left to right e.g. search -> browse -> compare
-- **Details** - The work to be done at each step, e.g. "add keyword search", "filter by category", "compare side-by-side"
+- **Tasks** - The work to be done at each step, e.g. "add keyword search", "filter by category", "compare side-by-side"
 - **Slices** - Horizontal groupings for releases (MVP, v1, v2, etc.)
 
 ## App Features
@@ -27,9 +27,9 @@ By mapping out the backbone of the user experience, you can instantly spot funct
 - **Shareable URLs** - Each map gets a unique URL for easy sharing
 - **Personas** - Add context rows showing who does what
 - **Activities & Steps (Backbone)** - Define activities & steps representing the user journey left-to-right
-- **Details** - Add detail cards under each step to break down the work
-- **Release Slices** - Group details horizontally into releases or priorities
-- **Status Indicators** - Mark details as done, in-progress, or planned
+- **Tasks** - Add task cards under each step to break down the work
+- **Release Slices** - Group tasks horizontally into releases or priorities
+- **Status Indicators** - Mark tasks as done, in-progress, or planned
 - **Colours & Links** - Customise card colours and add external URLs to your existing task management tools
 - **Drag & Drop** - Reorder cards and slices
 - **Undo/Redo** - Ctrl+Z/Ctrl+Y to undo and redo changes
@@ -57,10 +57,10 @@ Note: Data is always saved to local storage. Real-time collaboration and cloud s
 1. Visit [storymaps.io](https://storymaps.io) or run locally with `npx serve -s` (SPA mode for client-side routing)
 2. Click **New Story Map** or try a sample to get started
 3. Click **+** to add steps (columns) to the backbone
-4. Click **+** in a column to add details
+4. Click **+** in a column to add tasks
 5. Click **+ Add Slice** to create release groupings
 6. Click the **...** menu on cards to set colours, status, or links
-7. Drag details to reorder or move between columns
+7. Drag tasks to reorder or move between columns
 8. Click **Share** to copy the URL and collaborate with others
 9. Use **Ctrl+Z** / **Ctrl+Y** to undo and redo changes
 10. Use zoom controls (bottom-right) to zoom in/out
