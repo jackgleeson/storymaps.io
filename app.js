@@ -1084,26 +1084,33 @@ const initSortable = () => {
             chosenClass: 'sortable-chosen',
             dragClass: 'sortable-drag',
             draggable: '.slice-container',
-            onEnd: (evt) => {
-                const fromSliceId = evt.item.dataset.sliceId;
-                const toIndex = evt.newIndex;
-
-                // Find the slice that was moved
-                const fromIndex = state.slices.findIndex(s => s.id === fromSliceId);
-                if (fromIndex === -1) return;
-
-                // Calculate actual slice index accounting for backbone rows and steps row
-                // The DOM has: backbone rows, steps row, then slice containers
-                // We need to map DOM index to state.slices index for release slices only
+            onEnd: () => {
+                // After Sortable moved the DOM, read the new order directly from the DOM
+                const sliceContainers = dom.storyMap.querySelectorAll('.slice-container');
                 const releaseSlices = state.slices.filter(s => s.separator !== false);
-                const movedSlice = releaseSlices[evt.oldIndex];
-                if (!movedSlice) return;
 
-                // Find target position in releaseSlices array
-                const targetSlice = releaseSlices[toIndex];
-                if (targetSlice && movedSlice.id !== targetSlice.id) {
-                    moveSlice(movedSlice.id, targetSlice.id);
-                }
+                // Map DOM order to slice objects
+                const newSliceOrder = [...sliceContainers].map(el =>
+                    releaseSlices.find(s => s.id === el.dataset.sliceId)
+                ).filter(Boolean);
+
+                // Check if order actually changed
+                const orderChanged = newSliceOrder.some((slice, i) => slice.id !== releaseSlices[i]?.id);
+                if (!orderChanged) return;
+
+                // Rebuild state.slices: backbone rows stay in place, release slices get new order
+                let releaseIndex = 0;
+                const newSlices = state.slices.map(s => {
+                    if (s.separator === false) {
+                        return s;
+                    } else {
+                        return newSliceOrder[releaseIndex++];
+                    }
+                });
+
+                pushUndo();
+                state.slices = newSlices;
+                renderAndSave();
             }
         });
         sortableInstances.push(sortable);
@@ -1247,17 +1254,6 @@ const deleteSlice = (sliceId) => {
         state.slices.splice(index, 1);
         renderAndSave();
     }
-};
-
-const moveSlice = (fromSliceId, toSliceId) => {
-    pushUndo();
-    const fromIndex = state.slices.findIndex(s => s.id === fromSliceId);
-    const toIndex = state.slices.findIndex(s => s.id === toSliceId);
-    if (fromIndex === -1 || toIndex === -1) return;
-
-    const [slice] = state.slices.splice(fromIndex, 1);
-    state.slices.splice(toIndex, 0, slice);
-    renderAndSave();
 };
 
 // =============================================================================
