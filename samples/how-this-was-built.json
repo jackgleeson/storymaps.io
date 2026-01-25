@@ -1,7 +1,7 @@
 {
   "app": "storymap",
   "v": 1,
-  "exported": "2026-01-15T10:00:00.000Z",
+  "exported": "2026-01-25T10:00:00.000Z",
   "name": "How This App Was Built",
   "a": [{
     "n": "Watch User Story Mapping video",
@@ -175,6 +175,15 @@
         "st": "done"
       }, {
         "n": "Zoom controls",
+        "st": "done"
+      }, {
+        "n": "Magnifier for zoomed view",
+        "st": "done"
+      }, {
+        "n": "Copy existing map",
+        "st": "done"
+      }, {
+        "n": "Import/Export modals",
         "st": "done"
       }]
     ]

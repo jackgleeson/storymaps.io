@@ -132,7 +132,6 @@ const STATUS_OPTIONS = {
 };
 
 const DEBOUNCE_DELAY = 300;
-const MAGNIFIER_THRESHOLD = 0.75;
 const ZOOM_LEVELS = [1, 0.75, 0.5, 0.25];
 
 const el = (tag, className, attrs = {}) => {
@@ -254,6 +253,7 @@ const dom = {
     storyMap: document.getElementById('storyMap'),
     boardName: document.getElementById('boardName'),
     newMapBtn: document.getElementById('newMapBtn'),
+    copyExistingBtn: document.getElementById('copyExistingBtn'),
     importBtn: document.getElementById('importMap'),
     exportBtn: document.getElementById('exportMap'),
     printBtn: document.getElementById('printMap'),
@@ -316,8 +316,14 @@ const updateZoom = () => {
     dom.storyMap.style.transform = `scale(${zoomLevel})`;
     dom.zoomReset.textContent = `${Math.round(zoomLevel * 100)}%`;
     updatePanMode();
-    // Show magnifier toggle only when zoom is below threshold
-    dom.magnifierToggle.classList.toggle('visible', zoomLevel < MAGNIFIER_THRESHOLD);
+    // Show magnifier toggle at 50% zoom or less, disable if going above
+    const showMagnifier = zoomLevel <= 0.5;
+    dom.magnifierToggle.classList.toggle('visible', showMagnifier);
+    if (!showMagnifier && magnifierEnabled) {
+        magnifierEnabled = false;
+        dom.magnifierToggle.innerHTML = '&#128269;';
+        hideMagnifier();
+    }
 };
 
 // =============================================================================
@@ -419,9 +425,9 @@ const endPan = () => {
 
 let magnifier = null;
 let magnifierContent = null;
-let magnifierEnabled = true;
-const MAGNIFIER_WIDTH = 350;
-const MAGNIFIER_HEIGHT = 200;
+let magnifierEnabled = false;
+const MAGNIFIER_WIDTH = 500;
+const MAGNIFIER_HEIGHT = 400;
 const MAGNIFIER_SCALE = 0.75;
 
 const createMagnifier = () => {
@@ -437,7 +443,7 @@ const createMagnifier = () => {
 };
 
 const updateMagnifier = (e) => {
-    if (!magnifier || !magnifierEnabled || zoomLevel >= MAGNIFIER_THRESHOLD || isPanning) {
+    if (!magnifier || !magnifierEnabled || isPanning) {
         magnifier?.classList.remove('active');
         return;
     }
@@ -1154,18 +1160,18 @@ const addColumn = (hidden = true) => {
     state.slices.forEach(slice => slice.stories[column.id] = []);
     renderAndSave();
 
-    // Scroll to the new step after DOM settles
-    setTimeout(() => {
-        const steps = dom.storyMap.querySelectorAll('.step');
-        const lastStep = steps[steps.length - 1];
-        if (lastStep) {
-            scrollElementIntoView(lastStep);
+    // Scroll to the new step after layout completes
+    requestAnimationFrame(() => {
+        // Find the new element by column ID (could be .step or .step-placeholder)
+        const newStep = dom.storyMap.querySelector(`[data-column-id="${column.id}"]`);
+        if (newStep) {
+            scrollElementIntoView(newStep);
             if (!hidden) {
-                lastStep.querySelector('.step-text')?.focus();
+                newStep.querySelector('.step-text')?.focus();
             }
         }
         updateNavArrows();
-    }, 0);
+    });
 };
 
 const addStory = (columnId, sliceId) => {
@@ -1181,9 +1187,9 @@ const addStory = (columnId, sliceId) => {
     slice.stories[columnId].push(createStory('', defaultColor));
     renderAndSave();
 
-    // Scroll to new card after DOM settles
+    // Scroll to new card after layout completes
     const storyIndex = slice.stories[columnId].length - 1;
-    setTimeout(() => {
+    requestAnimationFrame(() => {
         const column = dom.storyMap.querySelector(
             `.story-column[data-column-id="${columnId}"][data-slice-id="${sliceId}"]`
         );
@@ -1193,7 +1199,7 @@ const addStory = (columnId, sliceId) => {
             newCard.querySelector('.story-text')?.focus();
         }
         updateNavArrows();
-    }, 0);
+    });
 };
 
 const addSlice = (afterIndex, separator = true, rowType = null) => {
@@ -1202,8 +1208,8 @@ const addSlice = (afterIndex, separator = true, rowType = null) => {
     state.slices.splice(afterIndex, 0, slice);
     renderAndSave();
 
-    // Scroll to new slice after DOM settles
-    setTimeout(() => {
+    // Scroll to new slice after layout completes
+    requestAnimationFrame(() => {
         const sliceElement = dom.storyMap.querySelectorAll('.slice-container')[afterIndex];
         if (sliceElement) {
             scrollElementIntoView(sliceElement);
@@ -1211,7 +1217,7 @@ const addSlice = (afterIndex, separator = true, rowType = null) => {
                 sliceElement.querySelector('.slice-label')?.focus();
             }
         }
-    }, 0);
+    });
     return slice;
 };
 
@@ -1617,11 +1623,36 @@ const newMap = () => {
     // Clear mapId BEFORE initState to prevent overwriting old map
     state.mapId = null;
 
+    // Hide welcome screen if visible
+    hideWelcomeScreen();
+
     initState();
     dom.boardName.value = '';
     render();
 
     // Generate map ID and update URL immediately
+    const mapId = generateId();
+    state.mapId = mapId;
+    history.pushState({ mapId }, '', `/${mapId}`);
+    saveToStorage();
+    // Save to Firestore in background (non-blocking)
+    saveMapToFirestore(mapId, serialize());
+    subscribeToMap(mapId);
+};
+
+const copyMap = () => {
+    flushSave();
+    if (!confirm('Copy this map?\n\nA copy will be created with a new URL.')) {
+        return;
+    }
+    // Unsubscribe from current map
+    if (unsubscribe) unsubscribe();
+
+    // Update board name to indicate it's a copy
+    const currentName = dom.boardName.value || 'Untitled';
+    dom.boardName.value = `${currentName} (Copy)`;
+
+    // Generate new map ID but keep current data
     const mapId = generateId();
     state.mapId = mapId;
     history.pushState({ mapId }, '', `/${mapId}`);
@@ -1687,6 +1718,10 @@ const initEventListeners = () => {
     dom.newMapBtn.addEventListener('click', () => {
         closeMainMenu();
         newMap();
+    });
+    dom.copyExistingBtn.addEventListener('click', () => {
+        closeMainMenu();
+        copyMap();
     });
     dom.exportBtn.addEventListener('click', () => {
         closeMainMenu();
@@ -1799,6 +1834,11 @@ const initEventListeners = () => {
     dom.menuBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         dom.mainMenu.classList.toggle('visible');
+        // Disable certain options when on welcome screen (no map loaded)
+        const onMap = !dom.welcomeScreen.classList.contains('visible');
+        dom.copyExistingBtn.disabled = !onMap;
+        dom.exportBtn.disabled = !onMap;
+        dom.printBtn.disabled = !onMap;
     });
 
     // Samples submenu toggle
