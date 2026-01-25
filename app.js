@@ -3,7 +3,7 @@
 // =============================================================================
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
-import { initializeAppCheck, ReCaptchaV3Provider } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app-check.js';
+import { initializeAppCheck, ReCaptchaV3Provider, getToken } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app-check.js';
 import { getFirestore, doc, getDoc, setDoc, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
 import { getDatabase, ref, set, onValue, onDisconnect, serverTimestamp as rtdbTimestamp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js';
 import { firebaseConfig, recaptchaSiteKey } from './config.js';
@@ -13,14 +13,18 @@ const db = getFirestore(firebaseApp);
 const rtdb = getDatabase(firebaseApp);
 
 // App Check - initialized lazily to speed up initial page load
-let appCheckInitialized = false;
-const initAppCheck = () => {
-    if (appCheckInitialized) return;
-    appCheckInitialized = true;
-    initializeAppCheck(firebaseApp, {
-        provider: new ReCaptchaV3Provider(recaptchaSiteKey),
-        isTokenAutoRefreshEnabled: true
-    });
+let appCheckInstance = null;
+let appCheckReady = null;
+
+const ensureAppCheck = () => {
+    if (!appCheckInstance) {
+        appCheckInstance = initializeAppCheck(firebaseApp, {
+            provider: new ReCaptchaV3Provider(recaptchaSiteKey),
+            isTokenAutoRefreshEnabled: true
+        });
+        appCheckReady = getToken(appCheckInstance, false).catch(() => {});
+    }
+    return appCheckReady;
 };
 
 // Session ID to track who made changes (for real-time sync)
@@ -1278,7 +1282,7 @@ const STORAGE_KEY = 'storymap';
 // Firestore functions
 // Store map data as JSON string to avoid Firestore's nested array limitation
 const saveMapToFirestore = async (mapId, data) => {
-    initAppCheck();
+    await ensureAppCheck();
     try {
         await setDoc(doc(db, 'maps', mapId), {
             mapData: JSON.stringify(data),
@@ -1291,7 +1295,7 @@ const saveMapToFirestore = async (mapId, data) => {
 };
 
 const loadMapFromFirestore = async (mapId) => {
-    initAppCheck();
+    await ensureAppCheck();
     try {
         const docSnap = await getDoc(doc(db, 'maps', mapId));
         if (docSnap.exists()) {
@@ -1306,8 +1310,10 @@ const loadMapFromFirestore = async (mapId) => {
 
 // Subscribe to real-time updates
 let unsubscribe = null;
-const subscribeToMap = (mapId) => {
+const subscribeToMap = async (mapId) => {
     if (unsubscribe) unsubscribe();
+
+    await ensureAppCheck();
 
     unsubscribe = onSnapshot(doc(db, 'maps', mapId), (docSnap) => {
         if (docSnap.exists()) {
