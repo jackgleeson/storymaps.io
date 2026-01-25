@@ -271,7 +271,20 @@ const dom = {
     navArrowRight: document.getElementById('navArrowRight'),
     zoomControls: document.getElementById('zoomControls'),
     magnifierToggle: document.getElementById('magnifierToggle'),
-    loadingIndicator: document.getElementById('loadingIndicator')
+    loadingIndicator: document.getElementById('loadingIndicator'),
+    importModal: document.getElementById('importModal'),
+    importModalClose: document.getElementById('importModalClose'),
+    importJsonText: document.getElementById('importJsonText'),
+    importJsonBtn: document.getElementById('importJsonBtn'),
+    importDropzone: document.getElementById('importDropzone'),
+    importFileInput: document.getElementById('importFileInput'),
+    exportModal: document.getElementById('exportModal'),
+    exportModalClose: document.getElementById('exportModalClose'),
+    exportJsonText: document.getElementById('exportJsonText'),
+    exportMinify: document.getElementById('exportMinify'),
+    exportCopyBtn: document.getElementById('exportCopyBtn'),
+    exportFilename: document.getElementById('exportFilename'),
+    exportDownloadBtn: document.getElementById('exportDownloadBtn')
 };
 
 // Menu helpers
@@ -1431,21 +1444,8 @@ const deserialize = (data) => {
 const exportMap = () => {
     // Don't export from welcome screen
     if (dom.welcomeScreen.classList.contains('visible')) return;
-
     flushSave();
-    const filename = prompt('Enter filename:', 'story-map');
-    if (!filename) return;
-
-    const json = JSON.stringify(serialize());
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-
-    const link = el('a', null, {
-        href: url,
-        download: filename.endsWith('.json') ? filename : `${filename}.json`
-    });
-    link.click();
-    URL.revokeObjectURL(url);
+    showExportModal();
 };
 
 const importMap = (file) => {
@@ -1479,6 +1479,104 @@ const importMap = (file) => {
         }
     };
     reader.readAsText(file);
+};
+
+// Import Modal
+const showImportModal = () => {
+    dom.importModal.classList.add('visible');
+    dom.importJsonText.value = '';
+    dom.importJsonText.focus();
+};
+
+const hideImportModal = () => {
+    dom.importModal.classList.remove('visible');
+    dom.importJsonText.value = '';
+};
+
+const importFromJsonText = (jsonText) => {
+    const isFromWelcome = !state.mapId;
+
+    if (!isFromWelcome) {
+        flushSave();
+        if (!confirmOverwrite()) return;
+    }
+
+    try {
+        const data = JSON.parse(jsonText);
+        if (isFromWelcome) {
+            hideWelcomeScreen();
+            initState();
+            const mapId = generateId();
+            state.mapId = mapId;
+            history.replaceState({ mapId }, '', `/${mapId}`);
+        } else {
+            pushUndo();
+        }
+        deserialize(data);
+        dom.boardName.value = state.name;
+        renderAndSave();
+        hideImportModal();
+        if (isFromWelcome) {
+            subscribeToMap(state.mapId);
+        }
+    } catch {
+        alert('Failed to import: Invalid JSON format');
+    }
+};
+
+// Export Modal
+const updateExportJson = () => {
+    const minify = dom.exportMinify.checked;
+    const json = minify ? JSON.stringify(serialize()) : JSON.stringify(serialize(), null, 2);
+    dom.exportJsonText.value = json;
+};
+
+const sanitizeFilename = (name) => {
+    return name
+        .toLowerCase()                           // Lowercase
+        .replace(/[<>:"/\\|?*\x00-\x1f]/g, '-') // Replace unsafe chars
+        .replace(/^\.+/, '')                     // Remove leading dots
+        .replace(/\s+/g, '-')                    // Replace whitespace with hyphens
+        .replace(/-+/g, '-')                     // Collapse multiple hyphens
+        .replace(/^-+|-+$/g, '')                 // Trim leading/trailing hyphens
+        .substring(0, 200)                       // Limit length
+        || 'story-map';                          // Fallback if empty
+};
+
+const showExportModal = () => {
+    dom.exportModal.classList.add('visible');
+    dom.exportFilename.value = sanitizeFilename(state.name || 'story-map');
+    dom.exportMinify.checked = false;
+    updateExportJson();
+};
+
+const hideExportModal = () => {
+    dom.exportModal.classList.remove('visible');
+};
+
+const copyExportJson = async () => {
+    const json = dom.exportJsonText.value;
+    try {
+        await navigator.clipboard.writeText(json);
+        dom.exportCopyBtn.textContent = 'Copied!';
+        setTimeout(() => dom.exportCopyBtn.textContent = 'Copy to Clipboard', 2000);
+    } catch {
+        dom.exportJsonText.select();
+        document.execCommand('copy');
+        dom.exportCopyBtn.textContent = 'Copied!';
+        setTimeout(() => dom.exportCopyBtn.textContent = 'Copy to Clipboard', 2000);
+    }
+};
+
+const downloadExportFile = () => {
+    const filename = sanitizeFilename(dom.exportFilename.value) + '.json';
+    const json = dom.exportJsonText.value;
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = el('a', null, { href: url, download: filename });
+    link.click();
+    URL.revokeObjectURL(url);
+    hideExportModal();
 };
 
 const loadSample = async (name) => {
@@ -1594,8 +1692,64 @@ const initEventListeners = () => {
     });
     dom.importBtn.addEventListener('click', () => {
         closeMainMenu();
-        dom.fileInput.click();
+        showImportModal();
     });
+
+    // Import modal events
+    dom.importModalClose.addEventListener('click', hideImportModal);
+    dom.importModal.addEventListener('click', (e) => {
+        if (e.target === dom.importModal) hideImportModal();
+    });
+    dom.importJsonBtn.addEventListener('click', () => {
+        const jsonText = dom.importJsonText.value.trim();
+        if (jsonText) {
+            importFromJsonText(jsonText);
+        }
+    });
+    dom.importJsonText.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            const jsonText = dom.importJsonText.value.trim();
+            if (jsonText) {
+                importFromJsonText(jsonText);
+            }
+        }
+    });
+    dom.importDropzone.addEventListener('click', () => {
+        dom.importFileInput.click();
+    });
+    dom.importFileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) {
+            hideImportModal();
+            importMap(e.target.files[0]);
+            e.target.value = '';
+        }
+    });
+    dom.importDropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dom.importDropzone.classList.add('dragover');
+    });
+    dom.importDropzone.addEventListener('dragleave', () => {
+        dom.importDropzone.classList.remove('dragover');
+    });
+    dom.importDropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dom.importDropzone.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file && file.name.endsWith('.json')) {
+            hideImportModal();
+            importMap(file);
+        }
+    });
+
+    // Export modal events
+    dom.exportModalClose.addEventListener('click', hideExportModal);
+    dom.exportModal.addEventListener('click', (e) => {
+        if (e.target === dom.exportModal) hideExportModal();
+    });
+    dom.exportMinify.addEventListener('change', updateExportJson);
+    dom.exportCopyBtn.addEventListener('click', copyExportJson);
+    dom.exportDownloadBtn.addEventListener('click', downloadExportFile);
 
     // Share button - copy URL to clipboard
     dom.shareBtn.addEventListener('click', async () => {
@@ -1679,6 +1833,8 @@ const initEventListeners = () => {
         if (e.key === 'Escape') {
             closeMainMenu();
             closeAllOptionsMenus();
+            hideImportModal();
+            hideExportModal();
         }
     });
 

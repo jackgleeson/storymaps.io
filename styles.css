@@ -1634,6 +1634,345 @@ body {
     }
 }
 
+/* Import Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 20px;
+}
+
+.modal-overlay.visible {
+    display: flex;
+}
+
+.modal {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: var(--shadow-modal);
+    max-width: 800px;
+    width: 100%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.modal-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.15s ease;
+}
+
+.modal-close:hover {
+    color: #333;
+}
+
+.modal-body {
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.import-modal-body {
+    display: flex;
+    gap: 24px;
+    min-height: 400px;
+}
+
+.import-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.import-column h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 4px 0;
+}
+
+.import-column p {
+    font-size: 13px;
+    color: #666;
+    margin: 0 0 16px 0;
+}
+
+.import-column-json {
+    flex: 1.2;
+}
+
+.import-textarea {
+    flex: 1;
+    min-height: 280px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    resize: none;
+    margin-bottom: 12px;
+    background: #f9fafb;
+    color: #333;
+}
+
+.import-textarea:focus {
+    outline: none;
+    border-color: var(--color-teal);
+    background: #fff;
+}
+
+.import-textarea::placeholder {
+    color: #999;
+}
+
+.import-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+}
+
+.import-divider span {
+    color: #999;
+    font-size: 13px;
+    background: #fff;
+    padding: 8px 0;
+}
+
+.import-column-file {
+    flex: 0.8;
+}
+
+.import-file-dropzone {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    background: #f9fafb;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+    padding: 24px;
+    text-align: center;
+}
+
+.import-file-dropzone:hover,
+.import-file-dropzone.dragover {
+    border-color: var(--color-teal);
+    background: rgba(20, 184, 166, 0.05);
+}
+
+.import-file-icon {
+    color: #999;
+    transition: color 0.15s ease;
+}
+
+.import-file-dropzone:hover .import-file-icon,
+.import-file-dropzone.dragover .import-file-icon {
+    color: var(--color-teal);
+}
+
+.import-file-dropzone span {
+    font-size: 13px;
+    color: #666;
+}
+
+/* Export Modal */
+.export-modal-body {
+    display: flex;
+    gap: 24px;
+    min-height: 400px;
+}
+
+.export-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.export-column h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.export-column p {
+    font-size: 13px;
+    color: #666;
+    margin: 0 0 16px 0;
+}
+
+.export-column-json {
+    flex: 1.2;
+}
+
+.export-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.export-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #666;
+    cursor: pointer;
+}
+
+.export-toggle input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--color-teal);
+}
+
+.export-textarea {
+    flex: 1;
+    min-height: 280px;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    resize: none;
+    margin-bottom: 12px;
+    background: #f9fafb;
+    color: #333;
+}
+
+.export-textarea:focus {
+    outline: none;
+    border-color: var(--color-teal);
+}
+
+.export-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.export-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+}
+
+.export-divider span {
+    color: #999;
+    font-size: 13px;
+    background: #fff;
+    padding: 8px 0;
+}
+
+.export-column-file {
+    flex: 0.8;
+    justify-content: flex-start;
+}
+
+.export-file-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.export-filename-row {
+    display: flex;
+    align-items: center;
+}
+
+.export-filename {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px 0 0 6px;
+    font-family: inherit;
+    font-size: 14px;
+    color: #333;
+    background: #fff;
+}
+
+.export-filename:focus {
+    outline: none;
+    border-color: var(--color-teal);
+}
+
+.export-filename::placeholder {
+    color: #999;
+}
+
+.export-filename-ext {
+    padding: 10px 12px;
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    border-left: none;
+    border-radius: 0 6px 6px 0;
+    font-size: 14px;
+    color: #666;
+}
+
+/* Responsive - Modal */
+@media (max-width: 700px) {
+    .import-modal-body,
+    .export-modal-body {
+        flex-direction: column;
+        min-height: auto;
+    }
+
+    .import-column-json,
+    .import-column-file,
+    .export-column-json,
+    .export-column-file {
+        flex: none;
+    }
+
+    .import-textarea,
+    .export-textarea {
+        min-height: 200px;
+    }
+
+    .import-divider,
+    .export-divider {
+        padding: 8px 0;
+    }
+
+    .import-file-dropzone {
+        min-height: 150px;
+    }
+}
+
 /* Print Styles */
 @media print {
     body {

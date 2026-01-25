@@ -150,6 +150,80 @@
         <span>Loading map...</span>
     </div>
 
+    <div class="modal-overlay" id="importModal">
+        <div class="modal import-modal">
+            <div class="modal-header">
+                <h2>Import Story Map</h2>
+                <button class="modal-close" id="importModalClose">&times;</button>
+            </div>
+            <div class="modal-body import-modal-body">
+                <div class="import-column import-column-json">
+                    <h3>Paste JSON</h3>
+                    <p>Paste your story map JSON data below</p>
+                    <textarea class="import-textarea" id="importJsonText" placeholder='{"app":"storymap","v":1,"name":"My Map",...}'></textarea>
+                    <button class="btn" id="importJsonBtn" title="Ctrl+Enter to import">Import JSON</button>
+                </div>
+                <div class="import-divider">
+                    <span>or</span>
+                </div>
+                <div class="import-column import-column-file">
+                    <h3>Upload File</h3>
+                    <p>Select a .json file from your computer</p>
+                    <div class="import-file-dropzone" id="importDropzone">
+                        <svg class="import-file-icon" viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="12" y1="18" x2="12" y2="12"/>
+                            <line x1="9" y1="15" x2="12" y2="12"/>
+                            <line x1="15" y1="15" x2="12" y2="12"/>
+                        </svg>
+                        <span>Drop file here or click to browse</span>
+                        <input type="file" id="importFileInput" accept=".json" hidden>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="exportModal">
+        <div class="modal export-modal">
+            <div class="modal-header">
+                <h2>Export Story Map</h2>
+                <button class="modal-close" id="exportModalClose">&times;</button>
+            </div>
+            <div class="modal-body export-modal-body">
+                <div class="export-column export-column-json">
+                    <div class="export-header">
+                        <h3>JSON Data</h3>
+                        <label class="export-toggle">
+                            <input type="checkbox" id="exportMinify">
+                            <span>Minify</span>
+                        </label>
+                    </div>
+                    <p>Copy the JSON data below or download as a file</p>
+                    <textarea class="export-textarea" id="exportJsonText" readonly></textarea>
+                    <div class="export-actions">
+                        <button class="btn" id="exportCopyBtn">Copy to Clipboard</button>
+                    </div>
+                </div>
+                <div class="export-divider">
+                    <span>or</span>
+                </div>
+                <div class="export-column export-column-file">
+                    <h3>Download File</h3>
+                    <p>Save as a .json file to your computer</p>
+                    <div class="export-file-section">
+                        <div class="export-filename-row">
+                            <input type="text" class="export-filename" id="exportFilename" placeholder="story-map">
+                            <span class="export-filename-ext">.json</span>
+                        </div>
+                        <button class="btn" id="exportDownloadBtn">Download File</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
     <script type="module" src="app.js"></script>
 </body>
