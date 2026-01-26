@@ -24,7 +24,7 @@ Alternatively, with User Story Mapping, everyone is in the room during the mappi
 - **Slices** - Horizontal groupings for releases (MVP, v1, v2, etc.)
 
 ## App Features
-- **Real-time Collaboration** - Multiple users can edit the same map simultaneously
+- **Real-time Collaboration** - Multiple users can edit the same map simultaneously with conflict-free merging powered by Yjs CRDTs
 - **Live Viewer Count** - See how many people are viewing the map in real-time
 - **Shareable URLs** - Each map gets a unique URL for easy sharing
 - **Users** - Add context rows showing who does what
@@ -73,6 +73,7 @@ If you find this tool useful, consider [buying me a coffee](https://buymeacoffee
 
 ## Credits
 - Thanks to Jeff Patton for pioneering user story mapping. Learn more: [Jeff Patton's Story Mapping](https://jpattonassociates.com/story-mapping/)
+- Real-time collaboration powered by [Yjs](https://yjs.dev/) CRDTs
 - Drag and drop powered by [SortableJS](https://sortablejs.github.io/Sortable/)
 
 ## License

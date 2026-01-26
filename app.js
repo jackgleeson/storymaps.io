@@ -8,9 +8,150 @@ import { getFirestore, doc, getDoc, setDoc, onSnapshot, serverTimestamp } from '
 import { getDatabase, ref, set, onValue, onDisconnect, serverTimestamp as rtdbTimestamp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js';
 import { firebaseConfig, recaptchaSiteKey } from './config.js';
 
+// =============================================================================
+// Yjs - Collaborative Editing
+// =============================================================================
+
+// Import Yjs (resolved via import map in index.html to avoid duplicates)
+import * as Y from 'https://esm.sh/yjs@13.6.18';
+
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
 const rtdb = getDatabase(firebaseApp);
+
+// =============================================================================
+// Yjs Document & Custom Firestore Sync
+// =============================================================================
+
+let ydoc = null;
+let ymap = null;
+let yjsUnsubscribe = null;
+let isSyncingFromRemote = false;
+
+// Create a new Yjs document for a map
+const createYjsDoc = () => {
+    if (ydoc) {
+        ydoc.destroy();
+    }
+    ydoc = new Y.Doc();
+    ymap = ydoc.getMap('storymap');
+
+    // Observe local changes to sync to Firestore
+    ydoc.on('update', (update, origin) => {
+        // Only save if this is a local change (not from remote sync)
+        if (origin !== 'remote' && state.mapId) {
+            debouncedYjsSave();
+        }
+    });
+
+    return ydoc;
+};
+
+// Save Yjs document state to Firestore
+const saveYjsToFirestore = async () => {
+    if (!ydoc || !state.mapId) return;
+
+    await ensureAppCheck();
+    try {
+        // Encode full document state as base64
+        const stateVector = Y.encodeStateAsUpdate(ydoc);
+        const base64State = btoa(String.fromCharCode(...stateVector));
+
+        await setDoc(doc(db, 'maps', state.mapId), {
+            yjsState: base64State,
+            updatedAt: serverTimestamp(),
+            updatedBy: getSessionId()
+        }, { merge: true });
+    } catch (err) {
+        console.error('Failed to save Yjs state to Firestore:', err);
+    }
+};
+
+// Debounced Yjs save
+let yjsSaveTimeout = null;
+const debouncedYjsSave = () => {
+    clearTimeout(yjsSaveTimeout);
+    yjsSaveTimeout = setTimeout(saveYjsToFirestore, 150);
+};
+
+// Load Yjs state from Firestore and apply to document
+const loadYjsFromFirestore = async (mapId) => {
+    await ensureAppCheck();
+    try {
+        const docSnap = await getDoc(doc(db, 'maps', mapId));
+        if (docSnap.exists() && docSnap.data().yjsState) {
+            const binaryState = Uint8Array.from(atob(docSnap.data().yjsState), c => c.charCodeAt(0));
+            Y.applyUpdate(ydoc, binaryState, 'remote');
+            return true;
+        }
+    } catch (err) {
+        console.error('Failed to load from Firestore:', err);
+    }
+    return false;
+};
+
+// Subscribe to Yjs state changes from Firestore
+const subscribeToYjsUpdates = (mapId) => {
+    if (yjsUnsubscribe) {
+        yjsUnsubscribe();
+    }
+
+    yjsUnsubscribe = onSnapshot(doc(db, 'maps', mapId), (docSnap) => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+
+            // Only apply if from another session and has Yjs state
+            if (data.updatedBy !== getSessionId() && data.yjsState) {
+                isSyncingFromRemote = true;
+                try {
+                    const binaryState = Uint8Array.from(atob(data.yjsState), c => c.charCodeAt(0));
+                    Y.applyUpdate(ydoc, binaryState, 'remote');
+                    syncFromYjs();
+                    render();
+                } finally {
+                    isSyncingFromRemote = false;
+                }
+            }
+        }
+    }, (err) => {
+        console.error('Firestore subscription error:', err);
+    });
+};
+
+// Sync state from Yjs document to local state object
+const syncFromYjs = () => {
+    if (!ymap) return;
+
+    const data = ymap.toJSON();
+    if (data.name !== undefined) state.name = data.name;
+    if (data.columns) state.columns = data.columns;
+    if (data.slices) state.slices = data.slices;
+    if (dom.boardName) dom.boardName.value = state.name;
+};
+
+// Sync local state to Yjs document
+const syncToYjs = () => {
+    if (!ymap || isSyncingFromRemote) return;
+
+    ydoc.transact(() => {
+        ymap.set('name', state.name);
+        ymap.set('columns', state.columns);
+        ymap.set('slices', state.slices);
+    }, 'local');
+};
+
+// Destroy Yjs document and unsubscribe
+const destroyYjs = () => {
+    if (yjsUnsubscribe) {
+        yjsUnsubscribe();
+        yjsUnsubscribe = null;
+    }
+    if (ydoc) {
+        ydoc.destroy();
+        ydoc = null;
+        ymap = null;
+    }
+};
 
 // App Check - initialized lazily to speed up initial page load
 let appCheckInstance = null;
@@ -257,7 +398,6 @@ const dom = {
     importBtn: document.getElementById('importMap'),
     exportBtn: document.getElementById('exportMap'),
     printBtn: document.getElementById('printMap'),
-    fileInput: document.getElementById('fileInput'),
     menuBtn: document.getElementById('menuBtn'),
     mainMenu: document.getElementById('mainMenu'),
     zoomIn: document.getElementById('zoomIn'),
@@ -1285,65 +1425,30 @@ const deleteSlice = (sliceId) => {
 
 const STORAGE_KEY = 'storymap';
 
-// Firestore functions
-// Store map data as JSON string to avoid Firestore's nested array limitation
-const saveMapToFirestore = async (mapId, data) => {
-    await ensureAppCheck();
-    try {
-        await setDoc(doc(db, 'maps', mapId), {
-            mapData: JSON.stringify(data),
-            updatedAt: serverTimestamp(),
-            updatedBy: getSessionId()
-        });
-    } catch (err) {
-        console.error('Failed to save to Firestore:', err);
-    }
-};
-
-const loadMapFromFirestore = async (mapId) => {
-    await ensureAppCheck();
-    try {
-        const docSnap = await getDoc(doc(db, 'maps', mapId));
-        if (docSnap.exists()) {
-            const { mapData } = docSnap.data();
-            return mapData ? JSON.parse(mapData) : null;
-        }
-    } catch (err) {
-        console.error('Failed to load from Firestore:', err);
-    }
-    return null;
-};
-
-// Subscribe to real-time updates
-let unsubscribe = null;
+// Subscribe to real-time updates via Yjs
 const subscribeToMap = async (mapId) => {
-    if (unsubscribe) unsubscribe();
-
     await ensureAppCheck();
 
-    unsubscribe = onSnapshot(doc(db, 'maps', mapId), (docSnap) => {
-        if (docSnap.exists()) {
-            const { mapData, updatedBy } = docSnap.data();
-            // Only update if change came from another session
-            if (updatedBy !== getSessionId() && mapData) {
-                deserialize(JSON.parse(mapData));
-                dom.boardName.value = state.name;
-                render();
-            }
-        }
-    }, (err) => {
-        console.error('Firestore subscription error:', err);
-    });
+    if (!ydoc) {
+        createYjsDoc();
+    }
 
-    // Track presence for this map
+    // Load existing data from Firestore
+    if (await loadYjsFromFirestore(mapId)) {
+        syncFromYjs();
+        render();
+    }
+
+    subscribeToYjsUpdates(mapId);
     trackPresence(mapId);
 };
 
-// Local storage save (also syncs to Firestore)
+// Local storage save (also syncs to Yjs/Firestore)
 const saveToStorage = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(serialize()));
-    if (state.mapId) {
-        saveMapToFirestore(state.mapId, serialize());
+    // Sync to Yjs (which then syncs to Firestore)
+    if (state.mapId && ymap) {
+        syncToYjs();
     }
 };
 
@@ -1477,6 +1582,7 @@ const importMap = (file) => {
                 const mapId = generateId();
                 state.mapId = mapId;
                 history.replaceState({ mapId }, '', `/${mapId}`);
+                createYjsDoc();
             } else {
                 pushUndo(); // Save state before import
             }
@@ -1521,6 +1627,7 @@ const importFromJsonText = (jsonText) => {
             const mapId = generateId();
             state.mapId = mapId;
             history.replaceState({ mapId }, '', `/${mapId}`);
+            createYjsDoc();
         } else {
             pushUndo();
         }
@@ -1617,8 +1724,8 @@ const newMap = () => {
     if (hasContent() && !confirm('Create a new story map?\n\nYou can return to this map using the back button.')) {
         return;
     }
-    // Unsubscribe from current map
-    if (unsubscribe) unsubscribe();
+    // Destroy existing Yjs connection
+    destroyYjs();
 
     // Clear mapId BEFORE initState to prevent overwriting old map
     state.mapId = null;
@@ -1634,10 +1741,10 @@ const newMap = () => {
     const mapId = generateId();
     state.mapId = mapId;
     history.pushState({ mapId }, '', `/${mapId}`);
-    saveToStorage();
-    // Save to Firestore in background (non-blocking)
-    saveMapToFirestore(mapId, serialize());
+
+    createYjsDoc();
     subscribeToMap(mapId);
+    saveToStorage();
 };
 
 const copyMap = () => {
@@ -1645,21 +1752,22 @@ const copyMap = () => {
     if (!confirm('Copy this map?\n\nA copy will be created with a new URL.')) {
         return;
     }
-    // Unsubscribe from current map
-    if (unsubscribe) unsubscribe();
+    // Destroy existing Yjs connection
+    destroyYjs();
 
     // Update board name to indicate it's a copy
     const currentName = dom.boardName.value || 'Untitled';
-    dom.boardName.value = `${currentName} (Copy)`;
+    state.name = `${currentName} (Copy)`;
+    dom.boardName.value = state.name;
 
     // Generate new map ID but keep current data
     const mapId = generateId();
     state.mapId = mapId;
     history.pushState({ mapId }, '', `/${mapId}`);
-    saveToStorage();
-    // Save to Firestore in background (non-blocking)
-    saveMapToFirestore(mapId, serialize());
+
+    createYjsDoc();
     subscribeToMap(mapId);
+    saveToStorage();
 };
 
 // =============================================================================
@@ -1823,13 +1931,6 @@ const initEventListeners = () => {
         zoomLevel = ZOOM_LEVELS[(currentIndex + 1) % ZOOM_LEVELS.length];
         updateZoom();
     });
-    dom.fileInput.addEventListener('change', (e) => {
-        if (e.target.files.length) {
-            importMap(e.target.files[0]);
-            e.target.value = '';
-        }
-    });
-
     // Main menu dropdown
     dom.menuBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1909,14 +2010,18 @@ const initEventListeners = () => {
 
 // Load a map by ID (used by init and popstate)
 const loadMapById = async (mapId) => {
-    if (unsubscribe) unsubscribe();
+    // Destroy existing Yjs connection
+    destroyYjs();
 
     if (mapId) {
-        const mapData = await loadMapFromFirestore(mapId);
-        if (mapData) {
-            deserialize(mapData);
-            state.mapId = mapId;
-            subscribeToMap(mapId);
+        state.mapId = mapId;
+        // Create Yjs doc and subscribe - this will load data from Firestore
+        createYjsDoc();
+        await subscribeToMap(mapId);
+
+        // Check if we got any data (ymap will have content if map exists)
+        const data = ymap?.toJSON();
+        if (data && (data.columns || data.slices)) {
             return true;
         }
     }
@@ -1957,9 +2062,9 @@ const startNewMap = () => {
     history.replaceState({ mapId }, '', `/${mapId}`);
     dom.boardName.value = state.name;
     render();
-    // Save to Firestore in background (non-blocking)
-    saveMapToFirestore(mapId, serialize());
+    createYjsDoc();
     subscribeToMap(mapId);
+    saveToStorage();
 };
 
 const startWithSample = async (sampleName) => {
@@ -1970,19 +2075,24 @@ const startWithSample = async (sampleName) => {
     state.mapId = mapId;
     history.replaceState({ mapId }, '', `/${mapId}`);
 
+    // Create Yjs doc first
+    createYjsDoc();
+
     // Load sample data (local fetch is fast)
     try {
         const response = await fetch(`samples/${sampleName}.json`);
         if (!response.ok) throw new Error();
         deserialize(await response.json());
         dom.boardName.value = state.name;
-        renderAndSave();
+        render();
         subscribeToMap(mapId);
+        saveToStorage();
     } catch {
         alert('Failed to load sample');
         dom.boardName.value = state.name;
         render();
         subscribeToMap(mapId);
+        saveToStorage();
     }
 };
 
