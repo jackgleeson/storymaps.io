@@ -9,11 +9,16 @@ import { getDatabase, ref, set, onValue, onDisconnect, serverTimestamp as rtdbTi
 import { firebaseConfig, recaptchaSiteKey } from './config.js';
 
 // =============================================================================
-// Yjs - Collaborative Editing
+// Yjs - Collaborative Editing (lazy loaded)
 // =============================================================================
 
-// Import Yjs (resolved via import map in index.html to avoid duplicates)
-import * as Y from 'https://esm.sh/yjs@13.6.18';
+let Y = null;
+const ensureYjs = async () => {
+    if (!Y) {
+        Y = await import('https://esm.sh/yjs@13.6.18');
+    }
+    return Y;
+};
 
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
@@ -29,7 +34,8 @@ let yjsUnsubscribe = null;
 let isSyncingFromRemote = false;
 
 // Create a new Yjs document for a map
-const createYjsDoc = () => {
+const createYjsDoc = async () => {
+    await ensureYjs();
     if (ydoc) {
         ydoc.destroy();
     }
@@ -1430,7 +1436,7 @@ const subscribeToMap = async (mapId) => {
     await ensureAppCheck();
 
     if (!ydoc) {
-        createYjsDoc();
+        await createYjsDoc();
     }
 
     // Load existing data from Firestore
@@ -1574,7 +1580,7 @@ const importMap = (file) => {
     }
 
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
         try {
             if (isFromWelcome) {
                 hideWelcomeScreen();
@@ -1582,7 +1588,7 @@ const importMap = (file) => {
                 const mapId = generateId();
                 state.mapId = mapId;
                 history.replaceState({ mapId }, '', `/${mapId}`);
-                createYjsDoc();
+                await createYjsDoc();
             } else {
                 pushUndo(); // Save state before import
             }
@@ -1611,7 +1617,7 @@ const hideImportModal = () => {
     dom.importJsonText.value = '';
 };
 
-const importFromJsonText = (jsonText) => {
+const importFromJsonText = async (jsonText) => {
     const isFromWelcome = !state.mapId;
 
     if (!isFromWelcome) {
@@ -1627,7 +1633,7 @@ const importFromJsonText = (jsonText) => {
             const mapId = generateId();
             state.mapId = mapId;
             history.replaceState({ mapId }, '', `/${mapId}`);
-            createYjsDoc();
+            await createYjsDoc();
         } else {
             pushUndo();
         }
@@ -1719,7 +1725,7 @@ const loadSample = async (name) => {
     }
 };
 
-const newMap = () => {
+const newMap = async () => {
     flushSave();
     if (hasContent() && !confirm('Create a new story map?\n\nYou can return to this map using the back button.')) {
         return;
@@ -1742,12 +1748,12 @@ const newMap = () => {
     state.mapId = mapId;
     history.pushState({ mapId }, '', `/${mapId}`);
 
-    createYjsDoc();
+    await createYjsDoc();
     subscribeToMap(mapId);
     saveToStorage();
 };
 
-const copyMap = () => {
+const copyMap = async () => {
     flushSave();
     if (!confirm('Copy this map?\n\nA copy will be created with a new URL.')) {
         return;
@@ -1765,7 +1771,7 @@ const copyMap = () => {
     state.mapId = mapId;
     history.pushState({ mapId }, '', `/${mapId}`);
 
-    createYjsDoc();
+    await createYjsDoc();
     subscribeToMap(mapId);
     saveToStorage();
 };
@@ -2016,7 +2022,7 @@ const loadMapById = async (mapId) => {
     if (mapId) {
         state.mapId = mapId;
         // Create Yjs doc and subscribe - this will load data from Firestore
-        createYjsDoc();
+        await createYjsDoc();
         await subscribeToMap(mapId);
 
         // Check if we got any data (ymap will have content if map exists)
@@ -2053,7 +2059,7 @@ const hideLoading = () => {
     dom.loadingIndicator.classList.remove('visible');
 };
 
-const startNewMap = () => {
+const startNewMap = async () => {
     hideWelcomeScreen();
     initState();
     // Generate map ID and update URL immediately
@@ -2062,7 +2068,7 @@ const startNewMap = () => {
     history.replaceState({ mapId }, '', `/${mapId}`);
     dom.boardName.value = state.name;
     render();
-    createYjsDoc();
+    await createYjsDoc();
     subscribeToMap(mapId);
     saveToStorage();
 };
@@ -2076,7 +2082,7 @@ const startWithSample = async (sampleName) => {
     history.replaceState({ mapId }, '', `/${mapId}`);
 
     // Create Yjs doc first
-    createYjsDoc();
+    await createYjsDoc();
 
     // Load sample data (local fetch is fast)
     try {
