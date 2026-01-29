@@ -60,8 +60,6 @@
     <link rel="preconnect" href="https://www.gstatic.com">
     <link rel="preconnect" href="https://firestore.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js">
-    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js">
 </head>
 <body>
     <header class="header">
@@ -100,6 +98,19 @@
                     <button class="dropdown-item" id="importMap">Import</button>
                     <button class="dropdown-item" id="exportMap">Export</button>
                     <button class="dropdown-item" id="printMap">Print</button>
+                    <div class="dropdown-divider" id="lockDivider"></div>
+                    <button class="dropdown-item" id="lockMapBtn">
+                        <span class="lock-menu-icon">🔓</span> Lock Map
+                    </button>
+                    <button class="dropdown-item" id="relockBtn">
+                        <span class="lock-menu-icon">🔒</span> Re-lock
+                    </button>
+                    <button class="dropdown-item" id="updatePasswordBtn">
+                        <span class="lock-menu-icon">🔑</span> Update Password
+                    </button>
+                    <button class="dropdown-item" id="removeLockBtn">
+                        <span class="lock-menu-icon">❌</span> Remove Lock
+                    </button>
                 </div>
             </div>
         </div>
@@ -199,6 +210,10 @@
         <button class="zoom-btn magnifier-toggle" id="magnifierToggle" title="Toggle magnifier">&#128269;</button>
     </div>
 
+    <div class="read-only-banner" id="readOnlyBanner">
+        <span class="read-only-banner-text">🔒 This map is locked.</span>
+    </div>
+
     <div class="loading-indicator" id="loadingIndicator">
         <div class="loading-spinner"></div>
         <span>Loading map...</span>
@@ -278,7 +293,27 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+    <div class="modal-overlay" id="lockModal">
+        <div class="modal lock-modal">
+            <div class="modal-header">
+                <h2 id="lockModalTitle">Lock This Map</h2>
+                <button class="modal-close" id="lockModalClose">&times;</button>
+            </div>
+            <div class="modal-body lock-modal-body">
+                <p id="lockModalDescription">Create a password to lock this map. Anyone with the password can unlock it to edit.</p>
+                <div class="lock-password-field">
+                    <label for="lockPasswordInput">Password</label>
+                    <input type="password" id="lockPasswordInput" placeholder="Enter password" autocomplete="off">
+                </div>
+                <p class="lock-modal-note" id="lockModalNote">Keep your password safe — there's no recovery option. If you lose it, you can still use <strong>Menu → Copy existing</strong> to create a new editable copy of the map.</p>
+                <div class="lock-modal-actions">
+                    <button class="btn btn-secondary" id="lockModalCancel">Cancel</button>
+                    <button class="btn" id="lockModalConfirm">Lock Map</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="app.js"></script>
 </body>
 </html>

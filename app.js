@@ -1,26 +1,76 @@
 // =============================================================================
-// Firebase
+// Firebase (lazy loaded)
 // =============================================================================
 
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js';
-import { initializeAppCheck, ReCaptchaV3Provider, getToken } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-app-check.js';
-import { initializeFirestore, doc, getDoc, setDoc, onSnapshot, serverTimestamp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js';
-import { getDatabase, ref, set, onValue, onDisconnect, serverTimestamp as rtdbTimestamp } from 'https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js';
 import { firebaseConfig, recaptchaSiteKey } from './config.js';
 
-const firebaseApp = initializeApp(firebaseConfig);
-const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-const db = initializeFirestore(firebaseApp, isSafari ? {
-    experimentalForceLongPolling: true // Fix for Safari CORS issues
-} : {});
-const rtdb = getDatabase(firebaseApp);
+// Firebase modules and instances - initialized lazily
+let firebaseApp = null;
+let db = null;
+let rtdb = null;
+let firebaseModules = null;
+let firebaseInitPromise = null;
 
-// App Check - initialized lazily to speed up initial page load
+const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+const ensureFirebase = async () => {
+    if (firebaseApp) return firebaseModules;
+    if (firebaseInitPromise) return firebaseInitPromise;
+
+    firebaseInitPromise = (async () => {
+        // Dynamic imports - load all Firebase modules in parallel
+        const [appModule, firestoreModule, databaseModule] = await Promise.all([
+            import('https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js'),
+            import('https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js'),
+            import('https://www.gstatic.com/firebasejs/12.8.0/firebase-database.js')
+        ]);
+
+        // Initialize Firebase
+        firebaseApp = appModule.initializeApp(firebaseConfig);
+        db = firestoreModule.initializeFirestore(firebaseApp, isSafari ? {
+            experimentalForceLongPolling: true // Fix for Safari CORS issues
+        } : {});
+        rtdb = databaseModule.getDatabase(firebaseApp);
+
+        // Store module exports for use by other functions
+        firebaseModules = {
+            // Firestore
+            doc: firestoreModule.doc,
+            getDoc: firestoreModule.getDoc,
+            setDoc: firestoreModule.setDoc,
+            onSnapshot: firestoreModule.onSnapshot,
+            serverTimestamp: firestoreModule.serverTimestamp,
+            // Realtime Database
+            ref: databaseModule.ref,
+            set: databaseModule.set,
+            onValue: databaseModule.onValue,
+            onDisconnect: databaseModule.onDisconnect,
+            rtdbTimestamp: databaseModule.serverTimestamp
+        };
+
+        return firebaseModules;
+    })();
+
+    return firebaseInitPromise;
+};
+
+// Preload Firebase if we're loading a map (URL has an ID)
+// This starts the load in parallel with page setup instead of waiting for init()
+if (window.location.pathname.length > 1) {
+    ensureFirebase();
+}
+
+// App Check - initialized lazily after Firebase is ready
 let appCheckInstance = null;
 let appCheckReady = null;
 
-const ensureAppCheck = () => {
+const ensureAppCheck = async () => {
+    await ensureFirebase();
+
     if (!appCheckInstance) {
+        const { initializeAppCheck, ReCaptchaV3Provider, getToken } = await import(
+            'https://www.gstatic.com/firebasejs/12.8.0/firebase-app-check.js'
+        );
         appCheckInstance = initializeAppCheck(firebaseApp, {
             provider: new ReCaptchaV3Provider(recaptchaSiteKey),
             isTokenAutoRefreshEnabled: true
@@ -40,6 +90,29 @@ const ensureYjs = async () => {
         Y = await import('https://esm.sh/yjs@13.6.18');
     }
     return Y;
+};
+
+// =============================================================================
+// Sortable.js - Drag and Drop (lazy loaded)
+// =============================================================================
+
+let Sortable = null;
+let sortableLoadPromise = null;
+const ensureSortable = () => {
+    if (Sortable) return Promise.resolve(Sortable);
+    if (sortableLoadPromise) return sortableLoadPromise;
+
+    sortableLoadPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js';
+        script.onload = () => {
+            Sortable = window.Sortable;
+            resolve(Sortable);
+        };
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+    return sortableLoadPromise;
 };
 
 // =============================================================================
@@ -64,7 +137,7 @@ const createYjsDoc = async () => {
     ydoc.on('update', (update, origin) => {
         // Only save if this is a local change (not from remote sync)
         if (origin !== 'remote' && state.mapId) {
-            debouncedYjsSave();
+            throttledYjsSave();
         }
     });
 
@@ -76,6 +149,7 @@ const saveYjsToFirestore = async () => {
     if (!ydoc || !state.mapId) return;
 
     await ensureAppCheck();
+    const { doc, setDoc, serverTimestamp } = firebaseModules;
     try {
         // Encode full document state as base64
         const stateVector = Y.encodeStateAsUpdate(ydoc);
@@ -91,16 +165,36 @@ const saveYjsToFirestore = async () => {
     }
 };
 
-// Debounced Yjs save
-let yjsSaveTimeout = null;
-const debouncedYjsSave = () => {
-    clearTimeout(yjsSaveTimeout);
-    yjsSaveTimeout = setTimeout(saveYjsToFirestore, 100);
+// Throttled Yjs save - saves immediately, then rate-limits to every 50ms
+// (Unlike debounce, this gives immediate feedback during typing)
+let yjsThrottleTimeout = null;
+let yjsPendingSave = false;
+const YJS_THROTTLE_MS = 50;
+
+const throttledYjsSave = () => {
+    if (yjsThrottleTimeout) {
+        // Already throttling - queue a save for when throttle expires
+        yjsPendingSave = true;
+        return;
+    }
+
+    // Save immediately
+    saveYjsToFirestore();
+
+    // Start throttle window
+    yjsThrottleTimeout = setTimeout(() => {
+        yjsThrottleTimeout = null;
+        if (yjsPendingSave) {
+            yjsPendingSave = false;
+            throttledYjsSave(); // Process queued save
+        }
+    }, YJS_THROTTLE_MS);
 };
 
 // Load Yjs state from Firestore and apply to document
 const loadYjsFromFirestore = async (mapId) => {
     await ensureAppCheck();
+    const { doc, getDoc } = firebaseModules;
     try {
         const docSnap = await getDoc(doc(db, 'maps', mapId));
         if (docSnap.exists() && docSnap.data().yjsState) {
@@ -120,6 +214,7 @@ const subscribeToYjsUpdates = (mapId) => {
         yjsUnsubscribe();
     }
 
+    const { doc, onSnapshot } = firebaseModules;
     yjsUnsubscribe = onSnapshot(doc(db, 'maps', mapId), (docSnap) => {
         if (docSnap.exists()) {
             const data = docSnap.data();
@@ -146,29 +241,61 @@ const subscribeToYjsUpdates = (mapId) => {
 // Yjs Nested CRDT Helpers
 // =============================================================================
 
-// Create a Y.Map from a column object
-const createYColumn = (col) => {
-    const yCol = new Y.Map();
-    yCol.set('id', col.id);
-    yCol.set('name', col.name || '');
-    if (col.color) yCol.set('color', col.color);
-    if (col.url) yCol.set('url', col.url);
-    if (col.hidden) yCol.set('hidden', true);
-    if (col.status) yCol.set('status', col.status);
-    return yCol;
+// Field definitions for cards (columns and stories share the same fields)
+const CARD_FIELDS = {
+    name:   { default: '' },
+    color:  { default: null },
+    url:    { default: null },
+    hidden: { default: false },
+    status: { default: null }
 };
 
-// Create a Y.Map from a story object
-const createYStory = (story) => {
-    const yStory = new Y.Map();
-    yStory.set('id', story.id);
-    yStory.set('name', story.name || '');
-    if (story.color) yStory.set('color', story.color);
-    if (story.url) yStory.set('url', story.url);
-    if (story.hidden) yStory.set('hidden', true);
-    if (story.status) yStory.set('status', story.status);
-    return yStory;
+// Create a Y.Map from a plain object using field definitions
+const createYCard = (obj) => {
+    const yMap = new Y.Map();
+    yMap.set('id', obj.id);
+    for (const [field, { default: defaultVal }] of Object.entries(CARD_FIELDS)) {
+        const value = obj[field];
+        // Always set name, only set others if they differ from default
+        if (field === 'name' || (value && value !== defaultVal)) {
+            yMap.set(field, value ?? defaultVal);
+        }
+    }
+    return yMap;
 };
+
+// Update Y.Map properties in place from a plain object (preserves CRDT benefits)
+const updateYCard = (yMap, obj) => {
+    for (const [field, { default: defaultVal }] of Object.entries(CARD_FIELDS)) {
+        const newValue = field === 'name' ? (obj[field] || '') : obj[field];
+        const currentValue = yMap.get(field);
+        if (currentValue !== newValue) {
+            if (newValue && newValue !== defaultVal) {
+                yMap.set(field, newValue);
+            } else if (field === 'name') {
+                yMap.set(field, '');
+            } else {
+                yMap.delete(field);
+            }
+        }
+    }
+};
+
+// Convert Yjs data back to a plain card object
+const cardFromYjs = (data) => ({
+    id: data.id,
+    name: data.name || '',
+    color: data.color || null,
+    url: data.url || null,
+    hidden: data.hidden || false,
+    status: data.status || null
+});
+
+// Aliases for semantic clarity
+const createYColumn = createYCard;
+const createYStory = createYCard;
+const updateYColumn = updateYCard;
+const updateYStory = updateYCard;
 
 // Create a Y.Map from a slice object with nested stories structure
 const createYSlice = (slice, columns) => {
@@ -203,24 +330,15 @@ const syncFromYjs = () => {
     // Read columns - use toJSON() for reliable conversion
     const yColumns = ymap.get('columns');
     if (yColumns) {
-        // Use toJSON if available (Y.Array), otherwise assume it's already plain
         const columnsData = typeof yColumns.toJSON === 'function' ? yColumns.toJSON() : yColumns;
         if (Array.isArray(columnsData)) {
-            state.columns = columnsData.map(col => ({
-                id: col.id,
-                name: col.name || '',
-                color: col.color || null,
-                url: col.url || null,
-                hidden: col.hidden || false,
-                status: col.status || null
-            }));
+            state.columns = columnsData.map(cardFromYjs);
         }
     }
 
     // Read slices - use toJSON() for reliable conversion
     const ySlices = ymap.get('slices');
     if (ySlices) {
-        // Use toJSON if available (Y.Array), otherwise assume it's already plain
         const slicesData = typeof ySlices.toJSON === 'function' ? ySlices.toJSON() : ySlices;
         if (Array.isArray(slicesData)) {
             state.slices = slicesData.map(sliceData => {
@@ -235,18 +353,9 @@ const syncFromYjs = () => {
                 const storiesData = sliceData.stories || {};
                 state.columns.forEach(col => {
                     const columnStories = storiesData[col.id];
-                    if (Array.isArray(columnStories)) {
-                        slice.stories[col.id] = columnStories.map(story => ({
-                            id: story.id,
-                            name: story.name || '',
-                            color: story.color || null,
-                            url: story.url || null,
-                            hidden: story.hidden || false,
-                            status: story.status || null
-                        }));
-                    } else {
-                        slice.stories[col.id] = [];
-                    }
+                    slice.stories[col.id] = Array.isArray(columnStories)
+                        ? columnStories.map(cardFromYjs)
+                        : [];
                 });
 
                 return slice;
@@ -256,48 +365,6 @@ const syncFromYjs = () => {
 
     if (dom.boardName) dom.boardName.value = state.name;
 };
-
-// Update Y.Map properties in place (preserves CRDT benefits)
-const updateYColumn = (yCol, col) => {
-    if (yCol.get('name') !== (col.name || '')) yCol.set('name', col.name || '');
-    if (yCol.get('color') !== col.color) {
-        if (col.color) yCol.set('color', col.color);
-        else yCol.delete('color');
-    }
-    if (yCol.get('url') !== col.url) {
-        if (col.url) yCol.set('url', col.url);
-        else yCol.delete('url');
-    }
-    if (yCol.get('hidden') !== col.hidden) {
-        if (col.hidden) yCol.set('hidden', true);
-        else yCol.delete('hidden');
-    }
-    if (yCol.get('status') !== col.status) {
-        if (col.status) yCol.set('status', col.status);
-        else yCol.delete('status');
-    }
-};
-
-const updateYStory = (yStory, story) => {
-    if (yStory.get('name') !== (story.name || '')) yStory.set('name', story.name || '');
-    if (yStory.get('color') !== story.color) {
-        if (story.color) yStory.set('color', story.color);
-        else yStory.delete('color');
-    }
-    if (yStory.get('url') !== story.url) {
-        if (story.url) yStory.set('url', story.url);
-        else yStory.delete('url');
-    }
-    if (yStory.get('hidden') !== story.hidden) {
-        if (story.hidden) yStory.set('hidden', true);
-        else yStory.delete('hidden');
-    }
-    if (yStory.get('status') !== story.status) {
-        if (story.status) yStory.set('status', story.status);
-        else yStory.delete('status');
-    }
-};
-
 // Sync Y.Array incrementally - update in place when structure matches, rebuild when it doesn't
 const syncYArray = (yArray, items, getId, createFn, updateFn) => {
     // Check if structure matches (same IDs in same order)
@@ -380,6 +447,9 @@ const updateYSlice = (ySlice, slice, columns) => {
 // Sync local state to Yjs document
 const syncToYjs = () => {
     if (!ymap || isSyncingFromRemote) return;
+
+    // Don't sync if map is locked and user hasn't unlocked
+    if (state.mapId && !isMapEditable()) return;
 
     ydoc.transact(() => {
         ymap.set('name', state.name);
@@ -472,8 +542,9 @@ const updateViewerCountUI = (count) => {
 };
 
 const trackPresence = (mapId) => {
-    if (!mapId) return;
+    if (!mapId || !firebaseModules) return;
 
+    const { ref, set, onValue, onDisconnect, rtdbTimestamp } = firebaseModules;
     const sessionId = getSessionId();
     const presenceRef = ref(rtdb, `presence/${mapId}/${sessionId}`);
     const mapPresenceRef = ref(rtdb, `presence/${mapId}`);
@@ -506,6 +577,634 @@ const clearPresence = () => {
         presenceUnsubscribe = null;
     }
     updateViewerCountUI(0);
+};
+
+// =============================================================================
+// Cursor Presence - Show other users' cursors
+// =============================================================================
+
+// Classic arrow pointer SVG path
+const CURSOR_SVG_PATH = 'M8 0L8 22L13 17L17 28L21 26L17 15L24 15Z';
+
+// Distinct colors for cursor identification (15 colors)
+const CURSOR_COLORS = [
+    '#e53935', // red
+    '#8e24aa', // purple
+    '#3949ab', // indigo
+    '#00acc1', // cyan
+    '#43a047', // green
+    '#fb8c00', // orange
+    '#6d4c41', // brown
+    '#d81b60', // pink
+    '#1e88e5', // blue
+    '#ffb300', // amber
+    '#00897b', // teal
+    '#5e35b1', // deep purple
+    '#f4511e', // deep orange
+    '#546e7a', // blue grey
+    '#c0ca33', // lime
+];
+
+// Get consistent color for a session ID
+const getCursorColor = (sessionId) => {
+    let hash = 0;
+    for (let i = 0; i < sessionId.length; i++) {
+        hash = ((hash << 5) - hash) + sessionId.charCodeAt(i);
+        hash |= 0;
+    }
+    return CURSOR_COLORS[Math.abs(hash) % CURSOR_COLORS.length];
+};
+
+// Store cursor elements and subscription
+let cursorElements = new Map(); // sessionId -> DOM element
+let cursorUnsubscribe = null;
+let cursorThrottleTimeout = null;
+const CURSOR_THROTTLE_MS = 50;
+
+// Track and broadcast cursor position
+const trackCursor = (mapId) => {
+    if (!mapId || !firebaseModules) return;
+
+    const { ref, set, onValue, onDisconnect } = firebaseModules;
+    const sessionId = getSessionId();
+    const cursorRef = ref(rtdb, `cursors/${mapId}/${sessionId}`);
+    const allCursorsRef = ref(rtdb, `cursors/${mapId}`);
+
+    // Check if touch device - don't broadcast (no persistent cursor), but still listen
+    const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+
+    if (!isTouchDevice) {
+        // Remove cursor on disconnect (only for non-touch devices)
+        onDisconnect(cursorRef).remove();
+
+        // Throttled cursor position broadcast
+        const broadcastCursor = (e) => {
+            if (cursorThrottleTimeout) return;
+
+            const wrapper = dom.storyMapWrapper;
+            const wrapperRect = wrapper.getBoundingClientRect();
+
+            // Check if mouse is over the map area
+            if (e.clientX < wrapperRect.left || e.clientX > wrapperRect.right ||
+                e.clientY < wrapperRect.top || e.clientY > wrapperRect.bottom) {
+                // Mouse left the map - clear cursor
+                set(cursorRef, null);
+                return;
+            }
+
+            // Calculate position relative to storyMap content
+            // Account for: scroll position, storyMap's offset within wrapper (from margin:auto), and zoom
+            const mapOffsetLeft = dom.storyMap.offsetLeft;
+            const mapOffsetTop = dom.storyMap.offsetTop;
+            const x = (e.clientX - wrapperRect.left + wrapper.scrollLeft - mapOffsetLeft) / zoomLevel;
+            const y = (e.clientY - wrapperRect.top + wrapper.scrollTop - mapOffsetTop) / zoomLevel;
+
+            set(cursorRef, {
+                x: Math.round(x),
+                y: Math.round(y),
+                color: getCursorColor(sessionId)
+            });
+
+            cursorThrottleTimeout = setTimeout(() => {
+                cursorThrottleTimeout = null;
+            }, CURSOR_THROTTLE_MS);
+        };
+
+        // Listen for mouse movement on the map
+        dom.storyMapWrapper.addEventListener('mousemove', broadcastCursor);
+        dom.storyMapWrapper.addEventListener('mouseleave', () => {
+            set(cursorRef, null);
+        });
+    }
+
+    // Listen for other users' cursors (all devices, including touch)
+    if (cursorUnsubscribe) {
+        cursorUnsubscribe();
+    }
+
+    // Create cursor overlay container (appended to wrapper, not storyMap, so it survives re-renders)
+    let cursorOverlay = dom.storyMapWrapper.querySelector('.cursor-overlay');
+    if (!cursorOverlay) {
+        cursorOverlay = document.createElement('div');
+        cursorOverlay.className = 'cursor-overlay';
+        dom.storyMapWrapper.appendChild(cursorOverlay);
+    }
+
+    cursorUnsubscribe = onValue(allCursorsRef, (snapshot) => {
+        const cursors = snapshot.val() || {};
+
+        // Track which cursors are still active
+        const activeSessions = new Set(Object.keys(cursors));
+
+        // Remove cursors for users who left
+        for (const [sid, el] of cursorElements) {
+            if (!activeSessions.has(sid)) {
+                el.remove();
+                cursorElements.delete(sid);
+            }
+        }
+
+        // Get storyMap offset for positioning
+        const mapOffsetLeft = dom.storyMap.offsetLeft;
+        const mapOffsetTop = dom.storyMap.offsetTop;
+
+        // Update/create cursors for active users
+        for (const [sid, data] of Object.entries(cursors)) {
+            // Skip our own cursor
+            if (sid === sessionId || !data) continue;
+
+            let cursorEl = cursorElements.get(sid);
+
+            if (!cursorEl) {
+                // Create new cursor element with hand pointer shape
+                cursorEl = document.createElement('div');
+                cursorEl.className = 'remote-cursor';
+                cursorEl.innerHTML = `
+                    <svg viewBox="0 0 32 32" width="24" height="24">
+                        <path d="${CURSOR_SVG_PATH}" fill="${data.color}" stroke="#fff" stroke-width="1.5"/>
+                    </svg>
+                `;
+                cursorOverlay.appendChild(cursorEl);
+                cursorElements.set(sid, cursorEl);
+            }
+
+            // Convert content coordinates to visual coordinates (account for zoom and offset)
+            const visualX = data.x * zoomLevel + mapOffsetLeft;
+            const visualY = data.y * zoomLevel + mapOffsetTop;
+            cursorEl.style.left = `${visualX}px`;
+            cursorEl.style.top = `${visualY}px`;
+        }
+    });
+};
+
+const clearCursors = () => {
+    if (cursorUnsubscribe) {
+        cursorUnsubscribe();
+        cursorUnsubscribe = null;
+    }
+    // Remove all cursor elements
+    for (const el of cursorElements.values()) {
+        el.remove();
+    }
+    cursorElements.clear();
+};
+
+// =============================================================================
+// Lock Feature - Password-protect maps
+// =============================================================================
+
+// Lock state - tracks whether map is locked and if current session has unlocked it
+const lockState = {
+    isLocked: false,
+    passwordHash: null,
+    sessionUnlocked: false  // True if this session has successfully unlocked
+};
+
+let lockUnsubscribe = null;
+
+// Hash password using SHA-256
+const hashPassword = async (password) => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+};
+
+// Check if map is effectively editable (not locked, or unlocked by this session)
+const isMapEditable = () => {
+    if (!lockState.isLocked) return true;
+    return lockState.sessionUnlocked;
+};
+
+// Load password hash from Firestore
+const loadPasswordHash = async (mapId) => {
+    if (!mapId) return;
+    await ensureAppCheck();
+    const { doc, getDoc } = firebaseModules;
+    try {
+        const docSnap = await getDoc(doc(db, 'maps', mapId));
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            lockState.passwordHash = data.passwordHash || null;
+            lockState.isLocked = !!data.isLocked;
+        }
+    } catch (err) {
+        console.error('Failed to load lock state:', err);
+    }
+};
+
+// Subscribe to lock state changes via RTDB for real-time updates
+const subscribeLockState = (mapId) => {
+    if (!mapId || !firebaseModules) return;
+
+    const { ref, onValue } = firebaseModules;
+    const lockRef = ref(rtdb, `locks/${mapId}`);
+
+    // Clean up previous listener
+    if (lockUnsubscribe) {
+        lockUnsubscribe();
+    }
+
+    lockUnsubscribe = onValue(lockRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            const wasLocked = lockState.isLocked;
+            lockState.isLocked = !!data.isLocked;
+
+            // If map was just locked by someone else, check our session unlock status
+            if (!wasLocked && lockState.isLocked) {
+                lockState.sessionUnlocked = checkSessionUnlock(mapId);
+            }
+        } else {
+            lockState.isLocked = false;
+        }
+        updateLockUI();
+        updateEditability();
+    });
+};
+
+// Clear lock subscription
+const clearLockSubscription = () => {
+    if (lockUnsubscribe) {
+        lockUnsubscribe();
+        lockUnsubscribe = null;
+    }
+    lockState.isLocked = false;
+    lockState.passwordHash = null;
+    lockState.sessionUnlocked = false;
+};
+
+// Lock the map with a password
+const lockMap = async (password) => {
+    if (!state.mapId) return;
+
+    await ensureAppCheck();
+    const { doc, setDoc, serverTimestamp } = firebaseModules;
+    const { ref, set } = firebaseModules;
+
+    const hash = await hashPassword(password);
+
+    try {
+        // Save to Firestore (password hash persisted)
+        await setDoc(doc(db, 'maps', state.mapId), {
+            isLocked: true,
+            passwordHash: hash,
+            lockedAt: serverTimestamp(),
+            lockedBy: getSessionId()
+        }, { merge: true });
+
+        // Broadcast lock state via RTDB for real-time sync
+        await set(ref(rtdb, `locks/${state.mapId}`), {
+            isLocked: true,
+            lockedAt: Date.now()
+        });
+
+        lockState.isLocked = true;
+        lockState.passwordHash = hash;
+        // The locker automatically has access
+        lockState.sessionUnlocked = true;
+        saveSessionUnlock(state.mapId);
+
+        updateLockUI();
+        updateEditability();
+
+        // Show confirmation to the user who locked it
+        alert('Map locked. Others will need the password to edit, but you can continue editing in this session.');
+    } catch (err) {
+        console.error('Failed to lock map:', err);
+        alert('Failed to lock map. Please try again.');
+    }
+};
+
+// Remove lock entirely (make map publicly editable again)
+const removeLock = async () => {
+    if (!state.mapId) return;
+
+    await ensureAppCheck();
+    const { doc, setDoc } = firebaseModules;
+    const { ref, set } = firebaseModules;
+
+    try {
+        // Clear lock state in Firestore
+        await setDoc(doc(db, 'maps', state.mapId), {
+            isLocked: false,
+            passwordHash: null,
+            lockedAt: null,
+            lockedBy: null
+        }, { merge: true });
+
+        // Broadcast unlock via RTDB
+        await set(ref(rtdb, `locks/${state.mapId}`), null);
+
+        lockState.isLocked = false;
+        lockState.passwordHash = null;
+        lockState.sessionUnlocked = false;
+
+        // Clear from session storage
+        const unlockedMaps = JSON.parse(sessionStorage.getItem('unlockedMaps') || '{}');
+        delete unlockedMaps[state.mapId];
+        sessionStorage.setItem('unlockedMaps', JSON.stringify(unlockedMaps));
+
+        updateLockUI();
+        updateEditability();
+    } catch (err) {
+        console.error('Failed to remove lock:', err);
+        alert('Failed to remove lock. Please try again.');
+    }
+};
+
+// Re-lock the map (for users who have already unlocked)
+const relockMap = async () => {
+    if (!state.mapId || !lockState.passwordHash) return;
+
+    await ensureAppCheck();
+    const { doc, setDoc, serverTimestamp } = firebaseModules;
+    const { ref, set } = firebaseModules;
+
+    try {
+        // Update lock state in Firestore
+        await setDoc(doc(db, 'maps', state.mapId), {
+            isLocked: true,
+            lockedAt: serverTimestamp(),
+            lockedBy: getSessionId()
+        }, { merge: true });
+
+        // Broadcast lock state via RTDB for real-time sync
+        await set(ref(rtdb, `locks/${state.mapId}`), {
+            isLocked: true,
+            lockedAt: Date.now()
+        });
+
+        lockState.isLocked = true;
+        // Keep sessionUnlocked true for this user
+        updateLockUI();
+        updateEditability();
+    } catch (err) {
+        console.error('Failed to re-lock map:', err);
+        alert('Failed to lock map. Please try again.');
+    }
+};
+
+// Unlock map locally (verify password client-side)
+const unlockMapLocally = async (password) => {
+    if (!lockState.passwordHash) {
+        // Need to load password hash first
+        await loadPasswordHash(state.mapId);
+    }
+
+    const inputHash = await hashPassword(password);
+
+    if (inputHash === lockState.passwordHash) {
+        lockState.sessionUnlocked = true;
+        saveSessionUnlock(state.mapId);
+        updateLockUI();
+        updateEditability();
+        return true;
+    }
+
+    return false;
+};
+
+// Save unlock status to session storage
+const saveSessionUnlock = (mapId) => {
+    const unlockedMaps = JSON.parse(sessionStorage.getItem('unlockedMaps') || '{}');
+    unlockedMaps[mapId] = true;
+    sessionStorage.setItem('unlockedMaps', JSON.stringify(unlockedMaps));
+};
+
+// Check session storage for prior unlock
+const checkSessionUnlock = (mapId) => {
+    const unlockedMaps = JSON.parse(sessionStorage.getItem('unlockedMaps') || '{}');
+    return !!unlockedMaps[mapId];
+};
+
+// Update lock menu item and banner UI
+const updateLockUI = () => {
+    if (!dom.lockMapBtn || !dom.readOnlyBanner) return;
+
+    // Only show lock option when viewing a shared map
+    if (!state.mapId) {
+        dom.lockMapBtn.classList.remove('visible');
+        dom.relockBtn.classList.remove('visible');
+        dom.updatePasswordBtn.classList.remove('visible');
+        dom.removeLockBtn.classList.remove('visible');
+        dom.lockDivider.classList.remove('visible');
+        dom.readOnlyBanner.classList.remove('visible');
+        document.body.classList.remove('read-only-mode');
+        return;
+    }
+
+    dom.lockDivider.classList.add('visible');
+
+    if (lockState.isLocked && !lockState.sessionUnlocked) {
+        // Locked and user hasn't unlocked - show unlock option only
+        dom.lockMapBtn.classList.add('visible');
+        dom.lockMapBtn.innerHTML = '<span class="lock-menu-icon">🔒</span> Unlock Map';
+        dom.relockBtn.classList.remove('visible');
+        dom.updatePasswordBtn.classList.remove('visible');
+        dom.removeLockBtn.classList.remove('visible');
+        dom.readOnlyBanner.classList.add('visible');
+        document.body.classList.add('read-only-mode');
+    } else if (lockState.isLocked && lockState.sessionUnlocked) {
+        // Locked but user has unlocked - show re-lock, update password, and remove lock
+        dom.lockMapBtn.classList.remove('visible');
+        dom.relockBtn.classList.add('visible');
+        dom.updatePasswordBtn.classList.add('visible');
+        dom.removeLockBtn.classList.add('visible');
+        dom.readOnlyBanner.classList.remove('visible');
+        document.body.classList.remove('read-only-mode');
+    } else {
+        // Not locked - show lock option only
+        dom.lockMapBtn.classList.add('visible');
+        dom.lockMapBtn.innerHTML = '<span class="lock-menu-icon">🔓</span> Lock Map';
+        dom.relockBtn.classList.remove('visible');
+        dom.updatePasswordBtn.classList.remove('visible');
+        dom.removeLockBtn.classList.remove('visible');
+        dom.readOnlyBanner.classList.remove('visible');
+        document.body.classList.remove('read-only-mode');
+    }
+};
+
+// Track previous editability to avoid unnecessary sortable reinit
+let wasEditable = true;
+
+// Enable/disable editing based on lock state
+const updateEditability = () => {
+    const editable = isMapEditable();
+
+    // The CSS class 'read-only-mode' handles most of the visual changes
+
+    // If we're in read-only mode, blur any focused textareas to prevent typing
+    if (!editable) {
+        const active = document.activeElement;
+        if (active && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT')) {
+            if (active !== dom.lockPasswordInput) {
+                active.blur();
+            }
+        }
+    }
+
+    // Only reinit sortable if editability changed
+    if (editable !== wasEditable) {
+        wasEditable = editable;
+        initSortable();
+    }
+};
+
+// Show lock modal
+const showLockModal = (mode) => {
+    if (!dom.lockModal) return;
+
+    dom.lockPasswordInput.value = '';
+    const noteEl = document.getElementById('lockModalNote');
+
+    if (mode === 'lock') {
+        dom.lockModalTitle.textContent = 'Lock This Map';
+        dom.lockModalDescription.textContent = 'Create a password to lock this map. Anyone with the password can unlock it to edit.';
+        dom.lockModalConfirm.textContent = 'Lock Map';
+        if (noteEl) noteEl.style.display = 'block';
+    } else if (mode === 'relock') {
+        dom.lockModalTitle.textContent = 'Re-lock With New Password';
+        dom.lockModalDescription.textContent = 'Set a new password for this map. The old password will no longer work.';
+        dom.lockModalConfirm.textContent = 'Set New Password';
+        if (noteEl) noteEl.style.display = 'block';
+    } else {
+        dom.lockModalTitle.textContent = 'Unlock This Map';
+        dom.lockModalDescription.textContent = 'Enter the password to unlock this map and enable editing.';
+        dom.lockModalConfirm.textContent = 'Unlock';
+        if (noteEl) noteEl.style.display = 'none';
+    }
+
+    dom.lockModal.classList.add('visible');
+    dom.lockModal.dataset.mode = mode;
+    dom.lockPasswordInput.focus();
+};
+
+// Hide lock modal
+const hideLockModal = () => {
+    if (!dom.lockModal) return;
+    dom.lockModal.classList.remove('visible');
+    dom.lockPasswordInput.value = '';
+};
+
+// Handle lock button click (Lock Map / Unlock Map)
+const handleLockButtonClick = () => {
+    if (lockState.isLocked && !lockState.sessionUnlocked) {
+        // Need to unlock
+        showLockModal('unlock');
+    } else {
+        // First time locking - need password
+        showLockModal('lock');
+    }
+};
+
+// Handle re-lock button click (lock again with existing password)
+const handleRelockClick = async () => {
+    await relockMap();
+    // Clear session unlock so user sees read-only mode
+    lockState.sessionUnlocked = false;
+    const unlockedMaps = JSON.parse(sessionStorage.getItem('unlockedMaps') || '{}');
+    delete unlockedMaps[state.mapId];
+    sessionStorage.setItem('unlockedMaps', JSON.stringify(unlockedMaps));
+    updateLockUI();
+    updateEditability();
+};
+
+// Handle update password button click
+const handleUpdatePasswordClick = () => {
+    showLockModal('relock');
+};
+
+// Handle lock modal confirm
+const handleLockModalConfirm = async () => {
+    const password = dom.lockPasswordInput.value.trim();
+    const mode = dom.lockModal.dataset.mode;
+
+    if (!password) {
+        alert('Please enter a password.');
+        return;
+    }
+
+    if (mode === 'lock' || mode === 'relock') {
+        if (password.length < 4) {
+            alert('Password must be at least 4 characters.');
+            return;
+        }
+        await lockMap(password);
+        hideLockModal();
+    } else {
+        const success = await unlockMapLocally(password);
+        if (success) {
+            hideLockModal();
+        } else {
+            alert('Incorrect password. Please try again.');
+            dom.lockPasswordInput.value = '';
+            dom.lockPasswordInput.focus();
+        }
+    }
+};
+
+// Initialize lock event listeners
+const initLockListeners = () => {
+    if (dom.lockMapBtn) {
+        dom.lockMapBtn.addEventListener('click', () => {
+            closeMainMenu();
+            handleLockButtonClick();
+        });
+    }
+
+    if (dom.relockBtn) {
+        dom.relockBtn.addEventListener('click', () => {
+            closeMainMenu();
+            handleRelockClick();
+        });
+    }
+
+    if (dom.updatePasswordBtn) {
+        dom.updatePasswordBtn.addEventListener('click', () => {
+            closeMainMenu();
+            handleUpdatePasswordClick();
+        });
+    }
+
+    if (dom.removeLockBtn) {
+        dom.removeLockBtn.addEventListener('click', () => {
+            closeMainMenu();
+            if (confirm('Remove the lock from this map? Anyone will be able to edit it.')) {
+                removeLock();
+            }
+        });
+    }
+
+    if (dom.lockModalClose) {
+        dom.lockModalClose.addEventListener('click', hideLockModal);
+    }
+
+    if (dom.lockModalCancel) {
+        dom.lockModalCancel.addEventListener('click', hideLockModal);
+    }
+
+    if (dom.lockModalConfirm) {
+        dom.lockModalConfirm.addEventListener('click', handleLockModalConfirm);
+    }
+
+    if (dom.lockPasswordInput) {
+        dom.lockPasswordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleLockModalConfirm();
+            }
+        });
+    }
+
+    if (dom.lockModal) {
+        dom.lockModal.addEventListener('click', (e) => {
+            if (e.target === dom.lockModal) {
+                hideLockModal();
+            }
+        });
+    }
 };
 
 // =============================================================================
@@ -799,7 +1498,21 @@ const dom = {
     exportMinify: document.getElementById('exportMinify'),
     exportCopyBtn: document.getElementById('exportCopyBtn'),
     exportFilename: document.getElementById('exportFilename'),
-    exportDownloadBtn: document.getElementById('exportDownloadBtn')
+    exportDownloadBtn: document.getElementById('exportDownloadBtn'),
+    // Lock feature
+    lockMapBtn: document.getElementById('lockMapBtn'),
+    relockBtn: document.getElementById('relockBtn'),
+    updatePasswordBtn: document.getElementById('updatePasswordBtn'),
+    removeLockBtn: document.getElementById('removeLockBtn'),
+    lockDivider: document.getElementById('lockDivider'),
+    lockModal: document.getElementById('lockModal'),
+    lockModalTitle: document.getElementById('lockModalTitle'),
+    lockModalDescription: document.getElementById('lockModalDescription'),
+    lockModalClose: document.getElementById('lockModalClose'),
+    lockPasswordInput: document.getElementById('lockPasswordInput'),
+    lockModalCancel: document.getElementById('lockModalCancel'),
+    lockModalConfirm: document.getElementById('lockModalConfirm'),
+    readOnlyBanner: document.getElementById('readOnlyBanner')
 };
 
 // Menu helpers
@@ -1662,10 +2375,17 @@ const render = () => {
 // Store Sortable instances to destroy on re-render
 let sortableInstances = [];
 
-const initSortable = () => {
+const initSortable = async () => {
+    await ensureSortable();
+
     // Destroy previous instances
     sortableInstances.forEach(s => s.destroy());
     sortableInstances = [];
+
+    // Don't enable drag-drop if map is locked
+    if (!isMapEditable()) {
+        return;
+    }
 
     // Make story cards sortable within and between columns
     document.querySelectorAll('.story-column').forEach(column => {
@@ -1994,11 +2714,29 @@ const subscribeToMap = async (mapId) => {
     }
 
     subscribeToYjsUpdates(mapId);
-    trackPresence(mapId);
+
+    // Defer presence, cursor, and lock tracking to after initial render completes
+    const deferredTracking = () => {
+        trackPresence(mapId);
+        trackCursor(mapId);
+        // Check session unlock and subscribe to lock state
+        lockState.sessionUnlocked = checkSessionUnlock(mapId);
+        subscribeLockState(mapId);
+    };
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(deferredTracking);
+    } else {
+        setTimeout(deferredTracking, 0);
+    }
 };
 
 // Local storage save (also syncs to Yjs/Firestore)
 const saveToStorage = () => {
+    // Don't sync to remote if map is locked and user hasn't unlocked
+    if (state.mapId && !isMapEditable()) {
+        return;
+    }
+
     localStorage.setItem(STORAGE_KEY, JSON.stringify(serialize()));
     // Sync to Yjs (which then syncs to Firestore)
     if (state.mapId && ymap) {
@@ -2553,11 +3291,22 @@ const initEventListeners = () => {
     document.addEventListener('mousemove', doPan);
     document.addEventListener('mouseup', endPan);
 
-    // Magnifier (desktop only)
+    // Magnifier toggle (desktop only) - initialize lazily when first entering map view
+    dom.magnifierToggle.addEventListener('click', toggleMagnifier);
+
+    // Lock feature event listeners
+    initLockListeners();
+};
+
+// Magnifier initialization (deferred until first map view)
+let magnifierInitialized = false;
+const initMagnifier = () => {
+    if (magnifierInitialized) return;
+    magnifierInitialized = true;
+
     createMagnifier();
     document.addEventListener('mousemove', updateMagnifier);
     dom.storyMapWrapper.addEventListener('mouseleave', hideMagnifier);
-    dom.magnifierToggle.addEventListener('click', toggleMagnifier);
 };
 
 // =============================================================================
@@ -2591,6 +3340,9 @@ const showWelcomeScreen = () => {
     dom.boardName.classList.add('hidden');
     dom.zoomControls.classList.add('hidden');
     clearPresence();
+    clearCursors();
+    clearLockSubscription();
+    updateLockUI();
 };
 
 const hideWelcomeScreen = () => {
@@ -2599,6 +3351,9 @@ const hideWelcomeScreen = () => {
     dom.storyMapWrapper.classList.add('visible');
     dom.boardName.classList.remove('hidden');
     dom.zoomControls.classList.remove('hidden');
+
+    // Initialize magnifier on first map view (deferred from startup)
+    initMagnifier();
 };
 
 const showLoading = () => {

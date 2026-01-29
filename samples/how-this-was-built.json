@@ -1,7 +1,7 @@
 {
   "app": "storymap",
   "v": 1,
-  "exported": "2026-01-25T10:00:00.000Z",
+  "exported": "2026-01-29T10:00:00.000Z",
   "name": "How This App Was Built",
   "a": [{
     "n": "Watch User Story Mapping video",
@@ -185,6 +185,12 @@
       }, {
         "n": "Import/Export modals",
         "st": "done"
+      }, {
+        "n": "Password-protected maps",
+        "st": "done"
+      }, {
+        "n": "Live cursor presence",
+        "st": "done"
       }]
     ]
   }, {
@@ -198,9 +204,6 @@
       }],
       [{
         "n": "User logins",
-        "st": "planned"
-      }, {
-        "n": "Password-protected maps",
         "st": "planned"
       }],
       [{
