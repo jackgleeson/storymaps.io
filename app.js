@@ -304,6 +304,7 @@ const createYSlice = (slice, columns) => {
     ySlice.set('name', slice.name || '');
     if (slice.separator === false) ySlice.set('separator', false);
     if (slice.rowType) ySlice.set('rowType', slice.rowType);
+    if (slice.collapsed) ySlice.set('collapsed', true);
 
     // Create nested stories structure: Y.Map<columnId, Y.Array<Y.Map>>
     const yStories = new Y.Map();
@@ -347,6 +348,7 @@ const syncFromYjs = () => {
                     name: sliceData.name || '',
                     separator: sliceData.separator !== false,
                     rowType: sliceData.rowType || null,
+                    collapsed: sliceData.collapsed || false,
                     stories: {}
                 };
 
@@ -433,6 +435,10 @@ const updateYSlice = (ySlice, slice, columns) => {
     if (ySlice.get('rowType') !== slice.rowType) {
         if (slice.rowType) ySlice.set('rowType', slice.rowType);
         else ySlice.delete('rowType');
+    }
+    if (ySlice.get('collapsed') !== slice.collapsed) {
+        if (slice.collapsed) ySlice.set('collapsed', true);
+        else ySlice.delete('collapsed');
     }
 
     // Sync nested stories
@@ -1537,6 +1543,10 @@ const closeAllOptionsMenus = () => {
         m.closest('.step, .story-card')?.classList.remove('menu-open');
         m.parentElement?.querySelector('.btn-options')?.setAttribute('aria-expanded', 'false');
     });
+    // Also close slice menus
+    document.querySelectorAll('.slice-menu-dropdown.visible').forEach(m => {
+        m.classList.remove('visible');
+    });
 };
 
 // Zoom state
@@ -1769,6 +1779,66 @@ const createDeleteBtn = (onConfirm, message) => {
         if (confirm(message)) onConfirm();
     });
     return btn;
+};
+
+// Slice menu with Mark Complete and Delete options
+const createSliceMenu = (slice, onDelete, deleteMessage) => {
+    const container = el('div', 'slice-menu');
+
+    const btn = el('button', 'btn-slice-menu', { text: '☰', title: 'Slice options', ariaLabel: 'Slice options menu' });
+    const menu = el('div', 'slice-menu-dropdown');
+
+    // Mark as complete / Reopen option
+    const completeOption = el('button', 'slice-menu-item');
+    if (slice.collapsed) {
+        completeOption.innerHTML = '<span class="slice-menu-icon">↩</span> Reopen';
+        completeOption.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleSliceCollapsed(slice.id, false);
+            menu.classList.remove('visible');
+        });
+    } else {
+        completeOption.innerHTML = '<span class="slice-menu-icon">✓</span> Mark Complete';
+        completeOption.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleSliceCollapsed(slice.id, true);
+            menu.classList.remove('visible');
+        });
+    }
+    menu.appendChild(completeOption);
+
+    // Delete option
+    const deleteOption = el('button', 'slice-menu-item slice-menu-item-danger');
+    deleteOption.innerHTML = '<span class="slice-menu-icon">🗑</span> Delete';
+    deleteOption.addEventListener('click', (e) => {
+        e.stopPropagation();
+        menu.classList.remove('visible');
+        if (confirm(deleteMessage)) onDelete();
+    });
+    menu.appendChild(deleteOption);
+
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Close other menus
+        document.querySelectorAll('.slice-menu-dropdown.visible').forEach(m => {
+            if (m !== menu) m.classList.remove('visible');
+        });
+        menu.classList.toggle('visible');
+    });
+
+    container.appendChild(btn);
+    container.appendChild(menu);
+    return container;
+};
+
+// Toggle slice collapsed state
+const toggleSliceCollapsed = (sliceId, collapsed) => {
+    const slice = state.slices.find(s => s.id === sliceId);
+    if (!slice) return;
+
+    slice.collapsed = collapsed;
+    saveToStorage();
+    render();
 };
 
 const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColorChange, onUrlChange, onStatusChange = null, onHide = null, onDeleteColumn = null) => {
@@ -2182,11 +2252,56 @@ const createSliceContainer = (slice, index) => {
                          slice.rowType === 'Activities' ? 'activities-row' :
                          'backbone-row';
     }
+    if (slice.collapsed) {
+        containerClass += ' slice-collapsed';
+    }
     const container = el('div', containerClass, { dataSliceId: slice.id });
 
     // Label container (only for release slices, not backbone rows)
     if (slice.separator !== false) {
         const labelContainer = el('div', 'slice-label-container', { dataSliceId: slice.id });
+
+        // If collapsed, show gutter with controls and banner in stories area
+        if (slice.collapsed) {
+            // Gutter controls
+            const controlsRow = el('div', 'slice-controls-row');
+            const dragHandle = el('div', 'slice-drag-handle', { html: '↕', title: 'Drag to reorder' });
+            controlsRow.appendChild(dragHandle);
+
+            if (state.slices.length > 1) {
+                controlsRow.appendChild(createSliceMenu(slice, () => deleteSlice(slice.id),
+                    `Delete "${slice.name || 'this slice'}" and all its stories?`));
+            }
+            labelContainer.appendChild(controlsRow);
+            container.appendChild(labelContainer);
+
+            // Stories area with row structure to maintain width
+            const storiesArea = el('div', 'slice-stories-area');
+            const storiesRow = el('div', 'stories-row slice-completed-row');
+
+            // Add placeholder columns to maintain width, with banner centered over them
+            state.columns.forEach(() => {
+                const placeholder = el('div', 'story-column collapsed-column-placeholder');
+                storiesRow.appendChild(placeholder);
+            });
+
+            // Add column button to match width of open slices
+            const addColumnBtn = el('button', 'btn-add-column-inline', { text: '+', title: 'Add Step' });
+            addColumnBtn.addEventListener('click', () => addColumn(true));
+            storiesRow.appendChild(addColumnBtn);
+
+            // Centered banner overlay
+            const completedBanner = el('div', 'slice-completed-banner');
+            const sliceName = slice.name ? `${slice.name} - ` : '';
+            const bannerText = el('span', 'slice-completed-text', { text: `${sliceName}Complete` });
+            completedBanner.appendChild(bannerText);
+            storiesRow.appendChild(completedBanner);
+
+            storiesArea.appendChild(storiesRow);
+            container.appendChild(storiesArea);
+
+            return container;
+        }
 
         // Label at top
         const labelInput = createTextarea('slice-label', 'Release...', slice.name,
@@ -2211,16 +2326,14 @@ const createSliceContainer = (slice, index) => {
             labelContainer.appendChild(progressContainer);
         }
 
-        // Controls row at bottom: drag handle on left, delete on right
+        // Controls row at bottom: drag handle on left, menu on right
         const controlsRow = el('div', 'slice-controls-row');
         const dragHandle = el('div', 'slice-drag-handle', { html: '↕', title: 'Drag to reorder' });
         controlsRow.appendChild(dragHandle);
 
         if (state.slices.length > 1) {
-            controlsRow.appendChild(createDeleteBtn(
-                () => deleteSlice(slice.id),
-                `Delete "${slice.name || 'this slice'}" and all its stories?`
-            ));
+            controlsRow.appendChild(createSliceMenu(slice, () => deleteSlice(slice.id),
+                `Delete "${slice.name || 'this slice'}" and all its stories?`));
         }
         labelContainer.appendChild(controlsRow);
 
@@ -2804,6 +2917,7 @@ const serialize = () => ({
         };
         if (slice.separator === false) obj.sep = false;
         if (slice.rowType) obj.rt = slice.rowType;
+        if (slice.collapsed) obj.col = true;
         return obj;
     })
 });
@@ -2826,6 +2940,7 @@ const deserialize = (data) => {
             name: slice.n || '',
             separator: slice.sep !== false,
             rowType: slice.rt || null,
+            collapsed: !!slice.col,
             stories: {}
         };
         const stories = Array.isArray(slice.t) ? slice.t : [];
