@@ -1479,7 +1479,7 @@ const initState = () => {
     state.slices = [
         { id: generateId(), name: '', separator: false, rowType: 'Users', stories: { [column.id]: [createStory('User Type', '#fca5a5')] } },
         { id: generateId(), name: '', separator: false, rowType: 'Activities', stories: { [column.id]: [createStory('New Activity', '#93c5fd')] } },
-        { id: generateId(), name: '', separator: true, rowType: null, stories: { [column.id]: [createStory('New Task', '#fef08a')] } }
+        { id: generateId(), name: '', separator: true, rowType: null, stories: { [column.id]: [createStory('New Task or Detail', '#fef08a')] } }
     ];
 };
 
@@ -1530,6 +1530,7 @@ const dom = {
     shareBtn: document.getElementById('shareBtn'),
     welcomeScreen: document.getElementById('welcomeScreen'),
     welcomeNewBtn: document.getElementById('welcomeNewBtn'),
+    welcomeCounter: document.getElementById('welcomeCounter'),
     storyMapWrapper: document.getElementById('storyMapWrapper'),
     samplesSubmenuTrigger: document.getElementById('samplesSubmenuTrigger'),
     samplesSubmenu: document.getElementById('samplesSubmenu'),
@@ -2211,7 +2212,7 @@ const createStoryCard = (story, columnId, sliceId, isBackboneRow = false, rowTyp
     });
     if (story.color) card.style.backgroundColor = story.color;
 
-    let placeholderText = 'Task...';
+    let placeholderText = 'Task or Detail...';
     if (rowType === 'Users') {
         placeholderText = 'e.g. admin, customer, client';
     } else if (isBackboneRow) {
@@ -3255,6 +3256,7 @@ const newMap = async () => {
     await createYjsDoc();
     subscribeToMap(mapId);
     saveToStorage();
+    incrementMapCounter();
 };
 
 const copyMap = async () => {
@@ -3278,6 +3280,7 @@ const copyMap = async () => {
     await createYjsDoc();
     subscribeToMap(mapId);
     saveToStorage();
+    incrementMapCounter();
 };
 
 // =============================================================================
@@ -3744,6 +3747,63 @@ const loadMapById = async (mapId) => {
     return false;
 };
 
+let counterUnsubscribe = null;
+
+const setCounterValue = (count) => {
+    if (!dom.welcomeCounter) return;
+    dom.welcomeCounter.innerHTML = `📊 <span class="count">${count.toLocaleString()}</span> story maps created`;
+    dom.welcomeCounter.classList.add('visible');
+};
+
+const subscribeToCounter = async () => {
+    if (!dom.welcomeCounter || counterUnsubscribe) return;
+
+    // Show cached value immediately
+    const cached = localStorage.getItem('mapCount');
+    if (cached) {
+        setCounterValue(parseInt(cached));
+    }
+
+    try {
+        await ensureFirebase();
+        await ensureAppCheck();
+        const { ref, onValue } = firebaseModules;
+        counterUnsubscribe = onValue(ref(rtdb, 'counters/maps'), (snapshot) => {
+            const count = snapshot.val() || 0;
+            if (count > 0) {
+                localStorage.setItem('mapCount', count);
+                setCounterValue(count);
+            }
+        });
+    } catch (e) {
+        // Silently fail - counter is non-essential
+    }
+};
+
+const unsubscribeFromCounter = () => {
+    if (counterUnsubscribe) {
+        counterUnsubscribe();
+        counterUnsubscribe = null;
+    }
+    dom.welcomeCounter?.classList.remove('visible');
+};
+
+const incrementMapCounter = async () => {
+    try {
+        await ensureFirebase();
+        await ensureAppCheck();
+        const { ref, set, onValue } = firebaseModules;
+        const counterRef = ref(rtdb, 'counters/maps');
+        // Get current value and increment
+        onValue(counterRef, (snapshot) => {
+            const current = snapshot.val() || 0;
+            set(counterRef, current + 1);
+        }, { onlyOnce: true });
+    } catch (e) {
+        // Silently fail - counter is non-essential
+    }
+};
+
 const showWelcomeScreen = () => {
     document.body.classList.add('welcome-visible');
     dom.welcomeScreen.classList.add('visible');
@@ -3754,6 +3814,7 @@ const showWelcomeScreen = () => {
     clearCursors();
     clearLockSubscription();
     updateLockUI();
+    subscribeToCounter();
 };
 
 const hideWelcomeScreen = () => {
@@ -3762,6 +3823,7 @@ const hideWelcomeScreen = () => {
     dom.storyMapWrapper.classList.add('visible');
     dom.boardName.classList.remove('hidden');
     dom.zoomControls.classList.remove('hidden');
+    unsubscribeFromCounter();
 
     // Initialize magnifier on first map view (deferred from startup)
     initMagnifier();
@@ -3788,6 +3850,7 @@ const startNewMap = async () => {
     await createYjsDoc();
     subscribeToMap(mapId);
     saveToStorage();
+    incrementMapCounter();
 };
 
 const startWithSample = async (sampleName) => {
@@ -3819,6 +3882,7 @@ const startWithSample = async (sampleName) => {
         subscribeToMap(mapId);
         saveToStorage();
     }
+    incrementMapCounter();
 };
 
 const init = async () => {

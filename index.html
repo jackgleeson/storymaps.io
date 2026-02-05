@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Storymaps.io - Free User Story Mapping Tool</title>
-    <meta name="description" content="Free online user story mapping tool for agile teams. Visualise your product backlog, plan releases, and collaborate in real-time. No signup required.">
+    <title>Storymaps.io - Free User Story Mapping Tool with Jira Export</title>
+    <meta name="description" content="Free online user story mapping tool for agile teams. Visualise your product backlog, plan releases, collaborate in real-time, and export to Jira. No signup required.">
     <link rel="canonical" href="https://storymaps.io/">
 
     <!-- Open Graph (Facebook, LinkedIn) -->
     <meta property="og:title" content="Storymaps.io - Free User Story Mapping Tool">
-    <meta property="og:description" content="Visualise your product backlog and plan releases with free collaborative story mapping. No signup required.">
+    <meta property="og:description" content="Visualise your product backlog, plan releases, and export to Jira with free collaborative story mapping. No signup required.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://storymaps.io/">
     <meta property="og:image" content="https://storymaps.io/resources/screenshot.png">
@@ -21,7 +21,7 @@
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Storymaps.io - Free User Story Mapping Tool">
-    <meta name="twitter:description" content="Visualise your product backlog and plan releases with free collaborative story mapping.">
+    <meta name="twitter:description" content="Visualise your product backlog, plan releases, and export to Jira with free collaborative story mapping.">
     <meta name="twitter:image" content="https://storymaps.io/resources/screenshot.png">
 
     <!-- Preconnect to Firebase for faster loading -->
@@ -36,7 +36,7 @@
         "@type": "WebApplication",
         "@id": "https://storymaps.io/#app",
         "name": "Storymaps.io",
-        "description": "Free online user story mapping tool for agile teams. Visualise your product backlog, plan releases, and collaborate in real-time.",
+        "description": "Free online user story mapping tool for agile teams. Visualise your product backlog, plan releases, collaborate in real-time, and export to Jira.",
         "url": "https://storymaps.io/",
         "image": "https://storymaps.io/resources/screenshot.png",
         "inLanguage": "en",
@@ -50,11 +50,13 @@
         },
         "featureList": [
             "Real-time collaboration",
+            "Export to Jira",
+            "Export to Phabricator",
             "Drag and drop interface",
             "Release planning",
-            "Import/Export JSON",
             "No signup required"
-        ]
+        ],
+        "keywords": "user story mapping, story map, agile, product backlog, release planning, jira export, scrum, product management, user stories, collaborative planning"
     }
     </script>
 
@@ -65,6 +67,13 @@
     <link rel="preconnect" href="https://www.gstatic.com">
     <link rel="preconnect" href="https://firestore.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <noscript>
+        <div style="padding: 40px; text-align: center; font-family: sans-serif;">
+            <h1>Storymaps.io - Free User Story Mapping Tool</h1>
+            <p>Create, share, and collaborate on user story maps in real-time. Export as epics and stories to Jira or Phabricator.</p>
+            <p>This application requires JavaScript to run. Please enable JavaScript in your browser settings.</p>
+        </div>
+    </noscript>
 </head>
 <body>
     <header class="header">
@@ -135,10 +144,10 @@
     <div class="welcome-screen" id="welcomeScreen">
         <div class="welcome-content">
             <h1>Welcome to Storymaps.io</h1>
-            <p class="welcome-subtitle">Create and collaborate on user story maps in real-time.<br>Export as epics and stories to <svg class="inline-logo" viewBox="0 0 24 24" fill="#0052CC"><path d="M11.571 11.513H0a5.218 5.218 0 0 0 5.232 5.215h2.13v2.057A5.215 5.215 0 0 0 12.575 24V12.518a1.005 1.005 0 0 0-1.005-1.005zm5.723-5.756H5.736a5.215 5.215 0 0 0 5.215 5.214h2.129v2.058a5.218 5.218 0 0 0 5.215 5.214V6.758a1.001 1.001 0 0 0-1.001-1.001zM23.013 0H11.455a5.215 5.215 0 0 0 5.215 5.215h2.129v2.057A5.215 5.215 0 0 0 24 12.483V1.005A1.005 1.005 0 0 0 23.013 0z"/></svg>&nbsp;Jira or <svg class="inline-logo" viewBox="0 0 592 592"><path fill="#069" d="M592.2,51.8V0H329.5C329.2,181.6,181.9,328.8.2,328.9V592h52l6.7-116.3a475.94,475.94,0,0,0,69-13.7l50.4,104.4,96.5-40-38-109.6a489.27,489.27,0,0,0,58.3-39l86.6,77.3,73.9-73.9-77.1-86.8a477.47,477.47,0,0,0,39-58.3L527,274.3l40-96.5L462.6,127.2a486.82,486.82,0,0,0,13.6-68.8Z"/><path fill="#900" d="M0,0V199.8c110.4,0,200-89.4,200.2-199.8Z"/></svg>&nbsp;Phabricator.</p>
+            <p class="welcome-subtitle">Create and collaborate<br class="mobile-only"> on user story maps in <span class="nowrap">real-time.</span><br>Export to <span class="nowrap"><svg class="inline-logo" viewBox="0 0 24 24" fill="#0052CC"><path d="M11.571 11.513H0a5.218 5.218 0 0 0 5.232 5.215h2.13v2.057A5.215 5.215 0 0 0 12.575 24V12.518a1.005 1.005 0 0 0-1.005-1.005zm5.723-5.756H5.736a5.215 5.215 0 0 0 5.215 5.214h2.129v2.058a5.218 5.218 0 0 0 5.215 5.214V6.758a1.001 1.001 0 0 0-1.001-1.001zM23.013 0H11.455a5.215 5.215 0 0 0 5.215 5.215h2.129v2.057A5.215 5.215 0 0 0 24 12.483V1.005A1.005 1.005 0 0 0 23.013 0z"/></svg>&nbsp;Jira</span> or <span class="nowrap"><svg class="inline-logo" viewBox="0 0 592 592"><path fill="#069" d="M592.2,51.8V0H329.5C329.2,181.6,181.9,328.8.2,328.9V592h52l6.7-116.3a475.94,475.94,0,0,0,69-13.7l50.4,104.4,96.5-40-38-109.6a489.27,489.27,0,0,0,58.3-39l86.6,77.3,73.9-73.9-77.1-86.8a477.47,477.47,0,0,0,39-58.3L527,274.3l40-96.5L462.6,127.2a486.82,486.82,0,0,0,13.6-68.8Z"/><path fill="#900" d="M0,0V199.8c110.4,0,200-89.4,200.2-199.8Z"/></svg>&nbsp;Phabricator.</span></p>
             <div class="welcome-actions">
                 <button class="btn btn-large" id="welcomeNewBtn">New Story Map</button>
-                <div class="welcome-divider">or</div>
+                <span class="welcome-counter" id="welcomeCounter"></span>
                 <div class="welcome-samples">
                     <p class="welcome-samples-label">Try a sample:</p>
                     <div class="welcome-samples-list">
@@ -152,38 +161,59 @@
                 <div class="welcome-divider">or</div>
                 <div class="welcome-learn">
                     <p class="welcome-samples-label">Learn more about user story mapping:</p>
-                    <div class="welcome-learn-links">
-                        <a href="https://raw.githubusercontent.com/jackgleeson/storymaps.io/main/resources/story_mapping_slides.pdf" target="_blank" rel="noopener" class="welcome-learn-card">
-                            <svg class="welcome-learn-icon" viewBox="0 0 24 24" width="48" height="48" fill="#E53935">
-                                <path d="M20 3H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h6l-2 4h2l2-4h0l2 4h2l-2-4h6c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 12H4V5h16v10z"/>
-                                <path d="M10 7v6l5-3-5-3z"/>
-                            </svg>
-                            <span>View the<br>Slides</span>
-                        </a>
-                        <a href="https://www.youtube.com/watch?v=AorAgSrHjKM" target="_blank" rel="noopener" class="welcome-learn-card">
-                            <svg class="welcome-learn-icon" viewBox="0 0 24 24" width="48" height="48" fill="#FF0000">
-                                <path d="M23.5 6.2c-.3-1-1-1.8-2-2.1C19.6 3.5 12 3.5 12 3.5s-7.6 0-9.5.6c-1 .3-1.7 1.1-2 2.1C0 8.1 0 12 0 12s0 3.9.5 5.8c.3 1 1 1.8 2 2.1 1.9.6 9.5.6 9.5.6s7.6 0 9.5-.6c1-.3 1.7-1.1 2-2.1.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.5 15.5v-7l6.4 3.5-6.4 3.5z"/>
-                            </svg>
-                            <span>Watch<br>the Video</span>
-                        </a>
-                        <a href="https://www.amazon.com/User-Story-Mapping-Discover-Product/dp/1491904909" target="_blank" rel="noopener" class="welcome-learn-card">
-                            <img src="book-cover.jpg" alt="User Story Mapping book cover" class="welcome-learn-book">
-                            <span>Read the Book</span>
-                        </a>
-                        <a href="resources/story_mapping.pdf" download target="_blank" rel="noopener" class="welcome-learn-card">
-                            <svg class="welcome-learn-icon" viewBox="0 0 24 24" width="48" height="48" fill="#E53935">
-                                <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/>
-                                <path d="M8 12h8v2H8zm0 3h8v2H8z"/>
-                            </svg>
-                            <span>Story Map<br>Concepts</span>
-                        </a>
-                        <a href="resources/story_essentials_quickref.pdf" download target="_blank" rel="noopener" class="welcome-learn-card">
-                            <svg class="welcome-learn-icon" viewBox="0 0 24 24" width="48" height="48" fill="#E53935">
-                                <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/>
-                                <path d="M8 12h8v2H8zm0 3h8v2H8z"/>
-                            </svg>
-                            <span>Agile<br>Stories</span>
-                        </a>
+                    <div class="welcome-learn-groups">
+                        <div class="welcome-learn-group">
+                            <span class="welcome-learn-group-label">Watch</span>
+                            <div class="welcome-learn-group-cards">
+                                <a href="https://www.youtube.com/watch?v=TaMLUf3gISo" target="_blank" rel="noopener" class="welcome-learn-card">
+                                    <svg class="welcome-learn-icon" viewBox="0 0 24 24" width="48" height="48" fill="#FF0000">
+                                        <path d="M23.5 6.2c-.3-1-1-1.8-2-2.1C19.6 3.5 12 3.5 12 3.5s-7.6 0-9.5.6c-1 .3-1.7 1.1-2 2.1C0 8.1 0 12 0 12s0 3.9.5 5.8c.3 1 1 1.8 2 2.1 1.9.6 9.5.6 9.5.6s7.6 0 9.5-.6c1-.3 1.7-1.1 2-2.1.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.5 15.5v-7l6.4 3.5-6.4 3.5z"/>
+                                    </svg>
+                                    <span>Intro</span>
+                                </a>
+                                <a href="https://www.youtube.com/watch?v=AorAgSrHjKM" target="_blank" rel="noopener" class="welcome-learn-card">
+                                    <svg class="welcome-learn-icon" viewBox="0 0 24 24" width="48" height="48" fill="#FF0000">
+                                        <path d="M23.5 6.2c-.3-1-1-1.8-2-2.1C19.6 3.5 12 3.5 12 3.5s-7.6 0-9.5.6c-1 .3-1.7 1.1-2 2.1C0 8.1 0 12 0 12s0 3.9.5 5.8c.3 1 1 1.8 2 2.1 1.9.6 9.5.6 9.5.6s7.6 0 9.5-.6c1-.3 1.7-1.1 2-2.1.5-1.9.5-5.8.5-5.8s0-3.9-.5-5.8zM9.5 15.5v-7l6.4 3.5-6.4 3.5z"/>
+                                    </svg>
+                                    <span>Presentation</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="welcome-learn-group">
+                            <span class="welcome-learn-group-label">Read</span>
+                            <div class="welcome-learn-group-cards">
+                                <a href="https://raw.githubusercontent.com/jackgleeson/storymaps.io/main/resources/story_mapping_slides.pdf" target="_blank" rel="noopener" class="welcome-learn-card">
+                                    <svg class="welcome-learn-icon" viewBox="0 0 24 24" width="48" height="48" fill="#E53935">
+                                        <path d="M20 3H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h6l-2 4h2l2-4h0l2 4h2l-2-4h6c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 12H4V5h16v10z"/>
+                                        <path d="M10 7v6l5-3-5-3z"/>
+                                    </svg>
+                                    <span>Slides</span>
+                                </a>
+                                <a href="https://www.amazon.com/User-Story-Mapping-Discover-Product/dp/1491904909" target="_blank" rel="noopener" class="welcome-learn-card">
+                                    <img src="book-cover.jpg" alt="User Story Mapping book cover" class="welcome-learn-book">
+                                    <span>The Book</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="welcome-learn-group">
+                            <span class="welcome-learn-group-label">Reference</span>
+                            <div class="welcome-learn-group-cards">
+                                <a href="resources/story_mapping.pdf" download target="_blank" rel="noopener" class="welcome-learn-card">
+                                    <svg class="welcome-learn-icon" viewBox="0 0 24 24" width="48" height="48" fill="#E53935">
+                                        <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/>
+                                        <path d="M8 12h8v2H8zm0 3h8v2H8z"/>
+                                    </svg>
+                                    <span>Concepts</span>
+                                </a>
+                                <a href="resources/story_essentials_quickref.pdf" download target="_blank" rel="noopener" class="welcome-learn-card">
+                                    <svg class="welcome-learn-icon" viewBox="0 0 24 24" width="48" height="48" fill="#E53935">
+                                        <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z"/>
+                                        <path d="M8 12h8v2H8zm0 3h8v2H8z"/>
+                                    </svg>
+                                    <span>Agile Stories</span>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

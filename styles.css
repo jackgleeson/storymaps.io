@@ -74,7 +74,7 @@ body {
 
 .board-name {
     flex: 1;
-    max-width: 400px;
+    max-width: 600px;
     margin: 0 auto;
     padding: 8px 12px;
     border: 1px solid transparent;
@@ -1351,11 +1351,31 @@ body.main-menu-open .step:hover {
     vertical-align: -2px;
 }
 
+.nowrap {
+    white-space: nowrap;
+}
+
 .welcome-actions {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 16px;
+}
+
+.welcome-counter {
+    display: none;
+    font-size: 13px;
+    color: #555;
+}
+
+.welcome-counter.visible {
+    display: block;
+}
+
+.welcome-counter .count {
+    font-weight: 600;
+    color: #333;
+    font-variant-numeric: tabular-nums;
 }
 
 .btn-large {
@@ -1400,40 +1420,64 @@ body.main-menu-open .step:hover {
     gap: 12px;
 }
 
-.welcome-learn-links {
+.welcome-learn-groups {
     display: flex;
     justify-content: center;
-    gap: 16px;
+    gap: 24px;
+}
+
+.welcome-learn-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.welcome-learn-group-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #888;
+}
+
+.welcome-learn-group-cards {
+    display: flex;
+    gap: 8px;
 }
 
 .welcome-learn-card {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    padding: 16px 20px;
+    justify-content: center;
+    gap: 6px;
+    padding: 12px 16px;
     background: #fff;
-    border: 1px solid #ddd;
+    border: 1px solid #e0e0e0;
     border-radius: 8px;
     text-decoration: none;
-    color: #333;
-    font-size: 13px;
+    color: #444;
+    font-size: 12px;
     font-weight: 500;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+    min-width: 90px;
+    height: 90px;
 }
 
 .welcome-learn-card:hover {
     border-color: var(--color-teal);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
 }
 
 .welcome-learn-icon {
-    width: 48px;
-    height: 48px;
+    width: 36px;
+    height: 36px;
 }
 
 .welcome-learn-book {
-    height: 64px;
+    height: 36px;
     width: auto;
     border-radius: 2px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
@@ -1592,6 +1636,7 @@ body.main-menu-open .step:hover {
     .btn-large {
         padding: 10px 24px;
         font-size: 14px;
+        min-width: 200px;
     }
 
     .welcome-divider {
@@ -1602,22 +1647,32 @@ body.main-menu-open .step:hover {
         font-size: 12px;
     }
 
-    .welcome-learn-links {
-        gap: 12px;
+    .welcome-learn-groups {
+        gap: 16px;
+    }
+
+    .welcome-learn-group-cards {
+        gap: 6px;
+    }
+
+    .welcome-learn-group-label {
+        font-size: 10px;
     }
 
     .welcome-learn-card {
-        padding: 10px 14px;
-        font-size: 12px;
+        padding: 10px 12px;
+        font-size: 11px;
+        min-width: 80px;
+        height: 80px;
     }
 
     .welcome-learn-icon {
-        width: 32px;
-        height: 32px;
+        width: 28px;
+        height: 28px;
     }
 
     .welcome-learn-book {
-        height: 44px;
+        height: 32px;
     }
 
     .welcome-footer {
@@ -1692,22 +1747,33 @@ body.main-menu-open .step:hover {
         max-width: 100%;
     }
 
-    .welcome-learn-links {
-        gap: 8px;
+    .welcome-learn-groups {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .welcome-learn-group-cards {
+        gap: 4px;
+    }
+
+    .welcome-learn-group-label {
+        font-size: 9px;
     }
 
     .welcome-learn-card {
         padding: 8px 10px;
-        font-size: 11px;
+        font-size: 10px;
+        min-width: 70px;
+        height: 68px;
     }
 
     .welcome-learn-icon {
-        width: 28px;
-        height: 28px;
+        width: 24px;
+        height: 24px;
     }
 
     .welcome-learn-book {
-        height: 38px;
+        height: 26px;
     }
 
     .steps-row-spacer,
