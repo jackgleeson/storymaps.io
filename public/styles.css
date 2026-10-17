@@ -705,6 +705,37 @@ body.welcome-visible #mainMenu > .dropdown-submenu:has(> .dropdown-submenu-trigg
     height: 34px;
 }
 
+/* GitHub star link (home page only) */
+.gh-star {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 14px;
+    border: 1px solid #d0d7de;
+    border-radius: 8px;
+    background: #f6f8fa;
+    color: #24292f;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+}
+
+body.welcome-visible .gh-star {
+    display: inline-flex;
+}
+
+.gh-star:hover {
+    background: #eef1f4;
+    border-color: #c4ccd5;
+}
+
+.gh-star-icon {
+    color: #57606a;
+}
+
 
 .btn:disabled {
     opacity: 0.4;
@@ -2752,29 +2783,44 @@ body.main-menu-open .step:hover {
 
 mark.highlight {
     color: #333;
-    background: linear-gradient(
-        120deg,
-        rgba(254,240,138,0.5) 0%,
-        rgba(254,205,211,0.5) 30%,
-        rgba(165,243,252,0.5) 65%,
-        rgba(20,184,166,0.35) 100%
-    );
-    border-radius: 4px;
+    background: none;
+    position: relative;
     padding: 2px 6px;
     margin: 0 1px;
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
+    isolation: isolate;
+}
+mark.highlight::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background: rgba(254,240,138,0.35);
+    border-radius: 4px;
+    transform: skewX(-6deg) rotate(-1deg);
+    z-index: -1;
+}
+mark.highlight::after {
+    content: '';
+    position: absolute;
+    left: 2px;
+    right: 2px;
+    bottom: 1px;
+    height: 2px;
+    background: rgba(220,60,60,0.6);
+    border-radius: 1px;
+    transform: skewX(-6deg) rotate(-1deg);
+    z-index: -1;
 }
 
-html.dark-mode mark.highlight {
-    color: #e2e8f0;
-    background: linear-gradient(
-        120deg,
-        rgba(254,240,138,0.25) 0%,
-        rgba(254,205,211,0.2) 30%,
-        rgba(165,243,252,0.2) 65%,
-        rgba(20,184,166,0.2) 100%
-    );
+.welcome-label {
+    color: var(--color-teal);
+}
+
+html.dark-mode mark.highlight { color: #e2e8f0; }
+html.dark-mode mark.highlight::before {
+    background: rgba(254,240,138,0.25);
+}
+html.dark-mode mark.highlight::after {
+    background: rgba(220,60,60,0.45);
 }
 
 .welcome-content h1 {
@@ -2850,6 +2896,36 @@ html.dark-mode mark.highlight {
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+}
+
+/* Simulated collaboration cursors */
+.sim-cursor {
+    position: absolute;
+    pointer-events: none;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+.welcome-visual.cursors-visible .sim-cursor {
+    opacity: 1;
+}
+.sim-cursor svg {
+    width: 16px;
+    height: 20px;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.18));
+}
+.sim-cursor-label {
+    position: absolute;
+    top: 18px;
+    left: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    padding: 1px 6px 2px;
+    border-radius: 3px;
+    white-space: nowrap;
+    line-height: 1.4;
 }
 
 .welcome-hero-img {
@@ -2935,13 +3011,32 @@ html.dark-mode mark.highlight {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    margin-top: 4px;
 }
 
 .welcome-samples-label {
     font-size: 14px;
     color: var(--color-text-secondary);
     margin: 0;
+}
+
+.welcome-samples .welcome-samples-label {
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    color: #666;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+.welcome-samples .welcome-samples-label::before,
+.welcome-samples .welcome-samples-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #d1d5db;
 }
 
 .welcome-samples-list {
@@ -2963,9 +3058,20 @@ html.dark-mode mark.highlight {
     border: 1px solid transparent;
 }
 
+.btn-sample::after {
+    content: '\2192';
+    margin-left: 6px;
+    opacity: 0;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    transform: translateX(-4px);
+}
 .btn-sample:hover {
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.btn-sample:hover::after {
+    opacity: 0.5;
+    transform: translateX(0);
 }
 
 .btn-sample-yellow { background: var(--color-bg-surface); border-color: #e5e7eb; }
@@ -3143,10 +3249,6 @@ html.dark-mode mark.highlight {
 
 .mobile-only {
     display: none;
-}
-
-.desktop-only {
-    display: inline;
 }
 
 /* Responsive - Tablet welcome layout (stack instead of side-by-side) */
@@ -3370,10 +3472,6 @@ html.dark-mode mark.highlight {
         display: inline;
     }
 
-    .desktop-only {
-        display: none;
-    }
-
     body {
         padding: 12px;
     }
@@ -3411,9 +3509,15 @@ html.dark-mode mark.highlight {
     }
 
     .header-actions #shareBtn,
-    .header-actions #buildAiBtn {
+    .header-actions #buildAiBtn,
+    .header-actions .gh-star {
         height: 28px;
         padding: 0 8px;
+    }
+
+    .header-actions .gh-star svg {
+        width: 12px;
+        height: 12px;
     }
 
     .header-actions .btn-label {
@@ -5940,7 +6044,7 @@ body.read-only-mode .empty-backbone-column {
 }
 
 /* Selection Toolbar, context menu & tag overflow — hidden on touch devices */
-@media (hover: none) {
+@media (pointer: coarse) {
     .selection-toolbar,
     .canvas-context-menu,
     .card-tag-overflow { display: none !important; }
@@ -7680,6 +7784,19 @@ html.dark-mode .btn-secondary:hover {
     background-color: #253044;
 }
 
+html.dark-mode .gh-star {
+    background: var(--color-bg-surface);
+    border-color: #30363d;
+    color: #e6edf3;
+}
+html.dark-mode .gh-star:hover {
+    background: #253044;
+    border-color: #484f58;
+}
+html.dark-mode .gh-star-icon {
+    color: #8b949e;
+}
+
 /* Dropdown glass — dark mode */
 html.dark-mode .dropdown-menu {
     background: rgba(15, 23, 42, 0.78);
@@ -7758,6 +7875,10 @@ html.dark-mode .welcome-bottom {
 }
 html.dark-mode .welcome-samples-label {
     color: #94a3b8;
+}
+html.dark-mode .welcome-samples .welcome-samples-label::before,
+html.dark-mode .welcome-samples .welcome-samples-label::after {
+    background: #334155;
 }
 
 /* Welcome sample buttons */

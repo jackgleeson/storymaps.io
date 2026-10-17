@@ -157,6 +157,11 @@
             <button class="btn btn-secondary btn-icon" id="searchBtn" title="Search (Ctrl+F)" aria-label="Search" style="display:none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="7"/><line x1="15.5" y1="15.5" x2="21" y2="21"/></svg></button>
             <button class="btn btn-secondary btn-icon" id="undoBtn" title="Undo (Ctrl+Z)" aria-label="Undo" disabled style="display:none">↩</button>
             <button class="btn btn-secondary btn-icon" id="redoBtn" title="Redo (Ctrl+Y)" aria-label="Redo" disabled style="display:none">↪</button>
+            <a class="gh-star" href="https://github.com/jackgleeson/storymaps.io" target="_blank" rel="noopener" aria-label="Star Storymaps.io on GitHub">
+                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+                <svg class="gh-star-icon" aria-hidden="true" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M8 1.2l2 4.1 4.5.6-3.3 3.2.8 4.5L8 11.5l-4 2.1.8-4.5L1.5 5.9 6 5.3z"/></svg>
+                <span class="btn-label">Star</span>
+            </a>
             <div class="share-dropdown">
                 <button class="btn" id="shareBtn" title="Share"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="btn-label">Share</span></button>
                 <div class="share-menu" id="shareMenu">
@@ -275,7 +280,7 @@
         <div class="welcome-split">
             <div class="welcome-content">
                 <h1>Welcome to Storymaps.io</h1>
-                <p class="welcome-subtitle">The <mark class="highlight">free &amp; open-source</mark> user story mapping tool.<br class="desktop-only">No sign-up needed. Start mapping now.</p>
+                <p class="welcome-subtitle">The <mark class="highlight">free &amp; open-source</mark> user story mapping tool.<br>No sign-up needed. Start mapping now.</p>
                 <p class="welcome-integrations-text">or import the story map hidden inside your existing backlog:</p>
                 <div class="welcome-integrations">
                     <button class="welcome-integration" data-import="jira"><svg viewBox="0 0 24 24" fill="#0052CC"><path d="M11.571 11.513H0a5.218 5.218 0 0 0 5.232 5.215h2.13v2.057A5.215 5.215 0 0 0 12.575 24V12.518a1.005 1.005 0 0 0-1.005-1.005zm5.723-5.756H5.736a5.215 5.215 0 0 0 5.215 5.214h2.129v2.058a5.218 5.218 0 0 0 5.215 5.214V6.758a1.001 1.001 0 0 0-1.001-1.001zM23.013 0H11.455a5.215 5.215 0 0 0 5.215 5.215h2.129v2.057A5.215 5.215 0 0 0 24 12.483V1.005A1.005 1.005 0 0 0 23.013 0z"/></svg>Jira</button>
@@ -290,7 +295,7 @@
                     </div>
                     <span class="welcome-counter" id="welcomeCounter"></span>
                     <div class="welcome-samples">
-                        <p class="welcome-samples-label"><mark class="highlight">Try a sample</mark>:</p>
+                        <p class="welcome-samples-label">Try a sample story map</p>
                         <div class="welcome-samples-list">
                             <button class="btn-sample btn-sample-purple" data-sample="coffee-ordering">Coffee Ordering App</button>
                             <button class="btn-sample btn-sample-green" data-sample="holiday-rentals">Holiday Rentals App</button>
@@ -304,11 +309,23 @@
             </div>
             <div class="welcome-visual">
                 <img src="/resources/screenshot.png" alt="Storymaps.io user story mapping interface" class="welcome-hero-img" fetchpriority="high" width="1532" height="886">
+                <div class="sim-cursor" id="cursor-jessica">
+                    <svg viewBox="0 0 16 20" fill="none"><path d="M1 1l5.5 17L9 11.5 15.5 9z" fill="#ef4444" stroke="#fff" stroke-width="1.2"/></svg>
+                    <span class="sim-cursor-label" style="background:#ef4444">Jessica</span>
+                </div>
+                <div class="sim-cursor" id="cursor-alex">
+                    <svg viewBox="0 0 16 20" fill="none"><path d="M1 1l5.5 17L9 11.5 15.5 9z" fill="#3b82f6" stroke="#fff" stroke-width="1.2"/></svg>
+                    <span class="sim-cursor-label" style="background:#3b82f6">Alex</span>
+                </div>
+                <div class="sim-cursor" id="cursor-priya">
+                    <svg viewBox="0 0 16 20" fill="none"><path d="M1 1l5.5 17L9 11.5 15.5 9z" fill="#a855f7" stroke="#fff" stroke-width="1.2"/></svg>
+                    <span class="sim-cursor-label" style="background:#a855f7">Priya</span>
+                </div>
             </div>
         </div>
         <div class="welcome-bottom">
             <div class="welcome-learn">
-                <p class="welcome-samples-label"><mark class="highlight">Learn more</mark> about user story mapping:</p>
+                <p class="welcome-samples-label"><strong class="welcome-label">Learn more</strong> about user story mapping:</p>
                 <div class="welcome-learn-groups">
                     <div class="welcome-learn-group">
                         <span class="welcome-learn-group-label">Watch</span>
@@ -1741,14 +1758,14 @@
                         </label>
                     </div>
                     <div class="import-mapping-mode hidden" id="asanaImportMappingMode">
-                        <span class="import-mapping-label">Map as:</span>
+                        <span class="import-mapping-label">Tag by:</span>
                         <label class="import-mapping-option">
                             <input type="radio" name="asanaMappingMode" value="sections" checked>
-                            Sections as steps, tasks as stories
+                            Group by sections
                         </label>
                         <label class="import-mapping-option">
                             <input type="radio" name="asanaMappingMode" value="tasks">
-                            Tasks as steps, subtasks as stories
+                            Group by tasks &amp; subtasks
                         </label>
                     </div>
                     <div class="import-preview-header" id="asanaImportPreviewHeader"></div>
@@ -1964,14 +1981,14 @@
                         </label>
                     </div>
                     <div class="import-mapping-mode" id="linearImportMappingMode">
-                        <span class="import-mapping-label">Map as:</span>
+                        <span class="import-mapping-label">Tag by:</span>
                         <label class="import-mapping-option">
                             <input type="radio" name="linearMappingMode" value="project" checked>
-                            Projects as steps, issues as stories
+                            Group by projects
                         </label>
                         <label class="import-mapping-option">
                             <input type="radio" name="linearMappingMode" value="parent">
-                            Parent issues as steps, sub-issues as stories
+                            Group by parent issues
                         </label>
                     </div>
                     <div class="import-preview-header" id="linearImportPreviewHeader"></div>
