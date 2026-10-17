@@ -6,7 +6,7 @@
     [
       {
         "name": "Customer",
-        "color": "#fda4af"
+        "color": "#fca5a5"
       }
     ],
     [],
@@ -17,7 +17,7 @@
     [
       {
         "name": "Coffee Shop",
-        "color": "#fda4af"
+        "color": "#fca5a5"
       }
     ]
   ],
@@ -50,7 +50,7 @@
       "color": "#86efac"
     },
     {
-      "name": "Cart",
+      "name": "Add To Cart",
       "color": "#86efac"
     },
     {

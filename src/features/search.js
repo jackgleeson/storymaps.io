@@ -124,7 +124,7 @@ export const applySearchFilter = (query) => {
 const getUsedStatusesAndColors = () => {
     const statuses = new Set();
     const colors = new Set();
-    state.columns.forEach(c => { if (c.color) colors.add(c.color.toLowerCase()); });
+    state.columns.forEach(c => { if (c.color && !c.hidden) colors.add(c.color.toLowerCase()); });
     const addFromCards = (cards) => {
         cards.forEach(s => {
             if (s.status) statuses.add(s.status);
@@ -138,7 +138,7 @@ const getUsedStatusesAndColors = () => {
         Object.values(slice.stories || {}).forEach(addFromCards);
     });
     (state.partialMaps || []).forEach(pm => {
-        pm.columns.forEach(c => { if (c.color) colors.add(c.color.toLowerCase()); });
+        pm.columns.forEach(c => { if (c.color && !c.hidden) colors.add(c.color.toLowerCase()); });
         Object.values(pm.users || {}).forEach(addFromCards);
         Object.values(pm.activities || {}).forEach(addFromCards);
         Object.values(pm.stories || {}).forEach(sliceStories => {
@@ -176,6 +176,9 @@ const populateFilterPanel = () => {
     // Color swatches
     dom.filterColorList.innerHTML = '';
     const colorEntries = Object.entries(CARD_COLORS);
+    // Cards from older samples or imports can use colors outside the palette; give those a swatch too
+    const paletteHexes = new Set(colorEntries.map(([, hex]) => hex.toLowerCase()));
+    used.colors.forEach(hex => { if (!paletteHexes.has(hex)) colorEntries.push([hex, hex]); });
     const usedColors = colorEntries.filter(([, hex]) => used.colors.has(hex.toLowerCase()));
     const unusedColors = colorEntries.filter(([, hex]) => !used.colors.has(hex.toLowerCase()));
     [...usedColors, ...unusedColors].forEach(([name, hex]) => {
