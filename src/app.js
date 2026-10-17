@@ -4,7 +4,7 @@
 import * as notepad from '/src/features/notepad.js';
 import * as log from '/src/core/log.js';
 import { generateId, el, CARD_COLORS } from '/src/core/constants.js';
-import { state, init as stateInit, initState, hasContent, pushUndo, undo, redo, updateUndoRedoButtons, createStory, createSlice, selection, clearSelection, DEFAULT_NOTES } from '/src/core/state.js';
+import { state, init as stateInit, initState, hasContent, pushUndo, undo, redo, updateUndoRedoButtons, createStory, createSlice, selection, clearSelection } from '/src/core/state.js';
 import { serialize, deserialize } from '/src/core/serialization.js';
 import * as navigation from '/src/ui/navigation.js';
 import * as presence from '/src/ui/presence.js';

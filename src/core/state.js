@@ -4,8 +4,6 @@
 import { generateId, CARD_COLORS } from '/src/core/constants.js';
 import { showConfirm } from '/src/core/modals.js';
 
-export const DEFAULT_NOTES = 'Thanks for trying Storymaps.io! \n\nIf you find it useful, please consider starring the open-source repo: https://github.com/jackgleeson/storymaps.io\n\nHave a great day!';
-
 export const state = {
     mapId: null,
     name: '',
@@ -277,7 +275,7 @@ export const initState = () => {
         { id: generateId(), color: CARD_COLORS.lime, label: 'Questions' },
         { id: generateId(), color: CARD_COLORS.rose, label: 'Edge cases' },
     ];
-    state.notes = DEFAULT_NOTES;
+    state.notes = '';
     state.slices = [
         { id: generateId(), name: '', collapsed: false, stories: { [column.id]: [createStory('New Task or Detail', '#fef08a')] } }
     ];
