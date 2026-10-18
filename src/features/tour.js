@@ -667,6 +667,15 @@ const onKeyDown = (e) => {
     }
 };
 
+// CSS blocks pointer clicks on slice gutter controls; this also blocks keyboard activation
+const onSliceControlClick = (e) => {
+    if (!_active) return;
+    if (e.target.closest?.('.btn-add-slice, .btn-slice-menu')) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+};
+
 const onWheel = (e) => {
     if (!_active) return;
     e.preventDefault();
@@ -697,6 +706,7 @@ export const startTour = () => {
     tooltip().classList.add('visible');
 
     document.addEventListener('keydown', onKeyDown, true);
+    document.addEventListener('click', onSliceControlClick, true);
     window.addEventListener('wheel', onWheel, { passive: false });
     window.addEventListener('resize', onResize);
 
@@ -717,6 +727,7 @@ export const endTour = () => {
     document.querySelectorAll('.tour-spotlight-extra').forEach(el => el.remove());
 
     document.removeEventListener('keydown', onKeyDown, true);
+    document.removeEventListener('click', onSliceControlClick, true);
     window.removeEventListener('wheel', onWheel);
     window.removeEventListener('resize', onResize);
 

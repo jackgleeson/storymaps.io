@@ -9353,6 +9353,13 @@ body.tour-active .controls-right {
     pointer-events: none;
 }
 
+/* Disable slice gutter controls during tour so adding, reordering or closing slices can't distort the steps */
+body.tour-active .btn-add-slice,
+body.tour-active .slice-drag-handle,
+body.tour-active .btn-slice-menu {
+    pointer-events: none;
+}
+
 @media print {
     .tour-backdrop,
     .tour-spotlight,
