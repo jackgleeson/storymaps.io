@@ -2088,6 +2088,34 @@ body.main-menu-open .step:hover {
     background-color: rgba(20, 184, 166, 0.2);
 }
 
+/* Multi-card drag: count badge on the dragged clone, other selected cards fade until the drop */
+.multi-drag-badge {
+    display: none;
+}
+
+.sortable-drag .multi-drag-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 11px;
+    background: #0d9488;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+.story-card.multi-drag-pending {
+    opacity: 0.35;
+}
+
 .slice-container.sortable-ghost {
     background-color: rgba(20, 184, 166, 0.1);
     border: 2px dashed var(--color-teal);

@@ -257,7 +257,21 @@ export const initSortable = async () => {
             dragClass: 'sortable-drag',
             filter: '.btn-add-story, .btn-expand, .btn-options, .options-menu',
             preventOnFilter: false,
+            // Added on grab so Sortable's drag clone includes it; CSS only shows it on the clone
+            onChoose: (evt) => {
+                const ids = getMultiDragIds(evt.item.dataset.storyId);
+                if (ids) evt.item.appendChild(el('span', 'multi-drag-badge', { text: `${ids.length}` }));
+            },
+            onUnchoose: (evt) => {
+                evt.item.querySelector('.multi-drag-badge')?.remove();
+            },
             onStart: (evt) => {
+                const multiIds = getMultiDragIds(evt.item.dataset.storyId);
+                if (multiIds) {
+                    multiIds.filter(id => id !== evt.item.dataset.storyId).forEach(id => {
+                        _dom.storyMap.querySelector(`.story-card[data-story-id="${id}"]`)?.classList.add('multi-drag-pending');
+                    });
+                }
                 if (_broadcastDragStart) {
                     const storyId = evt.item.dataset.storyId;
                     const sliceId = evt.from.dataset.sliceId;
@@ -277,6 +291,7 @@ export const initSortable = async () => {
             },
             onEnd: (evt) => {
                 if (_broadcastDragEnd) _broadcastDragEnd();
+                _dom.storyMap.querySelectorAll('.multi-drag-pending').forEach(card => card.classList.remove('multi-drag-pending'));
                 // If a pinch gesture is active, revert the card to its original position
                 if (_getIsPinching && _getIsPinching()) {
                     const ref = evt.from.children[evt.oldIndex];
@@ -293,7 +308,15 @@ export const initSortable = async () => {
                 const toIndex = evt.newIndex;
 
                 if (fromColumnId !== toColumnId || fromSliceId !== toSliceId || fromRowType !== toRowType || evt.oldIndex !== evt.newIndex) {
-                    moveStory(storyId, fromColumnId, fromSliceId, toColumnId, toSliceId, toIndex, fromRowType, toRowType);
+                    const multiIds = getMultiDragIds(storyId);
+                    if (multiIds && moveSelectedStories(multiIds, evt.item, toColumnId, toSliceId, toRowType)) {
+                        // The browser can still fire a click on the dropped card, which would reset the selection
+                        const swallowClick = (e) => { e.preventDefault(); e.stopPropagation(); };
+                        document.addEventListener('click', swallowClick, true);
+                        setTimeout(() => document.removeEventListener('click', swallowClick, true), 0);
+                    } else {
+                        moveStory(storyId, fromColumnId, fromSliceId, toColumnId, toSliceId, toIndex, fromRowType, toRowType);
+                    }
                 }
             }
         });
@@ -607,12 +630,16 @@ export const updateSelectionUI = () => {
 
     if (selection.columnIds.length > 0 && window.matchMedia('(hover: hover)').matches) {
         const count = selection.columnIds.length;
+        const cardCount = selection.clickedCards.length;
+        const columnsText = `${count} column${count > 1 ? 's' : ''}`;
         const toolbar = el('div', 'selection-toolbar');
-        const label = el('span', 'selection-toolbar-label', { text: `${count} column${count > 1 ? 's' : ''} selected` });
+        const label = el('span', 'selection-toolbar-label', {
+            text: cardCount ? `${cardCount} card${cardCount > 1 ? 's' : ''}, ${columnsText} selected` : `${columnsText} selected`
+        });
 
         const items = [label];
 
-        if (count === 1) {
+        if (count === 1 && cardCount <= 1) {
             const hint = el('span', 'selection-toolbar-hint', { text: 'Shift+click for more' });
             items.push(hint);
         }
@@ -640,18 +667,19 @@ export const updateSelectionUI = () => {
             }
         }
 
+        const cardS = cardCount > 1 ? 's' : '';
         const s = count > 1 ? 's' : '';
         const onColumnModeChange = (modeIndex) => {
             selection.columnHighlight = modeIndex === 1;
             updateSelectionHighlights();
         };
         items.push(createSplitButton('selection-toolbar-duplicate', [
-            { label: `Duplicate Card${s}`, action: duplicateCards },
+            { label: `Duplicate Card${cardS}`, action: duplicateCards },
             { label: `Duplicate Column${s}`, action: duplicateColumns },
         ], onColumnModeChange));
 
         items.push(createSplitButton('selection-toolbar-delete', [
-            { label: `Delete Card${s}`, action: deleteSelectedCards },
+            { label: `Delete Card${cardS}`, action: deleteSelectedCards },
             { label: `Delete Column${s}`, action: deleteSelectedColumns },
         ], onColumnModeChange));
 
@@ -1466,6 +1494,67 @@ export const moveStory = (storyId, fromColumnId, fromSliceId, toColumnId, toSlic
     toStories.splice(toIndex, 0, story);
     _logEvent?.(`Moved card${quoted(story.name)}`, [storyId]);
     _renderAndSave();
+};
+
+// Selected story card IDs, when the given card is part of a multi-card selection
+export const getMultiDragIds = (storyId) => {
+    const ids = selection.clickedCards.filter(c => c.type === 'story' && c.storyId).map(c => c.storyId);
+    return ids.length > 1 && ids.includes(storyId) ? ids : null;
+};
+
+const findStoryLocation = (storyId) => {
+    for (const rowType of ['users', 'activities']) {
+        for (const [columnId, list] of Object.entries(_state[rowType] || {})) {
+            const index = list.findIndex(s => s.id === storyId);
+            if (index !== -1) return { story: list[index], list, index, columnId, sliceId: null, rowType };
+        }
+    }
+    for (const slice of _state.slices) {
+        for (const [columnId, list] of Object.entries(slice.stories || {})) {
+            const index = list.findIndex(s => s.id === storyId);
+            if (index !== -1) return { story: list[index], list, index, columnId, sliceId: slice.id, rowType: null };
+        }
+    }
+    return null;
+};
+
+// Move all selected cards to where the dragged card was dropped, stacked in map reading order
+// (users, activities, then slices top to bottom; left to right within a row; top to bottom within a cell)
+export const moveSelectedStories = (storyIds, droppedEl, toColumnId, toSliceId, toRowType = null) => {
+    const locations = storyIds.map(findStoryLocation).filter(Boolean);
+    if (locations.length < 2) return false;
+    const toStories = ensureStoriesArray(toColumnId, toSliceId, toRowType);
+    if (!toStories) return false;
+
+    // Sortable has already placed the dragged card; insert before the first unselected card after it
+    const movingIds = new Set(locations.map(l => l.story.id));
+    let beforeId = null;
+    for (let sib = droppedEl.nextElementSibling; sib; sib = sib.nextElementSibling) {
+        const id = sib.dataset?.storyId;
+        if (id && !movingIds.has(id)) { beforeId = id; break; }
+    }
+
+    const rowOrder = (l) => l.rowType === 'users' ? 0 : l.rowType === 'activities' ? 1 : 2 + _state.slices.findIndex(s => s.id === l.sliceId);
+    const colOrder = (l) => _state.columns.findIndex(c => c.id === l.columnId);
+    locations.sort((a, b) => rowOrder(a) - rowOrder(b) || colOrder(a) - colOrder(b) || a.index - b.index);
+
+    _pushUndo();
+    for (const l of locations) l.list.splice(l.list.indexOf(l.story), 1);
+    const beforeIndex = beforeId ? toStories.findIndex(s => s.id === beforeId) : -1;
+    toStories.splice(beforeIndex === -1 ? toStories.length : beforeIndex, 0, ...locations.map(l => l.story));
+
+    // Keep the moved cards selected in their new position
+    const stepClicks = selection.clickedCards.filter(c => c.type === 'step');
+    selection.clickedCards = [
+        ...stepClicks,
+        ...locations.map(l => ({ columnId: toColumnId, type: 'story', storyId: l.story.id, sliceId: toSliceId, rowType: toRowType })),
+    ];
+    selection.columnIds = [...new Set(selection.clickedCards.map(c => c.columnId))];
+    selection.anchorId = toColumnId;
+
+    _logEvent?.(`Moved ${locations.length} cards`, locations.map(l => l.story.id));
+    _renderAndSave();
+    return true;
 };
 
 export const deleteSlice = (sliceId) => {
