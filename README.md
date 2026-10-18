@@ -35,7 +35,8 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **Status indicators** - done, in-progress, planned, blocked with per-slice progress tracking
 - **Story points** - estimate effort per card, auto-summed per slice
 - **Tags** - categorize cards with free-text tags, autocomplete from existing tags
-- **Legend** - define colour-coded card categories (e.g. Tasks, Notes, Questions, Edge Cases)
+- **Overview** - counts of cards, steps, slices, users and activities, overall progress across slices, and how many cards are in each legend category
+- **Legend** - define colour-coded card categories (e.g. Tasks, Notes, Questions, Edge Cases) in the Overview tab
 - **Map Partials** - reusable story map fragments that eliminate duplication when multiple user journeys converge on shared steps; extract a sequence of columns once, reference it from anywhere, and expand inline to see the detail
 - **Card title & body** - each card has a short title visible on the map and an optional body for longer descriptions or details
 - **Expanded view** - click the expand button on any card to edit the title and body in a larger modal; cards with body text show an expand indicator
@@ -59,7 +60,7 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **Viewer badge** - shows your name and a live count of connected users; hover the count to see everyone on the map
 - **Mobile & tablet** - touch device users join silently without a name prompt; desktop users see them listed as "Mobile user" in the viewer tooltip
 - **Collaborative notepad** - shared notes that sync in real-time
-- **Activity log** - real-time feed of the last 20 map edits; hover an entry to highlight the affected card on the map; entries show the user's name, with icons to distinguish CLI and mobile sources
+- **Activity log** - shows when the map was created and last updated, who's here now, recent contributors, and total edits, above a real-time feed of the last 20 map edits; hover an entry to highlight the affected card on the map; entries show the user's name, with icons to distinguish CLI and mobile sources
 - **Shareable URLs** - each map gets a unique link
 - **Lock maps** - password-protect to prevent edits
 
@@ -248,7 +249,7 @@ The server starts on `http://localhost:8080`. Run the tests with `npm test`.
 6. Click the **expand** button on a card to add a description in the body field; the title stays visible on the map
 7. Click the **...** menu on cards to set colours, status, links, tags, or story points
 8. Drag tasks to reorder or move between columns; select several cards first to drag them together
-9. Use the **Legend** to define card categories and colour-code your map
+9. Open the **Overview** tab to see your map's counts and progress, and use its **Legend** to define card categories and colour-code your map
 10. Use **Ctrl+F** to search or open the **Filter** panel to filter by status, colour, or tag
 11. Click, Shift+click, or marquee-drag to select multiple cards, then use the toolbar to bulk edit
 12. Use the **Notepad** to capture team notes and decisions

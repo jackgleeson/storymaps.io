@@ -312,8 +312,8 @@ const STEPS = [
     },
     {
         target: '#controlsRight',
-        title: 'Storymaps.io Extras: Legend',
-        body: 'Define colour-coded categories for your cards. Like the yellow Tasks you saw, you can also add cards for inline Notes, Questions, and Edge Cases. Giving each type its own colour makes it easy to tell them apart at a glance.',
+        title: 'Storymaps.io Extras: Overview',
+        body: 'The Overview tab sums up your map: how many cards, steps and slices it has, and how far along it is. Below that is the legend, where you define colour-coded categories for your cards. Like the yellow Tasks you saw, you can also add cards for inline Notes, Questions, and Edge Cases. Giving each type its own colour makes it easy to tell them apart at a glance.',
         icon: '\u{1F3A8}',
         onEnter: () => { _zoomToFit?.(); openLegendPanel(); },
     },
