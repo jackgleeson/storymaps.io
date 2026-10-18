@@ -1888,6 +1888,12 @@ input.partials-entry-name-input:focus {
     display: none;
 }
 
+/* The tour shows demo log entries, so the real map's stats would contradict them; the header also
+   loads after the tour has positioned its tooltip, which pushed the panel into it */
+body.tour-active .log-stats {
+    display: none;
+}
+
 .log-stats {
     margin-bottom: 8px;
     padding: 8px 10px;
