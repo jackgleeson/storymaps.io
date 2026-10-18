@@ -711,15 +711,12 @@ body.welcome-visible #mainMenu > .dropdown-submenu:has(> .dropdown-submenu-trigg
     align-items: center;
     gap: 6px;
     height: 34px;
-    padding: 0 14px;
+    padding: 0 10px;
     border: 1px solid #d0d7de;
     border-radius: 8px;
     background: #f6f8fa;
     color: #24292f;
-    font-size: 13px;
-    font-weight: 600;
     text-decoration: none;
-    white-space: nowrap;
     transition: all 0.15s ease;
 }
 
