@@ -225,6 +225,7 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
     Object.entries(colors).forEach(([name, hex]) => {
         const swatch = el('button', 'color-swatch', { title: name });
         swatch.style.backgroundColor = hex;
+        swatch.dataset.color = hex.toLowerCase();
         if (itemColor === hex.toLowerCase()) swatch.classList.add('selected');
         swatch.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -281,6 +282,7 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
         statusSwatches.addEventListener('click', (e) => e.stopPropagation());
 
         const noneSwatch = el('button', 'status-swatch status-none', { title: 'None', text: '×' });
+        noneSwatch.dataset.status = '';
         if (!item.status) noneSwatch.classList.add('selected');
         noneSwatch.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -293,6 +295,7 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
         Object.entries(STATUS_OPTIONS).forEach(([key, { label, color }]) => {
             const swatch = el('button', 'status-swatch', { title: label });
             swatch.style.backgroundColor = color;
+            swatch.dataset.status = key;
             if (item.status === key) swatch.classList.add('selected');
             swatch.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -440,6 +443,15 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
         menu.appendChild(deleteColumnOption);
     }
 
+    // Swatches are marked when the menu is built, but status, colour and points changes patch the
+    // card without rebuilding it, so refresh the marks from the item each time the menu opens
+    const syncSelection = () => {
+        const color = item.color?.toLowerCase();
+        menu.querySelectorAll('.color-swatch').forEach(s => s.classList.toggle('selected', s.dataset.color === color));
+        menu.querySelectorAll('.status-swatch').forEach(s => s.classList.toggle('selected', s.dataset.status === (item.status || '')));
+        pointsInput.value = item.points != null ? item.points : '';
+    };
+
     btn.addEventListener('click', (e) => {
         e.stopPropagation();
         document.querySelectorAll('.options-menu.visible').forEach(m => {
@@ -453,6 +465,7 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
         btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
         const card = container.closest('.step, .story-card');
         if (isOpen) {
+            syncSelection();
             card?.classList.add('menu-open');
             menu.classList.remove('flip-left');
             const rect = menu.getBoundingClientRect();
