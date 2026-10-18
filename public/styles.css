@@ -1078,6 +1078,64 @@ body.welcome-visible .gh-star {
     background: var(--c);
 }
 
+/* Progress per slice: name and count above a full-width bar.
+   width: 0 + min-width: 100% stops long slice names widening the panel; they truncate instead. */
+.map-stats-slices {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 0;
+    min-width: 100%;
+}
+
+.map-stats-slice {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "name count" "bar bar";
+    gap: 3px 8px;
+    font-size: 12px;
+}
+
+.map-stats-slice-name {
+    grid-area: name;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+    color: var(--color-text-primary);
+}
+
+.map-stats-slice-count {
+    grid-area: count;
+    color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.map-stats-slice .map-stats-bar {
+    grid-area: bar;
+    height: 6px;
+    border-radius: 3px;
+}
+
+.map-stats-more {
+    align-self: flex-start;
+    padding: 0;
+    border: none;
+    background: none;
+    font-size: 12px;
+    color: var(--color-teal);
+    cursor: pointer;
+}
+
+.map-stats-more:hover {
+    text-decoration: underline;
+}
+
+.map-stats-empty {
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+
 /* Cards per legend category: its own column before the remove button */
 .legend-count {
     min-width: 3ch;

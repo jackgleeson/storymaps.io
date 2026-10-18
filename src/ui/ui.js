@@ -597,13 +597,13 @@ const patchSliceMetrics = (sliceId) => {
         const metricsContainer = el('div', 'slice-metrics');
 
         if (progress.total > 0) {
-            const progressContainer = el('div', 'slice-progress', { title: `${progress.percent}% complete` });
+            const progressContainer = el('div', 'slice-progress', { title: `${progress.done} of ${progress.total} tasks done` });
             const progressTrack = el('div', 'slice-progress-track');
             const progressBar = el('div', 'slice-progress-bar');
             progressBar.style.width = `${progress.percent}%`;
             progressTrack.appendChild(progressBar);
             progressContainer.appendChild(progressTrack);
-            progressContainer.appendChild(el('span', 'slice-progress-text', { text: `${progress.done}/${progress.total}` }));
+            progressContainer.appendChild(el('span', 'slice-progress-text', { text: `${progress.percent}%` }));
             metricsContainer.appendChild(progressContainer);
         }
 
@@ -1101,13 +1101,18 @@ export const createBackboneRow = (rowType, cardMap) => {
     return container;
 };
 
+// A card counts towards progress if it's a default (yellow) task card, or if it has a status.
+// The status rule covers maps that give their tasks another colour; notes and questions rarely have one.
+const countsTowardsProgress = (card) =>
+    !card.color || card.color.toLowerCase() === DEFAULT_CARD_COLORS.story || !!card.status;
+
 // Calculate progress for a slice (% of tasks marked done)
 const getSliceProgress = (slice) => {
     let total = 0;
     let done = 0;
     Object.values(slice.stories || {}).forEach(stories => {
         stories.forEach(story => {
-            if (!story.color || story.color === DEFAULT_CARD_COLORS.story) {
+            if (countsTowardsProgress(story)) {
                 total++;
                 if (story.status === 'done') done++;
             }
@@ -1201,7 +1206,7 @@ export const createSliceContainer = (slice, index) => {
 
         if (progress.total > 0) {
             const progressContainer = el('div', 'slice-progress', {
-                title: `${progress.percent}% complete`
+                title: `${progress.done} of ${progress.total} tasks done`
             });
             const progressTrack = el('div', 'slice-progress-track');
             const progressBar = el('div', 'slice-progress-bar');
@@ -1209,7 +1214,7 @@ export const createSliceContainer = (slice, index) => {
             progressTrack.appendChild(progressBar);
             progressContainer.appendChild(progressTrack);
             const progressText = el('span', 'slice-progress-text', {
-                text: `${progress.done}/${progress.total}`
+                text: `${progress.percent}%`
             });
             progressContainer.appendChild(progressText);
             metricsContainer.appendChild(progressContainer);
@@ -1354,6 +1359,64 @@ export const renderLegend = () => {
     renderMapStats();
 };
 
+// One progress row per slice in the Overview tab: name above a full-width bar so long names fit.
+// Maps with many slices show the first few until expanded.
+const SLICE_ROWS_COLLAPSED = 5;
+let _showAllSliceRows = false;
+
+const renderSliceProgress = () => {
+    const statusColors = [
+        ...Object.entries(STATUS_OPTIONS).map(([key, { color }]) => [key, color]),
+        ['none', 'var(--color-border-strong)'],
+    ];
+    const list = el('div', 'map-stats-slices');
+    const visible = _showAllSliceRows ? _state.slices : _state.slices.slice(0, SLICE_ROWS_COLLAPSED);
+
+    visible.forEach((slice, i) => {
+        const name = (slice.name || '').replace(/\s*\n\s*/g, ' ').trim() || `Slice ${i + 1}`;
+        const { total, done } = getSliceProgress(slice);
+        const row = el('div', 'map-stats-slice');
+        row.appendChild(el('span', 'map-stats-slice-name', { text: name }));
+
+        if (slice.collapsed || total === 0) {
+            const label = slice.collapsed ? (slice.closedReason === 'closed' ? 'Closed' : 'Complete') : 'No tasks';
+            row.appendChild(el('span', 'map-stats-slice-count', { text: label }));
+            row.title = name;
+        } else {
+            row.appendChild(el('span', 'map-stats-slice-count', { text: `${done}/${total}` }));
+            const counts = {};
+            Object.values(slice.stories || {}).flat().filter(countsTowardsProgress).forEach(card => {
+                const key = card.status && STATUS_OPTIONS[card.status] ? card.status : 'none';
+                counts[key] = (counts[key] || 0) + 1;
+            });
+            const bar = el('div', 'map-stats-bar');
+            statusColors.forEach(([key, color]) => {
+                if (!counts[key]) return;
+                const part = el('i');
+                part.style.width = `${(counts[key] / total) * 100}%`;
+                part.style.background = color;
+                bar.appendChild(part);
+            });
+            row.appendChild(bar);
+            row.title = `${name}: ${done} of ${total} tasks done`;
+        }
+        list.appendChild(row);
+    });
+
+    if (_state.slices.length > SLICE_ROWS_COLLAPSED) {
+        const toggle = el('button', 'map-stats-more', {
+            text: _showAllSliceRows ? 'Show fewer' : `Show all ${_state.slices.length} slices`,
+        });
+        toggle.type = 'button';
+        toggle.addEventListener('click', () => {
+            _showAllSliceRows = !_showAllSliceRows;
+            renderMapStats();
+        });
+        list.appendChild(toggle);
+    }
+    return list;
+};
+
 // Map stats at the top of the Legend panel: counts, overall progress, and cards per legend category.
 // Progress uses the same rule as each slice's bar (task cards only), summed across slices.
 export const renderMapStats = () => {
@@ -1374,13 +1437,10 @@ export const renderMapStats = () => {
     const tasks = _state.slices.map(getSliceProgress);
     const totalTasks = tasks.reduce((n, p) => n + p.total, 0);
     const doneTasks = tasks.reduce((n, p) => n + p.done, 0);
-    const percent = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
-    const points = _state.slices.reduce((n, slice) => n + getSlicePoints(slice).total, 0);
 
-    const isTask = (card) => !card.color || card.color === DEFAULT_CARD_COLORS.story;
     const statusCounts = { none: 0 };
     Object.keys(STATUS_OPTIONS).forEach(key => { statusCounts[key] = 0; });
-    sliceCards.filter(isTask).forEach(card => {
+    sliceCards.filter(countsTowardsProgress).forEach(card => {
         const key = card.status && statusCounts[card.status] !== undefined ? card.status : 'none';
         statusCounts[key]++;
     });
@@ -1390,7 +1450,6 @@ export const renderMapStats = () => {
     ].filter(s => s.n > 0);
 
     container.innerHTML = '';
-    container.appendChild(el('div', 'map-stats-label', { text: 'On this map' }));
     const tiles = el('div', 'map-stats-tiles');
     counts.forEach(([n, one, many]) => {
         const tile = el('div', 'map-stats-tile');
@@ -1400,23 +1459,24 @@ export const renderMapStats = () => {
     container.appendChild(tiles);
 
     if (totalTasks > 0) {
-        const pointsText = points > 0 ? ` · ${points} ${points === 1 ? 'pt' : 'pts'}` : '';
         container.appendChild(el('div', 'map-stats-label', {
-            text: `Progress · ${percent}% done${pointsText}`,
-            title: `${doneTasks} of ${totalTasks} task cards done`,
+            text: 'Progress',
+            title: `${doneTasks} of ${totalTasks} tasks done`,
         }));
-        const bar = el('div', 'map-stats-bar');
+        container.appendChild(renderSliceProgress());
         const key = el('div', 'map-stats-key');
         segments.forEach(s => {
-            const part = el('i');
-            part.style.width = `${(s.n / totalTasks) * 100}%`;
-            part.style.background = s.color;
-            bar.appendChild(part);
             const item = el('span', null, { text: `${s.n} ${s.label}` });
             item.style.setProperty('--c', s.color);
             key.appendChild(item);
         });
-        container.append(bar, key);
+        container.appendChild(key);
+    } else if (sliceCards.length > 0) {
+        // Cards exist but none count, so explain rather than hiding progress
+        container.appendChild(el('div', 'map-stats-label', { text: 'Progress' }));
+        container.appendChild(el('div', 'map-stats-empty', {
+            text: 'Nothing to track yet. Progress counts yellow task cards and any card with a status.',
+        }));
     }
 
     if (_state.legend.length > 0) container.appendChild(el('div', 'map-stats-label', { text: 'Legend' }));
