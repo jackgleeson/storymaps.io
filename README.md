@@ -69,7 +69,7 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **CSV** - import/export as spreadsheet-friendly CSV
 - **Jira** - import from CSV file or via server-proxied REST API; export as CSV or via server-proxied REST API; card body text is used as the issue description
 - **Asana** - import from CSV file or via server-proxied REST API; export as CSV or via server-proxied REST API; card body text is used as the task notes
-- **Phabricator** - import or export via server-proxied Conduit API (Maniphest tasks); card body text is used as the task description
+- **Phabricator** - import from CSV file or via server-proxied Conduit API; export via server-proxied Conduit API, or as a script you run in your browser's console on your Phabricator site (for instances the server can't reach, e.g. behind a VPN); card body text is used as the task description
 - **Linear** - import from CSV file or via server-proxied REST API; export via server-proxied REST API
 - **URL endpoints** - append `.json`, `.yaml`, or `.csv` to any map URL to fetch its data programmatically (e.g. `curl storymaps.io/abc123.csv`); exports include the map ID for traceability
 - **Share as image** - copy map screenshot to clipboard or download as PNG
@@ -260,7 +260,7 @@ The server starts on `http://localhost:8080`. Run the tests with `npm test`.
 18. Use the **view controls** (next to zoom) to toggle focus mode, full screen, dark mode, or cursor visibility
 19. Press **Esc** twice to exit full screen (single Esc still closes modals, search, etc.)
 20. Use **Menu → Backups** to create, restore, or delete map snapshots
-21. Use **Menu → Import** to import from JSON, YAML, CSV, from Jira, Asana, or Linear (CSV file or API), or from Phabricator (API)
+21. Use **Menu → Import** to import from JSON, YAML, CSV, or from Jira, Asana, Phabricator, or Linear (CSV file or API)
 22. Use **Menu → Export** to save as JSON, YAML, or CSV, or export to Jira, Asana, Phabricator, or Linear
 23. Use **Print** to save as PDF
 24. Click **Build with AI** to generate a prompt from your story map for AI coding tools or app builders; select a slice and target, add optional instructions, then copy or open the prompt
