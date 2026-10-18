@@ -230,8 +230,76 @@ export const render = () => {
 let sortableInstances = [];
 let _sortableInitPending = null;
 
+// Edge auto-scroll while dragging cards or steps. Sortable's built-in version only reacts within 30px
+// of the edge of whatever element is under the pointer, which the fixed controls and selection toolbar
+// cover. This measures from the map area's edges instead and speeds up the closer you get.
+const AUTO_SCROLL_ZONE = 80;
+const AUTO_SCROLL_MAX_SPEED = 30; // px per frame at (or past) the edge
+let _SortableLib = null;
+let autoScrollFrame = null;
+let autoScrollPointer = null;
+
+const trackDragPointer = (e) => {
+    const point = e.touches ? e.touches[0] : e;
+    if (point) autoScrollPointer = { x: point.clientX, y: point.clientY };
+};
+
+const edgeSpeed = (distance) => distance >= AUTO_SCROLL_ZONE
+    ? 0
+    : Math.ceil(AUTO_SCROLL_MAX_SPEED * Math.min(1, 1 - distance / AUTO_SCROLL_ZONE));
+
+const stopDragAutoScroll = () => {
+    document.removeEventListener('mousemove', trackDragPointer, true);
+    document.removeEventListener('touchmove', trackDragPointer, true);
+    if (autoScrollFrame) cancelAnimationFrame(autoScrollFrame);
+    autoScrollFrame = null;
+    autoScrollPointer = null;
+};
+
+const autoScrollTick = () => {
+    // Stop if the drag ended without an onEnd (e.g. a re-render destroyed the Sortable mid-drag)
+    if (!_SortableLib?.active) { stopDragAutoScroll(); return; }
+    autoScrollFrame = requestAnimationFrame(autoScrollTick);
+    if (!autoScrollPointer) return;
+
+    const wrapper = _dom.storyMapWrapper;
+    const rect = wrapper.getBoundingClientRect();
+    const { x, y } = autoScrollPointer;
+    const dx = edgeSpeed(rect.right - x) - edgeSpeed(x - rect.left);
+    const dy = edgeSpeed(rect.bottom - y) - edgeSpeed(y - rect.top);
+    if (!dx && !dy) return;
+
+    // The drag clone sits inside the zoomed map, so it scrolls with it. Measure how far it moved
+    // on screen and shift it back under the pointer (in its own, zoom-scaled units).
+    const ghost = _SortableLib.ghost;
+    const before = ghost?.getBoundingClientRect();
+    wrapper.scrollLeft += dx;
+    wrapper.scrollTop += dy;
+    if (ghost && before) {
+        const after = ghost.getBoundingClientRect();
+        const moveX = after.left - before.left;
+        const moveY = after.top - before.top;
+        if (moveX || moveY) {
+            const scale = ghost.offsetWidth ? after.width / ghost.offsetWidth : 1;
+            const current = getComputedStyle(ghost).transform;
+            const matrix = new DOMMatrix(current === 'none' ? undefined : current);
+            matrix.e -= moveX / scale;
+            matrix.f -= moveY / scale;
+            ghost.style.transform = matrix.toString();
+        }
+    }
+};
+
+const startDragAutoScroll = () => {
+    stopDragAutoScroll();
+    document.addEventListener('mousemove', trackDragPointer, true);
+    document.addEventListener('touchmove', trackDragPointer, { capture: true, passive: true });
+    autoScrollFrame = requestAnimationFrame(autoScrollTick);
+};
+
 export const initSortable = async () => {
     const Sortable = await _ensureSortable();
+    _SortableLib = Sortable;
 
     // Destroy previous instances
     sortableInstances.forEach(s => s.destroy());
@@ -257,6 +325,7 @@ export const initSortable = async () => {
             dragClass: 'sortable-drag',
             filter: '.btn-add-story, .btn-expand, .btn-options, .options-menu',
             preventOnFilter: false,
+            scroll: false, // replaced by startDragAutoScroll
             // Added on grab so Sortable's drag clone includes it; CSS only shows it on the clone
             onChoose: (evt) => {
                 const ids = getMultiDragIds(evt.item.dataset.storyId);
@@ -266,6 +335,7 @@ export const initSortable = async () => {
                 evt.item.querySelector('.multi-drag-badge')?.remove();
             },
             onStart: (evt) => {
+                startDragAutoScroll();
                 const multiIds = getMultiDragIds(evt.item.dataset.storyId);
                 if (multiIds) {
                     multiIds.filter(id => id !== evt.item.dataset.storyId).forEach(id => {
@@ -290,6 +360,7 @@ export const initSortable = async () => {
                 }
             },
             onEnd: (evt) => {
+                stopDragAutoScroll();
                 if (_broadcastDragEnd) _broadcastDragEnd();
                 _dom.storyMap.querySelectorAll('.multi-drag-pending').forEach(card => card.classList.remove('multi-drag-pending'));
                 // If a pinch gesture is active, revert the card to its original position
@@ -358,10 +429,12 @@ export const initSortable = async () => {
         let isDragging = false;
         let dragColumnId = null;
         let columnStartX = new Map();
+        let startScrollLeft = 0;
         let animFrame = null;
 
         const captureStartPositions = () => {
             columnStartX.clear();
+            startScrollLeft = _dom.storyMapWrapper.scrollLeft;
             _state.columns.forEach(col => {
                 const firstStoryCol = document.querySelector(`.story-column[data-column-id="${col.id}"]`);
                 if (firstStoryCol) {
@@ -379,7 +452,8 @@ export const initSortable = async () => {
                 if (startX === undefined) return;
 
                 const stepRect = step.getBoundingClientRect();
-                const deltaX = stepRect.left - startX;
+                // Auto-scroll moves the step and its cards together, so add the scroll back in
+                const deltaX = stepRect.left - startX + (_dom.storyMapWrapper.scrollLeft - startScrollLeft);
 
                 document.querySelectorAll(`.story-column[data-column-id="${columnId}"]`).forEach(el => {
                     el.style.transform = `translateX(${deltaX}px)`;
@@ -398,7 +472,9 @@ export const initSortable = async () => {
             dragClass: 'sortable-drag',
             draggable: '.step',
             filter: '.steps-row-spacer, .phantom-step, .partial-map-ref, .partial-map-preview-col',
+            scroll: false, // replaced by startDragAutoScroll
             onStart: (evt) => {
+                startDragAutoScroll();
                 isDragging = true;
                 dragColumnId = evt.item.dataset.columnId;
                 captureStartPositions();
@@ -416,6 +492,7 @@ export const initSortable = async () => {
                 animFrame = requestAnimationFrame(updateColumnPositions);
             },
             onEnd: () => {
+                stopDragAutoScroll();
                 if (_broadcastDragEnd) _broadcastDragEnd();
                 isDragging = false;
 
