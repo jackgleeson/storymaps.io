@@ -40,7 +40,7 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **Card title & body** - each card has a short title visible on the map and an optional body for longer descriptions or details
 - **Expanded view** - click the expand button on any card to edit the title and body in a larger modal; cards with body text show an expand indicator
 - **Card colours & links** - 14 colours, external URLs to issue trackers
-- **Drag & drop** - reorder cards, columns, and slices
+- **Drag & drop** - reorder cards, columns, and slices; the map auto-scrolls when you drag near its edges
 - **Spacer columns** - insert spacer columns to visually group steps
 
 ### Search & Filter
@@ -49,6 +49,7 @@ A story map preserves it. One diagram that shows who the users are, what journey
 
 ### Multi-Select & Bulk Edit
 - **Select cards** - click, Shift+click, or marquee-drag to select multiple cards
+- **Drag selections** - drag any selected card to move the whole selection; the cards stack at the drop point in map order
 - **Selection toolbar** - bulk change colour, status, or tags; duplicate or delete selected items
 
 ### Collaboration
@@ -68,7 +69,7 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **CSV** - import/export as spreadsheet-friendly CSV
 - **Jira** - import from CSV file or via server-proxied REST API; export as CSV or via server-proxied REST API; card body text is used as the issue description
 - **Asana** - import from CSV file or via server-proxied REST API; export as CSV or via server-proxied REST API; card body text is used as the task notes
-- **Phabricator** - export via server-proxied Maniphest API; card body text is used as the task description
+- **Phabricator** - import or export via server-proxied Conduit API (Maniphest tasks); card body text is used as the task description
 - **Linear** - import from CSV file or via server-proxied REST API; export via server-proxied REST API
 - **URL endpoints** - append `.json`, `.yaml`, or `.csv` to any map URL to fetch its data programmatically (e.g. `curl storymaps.io/abc123.csv`); exports include the map ID for traceability
 - **Share as image** - copy map screenshot to clipboard or download as PNG
@@ -128,26 +129,39 @@ Storymaps is a single Docker container behind a Caddy reverse proxy. It runs on 
 
 1. Clone the repo:
    ```bash
-   git clone https://github.com/jackgleeson/userstorymaps.git
-   cd userstorymaps
+   git clone https://github.com/jackgleeson/storymaps.io.git
+   cd storymaps.io
    ```
-2. Edit the `Caddyfile` - replace `storymaps.io` with your domain and remove the `www` redirect block:
+2. Edit the `Caddyfile` - replace `storymaps.io` with your domain and remove the `www` redirect block. Keep the `header` block, which sets the security headers:
    ```
    storymaps.yourcompany.com {
+       header {
+           # ...security headers, unchanged
+       }
+
        reverse_proxy app:8080
    }
    ```
-3. Build and start:
+3. Edit `docker-compose.yml` and add an `environment` section to the `app` service. `STORYMAPS_ALLOWED_ORIGINS` must list your domain, or browsers on it can't connect. `TRUST_PROXY=true` lets rate limiting see each visitor's real IP through Caddy instead of counting everyone as one client:
+   ```yaml
+   services:
+     app:
+       # ...
+       environment:
+         - STORYMAPS_ALLOWED_ORIGINS=https://storymaps.yourcompany.com
+         - TRUST_PROXY=true
+   ```
+4. Build and start:
    ```bash
    docker compose up -d --build
    ```
-4. Visit `https://storymaps.yourcompany.com` - Caddy provisions TLS automatically via Let's Encrypt.
+5. Visit `https://storymaps.yourcompany.com` - Caddy provisions TLS automatically via Let's Encrypt.
 
 ### Behind an Existing Reverse Proxy
 
 If you already run nginx, Traefik, HAProxy, or another proxy, you can skip Caddy and expose the app directly.
 
-1. Remove the `caddy` service from `docker-compose.yml` and expose port 8080 on the `app` service:
+1. Remove the `caddy` service from `docker-compose.yml` and expose port 8080 on the `app` service. Binding to `127.0.0.1` keeps the app reachable only through your proxy:
    ```yaml
    services:
      app:
@@ -157,8 +171,12 @@ If you already run nginx, Traefik, HAProxy, or another proxy, you can skip Caddy
        volumes:
          - ./data:/app/data
        ports:
-         - "8080:8080"
+         - "127.0.0.1:8080:8080"
+       environment:
+         - STORYMAPS_ALLOWED_ORIGINS=https://storymaps.yourcompany.com
+         - TRUST_PROXY=true
    ```
+   Only set `TRUST_PROXY=true` if your proxy sets `X-Forwarded-For` and clients can't reach port 8080 directly; otherwise a client could fake its IP to dodge rate limits.
 2. Point your existing proxy at `localhost:8080` and handle TLS termination there.
 
    Example nginx snippet:
@@ -176,10 +194,11 @@ If you already run nginx, Traefik, HAProxy, or another proxy, you can skip Caddy
            proxy_set_header Upgrade $http_upgrade;
            proxy_set_header Connection "upgrade";
            proxy_set_header Host $host;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
        }
    }
    ```
-   The `Upgrade` and `Connection` headers are required for WebSocket connections.
+   The `Upgrade` and `Connection` headers are required for WebSocket connections. `X-Forwarded-For` passes the visitor's IP through for rate limiting (with `TRUST_PROXY=true`).
 
 ### Data & Backups
 
@@ -202,9 +221,14 @@ Data is preserved across rebuilds since `data/` is a host-mounted volume.
 
 ### Environment Variables
 
+Set these in the `environment` section of the `app` service in `docker-compose.yml`. The app doesn't read a `.env` file.
+
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `PORT`   | `8080`  | Server listen port |
+| `STORYMAPS_ALLOWED_ORIGINS` | storymaps.io origins | Comma-separated origins allowed to open WebSocket connections and write to the API, e.g. `https://storymaps.yourcompany.com`. Required when self-hosting on your own domain. `localhost` is always allowed. |
+| `TRUST_PROXY` | unset | Set to `true` to take the client IP from `X-Forwarded-For` for rate limiting. Use it behind the bundled Caddy or another trusted proxy; leave it unset if clients can reach the app directly. |
+| `DISABLE_SSRF_CHECK` | unset | Set to `1` to let server-proxied imports and exports call non-HTTPS URLs, localhost, and private network addresses. This turns off SSRF protection, so use it for local development only. |
 
 ### Running Locally (Development)
 
@@ -213,7 +237,7 @@ npm install
 npm start
 ```
 
-The server starts on `http://localhost:8080`.
+The server starts on `http://localhost:8080`. Run the tests with `npm test`.
 
 ## Usage
 1. Visit [storymaps.io](https://storymaps.io) or self-host your own instance
@@ -223,7 +247,7 @@ The server starts on `http://localhost:8080`.
 5. Click **+ Add Slice** to create release groupings
 6. Click the **expand** button on a card to add a description in the body field; the title stays visible on the map
 7. Click the **...** menu on cards to set colours, status, links, tags, or story points
-8. Drag tasks to reorder or move between columns
+8. Drag tasks to reorder or move between columns; select several cards first to drag them together
 9. Use the **Legend** to define card categories and colour-code your map
 10. Use **Ctrl+F** to search or open the **Filter** panel to filter by status, colour, or tag
 11. Click, Shift+click, or marquee-drag to select multiple cards, then use the toolbar to bulk edit
@@ -236,7 +260,7 @@ The server starts on `http://localhost:8080`.
 18. Use the **view controls** (next to zoom) to toggle focus mode, full screen, dark mode, or cursor visibility
 19. Press **Esc** twice to exit full screen (single Esc still closes modals, search, etc.)
 20. Use **Menu → Backups** to create, restore, or delete map snapshots
-21. Use **Menu → Import** to import from JSON, YAML, CSV, or from Jira, Asana, or Linear (CSV file or API)
+21. Use **Menu → Import** to import from JSON, YAML, CSV, from Jira, Asana, or Linear (CSV file or API), or from Phabricator (API)
 22. Use **Menu → Export** to save as JSON, YAML, or CSV, or export to Jira, Asana, Phabricator, or Linear
 23. Use **Print** to save as PDF
 24. Click **Build with AI** to generate a prompt from your story map for AI coding tools or app builders; select a slice and target, add optional instructions, then copy or open the prompt
@@ -251,7 +275,6 @@ If you find this tool useful, consider [buying me a coffee](https://buymeacoffee
 - Collaborative notepad powered by [CodeMirror 6](https://codemirror.net/)
 
 ## Documentation
-- [API Reference](API.md) - REST API endpoints, format endpoints, and server-proxied integrations
 - [Contributing](CONTRIBUTING.md) - development setup, code style, and contribution guidelines
 
 ## License
