@@ -143,14 +143,14 @@ Storymaps is a single Docker container behind a Caddy reverse proxy. It runs on 
        reverse_proxy app:8080
    }
    ```
-3. Edit `docker-compose.yml` and add an `environment` section to the `app` service. `STORYMAPS_ALLOWED_ORIGINS` must list your domain, or browsers on it can't connect. `TRUST_PROXY=true` lets rate limiting see each visitor's real IP through Caddy instead of counting everyone as one client:
+3. Edit `docker-compose.yml` and add your domain to the `app` service's `environment` section. `STORYMAPS_ALLOWED_ORIGINS` must list it, or browsers on it can't connect. `TRUST_PROXY=true` is already there; it lets rate limiting see each visitor's IP through Caddy instead of counting everyone as one client:
    ```yaml
    services:
      app:
        # ...
        environment:
-         - STORYMAPS_ALLOWED_ORIGINS=https://storymaps.yourcompany.com
          - TRUST_PROXY=true
+         - STORYMAPS_ALLOWED_ORIGINS=https://storymaps.yourcompany.com
    ```
 4. Build and start:
    ```bash
@@ -228,7 +228,7 @@ Set these in the `environment` section of the `app` service in `docker-compose.y
 |----------|---------|-------------|
 | `PORT`   | `8080`  | Server listen port |
 | `STORYMAPS_ALLOWED_ORIGINS` | storymaps.io origins | Comma-separated origins allowed to open WebSocket connections and write to the API, e.g. `https://storymaps.yourcompany.com`. Required when self-hosting on your own domain. `localhost` is always allowed. |
-| `TRUST_PROXY` | unset | Set to `true` to take the client IP from `X-Forwarded-For` for rate limiting. Use it behind the bundled Caddy or another trusted proxy; leave it unset if clients can reach the app directly. |
+| `TRUST_PROXY` | unset (`true` in the bundled `docker-compose.yml`) | Set to `true` to take the client IP from `X-Forwarded-For` for rate limiting. Use it behind the bundled Caddy or another trusted proxy; leave it unset if clients can reach the app directly. |
 | `DISABLE_SSRF_CHECK` | unset | Set to `1` to let server-proxied imports and exports call non-HTTPS URLs, localhost, and private network addresses. This turns off SSRF protection, so use it for local development only. |
 
 ### Running Locally (Development)

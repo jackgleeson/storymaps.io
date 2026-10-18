@@ -7,6 +7,9 @@ services:
       - ./data:/app/data
     expose:
       - "8080"
+    environment:
+      # Caddy is the only way in, so trust its X-Forwarded-For for per-visitor rate limits
+      - TRUST_PROXY=true
 
   caddy:
     image: caddy:2
