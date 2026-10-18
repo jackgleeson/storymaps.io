@@ -7623,10 +7623,6 @@ html.dark-mode .selection-toolbar-status-row.active {
     background: #334155;
     color: #f8fafc;
 }
-html.dark-mode .card-expand-modal {
-    filter: brightness(0.85) saturate(1.15);
-}
-
 html.dark-mode .build-ai-modal {
     box-shadow:
         0 8px 40px rgba(0, 0, 0, 0.4),
@@ -7771,9 +7767,14 @@ html.dark-mode .notes-editor {
 html.dark-mode * {
     scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
 }
+/* The expand modal keeps its pastel card colour in dark mode, so its scrollbars stay dark */
+html.dark-mode .card-expand-name,
+html.dark-mode .card-expand-body {
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
 html.dark-mode .card-expand-name::-webkit-scrollbar-thumb,
 html.dark-mode .card-expand-body::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.2);
 }
 
 /* Panel tab hover */
