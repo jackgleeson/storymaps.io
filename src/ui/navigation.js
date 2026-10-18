@@ -121,7 +121,9 @@ export const centerScroll = () => {
         // Wider map on large screen: offset 1/3 of gap to left
         wrapper.scrollLeft = map.offsetLeft - slack / 3;
     } else {
-        wrapper.scrollLeft = map.offsetLeft;
+        // Map wider than the screen (e.g. phones): keep a small margin so the row labels and
+        // slice gutter aren't flush against, or clipped by, the left edge
+        wrapper.scrollLeft = Math.max(0, map.offsetLeft - 12);
     }
 
     // Vertically: start near the top with a small breathing offset
