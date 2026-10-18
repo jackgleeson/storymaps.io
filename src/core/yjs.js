@@ -611,7 +611,7 @@ export const createYjsDoc = async (mapId) => {
             syncToYjs();
         }
         _notepad.bindYjs(ydoc, ytext, provider);
-        _log.bindYjs(ydoc);
+        _log.bindYjs(ydoc, provider, mapId);
     }
 
     return ydoc;

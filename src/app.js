@@ -29,7 +29,7 @@ const { closeMainMenu, closeAllOptionsMenus, zoomToFit, scrollElementIntoView } 
 const { loadYjs, createYjsDoc, destroyYjs, syncFromYjs, syncToYjs, getProvider, getYdoc, getYmap, ensureSortable } = yjs;
 const { trackPresence, trackCursor, toggleCursorsVisibility, updateCursorsVisibilityUI, getCursorColor, getSessionId, broadcastDragStart, broadcastDragEnd } = presence;
 const { lockState, loadLockState, subscribeLockState, updateLockUI, updateEditability, checkSessionUnlock, initLockListeners, hideLockModal } = lock;
-const { renderLegend, renderPartialsList } = ui;
+const { renderLegend, renderPartialsList, renderMapStats } = ui;
 
 // =============================================================================
 // Persistence
@@ -111,6 +111,8 @@ const saveToStorage = () => {
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(serialize()));
     if (state.mapId) localStorage.setItem(STORAGE_KEY + ':mapId', state.mapId);
+    // Some edits patch a single card without a full render, so refresh the Legend panel's stats here
+    renderMapStats();
     if (state.mapId && getYmap()) {
         syncToYjs();
     }

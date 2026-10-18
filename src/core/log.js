@@ -17,21 +17,54 @@ let _yarray = null;
 let _observer = null;
 let _container = null;
 
+// Header stats: dates and edit count come from the server, the rest from the log and presence
+let _statsEl = null;
+let _awareness = null;
+let _mapId = null;
+let _meta = null;
+let _metaTimer = null;
+let _tickTimer = null;
+
+const isPanelOpen = () => document.getElementById('logPanel')?.classList.contains('open');
+
 export const init = () => {
     _container = document.getElementById('logList');
+    _statsEl = document.getElementById('logStats');
+
+    // Only fetch while the Log panel is open, so viewers who never open it make no extra requests.
+    // Re-render every minute while open so "last updated" stays current.
+    const panel = document.getElementById('logPanel');
+    if (panel) {
+        new MutationObserver(() => {
+            if (isPanelOpen()) {
+                fetchMeta();
+                if (!_tickTimer) _tickTimer = setInterval(renderStats, 60_000);
+            } else {
+                clearInterval(_tickTimer);
+                _tickTimer = null;
+            }
+        }).observe(panel, { attributes: true, attributeFilter: ['class'] });
+    }
 };
 
 /**
  * Attach to a Yjs doc's Y.Array('log').
  */
-export const bindYjs = (ydoc) => {
+export const bindYjs = (ydoc, provider = null, mapId = null) => {
     unbindYjs();
     _yarray = ydoc.getArray('log');
+    _awareness = provider?.awareness || null;
+    _mapId = mapId;
 
-    _observer = () => render();
+    _observer = () => {
+        render();
+        scheduleMetaRefresh();
+    };
     _yarray.observe(_observer);
+    _awareness?.on('change', renderStats);
 
     render();
+    if (isPanelOpen()) fetchMeta();
 };
 
 /**
@@ -43,7 +76,88 @@ export const unbindYjs = () => {
     }
     _yarray = null;
     _observer = null;
+    _awareness?.off('change', renderStats);
+    _awareness = null;
+    _mapId = null;
+    _meta = null;
+    clearTimeout(_metaTimer);
     if (_container) _container.innerHTML = '';
+    if (_statsEl) _statsEl.innerHTML = '';
+};
+
+const fetchMeta = async () => {
+    const mapId = _mapId;
+    if (!mapId) return;
+    try {
+        const res = await fetch(`/api/maps/${encodeURIComponent(mapId)}/meta`);
+        if (!res.ok || mapId !== _mapId) return;
+        _meta = await res.json();
+        renderStats();
+    } catch {
+        // Offline or server unreachable: the header shows what it can from the log and presence
+    }
+};
+
+// The server saves updated_at 2s after the last change, so wait a little longer before asking
+const scheduleMetaRefresh = () => {
+    if (!isPanelOpen()) return;
+    clearTimeout(_metaTimer);
+    _metaTimer = setTimeout(fetchMeta, 3000);
+};
+
+const contributorName = (entry) => {
+    if (entry.src === 'cli') return 'CLI';
+    if (entry.src === 'mobile') return 'Mobile user';
+    if (entry.sid === getSessionId()) return 'You';
+    return entry.name || 'Web user';
+};
+
+const renderStats = () => {
+    if (!_statsEl || !_yarray) return;
+    const entries = _yarray.toArray();
+    const rows = [];
+
+    if (_meta?.created_at) rows.push(['Created', formatDate(_meta.created_at), _meta.created_at]);
+
+    // The newest log entry can be fresher than the server's debounced updated_at
+    const newestTs = entries.length ? entries[entries.length - 1].ts : 0;
+    const updatedTs = Math.max(_meta?.updated_at ? Date.parse(_meta.updated_at) : 0, newestTs);
+    if (updatedTs) rows.push(['Last updated', formatAgo(updatedTs), new Date(updatedTs).toISOString()]);
+
+    const here = _awareness ? _awareness.getStates().size : 0;
+    if (here) rows.push(['Here now', `${here} ${here === 1 ? 'person' : 'people'}`, null, 'log-stats-live']);
+
+    const names = [];
+    [...entries].reverse().forEach(entry => {
+        const name = contributorName(entry);
+        if (!names.includes(name)) names.push(name);
+    });
+    if (names.length) {
+        const extra = names.length > 4 ? ` +${names.length - 4}` : '';
+        rows.push(['Recent', names.slice(0, 4).join(', ') + extra]);
+    }
+
+    if (_meta) {
+        // Maps older than the edit counter only have edits since it was added
+        const since = _meta.edits_since && _meta.created_at && _meta.edits_since > _meta.created_at
+            ? ` since ${formatDate(_meta.edits_since)}` : '';
+        rows.push(['Edits', `${_meta.edit_count}${since}`]);
+    }
+
+    _statsEl.innerHTML = '';
+    if (rows.length === 0) return;
+    const list = document.createElement('dl');
+    list.className = 'log-stats-list';
+    rows.forEach(([label, value, isoTitle, className]) => {
+        const dt = document.createElement('dt');
+        dt.textContent = label;
+        const dd = document.createElement('dd');
+        dd.textContent = value;
+        if (className) dd.className = className;
+        if (isoTitle) dd.title = new Date(isoTitle).toLocaleString();
+        list.append(dt, dd);
+    });
+    _statsEl.appendChild(list);
 };
 
 /**
@@ -96,6 +210,7 @@ export const logTextEdit = (label, itemId) => {
  */
 const render = () => {
     if (!_container || !_yarray) return;
+    renderStats();
 
     const entries = _yarray.toArray();
 
@@ -170,6 +285,20 @@ const formatTime = (ts) => {
 
     // Otherwise show date + time
     return `${pad(d.getDate())}/${pad(d.getMonth() + 1)} ${time}`;
+};
+
+const formatDate = (value) =>
+    new Date(value).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+
+const formatAgo = (ts) => {
+    const minutes = Math.floor((Date.now() - ts) / 60_000);
+    if (minutes < 1) return 'just now';
+    if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days} day${days === 1 ? '' : 's'} ago`;
+    return formatDate(ts);
 };
 
 const escapeHtml = (str) =>

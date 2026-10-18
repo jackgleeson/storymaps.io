@@ -54,13 +54,23 @@ sqlite.exec(`
   )
 `);
 
+// Total edits per map = activity-log entries, counted from when this column was added.
+// The date counting started is kept so older maps can show "since <date>".
+sqlite.exec('CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT)');
+if (!sqlite.prepare('PRAGMA table_info(maps)').all().some(c => c.name === 'edit_count')) {
+  sqlite.exec('ALTER TABLE maps ADD COLUMN edit_count INTEGER NOT NULL DEFAULT 0');
+  sqlite.prepare("INSERT OR REPLACE INTO meta (key, value) VALUES ('edit_count_since', ?)").run(new Date().toISOString());
+}
+const editCountSince = sqlite.prepare("SELECT value FROM meta WHERE key = 'edit_count_since'").get()?.value || null;
+
 const stmtInsert = sqlite.prepare(
   'INSERT OR IGNORE INTO maps (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)'
 );
 const stmtUpdate = sqlite.prepare(
-  'UPDATE maps SET name = ?, updated_at = ? WHERE id = ?'
+  'UPDATE maps SET name = ?, updated_at = ?, edit_count = edit_count + ? WHERE id = ?'
 );
 const stmtExists = sqlite.prepare('SELECT 1 FROM maps WHERE id = ?');
+const stmtMeta = sqlite.prepare('SELECT created_at, updated_at, edit_count FROM maps WHERE id = ?');
 
 const generateUniqueMapId = () => {
   for (let i = 0; i < 10; i++) {
@@ -81,7 +91,8 @@ const { route, matchRoute } = createRouter();
 const ctx = {
   route,
   Y, docs, getPersistence,
-  stmtInsert, stmtUpdate, stmtExists,
+  stmtInsert, stmtUpdate, stmtExists, stmtMeta, editCountSince,
+  getPendingEdits: (mapId) => pendingEdits.get(mapId) || 0,
   readJson, writeJson, DATA_DIR, LOCK_FILE, STATS_FILE, getBackupFile,
   serializeDoc, contentEtag, appendLogEntry, diffPush, writeDocFromJson, countCards,
   isRateLimited, isProxyRateLimited,
@@ -330,26 +341,30 @@ const server = createServer(async (req, res) => {
 
 // Debounce map for update writes (mapId -> timeout)
 const updateTimers = new Map();
+// Activity-log entries seen since the last write (mapId -> count), saved with updated_at
+const pendingEdits = new Map();
 
-const flushMapUpdate = (mapId) => {
+// y-websocket drops a doc from `docs` before destroying it, so callers pass the doc in
+const flushMapUpdate = (mapId, doc = docs.get(mapId)) => {
   if (!updateTimers.has(mapId)) return;
   clearTimeout(updateTimers.get(mapId));
   updateTimers.delete(mapId);
   try {
-    const doc = docs.get(mapId);
     if (doc) {
       const ymap = doc.getMap('storymap');
       const name = ymap.get('name') || 'untitled';
-      stmtUpdate.run(name, new Date().toISOString(), mapId);
+      const edits = pendingEdits.get(mapId) || 0;
+      pendingEdits.delete(mapId);
+      stmtUpdate.run(name, new Date().toISOString(), edits, mapId);
     }
   } catch (err) {
     console.error(`SQLite flush error for ${mapId}:`, err.message);
   }
 };
 
-const trackMapUpdate = (mapId) => {
+const trackMapUpdate = (mapId, doc) => {
   if (updateTimers.has(mapId)) clearTimeout(updateTimers.get(mapId));
-  updateTimers.set(mapId, setTimeout(() => flushMapUpdate(mapId), 2_000));
+  updateTimers.set(mapId, setTimeout(() => flushMapUpdate(mapId, doc), 2_000));
 };
 
 // Track which docs we've already hooked
@@ -379,11 +394,19 @@ wss.on('connection', (ws, req) => {
     stmtInsert.run(docName, 'untitled', now, now);
 
     // Track updates with debounce
-    doc.on('update', () => trackMapUpdate(docName));
+    doc.on('update', () => trackMapUpdate(docName, doc));
+
+    // Count activity-log entries from connected clients. Loading a map from disk replays
+    // its log with no origin, and CLI pushes are counted by the PUT route.
+    doc.getArray('log').observe((event) => {
+      if (!event.transaction.origin) return;
+      const added = event.changes.delta.reduce((n, d) => n + (d.insert ? d.insert.length : 0), 0);
+      if (added) pendingEdits.set(docName, (pendingEdits.get(docName) || 0) + added);
+    });
 
     // Flush pending writes when all clients disconnect and doc closes
     doc.on('destroy', () => {
-      flushMapUpdate(docName);
+      flushMapUpdate(docName, doc);
       trackedDocs.delete(docName);
     });
   }

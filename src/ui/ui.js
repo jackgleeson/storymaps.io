@@ -1324,6 +1324,8 @@ export const renderLegend = () => {
             });
         }
         row.appendChild(input);
+        // Filled in by renderMapStats(); sits before the remove button so × keeps the right edge
+        row.appendChild(el('span', 'legend-count'));
 
         if (editable) {
             const removeBtn = el('button', 'legend-remove', { text: '\u00d7', title: 'Remove' });
@@ -1342,12 +1344,96 @@ export const renderLegend = () => {
     const maxReached = _state.legend.length >= Object.keys(CARD_COLORS).length;
     _dom.legendAddBtn.style.display = editable && !maxReached ? '' : 'none';
     _dom.legendPanel.classList.toggle('has-entries', _state.legend.length > 0);
-    _dom.legendToggle.disabled = !editable && _state.legend.length === 0;
+    // The panel always has map stats, so only disable the tab when there's no map to describe
+    _dom.legendToggle.disabled = _state.columns.length === 0;
     if (_dom.legendToggle.disabled && _dom.legendToggle.classList.contains('active')) {
         _dom.legendPanel.classList.remove('open');
         _dom.legendToggle.classList.remove('active');
         _dom.controlsRight?.classList.remove('panel-open');
     }
+    renderMapStats();
+};
+
+// Map stats at the top of the Legend panel: counts, overall progress, and cards per legend category.
+// Progress uses the same rule as each slice's bar (task cards only), summed across slices.
+export const renderMapStats = () => {
+    const container = document.getElementById('mapStats');
+    if (!container) return;
+
+    const flatten = (byColumn) => Object.values(byColumn || {}).flat();
+    const sliceCards = _state.slices.flatMap(slice => flatten(slice.stories));
+    const counts = [
+        [sliceCards.length, 'card', 'cards'],
+        [_state.columns.filter(c => !c.hidden && !c.partialMapId).length, 'step', 'steps'],
+        [_state.slices.length, 'slice', 'slices'],
+        [flatten(_state.users).length, 'user', 'users'],
+        [flatten(_state.activities).length, 'activity', 'activities'],
+        [(_state.partialMaps || []).length, 'partial', 'partials'],
+    ];
+
+    const tasks = _state.slices.map(getSliceProgress);
+    const totalTasks = tasks.reduce((n, p) => n + p.total, 0);
+    const doneTasks = tasks.reduce((n, p) => n + p.done, 0);
+    const percent = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
+    const points = _state.slices.reduce((n, slice) => n + getSlicePoints(slice).total, 0);
+
+    const isTask = (card) => !card.color || card.color === DEFAULT_CARD_COLORS.story;
+    const statusCounts = { none: 0 };
+    Object.keys(STATUS_OPTIONS).forEach(key => { statusCounts[key] = 0; });
+    sliceCards.filter(isTask).forEach(card => {
+        const key = card.status && statusCounts[card.status] !== undefined ? card.status : 'none';
+        statusCounts[key]++;
+    });
+    const segments = [
+        ...Object.entries(STATUS_OPTIONS).map(([key, { label, color }]) => ({ n: statusCounts[key], label: label.toLowerCase(), color })),
+        { n: statusCounts.none, label: 'no status', color: 'var(--color-border-strong)' },
+    ].filter(s => s.n > 0);
+
+    container.innerHTML = '';
+    container.appendChild(el('div', 'map-stats-label', { text: 'On this map' }));
+    const tiles = el('div', 'map-stats-tiles');
+    counts.forEach(([n, one, many]) => {
+        const tile = el('div', 'map-stats-tile');
+        tile.append(el('b', null, { text: String(n) }), el('span', null, { text: n === 1 ? one : many }));
+        tiles.appendChild(tile);
+    });
+    container.appendChild(tiles);
+
+    if (totalTasks > 0) {
+        const pointsText = points > 0 ? ` · ${points} ${points === 1 ? 'pt' : 'pts'}` : '';
+        container.appendChild(el('div', 'map-stats-label', {
+            text: `Progress · ${percent}% done${pointsText}`,
+            title: `${doneTasks} of ${totalTasks} task cards done`,
+        }));
+        const bar = el('div', 'map-stats-bar');
+        const key = el('div', 'map-stats-key');
+        segments.forEach(s => {
+            const part = el('i');
+            part.style.width = `${(s.n / totalTasks) * 100}%`;
+            part.style.background = s.color;
+            bar.appendChild(part);
+            const item = el('span', null, { text: `${s.n} ${s.label}` });
+            item.style.setProperty('--c', s.color);
+            key.appendChild(item);
+        });
+        container.append(bar, key);
+    }
+
+    if (_state.legend.length > 0) container.appendChild(el('div', 'map-stats-label', { text: 'Legend' }));
+
+    // Cards per legend category, matched by colour
+    const byColor = {};
+    sliceCards.forEach(card => {
+        const color = (card.color || DEFAULT_CARD_COLORS.story).toLowerCase();
+        byColor[color] = (byColor[color] || 0) + 1;
+    });
+    _state.legend.forEach(entry => {
+        const countEl = _dom.legendEntries?.querySelector(`.legend-entry[data-legend-id="${entry.id}"] .legend-count`);
+        if (!countEl) return;
+        const n = byColor[(entry.color || '').toLowerCase()] || 0;
+        countEl.textContent = n;
+        countEl.title = `${n} ${n === 1 ? 'card' : 'cards'} in this category`;
+    });
 };
 
 const showLegendColorPicker = (entry, anchorEl) => {

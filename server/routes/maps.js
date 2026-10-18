@@ -88,6 +88,26 @@ export default function register(ctx) {
     }
   });
 
+  // GET /api/maps/:id/meta - created/updated dates and total edits, for the Log panel
+  route('GET', '/api/maps/:id/meta', async (req, res, { id: mapId }) => {
+    const row = ctx.stmtMeta.get(mapId);
+    if (!row) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Map not found' }));
+      return;
+    }
+    // Edits were only counted from when the counter was added, so older maps report that date
+    const editsSince = ctx.editCountSince && (!row.created_at || row.created_at < ctx.editCountSince)
+      ? ctx.editCountSince : row.created_at;
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
+    res.end(JSON.stringify({
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      edit_count: row.edit_count + ctx.getPendingEdits(mapId),
+      edits_since: editsSince,
+    }));
+  });
+
   // GET /api/maps/:id/log - activity log entries
   route('GET', '/api/maps/:id/log', async (req, res, { id: mapId }) => {
     let doc = ctx.docs.get(mapId);
@@ -157,12 +177,14 @@ export default function register(ctx) {
 
     try {
       const existingDoc = ctx.docs.get(mapId);
+      // A push adds one activity-log entry, which counts as one edit
+      let logged = false;
 
       if (existingDoc) {
         const oldSnapshot = ctx.serializeDoc(existingDoc);
         ctx.writeDocFromJson(existingDoc, body, ctx.Y);
         const result = ctx.diffPush(oldSnapshot, body, existingDoc);
-        if (result) ctx.appendLogEntry(existingDoc, result.text, result.ids);
+        if (result) { ctx.appendLogEntry(existingDoc, result.text, result.ids); logged = true; }
       } else {
         const persistence = ctx.getPersistence();
         if (!persistence) {
@@ -175,17 +197,14 @@ export default function register(ctx) {
         const oldSnapshot = ctx.serializeDoc(doc);
         ctx.writeDocFromJson(doc, body, ctx.Y);
         const result = ctx.diffPush(oldSnapshot, body, doc);
-        if (result) ctx.appendLogEntry(doc, result.text, result.ids);
+        if (result) { ctx.appendLogEntry(doc, result.text, result.ids); logged = true; }
         await persistence.provider.storeUpdate(mapId, ctx.Y.encodeStateAsUpdate(doc));
         doc.destroy();
       }
 
       const now = new Date().toISOString();
-      if (ctx.stmtExists.get(mapId)) {
-        ctx.stmtUpdate.run(body.name || 'untitled', now, mapId);
-      } else {
-        ctx.stmtInsert.run(mapId, body.name || 'untitled', now, now);
-      }
+      if (!ctx.stmtExists.get(mapId)) ctx.stmtInsert.run(mapId, body.name || 'untitled', now, now);
+      ctx.stmtUpdate.run(body.name || 'untitled', now, logged ? 1 : 0, mapId);
 
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: true, id: mapId, updated_at: now }));
