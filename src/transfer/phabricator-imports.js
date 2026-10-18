@@ -3,6 +3,7 @@
 
 import { state } from '/src/core/state.js';
 import { showConfirm } from '/src/core/modals.js';
+import { CARD_COLORS } from '/src/core/constants.js';
 import {
     readSSE, verifyConnection,
     renderImportPreview, updateImportCount, buildStorymapFromImport
@@ -247,11 +248,28 @@ const phabPreviewDomRefs = () => ({
 });
 
 const phabLabels = () => {
-    const total = phabImportState.epics.reduce((n, e) => n + e.stories.filter(s => s._included !== false).length, 0);
+    let total = phabImportState.epics.reduce((n, e) => n + e.stories.filter(s => s._included !== false).length, 0);
+    if (phabImportState.mode === 'api') {
+        total += phabImportState.epics.filter(e => e.key && e._included !== false).length;
+    }
     return { groupLabel: phabImportState.epics.length !== 1 ? 'columns' : 'column', itemLabel: total !== 1 ? 'tasks' : 'task' };
 };
 
-const phabUpdateCount = () => updateImportCount(phabImportState.epics, dom.phabImportCount, phabLabels());
+const phabUpdateCount = () => {
+    if (phabImportState.mode === 'api') {
+        let parentCount = 0, childCount = 0;
+        phabImportState.epics.forEach(epic => {
+            if (!epic._included) return;
+            if (epic.key) parentCount++;
+            childCount += epic.stories.filter(s => s._included).length;
+        });
+        const total = parentCount + childCount;
+        const label = total !== 1 ? 'tasks' : 'task';
+        dom.phabImportCount.textContent = `Importing ${total} ${label} into flat columns`;
+    } else {
+        updateImportCount(phabImportState.epics, dom.phabImportCount, phabLabels());
+    }
+};
 
 const showPhabImportStage2 = () => {
     dom.phabImportStage1.classList.add('hidden');
@@ -391,16 +409,86 @@ export const handlePhabCsvFile = (file) => {
     reader.readAsText(file);
 };
 
+// ==================== Storymap Builder (API mode) ====================
+
+const buildPhabApiStorymap = () => {
+    const { baseUrl, epics } = phabImportState;
+    const buildUrl = (key) => (key && baseUrl) ? baseUrl + '/' + key : '';
+    const allCards = [];
+    let epicIndex = 0;
+
+    for (const epic of epics) {
+        if (!epic._included) continue;
+        const isParent = !!epic.key; // "Other" pseudo-epic has key === null
+        const tag = isParent ? `epic-${String(++epicIndex).padStart(2, '0')}` : null;
+
+        if (isParent) {
+            const card = { name: epic.summary, color: CARD_COLORS.lime, tags: [tag] };
+            if (epic.description) card.body = epic.description;
+            if (epic.status) card.status = epic.status;
+            if (epic.points != null) card.points = epic.points;
+            const url = buildUrl(epic.key);
+            if (url) card.url = url;
+            allCards.push(card);
+        }
+
+        for (const story of epic.stories) {
+            if (!story._included) continue;
+            const card = { name: story.summary };
+            if (tag) card.tags = [`${tag}-task`];
+            if (story.description) card.body = story.description;
+            if (story.status) card.status = story.status;
+            if (story.points != null) card.points = story.points;
+            const url = buildUrl(story.key);
+            if (url) card.url = url;
+            allCards.push(card);
+        }
+    }
+
+    if (allCards.length === 0) return { app: 'storymap', v: 1, name: 'Phabricator Import', steps: [], users: [], activities: [], slices: [] };
+
+    const cols = Math.min(allCards.length, 8);
+    const grid = Array.from({ length: cols }, () => []);
+    allCards.forEach((card, i) => grid[i % cols].push(card));
+
+    const steps = [];
+    const users = [];
+    const activities = [];
+    for (let c = 0; c < cols; c++) {
+        steps.push({ name: '' });
+        users.push(c === 0 ? [{ name: '', color: '#fca5a5' }] : []);
+        activities.push(c === 0 ? [{ name: '', color: '#93c5fd' }] : []);
+    }
+
+    return {
+        app: 'storymap',
+        v: 1,
+        name: 'Phabricator Import',
+        steps,
+        users,
+        activities,
+        slices: [
+            { name: 'MVP', stories: Array.from({ length: cols }, () => []) },
+            { name: 'IMPORTED: Phabricator tasks', stories: grid }
+        ]
+    };
+};
+
 // ==================== Confirm Import ====================
 
 export const confirmPhabImport = () => {
-    const { baseUrl } = phabImportState;
-    const data = buildStorymapFromImport(
-        phabImportState.epics,
-        phabImportState.projectKey,
-        (key) => (key && baseUrl) ? baseUrl + '/' + key : '',
-        { sliceLabel: 'IMPORTED: Phabricator tasks' }
-    );
+    let data;
+    if (phabImportState.mode === 'csv') {
+        const { baseUrl } = phabImportState;
+        data = buildStorymapFromImport(
+            phabImportState.epics,
+            phabImportState.projectKey,
+            (key) => (key && baseUrl) ? baseUrl + '/' + key : '',
+            { sliceLabel: 'IMPORTED: Phabricator tasks' }
+        );
+    } else {
+        data = buildPhabApiStorymap();
+    }
     if (data.steps.length === 0) return;
     const mode = dom.phabImportMode?.querySelector('input:checked')?.value || 'replace';
     hidePhabImportModal();

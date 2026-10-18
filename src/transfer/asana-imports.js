@@ -78,7 +78,7 @@ const regroupAsanaData = () => {
         }
         asanaImportState.epics = epics;
     } else {
-        // Default: tasks as steps, subtasks as stories
+        // Default: group by tasks & subtasks
         asanaImportState.epics = rawTasks;
     }
 };
@@ -310,14 +310,14 @@ export const handleAsanaMappingModeChange = (value) => {
 // ==================== Confirm Import ====================
 
 export const confirmAsanaImport = () => {
-    const sliceLabel = asanaImportState.mappingMode === 'sections'
-        ? 'IMPORTED: Sections & tasks'
-        : 'IMPORTED: Epics & stories';
+    const isSections = asanaImportState.mappingMode === 'sections';
+    const sliceLabel = isSections ? 'IMPORTED: Sections & tasks' : 'IMPORTED: Epics & stories';
+    const entityName = isSections ? 'section' : 'epic';
     const data = buildStorymapFromImport(
         asanaImportState.epics,
         asanaImportState.projectKey,
         (key) => (key && /^\d+$/.test(key)) ? `https://app.asana.com/0/0/${key}` : '',
-        { sliceLabel }
+        { sliceLabel, entityName }
     );
     if (data.steps.length === 0) return;
     const mode = dom.asanaImportMode?.querySelector('input:checked')?.value || 'replace';

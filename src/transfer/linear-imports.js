@@ -38,7 +38,7 @@ const regroupLinearData = () => {
     const { rawIssues, mappingMode } = linearImportState;
 
     if (mappingMode === 'parent') {
-        // Parent issues as steps, their children as stories
+        // Group by parent issues
         const parentMap = new Map();
         const parentOrder = [];
         const orphans = [];
@@ -88,7 +88,7 @@ const regroupLinearData = () => {
         }
         linearImportState.epics = epics;
     } else {
-        // Default: projects as steps, issues as stories
+        // Default: group by projects
         const projectMap = new Map();
         const projectOrder = [];
         const noProject = [];
@@ -350,9 +350,9 @@ export const handleLinearMappingModeChange = (value) => {
 // ==================== Confirm Import ====================
 
 export const confirmLinearImport = () => {
-    const sliceLabel = linearImportState.mappingMode === 'project'
-        ? 'IMPORTED: Projects & issues'
-        : 'IMPORTED: Parent issues & sub-issues';
+    const isProject = linearImportState.mappingMode === 'project';
+    const sliceLabel = isProject ? 'IMPORTED: Projects & issues' : 'IMPORTED: Parent issues & sub-issues';
+    const entityName = isProject ? 'project' : 'parent';
 
     const buildUrlFn = (key) => {
         // key is an issue identifier like "JAC-5" or a project ID
@@ -367,7 +367,7 @@ export const confirmLinearImport = () => {
         linearImportState.epics,
         linearImportState.teamName,
         buildUrlFn,
-        { sliceLabel }
+        { sliceLabel, entityName }
     );
     if (data.steps.length === 0) return;
     const mode = dom.linearImportMode?.querySelector('input:checked')?.value || 'replace';

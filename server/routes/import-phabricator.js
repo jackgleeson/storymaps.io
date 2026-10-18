@@ -203,6 +203,7 @@ export default function register(ctx) {
         summary: parent.summary,
         description: parent.description,
         status: parent.status,
+        points: parent.points,
         stories: children.map(c => ({
           key: c.identifier,
           summary: c.summary,

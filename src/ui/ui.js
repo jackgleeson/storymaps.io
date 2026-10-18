@@ -658,6 +658,33 @@ const buildCardTags = (tags, card) => {
             popover.style.display = popover.style.display === 'flex' ? 'none' : 'flex';
         });
         tagsRow.appendChild(overflow);
+    } else {
+        // When all tags are visible, check if any are truncated and add popover
+        requestAnimationFrame(() => {
+            const badges = tagsRow.querySelectorAll('.card-tag-badge');
+            if (![...badges].some(b => b.scrollWidth > b.clientWidth)) return;
+            const anchor = el('span', 'card-tag-overflow');
+            anchor.style.padding = '0';
+            anchor.style.background = 'none';
+            const popover = el('div', 'card-tags-popover');
+            tags.forEach(tag => {
+                popover.appendChild(el('span', 'card-tags-popover-pill', { text: tag }));
+            });
+            anchor.appendChild(popover);
+            anchor.addEventListener('click', (e) => {
+                e.stopPropagation();
+                popover.style.display = popover.style.display === 'flex' ? 'none' : 'flex';
+            });
+            tagsRow.appendChild(anchor);
+            // Make badges also act as click triggers
+            badges.forEach(b => {
+                b.style.cursor = 'pointer';
+                b.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    popover.style.display = popover.style.display === 'flex' ? 'none' : 'flex';
+                });
+            });
+        });
     }
     return tagsRow;
 };

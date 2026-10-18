@@ -473,7 +473,7 @@ import { createColumn as _createColumn, createStory as _createStory, createSlice
 
 export const handleColumnSelection = (columnId, shiftKey, cardInfo = { type: 'step' }) => {
     if (!_isMapEditable()) return;
-    if (!window.matchMedia('(hover: hover)').matches) return;
+    if (window.matchMedia('(pointer: coarse)').matches) return;
 
     if (shiftKey && selection.anchorId) {
         // Check if the target card is already selected (toggle off)
@@ -628,7 +628,7 @@ export const updateSelectionUI = () => {
     if (_preserveToolbar) { _preserveToolbar = false; return; }
     document.querySelector('.selection-toolbar')?.remove();
 
-    if (selection.columnIds.length > 0 && window.matchMedia('(hover: hover)').matches) {
+    if (selection.columnIds.length > 0 && !window.matchMedia('(pointer: coarse)').matches) {
         const count = selection.columnIds.length;
         const cardCount = selection.clickedCards.length;
         const columnsText = `${count} column${count > 1 ? 's' : ''}`;

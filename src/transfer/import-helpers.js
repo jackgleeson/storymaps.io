@@ -1,7 +1,7 @@
 // Storymaps.io -- AGPL-3.0 -- see LICENCE for details
 // Shared import helpers used by all platform-specific importers
 
-import { escHtml } from '/src/core/constants.js';
+import { escHtml, CARD_COLORS } from '/src/core/constants.js';
 
 // ==================== SSE Reader (shared) ====================
 
@@ -287,82 +287,57 @@ export const updateImportCount = (epics, countEl, opts = {}) => {
 // ==================== Shared Storymap Builder ====================
 
 export const buildStorymapFromImport = (epics, projectName, buildUrlFn, opts = {}) => {
-    const steps = [];
-    const users = [];
-    const activities = [];
-    const epicStories = [];
-    const orphanCards = [];
+    const entityName = opts.entityName || 'epic';
+    const allCards = [];
+    let groupIndex = 0;
 
-    let includedIndex = 0;
     epics.forEach(epic => {
         if (!epic._included) return;
+        const isGroup = !!epic.key;
+        const tag = isGroup ? `${entityName}-${String(++groupIndex).padStart(2, '0')}` : null;
 
-        // Skip the "Other" pseudo-epic as a column
-        const isOther = !epic.key;
-        if (isOther) {
-            epic.stories.forEach(story => {
-                if (!story._included) return;
-                const card = { name: story.summary };
-                if (story.description) card.body = story.description;
-                if (story.status) card.status = story.status;
-                if (story.points != null) card.points = story.points;
-                if (story.labels?.length) card.tags = story.labels;
-                const url = buildUrlFn(story.key);
-                if (url) card.url = url;
-                orphanCards.push(card);
-            });
-            return;
+        if (isGroup) {
+            const card = { name: epic.summary, color: CARD_COLORS.lime, tags: [tag] };
+            if (epic.description) card.body = epic.description;
+            if (epic.status) card.status = epic.status;
+            if (epic.points != null) card.points = epic.points;
+            const url = buildUrlFn(epic.key);
+            if (url) card.url = url;
+            allCards.push(card);
         }
 
-        // Step (backbone column) = Epic
-        const step = { name: epic.summary };
-        const stepUrl = buildUrlFn(epic.key);
-        if (stepUrl) step.url = stepUrl;
-        steps.push(step);
-        users.push(includedIndex === 0 ? [{ name: '', color: '#fca5a5' }] : []);
-        activities.push(includedIndex === 0 ? [{ name: '', color: '#93c5fd' }] : []);
-        includedIndex++;
-
-        const columnStories = [];
         epic.stories.forEach(story => {
             if (!story._included) return;
             const card = { name: story.summary };
+            const tags = [];
+            if (tag) tags.push(`${tag}-task`);
+            if (story.labels?.length) tags.push(...story.labels);
+            if (tags.length) card.tags = tags;
             if (story.description) card.body = story.description;
             if (story.status) card.status = story.status;
             if (story.points != null) card.points = story.points;
-            if (story.labels?.length) card.tags = story.labels;
             const url = buildUrlFn(story.key);
             if (url) card.url = url;
-            columnStories.push(card);
+            allCards.push(card);
         });
-        epicStories.push(columnStories);
     });
 
-    // If only orphans (no epic columns), create placeholder steps
-    if (steps.length === 0 && orphanCards.length > 0) {
-        const cols = Math.min(orphanCards.length, 8);
-        for (let c = 0; c < cols; c++) {
-            steps.push({ name: `Column ${c + 1}` });
-            users.push(c === 0 ? [{ name: '', color: '#fca5a5' }] : []);
-            activities.push(c === 0 ? [{ name: '', color: '#93c5fd' }] : []);
-        }
+    if (allCards.length === 0) return { app: 'storymap', v: 1, name: projectName + ' Import', steps: [], users: [], activities: [], slices: [] };
+
+    const cols = Math.min(allCards.length, 8);
+    const grid = Array.from({ length: cols }, () => []);
+    allCards.forEach((card, i) => grid[i % cols].push(card));
+
+    const steps = [];
+    const users = [];
+    const activities = [];
+    for (let c = 0; c < cols; c++) {
+        steps.push({ name: '' });
+        users.push(c === 0 ? [{ name: '', color: '#fca5a5' }] : []);
+        activities.push(c === 0 ? [{ name: '', color: '#93c5fd' }] : []);
     }
 
     const sliceLabel = opts.sliceLabel || 'IMPORTED: Epics & stories';
-    const slices = epicStories.length > 0
-        ? [{ name: sliceLabel, stories: epicStories }]
-        : [];
-
-    // Lay out orphan cards left-to-right, 1 per column, rows of 8
-    if (orphanCards.length > 0 && steps.length > 0) {
-        const cols = Math.min(steps.length, 8);
-        const otherGrid = Array.from({ length: steps.length }, () => []);
-        orphanCards.forEach((card, i) => {
-            otherGrid[i % cols].push(card);
-        });
-        slices.push({ name: 'IMPORTED: Other stories & tasks', stories: otherGrid });
-    }
-
     return {
         app: 'storymap',
         v: 1,
@@ -370,6 +345,9 @@ export const buildStorymapFromImport = (epics, projectName, buildUrlFn, opts = {
         steps,
         users,
         activities,
-        slices
+        slices: [
+            { name: 'MVP', stories: Array.from({ length: cols }, () => []) },
+            { name: sliceLabel, stories: grid }
+        ]
     };
 };

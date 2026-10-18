@@ -378,7 +378,7 @@ export const initPan = () => {
 
         if (!panDidMove && e.button === 2
             && _isMapEditable()
-            && window.matchMedia('(hover: hover)').matches) {
+            && !window.matchMedia('(pointer: coarse)').matches) {
             const { columnId, columnIndex } = resolveColumn(e.target);
             showContextMenu(e.clientX, e.clientY, columnId, columnIndex);
         }
@@ -589,7 +589,7 @@ export const initMarquee = () => {
     wrapper.addEventListener('mousedown', (e) => {
         if (e.button !== 0) return;
         if (!_isMapEditable()) return;
-        if (!window.matchMedia('(hover: hover)').matches) return;
+        if (window.matchMedia('(pointer: coarse)').matches) return;
         if (e.target.closest(MARQUEE_SKIP_SELECTORS)) return;
 
         e.preventDefault();
