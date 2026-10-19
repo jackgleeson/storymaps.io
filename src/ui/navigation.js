@@ -297,7 +297,7 @@ const showContextMenu = (x, y, columnId, columnIndex) => {
         if (!col.hidden && !col.partialMapId) {
             addSep(menu);
             menu.appendChild(makeMenuItem('Duplicate step', ICON_DUPLICATE, () => {
-                _duplicateColumns([columnId], { withSpacer: false });
+                _duplicateColumns([columnId]);
             }));
         }
     }

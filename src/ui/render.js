@@ -930,8 +930,8 @@ export const updateSelectionUI = () => {
     }
 };
 
-// Defaults to the selected columns; the context menu passes a single column without a spacer
-export const duplicateColumns = (columnIds = selection.columnIds, { withSpacer = true } = {}) => {
+// Defaults to the selected columns; the context menu passes a single column
+export const duplicateColumns = (columnIds = selection.columnIds) => {
     if (columnIds.length === 0) return;
     if (!_isMapEditable()) return;
 
@@ -948,9 +948,8 @@ export const duplicateColumns = (columnIds = selection.columnIds, { withSpacer =
         ...selectedIds.map(id => _state.columns.findIndex(c => c.id === id))
     );
 
-    // Create spacer column + deep copies
-    const spacerCol = withSpacer ? { id: generateId(), name: '', color: null, url: null, hidden: true, status: null, tags: [] } : null;
-    const newColumns = spacerCol ? [spacerCol] : [];
+    // Deep copies, placed directly after the last selected column
+    const newColumns = [];
     const idMap = {};
 
     selectedIds.forEach(oldId => {
@@ -963,10 +962,6 @@ export const duplicateColumns = (columnIds = selection.columnIds, { withSpacer =
     _state.columns.splice(lastSelectedIdx + 1, 0, ...newColumns);
 
     // Copy users/activities for new columns
-    if (spacerCol) {
-        _state.users[spacerCol.id] = [];
-        _state.activities[spacerCol.id] = [];
-    }
     selectedIds.forEach(oldId => {
         const newId = idMap[oldId];
         _state.users[newId] = (_state.users[oldId] || []).map(card => ({ ...card, id: generateId(), tags: [...(card.tags || [])] }));
@@ -975,8 +970,6 @@ export const duplicateColumns = (columnIds = selection.columnIds, { withSpacer =
 
     // Copy stories for each slice
     _state.slices.forEach(slice => {
-        if (spacerCol) slice.stories[spacerCol.id] = [];
-
         selectedIds.forEach(oldId => {
             const newId = idMap[oldId];
             const originalStories = slice.stories[oldId] || [];
@@ -995,7 +988,7 @@ export const duplicateColumns = (columnIds = selection.columnIds, { withSpacer =
 
     // Scroll to first new column
     requestAnimationFrame(() => {
-        const firstCopiedCol = newColumns[spacerCol ? 1 : 0];
+        const firstCopiedCol = newColumns[0];
         if (firstCopiedCol) {
             const newStep = _dom.storyMap.querySelector(
                 `.step[data-column-id="${firstCopiedCol.id}"], .step-placeholder[data-column-id="${firstCopiedCol.id}"]`
@@ -1028,9 +1021,8 @@ export const duplicateCards = () => {
         ...orderedColumnIds.map(id => _state.columns.findIndex(c => c.id === id))
     );
 
-    // Create spacer + new columns
-    const spacerCol = { id: generateId(), name: '', color: null, url: null, hidden: true, status: null, tags: [] };
-    const newColumns = [spacerCol];
+    // New columns, placed directly after the last selected column
+    const newColumns = [];
 
     const columnCardMap = new Map(); // newColId -> cards from that group
 
@@ -1050,10 +1042,7 @@ export const duplicateCards = () => {
     _state.columns.splice(lastSelectedIdx + 1, 0, ...newColumns);
 
     // Build users/activities/stories for new columns
-    _state.users[spacerCol.id] = [];
-    _state.activities[spacerCol.id] = [];
-
-    for (const newCol of newColumns.slice(1)) {
+    for (const newCol of newColumns) {
         const { oldId, cards } = columnCardMap.get(newCol.id);
 
         // Copy backbone row cards if any story clicks target them
@@ -1071,9 +1060,7 @@ export const duplicateCards = () => {
     }
 
     _state.slices.forEach(slice => {
-        slice.stories[spacerCol.id] = [];
-
-        for (const newCol of newColumns.slice(1)) {
+        for (const newCol of newColumns) {
             const { oldId, cards } = columnCardMap.get(newCol.id);
             const storyClicks = cards.filter(c => c.type === 'story' && c.sliceId === slice.id);
 
@@ -1089,14 +1076,14 @@ export const duplicateCards = () => {
     });
 
     const dupCount = selection.clickedCards.length;
-    const newColIds = newColumns.slice(1).map(c => c.id);
+    const newColIds = newColumns.map(c => c.id);
     _logEvent?.(`Duplicated ${dupCount} card${dupCount > 1 ? 's' : ''}`, newColIds);
     clearSelection();
     _renderAndSave();
 
     // Scroll to first new column
     requestAnimationFrame(() => {
-        const firstCopiedCol = newColumns[1];
+        const firstCopiedCol = newColumns[0];
         if (firstCopiedCol) {
             const newStep = _dom.storyMap.querySelector(
                 `.step[data-column-id="${firstCopiedCol.id}"], .step-placeholder[data-column-id="${firstCopiedCol.id}"]`
