@@ -343,6 +343,8 @@ const server = createServer(async (req, res) => {
 const updateTimers = new Map();
 // Activity-log entries seen since the last write (mapId -> count), saved with updated_at
 const pendingEdits = new Map();
+// Log entries older than this are replays from a reconnecting client, not new edits
+const RECENT_EDIT_MS = 10 * 60_000;
 
 // y-websocket drops a doc from `docs` before destroying it, so callers pass the doc in
 const flushMapUpdate = (mapId, doc = docs.get(mapId)) => {
@@ -398,9 +400,13 @@ wss.on('connection', (ws, req) => {
 
     // Count activity-log entries from connected clients. Loading a map from disk replays
     // its log with no origin, and CLI pushes are counted by the PUT route.
+    // A client that connects before the map has loaded from disk re-sends entries the server
+    // doesn't have yet, so only count entries created in the last few minutes.
     doc.getArray('log').observe((event) => {
       if (!event.transaction.origin) return;
-      const added = event.changes.delta.reduce((n, d) => n + (d.insert ? d.insert.length : 0), 0);
+      const cutoff = Date.now() - RECENT_EDIT_MS;
+      const added = event.changes.delta.reduce((n, d) =>
+        n + (d.insert ? d.insert.filter(entry => typeof entry?.ts === 'number' && entry.ts > cutoff).length : 0), 0);
       if (added) pendingEdits.set(docName, (pendingEdits.get(docName) || 0) + added);
     });
 
