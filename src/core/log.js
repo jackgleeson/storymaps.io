@@ -119,10 +119,10 @@ const renderStats = () => {
 
     if (_meta?.created_at) rows.push(['Created', formatDate(_meta.created_at), _meta.created_at]);
 
-    // The newest log entry can be fresher than the server's debounced updated_at
-    const newestTs = entries.length ? entries[entries.length - 1].ts : 0;
-    const updatedTs = Math.max(_meta?.updated_at ? Date.parse(_meta.updated_at) : 0, newestTs);
-    if (updatedTs) rows.push(['Last updated', formatAgo(updatedTs), new Date(updatedTs).toISOString()]);
+    // Last edit = newest activity-log entry. The server's updated_at also moves when a map is
+    // just opened (useful for activity stats), so it can't say when the map was last edited.
+    const editedTs = entries.length ? entries[entries.length - 1].ts : 0;
+    if (editedTs) rows.push(['Last edited', formatAgo(editedTs), new Date(editedTs).toISOString()]);
 
     const here = _awareness ? _awareness.getStates().size : 0;
     if (here) rows.push(['Here now', `${here} ${here === 1 ? 'person' : 'people'}`, null, 'log-stats-live']);

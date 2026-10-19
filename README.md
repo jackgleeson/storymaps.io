@@ -60,7 +60,7 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **Viewer badge** - shows your name and a live count of connected users; hover the count to see everyone on the map
 - **Mobile & tablet** - touch device users join silently without a name prompt; desktop users see them listed as "Mobile user" in the viewer tooltip
 - **Collaborative notepad** - shared notes that sync in real-time
-- **Activity log** - shows when the map was created and last updated, who's here now, recent contributors, and total edits, above a real-time feed of the last 20 map edits; hover an entry to highlight the affected card on the map; entries show the user's name, with icons to distinguish CLI and mobile sources
+- **Activity log** - shows when the map was created and last edited, who's here now, recent contributors, and total edits, above a real-time feed of the last 20 map edits; hover an entry to highlight the affected card on the map; entries show the user's name, with icons to distinguish CLI and mobile sources
 - **Shareable URLs** - each map gets a unique link
 - **Lock maps** - password-protect to prevent edits
 
