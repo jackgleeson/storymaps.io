@@ -97,6 +97,15 @@ const saveToStorage = () => {
         return;
     }
 
+    // Never write an empty map over a shared document that has steps while the map isn't open.
+    // An empty in-memory map at that point means it hasn't loaded into this browser yet, and
+    // writing it would wipe the map for everyone.
+    const ymapForGuard = getYmap();
+    if (state.mapId && ymapForGuard && !state.mapLoaded && state.columns.length === 0
+        && (ymapForGuard.get('columns')?.length || 0) > 0) {
+        return;
+    }
+
     // Don't overwrite localStorage that has real data with an empty state
     // (protects against Yjs sync returning partial data e.g. notes only)
     if (state.columns.length === 0) {
@@ -129,6 +138,13 @@ const renderAndSave = () => {
 };
 
 const { openExpandModal, closeExpandModal } = cardExpand;
+
+// Disconnect from a map before showing the home page, so nothing on the home page can write to it
+const leaveMapForWelcome = () => {
+    destroyYjs();
+    state.mapId = null;
+    showWelcomeScreen();
+};
 
 const loadFromStorage = () => {
     const data = localStorage.getItem(STORAGE_KEY);
@@ -256,8 +272,8 @@ const initEventListeners = () => {
         }
         const mapId = window.location.pathname.slice(1) || null;
         if (mapId) {
-            await loadMapById(mapId);
-            hideWelcomeScreen();
+            if (await loadMapById(mapId)) hideWelcomeScreen();
+            else leaveMapForWelcome();
         } else {
             destroyYjs();
             showWelcomeScreen();
@@ -1627,11 +1643,24 @@ renderMod.init({
 // Initialize
 // =============================================================================
 
+// Whether the server already knows this map. Ask before connecting: the sync server creates an empty
+// document for any ID and records the map as soon as the socket connects. null = couldn't tell (offline).
+const mapKnownToServer = async (mapId) => {
+    try {
+        const res = await fetch(`/api/maps/${encodeURIComponent(mapId)}/meta`, { cache: 'no-store' });
+        if (res.status === 404) return false;
+        return res.ok ? true : null;
+    } catch {
+        return null;
+    }
+};
+
 const loadMapById = async (mapId) => {
     destroyYjs();
 
     if (mapId) {
         state.mapId = mapId;
+        const known = await mapKnownToServer(mapId);
         await createYjsDoc(mapId);
         await subscribeToMap(mapId);
 
@@ -1640,9 +1669,16 @@ const loadMapById = async (mapId) => {
             return true;
         }
 
-        // Yjs doc may still be loading from server persistence — wait briefly
+        // A map that isn't open anywhere is read from disk after the socket syncs, so its content can
+        // arrive a moment later. A map the server knows opens even without steps, so its notes,
+        // backups and legend stay reachable; give it longer to arrive.
         const ymap = getYmap();
         if (ymap) {
+            if (known && ymap.size > 0) {
+                syncFromYjs();
+                render();
+                return true;
+            }
             const hasData = await new Promise(resolve => {
                 let resolved = false;
                 const done = (result) => {
@@ -1652,23 +1688,24 @@ const loadMapById = async (mapId) => {
                     ymap.unobserveDeep(check);
                     resolve(result);
                 };
-                const timeout = setTimeout(() => done(false), 500);
+                const timeout = setTimeout(() => done(false), known ? 5000 : 500);
                 const check = () => {
                     syncFromYjs();
-                    if (state.columns.length > 0) {
+                    if (state.columns.length > 0 || (known && ymap.size > 0)) {
                         render();
                         done(true);
                     }
                 };
                 ymap.observeDeep(check);
             });
-            if (hasData) return true;
+            if (hasData || known) return true;
         }
 
-        // Fallback: load from localStorage if Yjs sync failed
+        // Fallback: load from localStorage if Yjs sync failed (only when the server couldn't say
+        // whether the map exists; otherwise a stale or empty local copy could overwrite it)
         // Only skip if a *different* mapId is stored (null = no tracking yet, allow it)
         const storedMapId = localStorage.getItem(STORAGE_KEY + ':mapId');
-        if ((!storedMapId || storedMapId === mapId) && loadFromStorage()) {
+        if (known === null && (!storedMapId || storedMapId === mapId) && loadFromStorage()) {
             dom.boardName.value = state.name;
             render();
             saveToStorage();
@@ -1718,7 +1755,7 @@ const init = async () => {
             requestAnimationFrame(zoomToFit);
             setTimeout(showTutorialToast, 800);
         } else {
-            showWelcomeScreen();
+            leaveMapForWelcome();
         }
     } else {
         showWelcomeScreen();

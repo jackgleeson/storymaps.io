@@ -121,8 +121,13 @@ const _createEditor = (parent) => {
                 EditorView.updateListener.of((update) => {
                     if (update.docChanged) {
                         _state.notes = view.state.doc.toString();
-                        const isLocal = update.transactions.some(tr => tr.isUserEvent('input'));
-                        if (isLocal) _logTextEdit?.('notes', 'notes');
+                        // Only the person's own edits save. Notes arriving from the server, or loaded into
+                        // the editor, must not: saving writes the whole in-memory map to the shared document,
+                        // and on a map that hasn't finished loading that map is empty, which wiped maps.
+                        const isUserEdit = update.transactions.some(tr =>
+                            ['input', 'delete', 'undo', 'redo', 'move'].some(event => tr.isUserEvent(event)));
+                        if (!isUserEdit) return;
+                        if (update.transactions.some(tr => tr.isUserEvent('input'))) _logTextEdit?.('notes', 'notes');
                         _saveToStorage();
                     }
                 }),
