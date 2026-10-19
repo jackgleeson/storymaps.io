@@ -240,7 +240,10 @@ const makeMenuItem = (label, icon, action, destructive = false) => {
     return btn;
 };
 
-const ICON_ADD_SPACER = '<line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/>';
+const ICON_ADD_SPACER_BEFORE = '<line x1="13" y1="8" x2="3" y2="8"/><polyline points="7 4 3 8 7 12"/>';
+const ICON_ADD_SPACER_AFTER = '<line x1="3" y1="8" x2="13" y2="8"/><polyline points="9 4 13 8 9 12"/>';
+const ICON_ADD_STEP_BEFORE = '<rect x="9" y="3" width="5" height="10" rx="1"/><line x1="4.5" y1="5.5" x2="4.5" y2="10.5"/><line x1="2" y1="8" x2="7" y2="8"/>';
+const ICON_ADD_STEP_AFTER = '<rect x="2" y="3" width="5" height="10" rx="1"/><line x1="11.5" y1="5.5" x2="11.5" y2="10.5"/><line x1="9" y1="8" x2="14" y2="8"/>';
 const ICON_DELETE = '<polyline points="3 5 4 13 12 13 13 5"/><line x1="2" y1="5" x2="14" y2="5"/><line x1="6" y1="3" x2="10" y2="3"/>';
 const ICON_DUPLICATE = '<rect x="3" y="3" width="8" height="10" rx="1.5"/><path d="M6 3V2.5A1.5 1.5 0 0 1 7.5 1H12a1.5 1.5 0 0 1 1.5 1.5V11A1.5 1.5 0 0 1 12 12.5H11"/>';
 const ICON_INSERT_PARTIAL = '<rect x="2" y="2" width="5" height="5" rx="0.7" fill="#fef08a" stroke="#d4aa00" stroke-width="0.7"/><rect x="9" y="2" width="5" height="5" rx="0.7" fill="#fecdd3" stroke="#e88a9a" stroke-width="0.7"/><rect x="2" y="9" width="5" height="5" rx="0.7" fill="#a5f3fc" stroke="#67c5d6" stroke-width="0.7"/><rect x="9" y="9" width="5" height="5" rx="0.7" fill="#14b8a6" stroke="#0d9488" stroke-width="0.7"/>';
@@ -275,18 +278,38 @@ const showContextMenu = (x, y, columnId, columnIndex) => {
 
     if (_selection.columnIds.length > 0) return;
 
-    menu.appendChild(makeMenuItem('Add spacer column', ICON_ADD_SPACER, () => {
-        _addColumnAt(columnIndex !== null ? columnIndex + 1 : _state.columns.length, true);
-    }));
+    if (columnIndex !== null) {
+        menu.appendChild(makeMenuItem('Add step before', ICON_ADD_STEP_BEFORE, () => {
+            _addColumnAt(columnIndex);
+        }));
+        menu.appendChild(makeMenuItem('Add step after', ICON_ADD_STEP_AFTER, () => {
+            _addColumnAt(columnIndex + 1);
+        }));
+        addSep(menu);
+        menu.appendChild(makeMenuItem('Add spacer column before', ICON_ADD_SPACER_BEFORE, () => {
+            _addColumnAt(columnIndex, true);
+        }));
+        menu.appendChild(makeMenuItem('Add spacer column after', ICON_ADD_SPACER_AFTER, () => {
+            _addColumnAt(columnIndex + 1, true);
+        }));
+
+        const col = _state.columns[columnIndex];
+        if (!col.hidden && !col.partialMapId) {
+            addSep(menu);
+            menu.appendChild(makeMenuItem('Duplicate step', ICON_DUPLICATE, () => {
+                _duplicateColumns([columnId], { withSpacer: false });
+            }));
+        }
+    }
 
     // Insert partial map references (flyout submenu)
     if (_state.partialMaps.length > 0 && _insertPartialMapRef) {
-        addSep(menu);
+        if (menu.childElementCount) addSep(menu);
         const wrapper = document.createElement('div');
         wrapper.className = 'ctx-submenu-wrapper';
         const trigger = document.createElement('button');
         trigger.className = 'ctx-submenu-trigger';
-        trigger.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${ICON_INSERT_PARTIAL}</svg><span>Add Partial Step</span><span class="ctx-submenu-arrow">›</span>`;
+        trigger.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${ICON_INSERT_PARTIAL}</svg><span>Add partial step after</span><span class="ctx-submenu-arrow">›</span>`;
         const submenu = document.createElement('div');
         submenu.className = 'ctx-submenu canvas-context-menu';
         const insertIdx = columnIndex !== null ? columnIndex : _state.columns.length - 1;
@@ -340,6 +363,7 @@ const showContextMenu = (x, y, columnId, columnIndex) => {
         }
     }
 
+    if (!menu.childElementCount) return;
     positionMenu(menu, x, y);
 };
 

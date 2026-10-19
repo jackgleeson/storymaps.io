@@ -42,7 +42,7 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **Expanded view** - click the expand button on any card to edit the title and body in a larger modal; cards with body text show an expand indicator
 - **Card colours & links** - 14 colours, external URLs to issue trackers
 - **Drag & drop** - reorder cards, columns, and slices; the map auto-scrolls when you drag near its edges
-- **Spacer columns** - insert spacer columns to visually group steps
+- **Insert steps & spacers** - right-click a step to add a new step or a spacer column before or after it, or duplicate it; spacer columns visually group steps
 
 ### Search & Filter
 - **Search** (Ctrl+F) - live search with non-matching cards dimmed
@@ -243,7 +243,7 @@ The server starts on `http://localhost:8080`. Run the tests with `npm test`.
 ## Usage
 1. Visit [storymaps.io](https://storymaps.io) or self-host your own instance
 2. Click **New Story Map**, **Take the Tour** for an interactive walkthrough, or try a sample to get started
-3. Click **+** to add steps (columns) to the backbone
+3. Click **+** to add steps (columns) to the backbone, or right-click a step to add a step or spacer column before or after it
 4. Click **+** in a column to add tasks
 5. Click **+ Add Slice** to create release groupings
 6. Click the **expand** button on a card to add a description in the body field; the title stays visible on the map

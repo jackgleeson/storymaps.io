@@ -930,13 +930,14 @@ export const updateSelectionUI = () => {
     }
 };
 
-export const duplicateColumns = () => {
-    if (selection.columnIds.length === 0) return;
+// Defaults to the selected columns; the context menu passes a single column without a spacer
+export const duplicateColumns = (columnIds = selection.columnIds, { withSpacer = true } = {}) => {
+    if (columnIds.length === 0) return;
     if (!_isMapEditable()) return;
 
-    // Snapshot selected column IDs in state.columns order (exclude ref columns)
+    // Snapshot column IDs in state.columns order (exclude ref columns)
     const selectedIds = _state.columns
-        .filter(c => selection.columnIds.includes(c.id) && !c.partialMapId)
+        .filter(c => columnIds.includes(c.id) && !c.partialMapId)
         .map(c => c.id);
 
     if (selectedIds.length === 0) return;
@@ -948,8 +949,8 @@ export const duplicateColumns = () => {
     );
 
     // Create spacer column + deep copies
-    const spacerCol = { id: generateId(), name: '', color: null, url: null, hidden: true, status: null, tags: [] };
-    const newColumns = [spacerCol];
+    const spacerCol = withSpacer ? { id: generateId(), name: '', color: null, url: null, hidden: true, status: null, tags: [] } : null;
+    const newColumns = spacerCol ? [spacerCol] : [];
     const idMap = {};
 
     selectedIds.forEach(oldId => {
@@ -962,8 +963,10 @@ export const duplicateColumns = () => {
     _state.columns.splice(lastSelectedIdx + 1, 0, ...newColumns);
 
     // Copy users/activities for new columns
-    _state.users[spacerCol.id] = [];
-    _state.activities[spacerCol.id] = [];
+    if (spacerCol) {
+        _state.users[spacerCol.id] = [];
+        _state.activities[spacerCol.id] = [];
+    }
     selectedIds.forEach(oldId => {
         const newId = idMap[oldId];
         _state.users[newId] = (_state.users[oldId] || []).map(card => ({ ...card, id: generateId(), tags: [...(card.tags || [])] }));
@@ -972,7 +975,7 @@ export const duplicateColumns = () => {
 
     // Copy stories for each slice
     _state.slices.forEach(slice => {
-        slice.stories[spacerCol.id] = [];
+        if (spacerCol) slice.stories[spacerCol.id] = [];
 
         selectedIds.forEach(oldId => {
             const newId = idMap[oldId];
@@ -981,12 +984,18 @@ export const duplicateColumns = () => {
         });
     });
 
+    const copiedIds = selectedIds.map(id => idMap[id]);
+    const firstOriginal = _state.columns.find(c => c.id === selectedIds[0]);
+    _logEvent?.(copiedIds.length === 1
+        ? `Duplicated step${quoted(firstOriginal.name)}`
+        : `Duplicated ${copiedIds.length} steps`, copiedIds);
+
     clearSelection();
     _renderAndSave();
 
     // Scroll to first new column
     requestAnimationFrame(() => {
-        const firstCopiedCol = newColumns[1];
+        const firstCopiedCol = newColumns[spacerCol ? 1 : 0];
         if (firstCopiedCol) {
             const newStep = _dom.storyMap.querySelector(
                 `.step[data-column-id="${firstCopiedCol.id}"], .step-placeholder[data-column-id="${firstCopiedCol.id}"]`
@@ -1400,6 +1409,16 @@ export const addColumnAt = (index, hidden = false) => {
     _state.slices.forEach(slice => slice.stories[column.id] = []);
     if (!hidden) _logEvent?.(`Added step${quoted(column.name)}`, [column.id]);
     _renderAndSave();
+
+    if (!hidden) {
+        requestAnimationFrame(() => {
+            const newStep = _dom.storyMap.querySelector(`[data-column-id="${column.id}"]`);
+            if (newStep) {
+                _scrollElementIntoView(newStep);
+                newStep.querySelector('.step-text')?.focus();
+            }
+        });
+    }
 };
 
 export const addStory = (columnId, sliceId, rowType = null, { skipFocus = false } = {}) => {
