@@ -108,6 +108,8 @@
     </noscript>
 </head>
 <body>
+    <!-- Apply the home page layout before first paint, so the header doesn't jump while modules load -->
+    <script>if (location.pathname === '/') document.body.classList.add('welcome-visible');</script>
     <header class="header">
         <a href="/" class="logo" id="logoLink">
             <svg class="logo-icon" viewBox="0 0 24 24" width="28" height="28" fill="none">
