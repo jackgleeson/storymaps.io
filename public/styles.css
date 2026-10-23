@@ -6077,8 +6077,8 @@ body.read-only-mode {
 
 /* Card Expand Modal */
 .card-expand-modal {
-    max-width: 360px;
-    width: min(360px, 90vw);
+    max-width: 560px;
+    width: min(560px, 92vw);
     border-radius: 2px;
     background-color: #fef08a;
     overflow: hidden;
@@ -6118,6 +6118,9 @@ body.read-only-mode {
 
 .card-expand-modal .modal-body {
     padding: 20px 20px 12px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
 .card-expand-name,
@@ -6142,17 +6145,19 @@ body.read-only-mode {
     font-size: 17px;
     font-weight: 600;
     line-height: 1.4;
-    max-height: 30vh;
+    max-height: 25vh;
     margin-bottom: 8px;
     overflow: hidden;
+    flex-shrink: 0;
 }
 
 .card-expand-body {
     font-size: 14px;
     font-weight: 400;
     line-height: 1.55;
-    min-height: 180px;
-    max-height: 50vh;
+    flex: 1 1 auto;
+    height: 60vh;
+    min-height: min(180px, 30vh);
 }
 
 .card-expand-body::placeholder {
