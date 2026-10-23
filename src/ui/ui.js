@@ -210,6 +210,122 @@ export const createExpandButton = (item, { readOnly = false } = {}) => {
     return btn;
 };
 
+// Points field that only accepts numbers. Shared by the card menu and the expanded card;
+// onChange runs after the item is updated.
+export const createPointsInput = (item, onChange, className = 'points-input') => {
+    const input = el('input', className);
+    input.type = 'text';
+    input.inputMode = 'decimal';
+    input.placeholder = '–';
+    input.value = item.points != null ? item.points : '';
+    input.addEventListener('click', (e) => e.stopPropagation());
+    input.addEventListener('keydown', (e) => {
+        // Allow navigation, delete, backspace, tab, decimal point
+        if (['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+        if (e.key === '.' && !e.target.value.includes('.')) return;
+        if (e.key >= '0' && e.key <= '9') return;
+        e.preventDefault();
+    });
+    input.addEventListener('change', (e) => {
+        e.stopPropagation();
+        const val = e.target.value.trim() === '' ? null : parseFloat(e.target.value);
+        if (val !== null && isNaN(val)) { e.target.value = item.points ?? ''; return; }
+        _pushUndo();
+        item.points = val;
+        _logEvent?.(`Changed card points${quoted(item.name)}`, [item.id]);
+        onChange();
+    });
+    return input;
+};
+
+// Tag pills with remove buttons, plus an input that suggests tags already used in the map.
+// Shared by the card menu and the expanded card; onChange runs after each add or remove.
+export const createTagEditor = (item, onChange, { inputClass = 'tag-input' } = {}) => {
+    const list = el('div', 'tags-list');
+    const renderTagPills = () => {
+        list.innerHTML = '';
+        (item.tags || []).forEach(tag => {
+            const pill = el('span', 'tag-pill');
+            pill.appendChild(el('span', null, { text: tag }));
+            const removeBtn = el('button', 'tag-remove', { text: '×', title: 'Remove tag' });
+            removeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                _pushUndo();
+                item.tags = item.tags.filter(t => t !== tag);
+                _logEvent?.(`Removed card tag${quoted(item.name)}`, [item.id]);
+                renderTagPills();
+                onChange();
+            });
+            pill.appendChild(removeBtn);
+            list.appendChild(pill);
+        });
+    };
+    renderTagPills();
+
+    const inputWrapper = el('div', 'tag-input-wrapper');
+    const input = el('input', inputClass);
+    input.type = 'text';
+    input.placeholder = 'Add tag...';
+    // Tags are lowercased; stop mobile keyboards capitalising or correcting them as you type
+    input.autocapitalize = 'off';
+    input.autocomplete = 'off';
+    input.spellcheck = false;
+    input.setAttribute('autocorrect', 'off');
+    input.addEventListener('click', (e) => e.stopPropagation());
+    const autocomplete = el('div', 'tag-autocomplete');
+
+    const addTag = (tagText) => {
+        const trimmed = tagText.trim().toLowerCase();
+        if (!trimmed) return;
+        if (!item.tags) item.tags = [];
+        if (item.tags.includes(trimmed)) return;
+        _pushUndo();
+        item.tags.push(trimmed);
+        _logEvent?.(`Added card tag${quoted(item.name)}`, [item.id]);
+        input.value = '';
+        autocomplete.classList.remove('visible');
+        renderTagPills();
+        onChange();
+    };
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            e.stopPropagation();
+            addTag(input.value);
+        }
+    });
+
+    input.addEventListener('input', () => {
+        const val = input.value.trim().toLowerCase();
+        autocomplete.innerHTML = '';
+        if (!val) { autocomplete.classList.remove('visible'); return; }
+        const existing = getAllTagsInMap().filter(t => t.includes(val) && !(item.tags || []).includes(t));
+        if (existing.length === 0) { autocomplete.classList.remove('visible'); return; }
+        existing.slice(0, 6).forEach(tag => {
+            const suggestion = el('button', 'tag-suggestion', { text: tag });
+            suggestion.addEventListener('click', (e) => {
+                e.stopPropagation();
+                addTag(tag);
+            });
+            autocomplete.appendChild(suggestion);
+        });
+        autocomplete.classList.add('visible');
+    });
+
+    inputWrapper.append(input, autocomplete);
+    return { list, inputWrapper };
+};
+
+// Patch the card on the map for an item changed outside its own menu, e.g. from the expanded card
+export const patchCardForItem = (item) => {
+    const card = [..._dom.storyMap.querySelectorAll(`.story-card[data-story-id="${CSS.escape(item.id)}"]`)]
+        .find(c => !c.closest('.partial-map-preview-col'));
+    if (!card) return;
+    patchCard(card, item);
+    patchSliceMetrics(card.dataset.sliceId);
+};
+
 export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColorChange, onUrlChange, onStatusChange = null, onHide = null, onDeleteColumn = null) => {
     const container = el('div', 'card-options');
 
@@ -241,35 +357,14 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
     // Points option
     const pointsOption = el('div', 'options-item options-points');
     pointsOption.appendChild(el('span', null, { text: 'Points' }));
-    const pointsInput = el('input', 'points-input');
-    pointsInput.type = 'text';
-    pointsInput.inputMode = 'decimal';
-    pointsInput.placeholder = '–';
-    pointsInput.value = item.points != null ? item.points : '';
-    pointsInput.addEventListener('click', (e) => e.stopPropagation());
-    pointsInput.addEventListener('keydown', (e) => {
-        // Allow navigation, delete, backspace, tab, decimal point
-        if (['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
-        if (e.key === '.' && !e.target.value.includes('.')) return;
-        if (e.key >= '0' && e.key <= '9') return;
-        e.preventDefault();
-    });
-    pointsInput.addEventListener('change', (e) => {
-        e.stopPropagation();
-        const val = e.target.value.trim() === '' ? null : parseFloat(e.target.value);
-        if (val !== null && isNaN(val)) { e.target.value = item.points ?? ''; return; }
-        if (onColorChange) { // reuse as signal that item is mutable
-            _pushUndo();
-            item.points = val;
-            _logEvent?.(`Changed card points${quoted(item.name)}`, [item.id]);
-            const card = container.closest('.step, .story-card');
-            if (card) {
-                patchCard(card, item);
-                const sliceId = card.dataset.sliceId;
-                if (sliceId) patchSliceMetrics(sliceId);
-            }
-            _saveToStorage();
+    const pointsInput = createPointsInput(item, () => {
+        const card = container.closest('.step, .story-card');
+        if (card) {
+            patchCard(card, item);
+            const sliceId = card.dataset.sliceId;
+            if (sliceId) patchSliceMetrics(sliceId);
         }
+        _saveToStorage();
     });
     pointsOption.appendChild(pointsInput);
     menu.appendChild(pointsOption);
@@ -313,80 +408,12 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
     const tagsOption = el('div', 'options-item options-tags');
     tagsOption.appendChild(el('span', null, { text: 'Tags' }));
     tagsOption.addEventListener('click', (e) => e.stopPropagation());
-    const tagsList = el('div', 'tags-list');
-    const renderTagPills = () => {
-        tagsList.innerHTML = '';
-        (item.tags || []).forEach(tag => {
-            const pill = el('span', 'tag-pill');
-            pill.appendChild(el('span', null, { text: tag }));
-            const removeBtn = el('button', 'tag-remove', { text: '\u00d7', title: 'Remove tag' });
-            removeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                _pushUndo();
-                item.tags = item.tags.filter(t => t !== tag);
-                _logEvent?.(`Removed card tag${quoted(item.name)}`, [item.id]);
-                renderTagPills();
-                const card = container.closest('.step, .story-card');
-                if (card) patchCard(card, item);
-                _saveToStorage();
-            });
-            pill.appendChild(removeBtn);
-            tagsList.appendChild(pill);
-        });
-    };
-    renderTagPills();
-    tagsOption.appendChild(tagsList);
-
-    const tagInputWrapper = el('div', 'tag-input-wrapper');
-    const tagInput = el('input', 'tag-input');
-    tagInput.type = 'text';
-    tagInput.placeholder = 'Add tag...';
-    tagInput.addEventListener('click', (e) => e.stopPropagation());
-    const tagAutocomplete = el('div', 'tag-autocomplete');
-
-    const addTag = (tagText) => {
-        const trimmed = tagText.trim().toLowerCase();
-        if (!trimmed) return;
-        if (!item.tags) item.tags = [];
-        if (item.tags.includes(trimmed)) return;
-        _pushUndo();
-        item.tags.push(trimmed);
-        _logEvent?.(`Added card tag${quoted(item.name)}`, [item.id]);
-        tagInput.value = '';
-        tagAutocomplete.classList.remove('visible');
-        renderTagPills();
+    const tagEditor = createTagEditor(item, () => {
         const card = container.closest('.step, .story-card');
         if (card) patchCard(card, item);
         _saveToStorage();
-    };
-
-    tagInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            e.stopPropagation();
-            addTag(tagInput.value);
-        }
     });
-
-    tagInput.addEventListener('input', () => {
-        const val = tagInput.value.trim().toLowerCase();
-        tagAutocomplete.innerHTML = '';
-        if (!val) { tagAutocomplete.classList.remove('visible'); return; }
-        const existing = getAllTagsInMap().filter(t => t.includes(val) && !(item.tags || []).includes(t));
-        if (existing.length === 0) { tagAutocomplete.classList.remove('visible'); return; }
-        existing.slice(0, 6).forEach(tag => {
-            const suggestion = el('button', 'tag-suggestion', { text: tag });
-            suggestion.addEventListener('click', (e) => {
-                e.stopPropagation();
-                addTag(tag);
-            });
-            tagAutocomplete.appendChild(suggestion);
-        });
-        tagAutocomplete.classList.add('visible');
-    });
-
-    tagInputWrapper.append(tagInput, tagAutocomplete);
-    tagsOption.appendChild(tagInputWrapper);
+    tagsOption.append(tagEditor.list, tagEditor.inputWrapper);
     menu.appendChild(tagsOption);
 
     // URL option

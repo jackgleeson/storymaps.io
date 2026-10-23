@@ -1331,6 +1331,10 @@ const initEventListeners = () => {
     });
 
     document.addEventListener('keydown', (e) => {
+        // The expanded card has its own buttons and fields, so map shortcuts (undo, delete
+        // selection, pan) would act on the map behind it. Only Escape, to close it, gets through.
+        if (dom.cardExpandModal.classList.contains('visible') && e.key !== 'Escape') return;
+
         const isTextInput = e.target.matches('input, textarea') || e.target.closest('.cm-editor');
 
         const isEmptyTextInput = isTextInput && e.target.matches('input, textarea') && !e.target.value;

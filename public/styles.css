@@ -6121,6 +6121,8 @@ body.read-only-mode {
     display: flex;
     flex-direction: column;
     min-height: 0;
+    /* Scroll rather than clip the footer on very short screens */
+    overflow-y: auto;
 }
 
 .card-expand-name,
@@ -6155,9 +6157,11 @@ body.read-only-mode {
     font-size: 14px;
     font-weight: 400;
     line-height: 1.55;
-    flex: 1 1 auto;
-    height: 60vh;
-    min-height: min(180px, 30vh);
+    /* Grows with its text (height set in card-expand.js) up to max-height, then scrolls.
+       Shrinks first when the modal runs out of room on short screens. */
+    flex: 0 1 auto;
+    min-height: min(140px, 25vh);
+    max-height: 60vh;
 }
 
 .card-expand-body::placeholder {
@@ -6178,6 +6182,321 @@ body.read-only-mode {
 .card-expand-body::-webkit-scrollbar-thumb {
     background: rgba(0, 0, 0, 0.15);
     border-radius: 2px;
+}
+
+/* Card expand footer: status, points, tags, link and colour with an icon gutter.
+   Colours are fixed rather than themed because the modal keeps its pastel card colour in dark mode. */
+.card-expand-footer {
+    display: grid;
+    grid-template-columns: 16px minmax(0, 1fr);
+    gap: 8px 10px;
+    align-items: center;
+    flex-shrink: 0;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    font-size: 12px;
+    color: #1a1a1a;
+}
+
+.card-expand-footer[hidden] {
+    display: none;
+}
+
+/* iOS Safari draws its own rounded, shadowed fields unless appearance is reset */
+.card-expand-points-input,
+.card-expand-tag-input,
+.card-expand-link-input {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.card-expand-footer > .card-expand-status-option,
+.card-expand-footer > .card-expand-points,
+.card-expand-footer > .card-expand-readonly-text,
+.card-expand-footer > .card-expand-link {
+    justify-self: start;
+}
+
+.card-expand-footer button:focus-visible,
+.card-expand-footer a:focus-visible {
+    outline: 2px solid #0f766e;
+    outline-offset: 1px;
+}
+
+.card-expand-field-icon {
+    width: 16px;
+    height: 16px;
+    display: grid;
+    place-items: center;
+    color: rgba(0, 0, 0, 0.4);
+    cursor: help;
+}
+
+.card-expand-field-icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+.card-expand-status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+
+.card-expand-status-none {
+    width: 18px;
+    height: 18px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.08);
+    color: rgba(0, 0, 0, 0.45);
+    font-size: 11px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.card-expand-status-none.selected {
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9), 0 0 0 3.5px rgba(0, 0, 0, 0.55);
+}
+
+.card-expand-status-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 8px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.05);
+    color: rgba(0, 0, 0, 0.7);
+    font-family: inherit;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+button.card-expand-status-option {
+    cursor: pointer;
+}
+
+button.card-expand-status-option:hover {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.card-expand-status-option.selected {
+    background: rgba(255, 255, 255, 0.8);
+    border-color: rgba(0, 0, 0, 0.25);
+    color: #1a1a1a;
+    font-weight: 600;
+}
+
+.card-expand-status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.card-expand-points {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: rgba(0, 0, 0, 0.5);
+}
+
+.card-expand-points-input {
+    width: 52px;
+    padding: 2px 4px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.5);
+    color: #1a1a1a;
+    font-family: inherit;
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: center;
+    outline: none;
+}
+
+.card-expand-points-input:focus {
+    border-color: #14b8a6;
+    background: #fff;
+}
+
+.card-expand-readonly-text {
+    color: rgba(0, 0, 0, 0.7);
+}
+
+.card-expand-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+}
+
+/* Pills and the input share one wrapping row */
+.card-expand-tags .tags-list {
+    display: contents;
+}
+
+.card-expand-tags .tag-pill {
+    font-size: 12px;
+    max-width: 160px;
+}
+
+.card-expand-tag-input {
+    width: 110px;
+    padding: 2px 8px;
+    border: 1px dashed rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+    background: transparent;
+    color: #1a1a1a;
+    font-family: inherit;
+    font-size: 12px;
+    line-height: 1.5;
+    outline: none;
+}
+
+.card-expand-tag-input::placeholder {
+    color: rgba(0, 0, 0, 0.45);
+}
+
+.card-expand-tag-input:focus {
+    border-style: solid;
+    border-color: #14b8a6;
+    background: #fff;
+}
+
+/* The footer sits at the bottom of the modal, so suggestions open upwards */
+.card-expand-tags .tag-autocomplete {
+    top: auto;
+    right: auto;
+    bottom: calc(100% + 4px);
+    min-width: 150px;
+}
+
+.card-expand-link-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.card-expand-link-input {
+    width: 100%;
+    padding: 4px 8px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.55);
+    color: #1a1a1a;
+    font-family: inherit;
+    font-size: 12px;
+    outline: none;
+}
+
+.card-expand-link-input::placeholder {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+.card-expand-link-input:focus {
+    border-color: #14b8a6;
+    background: #fff;
+}
+
+.card-expand-link-input.invalid {
+    border-color: #dc2626;
+}
+
+.card-expand-link-error {
+    color: #b91c1c;
+    font-size: 11px;
+}
+
+.card-expand-link {
+    max-width: 100%;
+    overflow: hidden;
+    color: #0369a1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.card-expand-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.card-expand-swatch {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.card-expand-swatch.selected {
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9), 0 0 0 3.5px rgba(0, 0, 0, 0.6);
+}
+
+/* Narrow screens: unselected statuses become dots so the row fits on one line,
+   and the swatches form an even 7 x 2 grid */
+@media (max-width: 480px) {
+    .card-expand-status-option:not(.selected) {
+        width: 26px;
+        height: 26px;
+        padding: 0;
+        justify-content: center;
+    }
+
+    .card-expand-status-option:not(.selected) > span:last-child {
+        display: none;
+    }
+
+    .card-expand-swatches {
+        display: grid;
+        grid-template-columns: repeat(7, 26px);
+        gap: 6px;
+    }
+
+    .card-expand-swatch {
+        width: 26px;
+        height: 26px;
+    }
+}
+
+/* Bigger tap targets on touch screens */
+@media (pointer: coarse) {
+    .card-expand-footer {
+        gap: 10px;
+    }
+
+    .card-expand-status {
+        gap: 6px;
+    }
+
+    .card-expand-status-none {
+        width: 26px;
+        height: 26px;
+        font-size: 13px;
+    }
+
+    .card-expand-status-option {
+        padding: 4px 10px;
+    }
+
+    .card-expand-swatches {
+        gap: 6px;
+    }
+
+    .card-expand-swatch {
+        width: 26px;
+        height: 26px;
+    }
 }
 
 /* Read-Only State - Disable editing UI */
