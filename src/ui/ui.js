@@ -271,6 +271,7 @@ export const createTagEditor = (item, onChange, { inputClass = 'tag-input' } = {
     input.autocomplete = 'off';
     input.spellcheck = false;
     input.setAttribute('autocorrect', 'off');
+    input.setAttribute('enterkeyhint', 'done');
     input.addEventListener('click', (e) => e.stopPropagation());
     const autocomplete = el('div', 'tag-autocomplete');
 
@@ -296,6 +297,17 @@ export const createTagEditor = (item, onChange, { inputClass = 'tag-input' } = {
         }
     });
 
+    // Some mobile keyboards have no Enter key, so also add the typed tag when leaving the field.
+    // Wait a moment first: tapping a suggestion blurs the input before its click, and the click
+    // clears the input, so the half-typed text isn't added as well.
+    input.addEventListener('blur', () => {
+        setTimeout(() => {
+            if (document.activeElement === input) return;
+            addTag(input.value);
+            autocomplete.classList.remove('visible');
+        }, 200);
+    });
+
     input.addEventListener('input', () => {
         const val = input.value.trim().toLowerCase();
         autocomplete.innerHTML = '';
@@ -304,6 +316,8 @@ export const createTagEditor = (item, onChange, { inputClass = 'tag-input' } = {
         if (existing.length === 0) { autocomplete.classList.remove('visible'); return; }
         existing.slice(0, 6).forEach(tag => {
             const suggestion = el('button', 'tag-suggestion', { text: tag });
+            // Keep focus in the input so picking a suggestion doesn't count as leaving the field
+            suggestion.addEventListener('mousedown', (e) => e.preventDefault());
             suggestion.addEventListener('click', (e) => {
                 e.stopPropagation();
                 addTag(tag);
