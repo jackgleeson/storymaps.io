@@ -810,6 +810,9 @@ body.welcome-visible .gh-star {
 
 .panel-section.open {
     display: block;
+    flex: 0 1 auto;
+    min-height: 0;
+    overflow-y: auto;
 }
 
 .panel-section[data-section="notepad"].open {
@@ -833,6 +836,8 @@ body.welcome-visible .gh-star {
     overflow: hidden;
     border: 1px solid var(--color-border-medium);
     min-width: 218px;
+    /* Tall panel content scrolls inside its section instead of squashing the tabs */
+    flex-shrink: 0;
 }
 
 /* When panel is open, merge tabs into the panel card */
