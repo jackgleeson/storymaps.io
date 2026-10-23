@@ -1159,6 +1159,9 @@ body.welcome-visible .gh-star {
 /* Notes body */
 .notes-body {
     width: min(540px, calc(100vw - 48px));
+    /* The panel's max-width includes its borders, so a full-width notepad overflowed it by 2px
+       and showed a horizontal scrollbar */
+    max-width: 100%;
     position: relative;
     display: flex;
     flex-direction: column;
