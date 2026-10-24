@@ -32,6 +32,9 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **Users, Activities & Steps (Backbone)** - define the user journey left-to-right
 - **Task cards** - break down work under each step
 - **Release slices** - group tasks into MVP, V1, V2 etc.; mark slices complete or collapse them
+- **Slice details** - click a slice's name to rename it and give it an optional goal and target date, shown behind the ⓘ next to the name (or on the banner of a completed slice); on phones the details open as a sheet at the top of the screen, clear of the keyboard
+- **Slice menu** - right-click a slice or click its ☰ to edit details, copy its link, mark it complete, collapse, reopen, or delete it
+- **Slice links** - every slice has its own link (`#slice-<id>`) that scrolls the map to it and briefly spotlights it; copy it from the slice menu, including on locked maps
 - **Status indicators** - done, in-progress, planned, blocked with per-slice progress tracking
 - **Story points** - estimate effort per card, auto-summed per slice
 - **Tags** - categorize cards with free-text tags, autocomplete from existing tags
@@ -39,7 +42,7 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **Legend** - define colour-coded card categories (e.g. Tasks, Notes, Questions, Edge Cases) in the Overview tab
 - **Map Partials** - reusable story map fragments that eliminate duplication when multiple user journeys converge on shared steps; extract a sequence of columns once, reference it from anywhere, and expand inline to see the detail
 - **Card title & body** - each card has a short title visible on the map and an optional body for longer descriptions or details
-- **Expanded view** - click the expand button on any card to edit the title and body in a larger modal; cards with body text show an expand indicator
+- **Expanded view** - click the expand button on any card to edit the title and body in a larger modal, with status, points, tags, link, and colour in its footer; cards with body text show an expand indicator
 - **Card colours & links** - 14 colours, external URLs to issue trackers
 - **Drag & drop** - reorder cards, columns, and slices; the map auto-scrolls when you drag near its edges
 - **Insert steps & spacers** - right-click a step to add a new step or a spacer column before or after it, or duplicate it; spacer columns visually group steps
@@ -68,6 +71,7 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **JSON** - import/export story maps as JSON files
 - **YAML** - import/export as human-readable YAML; author maps in a text editor, version-control them in git, or generate from scripts
 - **CSV** - import/export as spreadsheet-friendly CSV
+- **Slice details travel too** - slice goals, target dates, and completed or collapsed state are kept in JSON, YAML, and CSV exports, imports, and backups
 - **Jira** - import from CSV file or via server-proxied REST API; export as CSV or via server-proxied REST API; card body text is used as the issue description
 - **Asana** - import from CSV file or via server-proxied REST API; export as CSV or via server-proxied REST API; card body text is used as the task notes
 - **Phabricator** - import from CSV file or via server-proxied Conduit API; export via server-proxied Conduit API, or as a script you run in your browser's console on your Phabricator site (for instances the server can't reach, e.g. behind a VPN); card body text is used as the task description
@@ -215,10 +219,10 @@ Back up this directory regularly (e.g. a cron job with `tar` or `rsync`). To mig
 ### Updating
 
 ```bash
-git pull && docker compose up -d --build
+git pull && docker compose build --pull && docker compose up -d
 ```
 
-Data is preserved across rebuilds since `data/` is a host-mounted volume.
+`--pull` fetches the latest `node:24-slim` base image, so Node security fixes reach your build even when an older copy of the image is cached. Data is preserved across rebuilds since `data/` is a host-mounted volume.
 
 ### Environment Variables
 
@@ -245,26 +249,27 @@ The server starts on `http://localhost:8080`. Run the tests with `npm test`.
 2. Click **New Story Map**, **Take the Tour** for an interactive walkthrough, or try a sample to get started
 3. Click **+** to add steps (columns) to the backbone, or right-click a step to add a step or spacer column before or after it
 4. Click **+** in a column to add tasks
-5. Click **+ Add Slice** to create release groupings
-6. Click the **expand** button on a card to add a description in the body field; the title stays visible on the map
-7. Click the **...** menu on cards to set colours, status, links, tags, or story points
-8. Drag tasks to reorder or move between columns; select several cards first to drag them together
-9. Open the **Overview** tab to see your map's counts and progress, and use its **Legend** to define card categories and colour-code your map
-10. Use **Ctrl+F** to search or open the **Filter** panel to filter by status, colour, or tag
-11. Click, Shift+click, or marquee-drag to select multiple cards, then use the toolbar to bulk edit
-12. Use the **Notepad** to capture team notes and decisions
-13. Click **Share** to copy the URL, copy the map as an image, or download as PNG
-14. Use **Menu → Lock Map** to password-protect the map from edits
-15. Use **Ctrl+Z** / **Ctrl+Y** to undo and redo, **Ctrl+D** to duplicate
-16. Use **Ctrl+scroll** to zoom, **right-click drag** to pan, **Alt+R** to zoom to fit
-17. Select consecutive columns and use **Menu → Create Partial** to extract shared sequences into reusable map partials; manage them from the **Partials** panel
-18. Use the **view controls** (next to zoom) to toggle focus mode, full screen, dark mode, or cursor visibility
-19. Press **Esc** twice to exit full screen (single Esc still closes modals, search, etc.)
-20. Use **Menu → Backups** to create, restore, or delete map snapshots
-21. Use **Menu → Import** to import from JSON, YAML, CSV, or from Jira, Asana, Phabricator, or Linear (CSV file or API)
-22. Use **Menu → Export** to save as JSON, YAML, or CSV, or export to Jira, Asana, Phabricator, or Linear
-23. Use **Print** to save as PDF
-24. Click **Build with AI** to generate a prompt from your story map for AI coding tools or app builders; select a slice and target, add optional instructions, then copy or open the prompt
+5. Click **+ Add Slice** to create release groupings, then click a slice's name to rename it or set a goal and target date
+6. Right-click a slice or click its **☰** to copy a link to it, mark it complete, or collapse it
+7. Click the **expand** button on a card to add a description in the body field and set its status, points, tags, link, or colour; the title stays visible on the map
+8. Click the **...** menu on cards to set colours, status, links, tags, or story points
+9. Drag tasks to reorder or move between columns; select several cards first to drag them together
+10. Open the **Overview** tab to see your map's counts and progress, and use its **Legend** to define card categories and colour-code your map
+11. Use **Ctrl+F** to search or open the **Filter** panel to filter by status, colour, or tag
+12. Click, Shift+click, or marquee-drag to select multiple cards, then use the toolbar to bulk edit
+13. Use the **Notepad** to capture team notes and decisions
+14. Click **Share** to copy the URL, copy the map as an image, or download as PNG
+15. Use **Menu → Lock Map** to password-protect the map from edits
+16. Use **Ctrl+Z** / **Ctrl+Y** to undo and redo, **Ctrl+D** to duplicate
+17. Use **Ctrl+scroll** to zoom, **right-click drag** to pan, **Alt+R** to zoom to fit
+18. Select consecutive columns and use **Menu → Create Partial** to extract shared sequences into reusable map partials; manage them from the **Partials** panel
+19. Use the **view controls** (next to zoom) to toggle focus mode, full screen, dark mode, or cursor visibility
+20. Press **Esc** twice to exit full screen (single Esc still closes modals, search, etc.)
+21. Use **Menu → Backups** to create, restore, or delete map snapshots
+22. Use **Menu → Import** to import from JSON, YAML, CSV, or from Jira, Asana, Phabricator, or Linear (CSV file or API)
+23. Use **Menu → Export** to save as JSON, YAML, or CSV, or export to Jira, Asana, Phabricator, or Linear
+24. Use **Print** to save as PDF
+25. Click **Build with AI** to generate a prompt from your story map for AI coding tools or app builders; select a slice and target, add optional instructions, then copy or open the prompt
 
 ## Support
 If you find this tool useful, consider [buying me a coffee](https://buymeacoffee.com/jackgleeson). It goes towards server costs and helps me keep the app running.
