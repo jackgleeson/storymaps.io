@@ -6,6 +6,7 @@ import { createColumnCard, createStoryCard, createStoryColumn, createSliceContai
 import { partialMapEditState } from '/src/core/state.js';
 import { showAlert, showConfirm, showPrompt } from '/src/core/modals.js';
 import { quoted } from '/src/core/log.js';
+import { openSliceDetails } from '/src/features/slice-links.js';
 
 let _state = null;
 let _dom = null;
@@ -68,7 +69,6 @@ export const render = () => {
     if (active && active.tagName === 'TEXTAREA') {
         const card = active.closest('.story-card');
         const step = active.closest('.step');
-        const sliceLabel = active.closest('.slice-label-container');
 
         if (card && card.dataset.storyId) {
             savedFocus = {
@@ -79,12 +79,6 @@ export const render = () => {
         } else if (step && step.dataset.columnId) {
             savedFocus = {
                 selector: `.step[data-column-id="${step.dataset.columnId}"] .step-text`,
-                selStart: active.selectionStart || 0,
-                selEnd: active.selectionEnd || 0
-            };
-        } else if (sliceLabel && sliceLabel.dataset.sliceId) {
-            savedFocus = {
-                selector: `.slice-label-container[data-slice-id="${sliceLabel.dataset.sliceId}"] .slice-label`,
                 selStart: active.selectionStart || 0,
                 selEnd: active.selectionEnd || 0
             };
@@ -1456,22 +1450,20 @@ export const addStory = (columnId, sliceId, rowType = null, { skipFocus = false 
     return newStory;
 };
 
-export const addSlice = (afterIndex) => {
+export const addSlice = (afterIndex, { name = '', openDetails = true } = {}) => {
     _pushUndo();
-    const slice = _createSlice('');
+    const slice = _createSlice(name);
     _state.slices.splice(afterIndex, 0, slice);
     _logEvent?.(`Added slice${quoted(slice.name)}`, [slice.id]);
     _renderAndSave();
 
     requestAnimationFrame(() => {
         const sliceElement = _dom.storyMap.querySelector(`[data-slice-id="${slice.id}"]`);
-        if (sliceElement) {
-            const label = sliceElement.querySelector('.slice-label');
-            _scrollElementIntoView(label || sliceElement);
-            if (label) {
-                label.focus();
-            }
-        }
+        if (!sliceElement) return;
+        const label = sliceElement.querySelector('.slice-label');
+        _scrollElementIntoView(label || sliceElement);
+        // Open the details a frame later, after the scroll, which would otherwise close them
+        if (label && openDetails) requestAnimationFrame(() => openSliceDetails(slice, label));
     });
     return slice;
 };

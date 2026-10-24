@@ -206,6 +206,8 @@ export const scrollElementIntoView = (element) => {
 
 // Context menu state
 let contextMenuEl = null;
+// The button that opened the menu, if a button did. Clicking it again closes the menu.
+let contextMenuAnchor = null;
 let panDidMove = false;
 
 const resolveColumn = (target) => {
@@ -218,6 +220,7 @@ const resolveColumn = (target) => {
 
 const onDismissContextMenu = (e) => {
     if (contextMenuEl && contextMenuEl.contains(e.target)) return;
+    if (contextMenuAnchor?.contains(e.target)) return;
     dismissContextMenu();
 };
 
@@ -229,6 +232,7 @@ const dismissContextMenu = () => {
     if (!contextMenuEl) return;
     contextMenuEl.remove();
     contextMenuEl = null;
+    contextMenuAnchor = null;
     document.removeEventListener('mousedown', onDismissContextMenu, { capture: true });
     document.removeEventListener('keydown', onDismissContextMenuKey, { capture: true });
     _dom.storyMapWrapper.removeEventListener('scroll', onDismissContextMenu);
@@ -376,21 +380,33 @@ const showContextMenu = (x, y, columnId, columnIndex) => {
     positionMenu(menu, x, y);
 };
 
-// Right-click menu for a slice's gutter. Copying a link works in locked maps too.
-const showSliceContextMenu = (x, y, gutter) => {
+// Menu for a slice, from a right-click on its gutter or its ☰ button. Copying a link works in
+// locked maps too.
+const showSliceMenu = (sliceId, x, y, anchor) => {
     dismissContextMenu();
-    const slice = _state.slices.find(s => s.id === gutter.dataset.sliceId);
+    const slice = _state.slices.find(s => s.id === sliceId);
     if (!slice || !_getSliceActions) return;
     const editable = _isMapEditable();
     const menu = document.createElement('div');
-    menu.className = 'canvas-context-menu';
-    _getSliceActions(slice, gutter)
+    menu.className = 'canvas-context-menu slice-context-menu';
+    _getSliceActions(slice, anchor)
         .filter(action => editable || !action.editOnly)
         .forEach(action => {
             if (action.separator) addSep(menu);
             menu.appendChild(makeMenuItem(action.label, SLICE_ACTION_ICONS[action.key], action.run, action.destructive));
         });
     positionMenu(menu, x, y);
+};
+
+// The ☰ opens the same menu as a right-click, beside the button, so it looks the same at any zoom
+export const toggleSliceMenu = (sliceId, button) => {
+    if (contextMenuEl && contextMenuAnchor === button) {
+        dismissContextMenu();
+        return;
+    }
+    const rect = button.getBoundingClientRect();
+    showSliceMenu(sliceId, rect.right + 4, rect.top, button);
+    contextMenuAnchor = button;
 };
 
 export const initPan = () => {
@@ -431,7 +447,7 @@ export const initPan = () => {
         if (!panDidMove && e.button === 2 && !window.matchMedia('(pointer: coarse)').matches) {
             const sliceGutter = e.target.closest('.slice-label-container');
             if (sliceGutter) {
-                showSliceContextMenu(e.clientX, e.clientY, sliceGutter);
+                showSliceMenu(sliceGutter.dataset.sliceId, e.clientX, e.clientY, sliceGutter);
             } else if (_isMapEditable()) {
                 const { columnId, columnIndex } = resolveColumn(e.target);
                 showContextMenu(e.clientX, e.clientY, columnId, columnIndex);
@@ -460,9 +476,6 @@ export const closeAllOptionsMenus = () => {
         m.classList.remove('visible');
         m.closest('.step, .story-card')?.classList.remove('menu-open');
         m.parentElement?.querySelector('.btn-options')?.setAttribute('aria-expanded', 'false');
-    });
-    document.querySelectorAll('.slice-menu-dropdown.visible').forEach(m => {
-        m.classList.remove('visible');
     });
 };
 
@@ -601,7 +614,7 @@ export const zoomCycle = () => {
 
 // Marquee (rectangle) selection
 
-const MARQUEE_SKIP_SELECTORS = '.step, .story-card, textarea, button, a, input, .options-menu, .btn-add-story, .btn-add-slice, .selection-toolbar, .slice-menu-dropdown, .slice-label-container';
+const MARQUEE_SKIP_SELECTORS = '.step, .story-card, textarea, button, a, input, .options-menu, .btn-add-story, .btn-add-slice, .selection-toolbar, .slice-label-container';
 
 const rectsIntersect = (a, b) =>
     !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);

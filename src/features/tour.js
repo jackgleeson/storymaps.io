@@ -14,7 +14,7 @@ let _v1Snapshot = null;
 
 const ensureDemoSlice = () => {
     if (_demoSliceId || !_addSlice || !_getState || !_createStory) return;
-    const slice = _addSlice(1);
+    const slice = _addSlice(1, { name: 'V2:\nTwo Story House', openDetails: false });
     if (!slice) return;
     _demoSliceId = slice.id;
     const state = _getState();
@@ -37,21 +37,10 @@ const ensureDemoSlice = () => {
         if (col) slice.stories[col.id] = cards;
     }
     _renderAndSave();
-    // addSlice uses rAF internally to scroll/focus the new label.
-    // Double-rAF to run after that completes: set label text and
-    // reposition the spotlight/tooltip to account for the scroll.
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-        const sliceEl = document.querySelector(`[data-slice-id="${slice.id}"]`);
-        if (sliceEl) {
-            const label = sliceEl.querySelector('.slice-label');
-            if (label) {
-                label.value = 'V2:\nTwo Story House';
-                label.dispatchEvent(new Event('input', { bubbles: true }));
-                label.blur();
-            }
-        }
-        positionCurrentStep();
-    }));
+    // addSlice uses rAF internally to scroll to the new slice.
+    // Double-rAF to run after that completes and reposition the
+    // spotlight/tooltip to account for the scroll.
+    requestAnimationFrame(() => requestAnimationFrame(positionCurrentStep));
 };
 
 const removeDemoSlice = () => {

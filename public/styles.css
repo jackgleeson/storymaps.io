@@ -2068,41 +2068,72 @@ body.tour-active .log-stats {
     cursor: default;
 }
 
+/* The slice name. Clicking it opens the slice details to rename it. */
 .slice-label {
     background: transparent;
     border: none;
     outline: none;
-    overflow: hidden;
     font-family: inherit;
     font-size: 11px;
     font-weight: 600;
     color: var(--color-text-muted);
-    padding: 4px 0;
-    border-radius: 3px;
-    width: 100%;
-    text-align: left;
-    resize: none;
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-    line-height: 1.4;
-    cursor: text;
-    caret-color: var(--color-text-muted);
-    min-height: 100px;
-}
-
-.slice-label:focus {
-    background-color: var(--color-bg-surface);
     padding: 4px;
     margin: -4px;
     margin-bottom: 0;
+    border-radius: 3px;
     width: calc(100% + 8px);
+    text-align: left;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    line-height: 1.4;
+    cursor: pointer;
+}
+
+.slice-label:hover {
+    background-color: var(--color-hover-bg);
+    color: var(--color-text-primary);
+}
+
+.slice-label:focus-visible {
     box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.3);
 }
 
-.slice-label::placeholder {
+.slice-label-empty::before {
+    content: 'Release...';
     color: var(--color-text-disabled);
-    text-transform: none;
-    letter-spacing: 0;
+    font-weight: 500;
+}
+
+.slice-details-actions button {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    background: var(--color-bg-surface);
+    color: var(--color-text-muted);
+    font-family: inherit;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.slice-details-actions .slice-label-save {
+    border-color: var(--color-teal);
+    background: var(--color-teal);
+    color: #fff;
+}
+
+.slice-details-actions .slice-label-save:hover {
+    background: #0d9488;
+}
+
+.slice-details-actions .slice-label-cancel:hover {
+    background: var(--color-hover-bg);
+    color: var(--color-text-primary);
 }
 
 /* Slice Progress Bar */
@@ -2577,59 +2608,6 @@ body.main-menu-open .step:hover {
     background: var(--color-border-medium);
 }
 
-.slice-menu-dropdown {
-    display: none;
-    position: absolute;
-    top: 0;
-    left: 100%;
-    background: var(--color-bg-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    min-width: 140px;
-    z-index: 100;
-    padding: 4px 0;
-    margin-left: 4px;
-}
-
-.slice-menu-dropdown.visible {
-    display: block;
-}
-
-.slice-menu-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-    white-space: nowrap;
-    padding: 8px 12px;
-    background: none;
-    border: none;
-    font-size: 13px;
-    text-align: left;
-    cursor: pointer;
-    transition: background-color 0.1s ease;
-}
-
-.slice-menu-item:hover {
-    background-color: #f5f5f5;
-}
-
-.slice-menu-item-danger:hover {
-    background-color: #fef2f2;
-    color: #dc2626;
-}
-
-.slice-menu-icon {
-    font-size: 14px;
-}
-
-.slice-menu-sep {
-    height: 1px;
-    margin: 4px 0;
-    background: var(--color-border-subtle);
-}
-
 /* Collapsed Slice */
 .slice-collapsed {
     min-height: auto;
@@ -2637,6 +2615,52 @@ body.main-menu-open .step:hover {
 
 .slice-collapsed .slice-label-container {
     min-height: 36px;
+    /* Centre the controls on the banner beside them */
+    padding-top: 0;
+    justify-content: center;
+}
+
+.slice-collapsed .slice-controls-row {
+    margin-top: 0;
+    padding-top: 0;
+    justify-content: flex-start;
+    gap: 7px;
+}
+
+/* The handle's padding is only for its hover background, so let the ⓘ sit closer to the glyph */
+.slice-collapsed .slice-controls-row .slice-drag-handle {
+    margin-right: -4px;
+}
+
+.slice-collapsed .slice-controls-row .slice-menu {
+    margin-left: auto;
+}
+
+/* Narrow gutters only fit ↕ and ☰, so there the ⓘ moves to the end of the banner */
+.slice-info.slice-info-banner {
+    display: none;
+    margin-left: 8px;
+    border-color: #6ee7b7;
+    color: #065f46;
+}
+
+.slice-closed-banner .slice-info.slice-info-banner {
+    border-color: #93c5fd;
+    color: #1e40af;
+}
+
+@media (max-width: 900px) {
+    .slice-info.slice-info-gutter {
+        display: none;
+    }
+
+    .slice-collapsed .slice-controls-row {
+        gap: 0;
+    }
+
+    .slice-info.slice-info-banner {
+        display: grid;
+    }
 }
 
 .slice-completed-row {
@@ -2699,21 +2723,20 @@ body.main-menu-open .step:hover {
     color: #1e40af;
 }
 
-/* Slice goal and target date: an ⓘ in the gutter's right padding, beside the name */
+/* Slice goal and target date: an ⓘ under the name */
 .slice-info {
-    position: absolute;
-    top: 11px;
-    right: 1px;
-    width: 13px;
-    height: 13px;
+    position: relative;
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
     padding: 0;
     display: grid;
     place-items: center;
-    border: 1px solid var(--color-border-strong);
+    border: 1px solid var(--color-border);
     border-radius: 50%;
-    background: var(--color-bg-surface);
-    color: var(--color-text-muted);
-    font: italic 600 9px/1 Georgia, serif;
+    background: none;
+    color: var(--color-text-faint);
+    font: italic 9px/1 Georgia, serif;
     cursor: help;
 }
 
@@ -2728,10 +2751,6 @@ body.main-menu-open .step:hover {
 .slice-info:focus-visible {
     border-color: var(--color-teal);
     color: var(--color-teal);
-}
-
-.slice-label:focus ~ .slice-info {
-    visibility: hidden;
 }
 
 /* Floating panels for slices sit on <body>, outside the zoomed map */
@@ -2785,6 +2804,19 @@ body.main-menu-open .step:hover {
     animation: ctx-menu-in 0.12s ease-out;
 }
 
+.slice-details-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: -2px;
+}
+
+.slice-details-actions button {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+}
+
 .slice-details-title {
     font-weight: 600;
     overflow: hidden;
@@ -2801,6 +2833,7 @@ body.main-menu-open .step:hover {
     color: var(--color-text-muted);
 }
 
+.slice-details-name,
 .slice-details-goal,
 .slice-details-date {
     -webkit-appearance: none;
@@ -2816,11 +2849,60 @@ body.main-menu-open .step:hover {
     font-size: 13px;
 }
 
+.slice-details-name {
+    resize: none;
+    max-height: 90px;
+    overflow-y: auto;
+    font-weight: 600;
+}
+
 .slice-details-goal {
     resize: vertical;
     min-height: 52px;
 }
 
+/* On phones the details sit across the top of the screen, above the keyboard */
+.slice-sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1499;
+    background: rgba(15, 23, 42, 0.25);
+    animation: slice-sheet-fade 0.15s ease-out;
+}
+
+.slice-floating.slice-sheet {
+    top: max(8px, env(safe-area-inset-top));
+    left: 8px;
+    right: 8px;
+    width: auto;
+    max-width: none;
+    animation: slice-sheet-in 0.18s ease-out;
+}
+
+/* 16px stops iOS zooming in on the fields */
+.slice-sheet .slice-details-name,
+.slice-sheet .slice-details-goal,
+.slice-sheet .slice-details-date {
+    font-size: 16px;
+}
+
+.slice-sheet .slice-details-actions button {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+}
+
+@keyframes slice-sheet-in {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes slice-sheet-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.slice-details-name:focus,
 .slice-details-goal:focus,
 .slice-details-date:focus {
     outline: none;
@@ -2875,9 +2957,31 @@ html.dark-mode .slice-details-date::-webkit-calendar-picker-indicator {
     opacity: 0.25;
 }
 
+/* The slice's top edge flashes teal when the scroll arrives */
+.slice-container.slice-spotlight-land {
+    animation: slice-land 1.6s ease-out;
+}
+
+@keyframes slice-land {
+    0%, 35% { border-top-color: var(--color-teal); }
+    100% { border-top-color: var(--color-border-strong); }
+}
+
+html.dark-mode .slice-container.slice-spotlight-land {
+    animation-name: slice-land-dark;
+}
+
+@keyframes slice-land-dark {
+    0%, 35% { border-top-color: var(--color-teal); }
+    100% { border-top-color: #475569; }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .story-map.slice-spotlight > * {
         transition: none;
+    }
+    .slice-container.slice-spotlight-land {
+        animation: none;
     }
 }
 
@@ -4227,9 +4331,17 @@ html.dark-mode mark.highlight::after {
         padding: 4px 6px;
     }
 
+    /* Slim so the ☰ fits the narrow gutter, with a wider tap area than it looks */
     .slice-drag-handle {
         color: var(--color-text-faint);
-        padding: 4px 6px;
+        padding: 4px 2px;
+        position: relative;
+    }
+
+    .slice-drag-handle::after {
+        content: '';
+        position: absolute;
+        inset: -4px -3px;
     }
 
     /* Show delete buttons on mobile (no hover) */
@@ -6729,8 +6841,7 @@ body.read-only-mode .btn-add-slice,
 body.read-only-mode .phantom-step,
 body.read-only-mode .phantom-column,
 body.read-only-mode .step-drag-handle,
-body.read-only-mode .slice-drag-handle,
-body.read-only-mode .slice-menu-edit-item {
+body.read-only-mode .slice-drag-handle {
     display: none !important;
 }
 
@@ -6740,6 +6851,10 @@ body.read-only-mode .slice-label,
 body.read-only-mode .board-name {
     pointer-events: none;
     cursor: default;
+}
+
+body.read-only-mode .slice-label-empty::before {
+    content: none;
 }
 
 body.read-only-mode .step-placeholder,
@@ -6803,8 +6918,11 @@ body.read-only-mode .empty-backbone-column {
 /* Selection Toolbar, context menu & tag overflow — hidden on touch devices */
 @media (pointer: coarse) {
     .selection-toolbar,
-    .canvas-context-menu,
+    .canvas-context-menu:not(.slice-context-menu),
     .card-tag-overflow { display: none !important; }
+
+    /* The slice menu opens from the ☰ button, so it stays, with bigger tap targets */
+    .slice-context-menu button { padding: 10px 12px; }
 }
 
 @media (any-hover: none) {
@@ -7033,6 +7151,7 @@ body.read-only-mode .story-card.card-selected {
     background: none;
     border: none;
     color: var(--color-text-primary);
+    font-family: inherit;
     font-size: 13px;
     text-align: left;
     white-space: nowrap;
@@ -8956,28 +9075,12 @@ html.dark-mode .notes-close:hover {
 /* Slice label — readable on dark bg */
 html.dark-mode .slice-label {
     color: #94a3b8;
-    caret-color: #94a3b8;
 }
-html.dark-mode .slice-label::placeholder {
+html.dark-mode .slice-label-empty::before {
     color: #64748b;
 }
-html.dark-mode .slice-label:focus {
-    background-color: var(--color-bg-surface);
+html.dark-mode .slice-label:hover {
     color: var(--color-text-primary);
-    caret-color: var(--color-text-primary);
-}
-
-/* Slice menu dropdown */
-html.dark-mode .slice-menu-dropdown {
-    background: var(--color-bg-surface);
-    border-color: var(--color-border);
-}
-html.dark-mode .slice-menu-item:hover {
-    background-color: var(--color-hover-bg);
-}
-html.dark-mode .slice-menu-item-danger:hover {
-    background-color: rgba(239, 68, 68, 0.12);
-    color: #fca5a5;
 }
 
 /* Options menu */

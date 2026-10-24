@@ -1559,7 +1559,6 @@ sliceLinks.init({
     pushUndo,
     saveToStorage,
     logEvent: (text, ids) => log.logEvent(text, ids),
-    rerenderSlice: (sliceId) => ui.rerenderSlice(sliceId),
 });
 
 // Wire build-with-AI module
@@ -1775,7 +1774,7 @@ const init = async () => {
             hideWelcomeScreen();
             requestAnimationFrame(() => {
                 zoomToFit();
-                sliceLinks.revealSliceFromHash();
+                sliceLinks.revealSliceFromHash(350);
             });
             setTimeout(showTutorialToast, 800);
         } else {

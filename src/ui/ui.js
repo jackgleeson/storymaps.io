@@ -5,7 +5,8 @@ import { CARD_COLORS, DEFAULT_CARD_COLORS, STATUS_OPTIONS, TITLE_MAX_LENGTH, el,
 import { partialMapEditState } from '/src/core/state.js';
 import { showAlert, showConfirm, showPrompt } from '/src/core/modals.js';
 import { quoted } from '/src/core/log.js';
-import { copySliceLink, createSliceInfo, isSlicePeeked, openSliceDetails, unpeekSlice } from '/src/features/slice-links.js';
+import { copySliceLink, createSliceInfo, openSliceDetails, setSliceNameText } from '/src/features/slice-links.js';
+import { toggleSliceMenu } from '/src/ui/navigation.js';
 
 let _state = null;
 let _dom = null;
@@ -122,8 +123,8 @@ export const createDeleteBtn = (onConfirm, message) => {
 // works in locked maps; the rest change the map, so they're editOnly.
 export const getSliceActions = (slice, anchor) => {
     const actions = [
-        { key: 'link', label: 'Copy link to slice', run: () => copySliceLink(slice) },
-        { key: 'details', label: 'Edit goal and date', editOnly: true, run: () => openSliceDetails(slice, anchor) }
+        { key: 'details', label: 'Edit details', editOnly: true, run: () => openSliceDetails(slice, anchor) },
+        { key: 'link', label: 'Copy link to slice', run: () => copySliceLink(slice) }
     ];
     const isOnlySlice = _state.slices.length === 1;
     if (slice.collapsed) {
@@ -145,54 +146,20 @@ export const getSliceActions = (slice, anchor) => {
     return actions;
 };
 
-const SLICE_MENU_ICONS = {
-    link: '🔗',
-    details: 'ⓘ',
-    reopen: '↩',
-    complete: '✓',
-    collapse: '<span style="font-size:10px;vertical-align:1px">▼</span>',
-    delete: '🗑'
-};
-
-// Slice ☰ menu. Items that change the map are hidden by CSS while the map is locked.
+// Slice ☰ button. It opens the same menu as right-clicking the slice gutter.
 export const createSliceMenu = (slice) => {
     const container = el('div', 'slice-menu');
-
     const btn = el('button', 'btn-slice-menu', { text: '☰', title: 'Slice options', ariaLabel: 'Slice options menu' });
-    const menu = el('div', 'slice-menu-dropdown');
-
-    getSliceActions(slice, container).forEach(action => {
-        if (action.separator) menu.appendChild(el('div', `slice-menu-sep${action.editOnly ? ' slice-menu-edit-item' : ''}`));
-        let className = 'slice-menu-item';
-        if (action.destructive) className += ' slice-menu-item-danger';
-        if (action.editOnly) className += ' slice-menu-edit-item';
-        const item = el('button', className);
-        item.innerHTML = `<span class="slice-menu-icon">${SLICE_MENU_ICONS[action.key]}</span> `;
-        item.appendChild(document.createTextNode(action.label));
-        item.addEventListener('click', (e) => {
-            e.stopPropagation();
-            menu.classList.remove('visible');
-            action.run();
-        });
-        menu.appendChild(item);
-    });
-
     btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        // Close other menus
-        document.querySelectorAll('.slice-menu-dropdown.visible').forEach(m => {
-            if (m !== menu) m.classList.remove('visible');
-        });
-        menu.classList.toggle('visible');
+        toggleSliceMenu(slice.id, btn);
     });
-
     container.appendChild(btn);
-    container.appendChild(menu);
     return container;
 };
 
 // Swap just one slice container instead of a full rebuild
-export const rerenderSlice = (sliceId) => {
+const rerenderSlice = (sliceId) => {
     const index = _state.slices.findIndex(s => s.id === sliceId);
     const oldContainer = _dom.storyMap.querySelector(`.slice-container[data-slice-id="${sliceId}"]`);
     if (index === -1 || !oldContainer) return false;
@@ -209,7 +176,6 @@ const toggleSliceCollapsed = (sliceId, collapsed, reason) => {
     slice.collapsed = collapsed;
     if (collapsed && reason) slice.closedReason = reason;
     else delete slice.closedReason;
-    unpeekSlice(sliceId);
 
     if (rerenderSlice(sliceId)) _saveToStorage();
     else _renderAndSave();
@@ -549,8 +515,7 @@ export const createUrlIndicator = (url) => {
 
 export const createTextarea = (className, placeholder, value, onChange, onTextEdit) => {
     const isCardText = className === 'step-text' || className === 'story-text';
-    const isSliceLabel = className === 'slice-label';
-    const initialRows = isCardText ? (value && value.length > 20 ? 2 : 1) : (isSliceLabel ? 3 : 2);
+    const initialRows = isCardText ? (value && value.length > 20 ? 2 : 1) : 2;
     const textarea = el('textarea', className, { placeholder, value, rows: initialRows });
 
     // Push undo when user starts editing
@@ -681,8 +646,8 @@ const patchSliceMetrics = (sliceId) => {
             }));
         }
 
-        const labelInput = sliceLabel.querySelector('.slice-label');
-        if (labelInput) labelInput.after(metricsContainer);
+        const above = sliceLabel.querySelector('.slice-info') || sliceLabel.querySelector('.slice-label');
+        if (above) above.after(metricsContainer);
         else sliceLabel.appendChild(metricsContainer);
     }
 };
@@ -1202,8 +1167,20 @@ const getSlicePoints = (slice) => {
     return { total, hasAny };
 };
 
+// The slice name in the gutter. Clicking it opens the details panel to rename it and set its
+// goal and target date.
+const createSliceName = (slice) => {
+    const name = el('button', 'slice-label', { type: 'button' });
+    setSliceNameText(name, slice.name);
+    name.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (_isMapEditable()) openSliceDetails(slice, name);
+    });
+    return name;
+};
+
 export const createSliceContainer = (slice, index) => {
-    const collapsed = slice.collapsed && !isSlicePeeked(slice.id);
+    const collapsed = slice.collapsed;
     let containerClass = 'slice-container';
     if (collapsed) {
         containerClass += ' slice-collapsed';
@@ -1216,6 +1193,9 @@ export const createSliceContainer = (slice, index) => {
         const controlsRow = el('div', 'slice-controls-row');
         const dragHandle = el('div', 'slice-drag-handle', { html: '↕', title: 'Drag to reorder' });
         controlsRow.appendChild(dragHandle);
+        // The ⓘ sits between the controls, or at the end of the banner where the gutter is narrow
+        const info = createSliceInfo(slice, 'slice-info-gutter');
+        if (info) controlsRow.appendChild(info);
         controlsRow.appendChild(createSliceMenu(slice));
         labelContainer.appendChild(controlsRow);
         container.appendChild(labelContainer);
@@ -1253,6 +1233,8 @@ export const createSliceContainer = (slice, index) => {
         // The name truncates on one line; the status after it always shows
         if (slice.name) completedBanner.appendChild(el('span', 'slice-completed-name', { text: slice.name }));
         completedBanner.appendChild(el('span', 'slice-completed-text', { text: slice.name ? ` - ${statusText}` : statusText }));
+        const bannerInfo = createSliceInfo(slice, 'slice-info-banner');
+        if (bannerInfo) completedBanner.appendChild(bannerInfo);
         storiesRow.appendChild(completedBanner);
 
         storiesArea.appendChild(storiesRow);
@@ -1261,15 +1243,7 @@ export const createSliceContainer = (slice, index) => {
         return container;
     }
 
-    const labelInput = createTextarea('slice-label', 'Release...', slice.name,
-        (val) => {
-            slice.name = val;
-            labelInput.title = val;
-        },
-        () => _logTextEdit?.('slice name', slice.id));
-    // Long names are cut off in the narrow gutter, so the full name shows on hover
-    labelInput.title = slice.name || '';
-    labelContainer.appendChild(labelInput);
+    labelContainer.appendChild(createSliceName(slice));
     const info = createSliceInfo(slice);
     if (info) labelContainer.appendChild(info);
 
