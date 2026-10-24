@@ -1,11 +1,12 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // CSV ↔ JSON transform (grid layout mirroring the visual story map)
 
-import { generateId } from '../core/constants.js';
+import { generateId, copySliceDetails } from '../core/constants.js';
 
 const DEFAULT_STEP_COLOR = '#86efac';
 const DEFAULT_STORY_COLOR = '#fef08a';
 const VALID_STATUSES = new Set(['done', 'in-progress', 'planned', 'blocked']);
+const VALID_CLOSED_REASONS = new Set(['complete', 'closed']);
 
 // ============================================================================
 // CSV Utilities
@@ -322,6 +323,16 @@ export function exportToCsv(jsonData) {
         const sliceName = slice.name || '';
         const storiesArr = slice.stories || [];
 
+        // The slice's goal, target date and collapsed state go on their own row, which older
+        // imports skip
+        const details = copySliceDetails(slice, {});
+        const metaCells = [];
+        if (details.goal) metaCells.push(`goal:${details.goal}`);
+        if (details.targetDate) metaCells.push(`targetDate:${details.targetDate}`);
+        if (slice.collapsed) metaCells.push('collapsed:true');
+        if (slice.closedReason) metaCells.push(`closedReason:${slice.closedReason}`);
+        if (metaCells.length) rows.push([`slicemeta:${sliceName}`, ...metaCells].map(escapeCSV));
+
         // Find max cards per expanded column for this slice
         const maxPerCol = new Array(totalCols).fill(0);
         storiesArr.forEach((cards, origIdx) => {
@@ -445,6 +456,7 @@ export function importFromCsv(csvString) {
     const userRows = [];
     const activityRows = [];
     const sliceRows = []; // { sliceName, cells }
+    const sliceDetails = {}; // slice name → { goal, targetDate, collapsed, closedReason }
 
     // Classify rows by first column
     for (const row of grid) {
@@ -474,6 +486,16 @@ export function importFromCsv(csvString) {
             notes = (row[1] || '').trim();
         } else if (first.startsWith('slice:')) {
             sliceRows.push({ sliceName: first.slice(6), cells: row });
+        } else if (first.startsWith('slicemeta:')) {
+            const details = {};
+            for (let c = 1; c < row.length; c++) {
+                const val = (row[c] || '').trim();
+                if (val.startsWith('goal:')) details.goal = val.slice(5);
+                else if (val.startsWith('targetDate:')) details.targetDate = val.slice(11).trim();
+                else if (val === 'collapsed:true') details.collapsed = true;
+                else if (val.startsWith('closedReason:')) details.closedReason = val.slice(13).trim();
+            }
+            sliceDetails[first.slice(10)] = details;
         }
     }
 
@@ -630,7 +652,14 @@ export function importFromCsv(csvString) {
                 }
             }
         });
-        return { name: sliceName, stories };
+        const slice = { name: sliceName, stories };
+        const details = sliceDetails[sliceName];
+        if (details) {
+            if (details.collapsed) slice.collapsed = true;
+            if (VALID_CLOSED_REASONS.has(details.closedReason)) slice.closedReason = details.closedReason;
+            copySliceDetails(details, slice);
+        }
+        return slice;
     });
 
     // Build partial maps
