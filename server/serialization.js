@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { generateCardId } from './data.js';
+import { copySliceDetails } from '../src/core/constants.js';
 
 export const serializeDoc = (doc) => {
   const ymap = doc.getMap('storymap');
@@ -44,6 +45,7 @@ export const serializeDoc = (doc) => {
       const obj = { name: s.name || '', stories: columns.map(col => (stories[col.id] || []).map(sCard)) };
       if (s.collapsed) obj.collapsed = true;
       if (s.closedReason) obj.closedReason = s.closedReason;
+      copySliceDetails(s, obj);
       return obj;
     }),
   };
@@ -320,6 +322,7 @@ export const writeDocFromJson = (doc, data, Y) => {
       ySlice.set('name', slice.name || '');
       if (slice.collapsed) ySlice.set('collapsed', true);
       if (slice.closedReason) ySlice.set('closedReason', slice.closedReason);
+      for (const [key, value] of Object.entries(copySliceDetails(slice, {}))) ySlice.set(key, value);
 
       const yStories = new Y.Map();
       (slice.stories || []).forEach((cards, i) => {

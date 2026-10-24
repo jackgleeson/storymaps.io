@@ -21,6 +21,28 @@ export const isValidUrl = (url) => {
     }
 };
 
+// Slice goal and target date are optional. The date is stored as YYYY-MM-DD; YAML can parse an
+// unquoted date as a Date, so accept that too. Anything else is dropped.
+export const SLICE_GOAL_MAX_LENGTH = 200;
+
+export const normalizeSliceGoal = (value) =>
+    typeof value === 'string' ? value.trim().slice(0, SLICE_GOAL_MAX_LENGTH) : '';
+
+export const normalizeSliceDate = (value) => {
+    if (value instanceof Date && !isNaN(value)) return value.toISOString().slice(0, 10);
+    if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return '';
+    return isNaN(new Date(`${value}T00:00:00Z`)) ? '' : value;
+};
+
+// Copies a slice's goal and target date from one object to another, leaving out empty values
+export const copySliceDetails = (from, to) => {
+    const goal = normalizeSliceGoal(from.goal);
+    const targetDate = normalizeSliceDate(from.targetDate);
+    if (goal) to.goal = goal;
+    if (targetDate) to.targetDate = targetDate;
+    return to;
+};
+
 export const CARD_COLORS = {
     red: '#fca5a5',
     rose: '#fecdd3',

@@ -2601,6 +2601,7 @@ body.main-menu-open .step:hover {
     align-items: center;
     gap: 8px;
     width: 100%;
+    white-space: nowrap;
     padding: 8px 12px;
     background: none;
     border: none;
@@ -2621,6 +2622,12 @@ body.main-menu-open .step:hover {
 
 .slice-menu-icon {
     font-size: 14px;
+}
+
+.slice-menu-sep {
+    height: 1px;
+    margin: 4px 0;
+    background: var(--color-border-subtle);
 }
 
 /* Collapsed Slice */
@@ -2656,20 +2663,222 @@ body.main-menu-open .step:hover {
     z-index: 1;
 }
 
+.slice-completed-name,
 .slice-completed-text {
     font-size: 11px;
     font-weight: 500;
     color: #065f46;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    white-space: pre;
+}
+
+/* A long name truncates on one line; the status after it always shows */
+.slice-completed-banner {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.slice-completed-name {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.slice-completed-text {
+    flex-shrink: 0;
 }
 
 .slice-closed-banner {
     background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
     border-color: #93c5fd;
 }
+.slice-closed-banner .slice-completed-name,
 .slice-closed-banner .slice-completed-text {
     color: #1e40af;
+}
+
+/* Slice goal and target date: an ⓘ in the gutter's right padding, beside the name */
+.slice-info {
+    position: absolute;
+    top: 11px;
+    right: 1px;
+    width: 13px;
+    height: 13px;
+    padding: 0;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 50%;
+    background: var(--color-bg-surface);
+    color: var(--color-text-muted);
+    font: italic 600 9px/1 Georgia, serif;
+    cursor: help;
+}
+
+/* A bigger tap area than the visible circle */
+.slice-info::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+}
+
+.slice-info:hover,
+.slice-info:focus-visible {
+    border-color: var(--color-teal);
+    color: var(--color-teal);
+}
+
+.slice-label:focus ~ .slice-info {
+    visibility: hidden;
+}
+
+/* Floating panels for slices sit on <body>, outside the zoomed map */
+.slice-floating {
+    position: fixed;
+    z-index: 1500;
+    box-sizing: border-box;
+    max-width: calc(100vw - 16px);
+    background: var(--color-bg-surface);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-dropdown), 0 8px 24px rgba(0, 0, 0, 0.08);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.slice-info-tip {
+    width: 240px;
+    padding: 8px 10px;
+    pointer-events: none;
+}
+
+.slice-info-tip dl {
+    margin: 0;
+}
+
+.slice-info-tip dt {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+}
+
+.slice-info-tip dt + dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.slice-info-tip dd + dt {
+    margin-top: 6px;
+}
+
+.slice-details {
+    width: 260px;
+    padding: 10px 12px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    animation: ctx-menu-in 0.12s ease-out;
+}
+
+.slice-details-title {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.slice-details-label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--color-text-muted);
+}
+
+.slice-details-goal,
+.slice-details-date {
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid var(--color-input-border);
+    border-radius: 6px;
+    background: var(--color-input-bg);
+    color: var(--color-text-primary);
+    font: inherit;
+    font-size: 13px;
+}
+
+.slice-details-goal {
+    resize: vertical;
+    min-height: 52px;
+}
+
+.slice-details-goal:focus,
+.slice-details-date:focus {
+    outline: none;
+    border-color: var(--color-teal);
+    box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.2);
+}
+
+.slice-details-date-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.slice-details-date {
+    flex: 1;
+    min-width: 0;
+    min-height: 32px;
+}
+
+/* The date picker icon stays dark with appearance reset, so lighten it in dark mode */
+html.dark-mode .slice-details-date::-webkit-calendar-picker-indicator {
+    filter: invert(0.75);
+}
+
+.slice-details-clear {
+    flex-shrink: 0;
+    padding: 6px 8px;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    color: var(--color-text-muted);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.slice-details-clear:hover {
+    background: var(--color-hover-bg);
+    color: var(--color-text-primary);
+}
+
+.slice-details-clear[hidden] {
+    display: none;
+}
+
+/* Opening a slice link dims the rest of the map for a moment */
+.story-map.slice-spotlight > * {
+    transition: opacity 0.4s ease;
+}
+
+.story-map.slice-spotlight-on > :not(.slice-spotlight-target) {
+    opacity: 0.25;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .story-map.slice-spotlight > * {
+        transition: none;
+    }
 }
 
 /* Card Options Menu */
@@ -6521,8 +6730,7 @@ body.read-only-mode .phantom-step,
 body.read-only-mode .phantom-column,
 body.read-only-mode .step-drag-handle,
 body.read-only-mode .slice-drag-handle,
-body.read-only-mode .slice-controls-row,
-body.read-only-mode .slice-menu {
+body.read-only-mode .slice-menu-edit-item {
     display: none !important;
 }
 

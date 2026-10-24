@@ -1,7 +1,7 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Yjs document management, CRDT helpers, sync
 
-import { CARD_COLORS } from '/src/core/constants.js';
+import { CARD_COLORS, copySliceDetails } from '/src/core/constants.js';
 
 let _state = null;
 let _notepad = null;
@@ -178,6 +178,8 @@ const createYSlice = (slice, columns) => {
     ySlice.set('name', slice.name || '');
     if (slice.collapsed) ySlice.set('collapsed', true);
     if (slice.closedReason) ySlice.set('closedReason', slice.closedReason);
+    if (slice.goal) ySlice.set('goal', slice.goal);
+    if (slice.targetDate) ySlice.set('targetDate', slice.targetDate);
 
     const yStories = new Y.Map();
     columns.forEach(col => {
@@ -287,6 +289,7 @@ export const syncFromYjs = () => {
                         stories: {}
                     };
                     if (sliceData.closedReason) slice.closedReason = sliceData.closedReason;
+                    copySliceDetails(sliceData, slice);
                     const storiesData = sliceData.stories || {};
                     _state.columns.forEach(col => {
                         const columnStories = storiesData[col.id];
@@ -307,6 +310,7 @@ export const syncFromYjs = () => {
                         stories: {}
                     };
                     if (sliceData.closedReason) slice.closedReason = sliceData.closedReason;
+                    copySliceDetails(sliceData, slice);
                     const storiesData = sliceData.stories || {};
                     _state.columns.forEach(col => {
                         const columnStories = storiesData[col.id];
@@ -411,6 +415,12 @@ const updateYSlice = (ySlice, slice, columns) => {
     if (ySlice.get('closedReason') !== (slice.closedReason || undefined)) {
         if (slice.closedReason) ySlice.set('closedReason', slice.closedReason);
         else ySlice.delete('closedReason');
+    }
+    for (const key of ['goal', 'targetDate']) {
+        if (ySlice.get(key) !== (slice[key] || undefined)) {
+            if (slice[key]) ySlice.set(key, slice[key]);
+            else ySlice.delete(key);
+        }
     }
 
     let yStories = ySlice.get('stories');

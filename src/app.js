@@ -22,6 +22,7 @@ import * as io from '/src/transfer/io.js';
 import * as welcome from '/src/features/welcome.js';
 import * as partials from '/src/features/partials.js';
 import * as build from '/src/features/build.js';
+import * as sliceLinks from '/src/features/slice-links.js';
 
 const { isMapEditable } = lock;
 const { render, initSortable, addColumn, addColumnAt, addStory, addSlice, deleteColumn, deleteStory, deleteSlice, handleColumnSelection, updateSelectionUI, duplicateColumns, duplicateCards, deleteSelectedColumns, deleteSelectedCards, setPreserveToolbar } = renderMod;
@@ -259,6 +260,10 @@ const initEventListeners = () => {
         }
     });
 
+    window.addEventListener('hashchange', () => {
+        if (getYdoc() && !dom.welcomeScreen.classList.contains('visible')) sliceLinks.revealSliceFromHash();
+    });
+
     window.addEventListener('popstate', async (e) => {
         // Ignore popstate from our own history.back() after closing expand modal
         if (cardExpand.isPoppingExpandState()) {
@@ -271,6 +276,8 @@ const initEventListeners = () => {
             return;
         }
         const mapId = window.location.pathname.slice(1) || null;
+        // A slice link on the open map only changes the hash; hashchange scrolls to the slice
+        if (mapId && mapId === state.mapId && getYdoc() && !dom.welcomeScreen.classList.contains('visible')) return;
         if (mapId) {
             if (await loadMapById(mapId)) hideWelcomeScreen();
             else leaveMapForWelcome();
@@ -955,7 +962,8 @@ const initEventListeners = () => {
     dom.shareCopyLink.addEventListener('click', async (e) => {
         e.stopPropagation();
         dom.shareMenu.classList.remove('visible');
-        const url = window.location.href;
+        // The whole map, even if it was opened from a slice link
+        const url = window.location.href.split('#')[0];
         try {
             await navigator.clipboard.writeText(url);
             dom.shareBtn.querySelector('.btn-label').textContent = ' Copied!';
@@ -1497,7 +1505,7 @@ const switchPanelTab = (sectionKey) => {
 stateInit({ serialize, deserialize, renderAndSave, logEvent: (text, ids) => log.logEvent(text, ids) });
 
 // Wire navigation module
-navigation.init({ state, updateSelectionUI, selection, clearSelection, isMapEditable, addColumnAt, deleteColumn, duplicateColumns, duplicateCards, deleteSelectedColumns, deleteSelectedCards, insertPartialMapRef: (...args) => insertPartialMapRef(...args) });
+navigation.init({ state, updateSelectionUI, selection, clearSelection, isMapEditable, addColumnAt, deleteColumn, duplicateColumns, duplicateCards, deleteSelectedColumns, deleteSelectedCards, insertPartialMapRef: (...args) => insertPartialMapRef(...args), getSliceActions: (...args) => ui.getSliceActions(...args) });
 
 // Wire presence module
 presence.init({
@@ -1544,6 +1552,15 @@ tour.init({
 
 // Wire card-expand module
 cardExpand.init({ renderAndSave, saveToStorage });
+
+// Wire slice links module
+sliceLinks.init({
+    state,
+    pushUndo,
+    saveToStorage,
+    logEvent: (text, ids) => log.logEvent(text, ids),
+    rerenderSlice: (sliceId) => ui.rerenderSlice(sliceId),
+});
 
 // Wire build-with-AI module
 build.init({ state, showPrompt });
@@ -1756,7 +1773,10 @@ const init = async () => {
         hideLoading();
         if (loaded) {
             hideWelcomeScreen();
-            requestAnimationFrame(zoomToFit);
+            requestAnimationFrame(() => {
+                zoomToFit();
+                sliceLinks.revealSliceFromHash();
+            });
             setTimeout(showTutorialToast, 800);
         } else {
             leaveMapForWelcome();

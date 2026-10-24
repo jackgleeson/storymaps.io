@@ -2,7 +2,7 @@
 // YAML ↔ JSON transform + validation
 
 import jsyaml from '#js-yaml';
-import { generateId } from '../core/constants.js';
+import { generateId, copySliceDetails } from '../core/constants.js';
 
 const DEFAULT_STEP_COLOR = '#86efac';
 const DEFAULT_STORY_COLOR = '#fef08a';
@@ -196,6 +196,7 @@ export function jsonToYamlObj(data) {
             const obj = { name: slice.name || '' };
             if (slice.collapsed) obj.collapsed = true;
             if (slice.closedReason) obj.closedReason = slice.closedReason;
+            copySliceDetails(slice, obj);
             const stories = {};
             (slice.stories || []).forEach((cards, i) => {
                 if (!cards?.length) return;
@@ -369,6 +370,7 @@ export function yamlObjToJson(obj) {
         const s = { name: slice.name || '', stories };
         if (slice.collapsed) s.collapsed = true;
         if (slice.closedReason) s.closedReason = slice.closedReason;
+        copySliceDetails(slice, s);
         return s;
     });
 

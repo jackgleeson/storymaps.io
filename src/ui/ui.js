@@ -5,6 +5,7 @@ import { CARD_COLORS, DEFAULT_CARD_COLORS, STATUS_OPTIONS, TITLE_MAX_LENGTH, el,
 import { partialMapEditState } from '/src/core/state.js';
 import { showAlert, showConfirm, showPrompt } from '/src/core/modals.js';
 import { quoted } from '/src/core/log.js';
+import { copySliceLink, createSliceInfo, isSlicePeeked, openSliceDetails, unpeekSlice } from '/src/features/slice-links.js';
 
 let _state = null;
 let _dom = null;
@@ -117,54 +118,64 @@ export const createDeleteBtn = (onConfirm, message) => {
     return btn;
 };
 
-// Slice menu with Mark Complete and Delete options
-export const createSliceMenu = (slice, onDelete, deleteMessage) => {
+// Actions for a slice, shared by its ☰ menu and the gutter's right-click menu. Copying a link
+// works in locked maps; the rest change the map, so they're editOnly.
+export const getSliceActions = (slice, anchor) => {
+    const actions = [
+        { key: 'link', label: 'Copy link to slice', run: () => copySliceLink(slice) },
+        { key: 'details', label: 'Edit goal and date', editOnly: true, run: () => openSliceDetails(slice, anchor) }
+    ];
+    const isOnlySlice = _state.slices.length === 1;
+    if (slice.collapsed) {
+        actions.push({ key: 'reopen', label: 'Reopen', editOnly: true, separator: true, run: () => toggleSliceCollapsed(slice.id, false) });
+    } else if (!isOnlySlice) {
+        actions.push(
+            { key: 'complete', label: 'Mark Complete', editOnly: true, separator: true, run: () => toggleSliceCollapsed(slice.id, true, 'complete') },
+            { key: 'collapse', label: 'Collapse', editOnly: true, run: () => toggleSliceCollapsed(slice.id, true, 'closed') }
+        );
+    }
+    if (!isOnlySlice) {
+        actions.push({
+            key: 'delete', label: 'Delete', editOnly: true, destructive: true,
+            run: async () => {
+                if (await showConfirm(`Delete "${slice.name || 'this slice'}" and all its stories?`)) _deleteSlice(slice.id);
+            }
+        });
+    }
+    return actions;
+};
+
+const SLICE_MENU_ICONS = {
+    link: '🔗',
+    details: 'ⓘ',
+    reopen: '↩',
+    complete: '✓',
+    collapse: '<span style="font-size:10px;vertical-align:1px">▼</span>',
+    delete: '🗑'
+};
+
+// Slice ☰ menu. Items that change the map are hidden by CSS while the map is locked.
+export const createSliceMenu = (slice) => {
     const container = el('div', 'slice-menu');
 
     const btn = el('button', 'btn-slice-menu', { text: '☰', title: 'Slice options', ariaLabel: 'Slice options menu' });
     const menu = el('div', 'slice-menu-dropdown');
 
-    if (slice.collapsed) {
-        // Reopen option
-        const reopenOption = el('button', 'slice-menu-item');
-        reopenOption.innerHTML = '<span class="slice-menu-icon">↩</span> Reopen';
-        reopenOption.addEventListener('click', (e) => {
+    getSliceActions(slice, container).forEach(action => {
+        if (action.separator) menu.appendChild(el('div', `slice-menu-sep${action.editOnly ? ' slice-menu-edit-item' : ''}`));
+        let className = 'slice-menu-item';
+        if (action.destructive) className += ' slice-menu-item-danger';
+        if (action.editOnly) className += ' slice-menu-edit-item';
+        const item = el('button', className);
+        item.innerHTML = `<span class="slice-menu-icon">${SLICE_MENU_ICONS[action.key]}</span> `;
+        item.appendChild(document.createTextNode(action.label));
+        item.addEventListener('click', (e) => {
             e.stopPropagation();
-            toggleSliceCollapsed(slice.id, false);
             menu.classList.remove('visible');
+            action.run();
         });
-        menu.appendChild(reopenOption);
-    } else {
-        // Mark as complete option
-        const completeOption = el('button', 'slice-menu-item');
-        completeOption.innerHTML = '<span class="slice-menu-icon">✓</span> Mark Complete';
-        completeOption.addEventListener('click', (e) => {
-            e.stopPropagation();
-            toggleSliceCollapsed(slice.id, true, 'complete');
-            menu.classList.remove('visible');
-        });
-        menu.appendChild(completeOption);
-
-        // Collapse option
-        const collapseOption = el('button', 'slice-menu-item');
-        collapseOption.innerHTML = '<span class="slice-menu-icon" style="font-size:10px;vertical-align:1px">▼</span> Collapse';
-        collapseOption.addEventListener('click', (e) => {
-            e.stopPropagation();
-            toggleSliceCollapsed(slice.id, true, 'closed');
-            menu.classList.remove('visible');
-        });
-        menu.appendChild(collapseOption);
-    }
-
-    // Delete option
-    const deleteOption = el('button', 'slice-menu-item slice-menu-item-danger');
-    deleteOption.innerHTML = '<span class="slice-menu-icon">🗑</span> Delete';
-    deleteOption.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        menu.classList.remove('visible');
-        if (await showConfirm(deleteMessage)) onDelete();
+        menu.appendChild(item);
     });
-    menu.appendChild(deleteOption);
 
     btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -180,25 +191,28 @@ export const createSliceMenu = (slice, onDelete, deleteMessage) => {
     return container;
 };
 
+// Swap just one slice container instead of a full rebuild
+export const rerenderSlice = (sliceId) => {
+    const index = _state.slices.findIndex(s => s.id === sliceId);
+    const oldContainer = _dom.storyMap.querySelector(`.slice-container[data-slice-id="${sliceId}"]`);
+    if (index === -1 || !oldContainer) return false;
+    oldContainer.replaceWith(createSliceContainer(_state.slices[index], index));
+    if (_initSortable) _initSortable();
+    return true;
+};
+
 // Toggle slice collapsed state
 const toggleSliceCollapsed = (sliceId, collapsed, reason) => {
-    const index = _state.slices.findIndex(s => s.id === sliceId);
-    if (index === -1) return;
-    const slice = _state.slices[index];
+    const slice = _state.slices.find(s => s.id === sliceId);
+    if (!slice) return;
 
     slice.collapsed = collapsed;
     if (collapsed && reason) slice.closedReason = reason;
     else delete slice.closedReason;
+    unpeekSlice(sliceId);
 
-    // Swap just the affected slice container instead of full rebuild
-    const oldContainer = _dom.storyMap.querySelector(`.slice-container[data-slice-id="${sliceId}"]`);
-    if (oldContainer) {
-        oldContainer.replaceWith(createSliceContainer(slice, index));
-        if (_initSortable) _initSortable();
-        _saveToStorage();
-    } else {
-        _renderAndSave();
-    }
+    if (rerenderSlice(sliceId)) _saveToStorage();
+    else _renderAndSave();
 };
 
 export const createExpandButton = (item, { readOnly = false } = {}) => {
@@ -1189,23 +1203,20 @@ const getSlicePoints = (slice) => {
 };
 
 export const createSliceContainer = (slice, index) => {
+    const collapsed = slice.collapsed && !isSlicePeeked(slice.id);
     let containerClass = 'slice-container';
-    if (slice.collapsed) {
+    if (collapsed) {
         containerClass += ' slice-collapsed';
     }
     const container = el('div', containerClass, { dataSliceId: slice.id });
 
     const labelContainer = el('div', 'slice-label-container', { dataSliceId: slice.id });
 
-    if (slice.collapsed) {
+    if (collapsed) {
         const controlsRow = el('div', 'slice-controls-row');
         const dragHandle = el('div', 'slice-drag-handle', { html: '↕', title: 'Drag to reorder' });
         controlsRow.appendChild(dragHandle);
-
-        if (_state.slices.length > 1) {
-            controlsRow.appendChild(createSliceMenu(slice, () => _deleteSlice(slice.id),
-                `Delete "${slice.name || 'this slice'}" and all its stories?`));
-        }
+        controlsRow.appendChild(createSliceMenu(slice));
         labelContainer.appendChild(controlsRow);
         container.appendChild(labelContainer);
 
@@ -1237,9 +1248,11 @@ export const createSliceContainer = (slice, index) => {
 
         const isClosed = slice.closedReason === 'closed';
         const completedBanner = el('div', `slice-completed-banner${isClosed ? ' slice-closed-banner' : ''}`);
-        const sliceName = slice.name ? `${slice.name} - ` : '';
-        const bannerText = el('span', 'slice-completed-text', { text: `${sliceName}${isClosed ? 'Closed' : 'Complete'}` });
-        completedBanner.appendChild(bannerText);
+        const statusText = isClosed ? 'Closed' : 'Complete';
+        completedBanner.title = slice.name ? `${slice.name} - ${statusText}` : statusText;
+        // The name truncates on one line; the status after it always shows
+        if (slice.name) completedBanner.appendChild(el('span', 'slice-completed-name', { text: slice.name }));
+        completedBanner.appendChild(el('span', 'slice-completed-text', { text: slice.name ? ` - ${statusText}` : statusText }));
         storiesRow.appendChild(completedBanner);
 
         storiesArea.appendChild(storiesRow);
@@ -1249,9 +1262,16 @@ export const createSliceContainer = (slice, index) => {
     }
 
     const labelInput = createTextarea('slice-label', 'Release...', slice.name,
-        (val) => slice.name = val,
+        (val) => {
+            slice.name = val;
+            labelInput.title = val;
+        },
         () => _logTextEdit?.('slice name', slice.id));
+    // Long names are cut off in the narrow gutter, so the full name shows on hover
+    labelInput.title = slice.name || '';
     labelContainer.appendChild(labelInput);
+    const info = createSliceInfo(slice);
+    if (info) labelContainer.appendChild(info);
 
     const progress = getSliceProgress(slice);
     const points = getSlicePoints(slice);
@@ -1288,10 +1308,7 @@ export const createSliceContainer = (slice, index) => {
     const dragHandle = el('div', 'slice-drag-handle', { html: '↕', title: 'Drag to reorder' });
     controlsRow.appendChild(dragHandle);
 
-    if (_state.slices.length > 1) {
-        controlsRow.appendChild(createSliceMenu(slice, () => _deleteSlice(slice.id),
-            `Delete "${slice.name || 'this slice'}" and all its stories?`));
-    }
+    controlsRow.appendChild(createSliceMenu(slice));
     labelContainer.appendChild(controlsRow);
 
     const addSliceBtn = el('button', 'btn-add-slice', { text: '+ Slice' });

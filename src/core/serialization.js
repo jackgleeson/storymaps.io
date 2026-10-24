@@ -1,7 +1,7 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Serialization / deserialization (pure functions)
 
-import { CARD_COLORS, isValidUrl } from '/src/core/constants.js';
+import { CARD_COLORS, isValidUrl, copySliceDetails } from '/src/core/constants.js';
 import { state, createColumn, createStory, createRefColumn } from '/src/core/state.js';
 import { generateId } from '/src/core/constants.js';
 
@@ -70,6 +70,7 @@ export const serialize = () => ({
         };
         if (slice.collapsed) obj.collapsed = true;
         if (slice.closedReason) obj.closedReason = slice.closedReason;
+        copySliceDetails(slice, obj);
         return obj;
     }),
     ...(state.legend.length > 0 && {
@@ -120,6 +121,7 @@ const deserializeV1 = (data) => {
             stories: {}
         };
         if (slice.closedReason) newSlice.closedReason = slice.closedReason;
+        copySliceDetails(slice, newSlice);
         const stories = Array.isArray(slice.stories) ? slice.stories : [];
         state.columns.forEach((col, i) => {
             newSlice.stories[col.id] = (stories[i] || []).map(deserializeCard);

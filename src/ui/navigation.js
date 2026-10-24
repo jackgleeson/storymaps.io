@@ -16,6 +16,7 @@ let _duplicateCards = null;
 let _deleteSelectedColumns = null;
 let _deleteSelectedCards = null;
 let _insertPartialMapRef = null;
+let _getSliceActions = null;
 
 // Marquee state
 let isMarquee = false;
@@ -41,7 +42,7 @@ let panStartY = 0;
 let panScrollLeft = 0;
 let panScrollTop = 0;
 
-export const init = ({ state, updateSelectionUI, selection, clearSelection, isMapEditable, addColumnAt, deleteColumn, duplicateColumns, duplicateCards, deleteSelectedColumns, deleteSelectedCards, insertPartialMapRef }) => {
+export const init = ({ state, updateSelectionUI, selection, clearSelection, isMapEditable, addColumnAt, deleteColumn, duplicateColumns, duplicateCards, deleteSelectedColumns, deleteSelectedCards, insertPartialMapRef, getSliceActions }) => {
     _dom = {
         storyMap: document.getElementById('storyMap'),
         storyMapWrapper: document.getElementById('storyMapWrapper'),
@@ -66,6 +67,7 @@ export const init = ({ state, updateSelectionUI, selection, clearSelection, isMa
     _deleteSelectedColumns = deleteSelectedColumns;
     _deleteSelectedCards = deleteSelectedCards;
     _insertPartialMapRef = insertPartialMapRef;
+    _getSliceActions = getSliceActions;
 };
 
 const updatePanMode = () => {
@@ -248,6 +250,13 @@ const ICON_DELETE = '<polyline points="3 5 4 13 12 13 13 5"/><line x1="2" y1="5"
 const ICON_DUPLICATE = '<rect x="3" y="3" width="8" height="10" rx="1.5"/><path d="M6 3V2.5A1.5 1.5 0 0 1 7.5 1H12a1.5 1.5 0 0 1 1.5 1.5V11A1.5 1.5 0 0 1 12 12.5H11"/>';
 const ICON_INSERT_PARTIAL = '<rect x="2" y="2" width="5" height="5" rx="0.7" fill="#fef08a" stroke="#d4aa00" stroke-width="0.7"/><rect x="9" y="2" width="5" height="5" rx="0.7" fill="#fecdd3" stroke="#e88a9a" stroke-width="0.7"/><rect x="2" y="9" width="5" height="5" rx="0.7" fill="#a5f3fc" stroke="#67c5d6" stroke-width="0.7"/><rect x="9" y="9" width="5" height="5" rx="0.7" fill="#14b8a6" stroke="#0d9488" stroke-width="0.7"/>';
 
+const ICON_LINK = '<path d="M7 9a3 3 0 0 0 4.5.3l2-2a3 3 0 0 0-4.2-4.2l-1 1"/><path d="M9 7a3 3 0 0 0-4.5-.3l-2 2a3 3 0 0 0 4.2 4.2l1-1"/>';
+const ICON_DETAILS = '<circle cx="8" cy="8" r="6"/><line x1="8" y1="7.5" x2="8" y2="11"/><line x1="8" y1="5" x2="8" y2="5.2"/>';
+const ICON_REOPEN = '<polyline points="5 3 2 6 5 9"/><path d="M2 6h7a4 4 0 0 1 0 8H7"/>';
+const ICON_COMPLETE = '<polyline points="3 8.5 6.5 12 13 4.5"/>';
+const ICON_COLLAPSE = '<polyline points="4 6 8 10 12 6"/>';
+const SLICE_ACTION_ICONS = { link: ICON_LINK, details: ICON_DETAILS, reopen: ICON_REOPEN, complete: ICON_COMPLETE, collapse: ICON_COLLAPSE, delete: ICON_DELETE };
+
 const addSep = (menu) => {
     const sep = document.createElement('div');
     sep.className = 'context-menu-sep';
@@ -367,6 +376,23 @@ const showContextMenu = (x, y, columnId, columnIndex) => {
     positionMenu(menu, x, y);
 };
 
+// Right-click menu for a slice's gutter. Copying a link works in locked maps too.
+const showSliceContextMenu = (x, y, gutter) => {
+    dismissContextMenu();
+    const slice = _state.slices.find(s => s.id === gutter.dataset.sliceId);
+    if (!slice || !_getSliceActions) return;
+    const editable = _isMapEditable();
+    const menu = document.createElement('div');
+    menu.className = 'canvas-context-menu';
+    _getSliceActions(slice, gutter)
+        .filter(action => editable || !action.editOnly)
+        .forEach(action => {
+            if (action.separator) addSep(menu);
+            menu.appendChild(makeMenuItem(action.label, SLICE_ACTION_ICONS[action.key], action.run, action.destructive));
+        });
+    positionMenu(menu, x, y);
+};
+
 export const initPan = () => {
     const wrapper = _dom.storyMapWrapper;
 
@@ -402,11 +428,14 @@ export const initPan = () => {
         isPanning = false;
         wrapper.classList.remove('panning');
 
-        if (!panDidMove && e.button === 2
-            && _isMapEditable()
-            && !window.matchMedia('(pointer: coarse)').matches) {
-            const { columnId, columnIndex } = resolveColumn(e.target);
-            showContextMenu(e.clientX, e.clientY, columnId, columnIndex);
+        if (!panDidMove && e.button === 2 && !window.matchMedia('(pointer: coarse)').matches) {
+            const sliceGutter = e.target.closest('.slice-label-container');
+            if (sliceGutter) {
+                showSliceContextMenu(e.clientX, e.clientY, sliceGutter);
+            } else if (_isMapEditable()) {
+                const { columnId, columnIndex } = resolveColumn(e.target);
+                showContextMenu(e.clientX, e.clientY, columnId, columnIndex);
+            }
         }
     });
 };
