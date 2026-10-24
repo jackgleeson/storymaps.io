@@ -113,6 +113,34 @@ The server entry point is `server.js`, which delegates to modules in `server/`:
 - **REST API** - Route handlers in `server/routes/` for locks, backups, activity log, stats, format endpoints (`.json`, `.yaml`, `.csv`), and server-proxied third-party imports/exports with SSE progress streaming
 - **Middleware** - Origin checks, body parsing, and rate limiting in `server/middleware.js` and `server/rate-limit.js`
 
+### Real-time Sync (Yjs)
+
+Each map is a [Yjs](https://yjs.dev/) document named after its map ID. The server keeps one shared copy of each open map in memory, and every browser on the map keeps its own. Yjs merges edits from everyone into the same result whatever order they arrive in, so the server has no conflict-handling logic of its own.
+
+**Document structure**
+- `storymap` (Y.Map) - the map name, plus:
+  - `columns` - a Y.Array of steps, each a Y.Map of card fields
+  - `users` and `activities` - Y.Maps from column ID to a Y.Array of cards
+  - `slices` - a Y.Array of slices; each slice's `stories` is a Y.Map from column ID to a Y.Array of cards
+  - `legend` - a Y.Array of legend entries
+  - `partialMaps` - stored as a single JSON string, so the last write wins
+- `notes` (Y.Text) - the notepad, bound to CodeMirror with y-codemirror.next so people can type in it at the same time
+- `log` (Y.Array) - the activity feed, trimmed to the last 20 entries
+
+**Client** (`src/core/yjs.js`)
+- The app renders from a plain JavaScript state object, not from Yjs directly. After a local change, `syncToYjs()` writes that state into the document in one transaction with the origin `'local'`. Items that keep their order are updated field by field; an array whose items were added, removed, or reordered is rebuilt. A hash of the state skips the write when nothing changed.
+- Changes with any other origin came from someone else. `syncFromYjs()` reads them back into the state and the map re-renders: the first change renders straight away, and a burst of changes is collapsed into one more render 100ms later.
+- Undo and redo restore snapshots of the local state rather than using a Yjs UndoManager, so an undo syncs to everyone like any other edit.
+- Presence and live cursors use the Yjs awareness protocol. Each client shares its name, colour, device type, and cursor position; the server relays these to everyone on the map and never saves them.
+- Yjs loads from `public/vendor/yjs.bundle.js` when a map first opens, so it doesn't slow down the home page. A new map (from a sample, import, or copy) is written into the empty document after the first sync.
+
+**Server** (`server.js`)
+- A WebSocket connection to `/<mapId>` is checked against the allowed origins (and closed with code 4403 if it fails), then handed to y-websocket's `setupWSConnection`, which runs the sync protocol and relays updates to everyone on the map.
+- y-leveldb loads a map from `data/` when its first client connects and saves every update as it arrives. When the last client leaves, the in-memory copy is dropped. The map stays on disk as a list of updates, which y-leveldb merges into one once there are more than 500.
+- Every update also resets a 2-second timer that saves the map's name, last-edited time, and edit count to SQLite. Edits are counted from new activity-log entries. Entries older than 10 minutes are ignored, because a client that connects before the map has loaded from disk sends back entries the server already had.
+- The REST API works on the same documents. Format URLs (`.json`, `.yaml`, `.csv`) read the in-memory copy if the map is open, and otherwise load it from LevelDB. CLI pushes (`PUT /api/maps/:id`) write into the live document, so people on the map see the change straight away, and add a `cli` entry to the activity log.
+- On shutdown (SIGTERM or SIGINT) the server writes open documents to LevelDB and saves pending SQLite updates before it exits.
+
 ### Data Storage
 - **LevelDB** - Yjs document persistence in `data/`
 - **SQLite** - Map index with names and timestamps (`data/maps.db`)
