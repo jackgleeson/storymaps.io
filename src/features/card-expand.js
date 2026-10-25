@@ -2,11 +2,12 @@
 // Card detail expand modal
 
 import { dom } from '/src/ui/dom.js';
-import { pushUndo } from '/src/core/state.js';
+import { state, pushUndo } from '/src/core/state.js';
 import { isMapEditable } from '/src/core/lock.js';
 import * as log from '/src/core/log.js';
 import { CARD_COLORS, STATUS_OPTIONS, el, isValidUrl } from '/src/core/constants.js';
 import { createPointsInput, createTagEditor, patchCardForItem } from '/src/ui/ui.js';
+import { STORY_LINES, addLines, enterAction } from '/src/core/story-lines.js';
 
 let _deps = {};
 
@@ -29,6 +30,26 @@ const autoResizeExpandName = () => {
 const autoResizeExpandBody = () => {
     dom.cardExpandBody.style.height = 'auto';
     dom.cardExpandBody.style.height = dom.cardExpandBody.scrollHeight + 'px';
+};
+
+// Story line chips are for cards in slices, not the user, activity and step rows above them
+const inCards = (cardMap, item) => Object.values(cardMap || {}).some(cards => cards.includes(item));
+const isSliceCard = (item) =>
+    state.slices.some(slice => inCards(slice.stories, item))
+    || state.partialMaps.some(pm => Object.values(pm.stories || {}).some(stories => inCards(stories, item)));
+
+// Replace part of the body as if typed, so the textarea's own undo can take it back, and fire the
+// input event that saves it. setRangeText is the fallback where execCommand isn't supported.
+const editBody = ({ from, to, insert, caret }) => {
+    const body = dom.cardExpandBody;
+    body.focus();
+    body.setSelectionRange(from, to);
+    const done = insert ? document.execCommand('insertText', false, insert) : document.execCommand('delete');
+    if (!done) {
+        body.setRangeText(insert, from, to, 'end');
+        body.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    body.setSelectionRange(caret, caret);
 };
 
 // Footer icons, one per property row
@@ -194,6 +215,7 @@ export const openExpandModal = (item, { readOnly = false } = {}) => {
     dom.cardExpandBody.readOnly = !editable;
     const modal = dom.cardExpandModal.querySelector('.card-expand-modal');
     if (modal) modal.style.backgroundColor = item.color || '';
+    dom.cardExpandChips.hidden = !editable || !isSliceCard(item);
     renderFooter(item, editable);
     dom.cardExpandModal.classList.add('visible');
     requestAnimationFrame(() => {
@@ -244,6 +266,23 @@ export const initListeners = () => {
         log.logTextEdit('card body', _expandedItem.id);
         autoResizeExpandBody();
         _deps.saveToStorage();
+    });
+
+    dom.cardExpandChips.addEventListener('click', (e) => {
+        const chip = e.target.closest('[data-lines]');
+        if (!chip || !_expandedItem || dom.cardExpandBody.readOnly) return;
+        const body = dom.cardExpandBody;
+        editBody(addLines(body.value, body.selectionEnd, STORY_LINES[chip.dataset.lines]));
+    });
+
+    dom.cardExpandBody.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter' || e.shiftKey || e.isComposing || !_expandedItem || dom.cardExpandBody.readOnly) return;
+        const body = dom.cardExpandBody;
+        const action = enterAction(body.value, body.selectionStart, body.selectionEnd);
+        if (!action) return;
+        e.preventDefault();
+        if (action.insert === undefined) body.setSelectionRange(action.caret, action.caret);
+        else editBody(action);
     });
 
     document.getElementById('cardExpandModalClose')?.addEventListener('click', closeExpandModal);

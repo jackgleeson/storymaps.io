@@ -43,6 +43,7 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **Map Partials** - reusable story map fragments that eliminate duplication when multiple user journeys converge on shared steps; extract a sequence of columns once, reference it from anywhere, and expand inline to see the detail
 - **Card title & body** - each card has a short title visible on the map and an optional body for longer descriptions or details
 - **Expanded view** - click the expand button on any card to edit the title and body in a larger modal, with status, points, tags, link, and colour in its footer; cards with body text show an expand indicator
+- **Story chips** - in the expanded view of a story card, add a user story (As a, I want, So that), a scenario (Given, When, Then) or an acceptance criteria list to the body in one click; Enter moves to the next line to fill in, and starts the next item in a list
 - **Card colours & links** - 14 colours, external URLs to issue trackers
 - **Drag & drop** - reorder cards, columns, and slices; the map auto-scrolls when you drag near its edges
 - **Insert steps & spacers** - right-click a step to add a new step or a spacer column before or after it, or duplicate it; spacer columns visually group steps

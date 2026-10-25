@@ -6505,6 +6505,50 @@ body.read-only-mode {
     color: rgba(0, 0, 0, 0.3);
 }
 
+/* Story line chips between the title and the body. Fixed colours, like the footer, because the
+   modal keeps its pastel card colour in dark mode. */
+.card-expand-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    flex-shrink: 0;
+    margin-bottom: 8px;
+}
+
+.card-expand-chips[hidden] {
+    display: none;
+}
+
+.card-expand-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 9px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.05);
+    color: rgba(0, 0, 0, 0.7);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.5;
+    cursor: pointer;
+}
+
+.card-expand-chip:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #1a1a1a;
+}
+
+.card-expand-chip:focus-visible {
+    outline: 2px solid #0f766e;
+    outline-offset: 1px;
+}
+
+.card-expand-chip > span {
+    color: rgba(0, 0, 0, 0.4);
+}
+
 .card-expand-name::-webkit-scrollbar,
 .card-expand-body::-webkit-scrollbar {
     width: 4px;
@@ -6810,6 +6854,14 @@ button.card-expand-status-option:hover {
 @media (pointer: coarse) {
     .card-expand-footer {
         gap: 10px;
+    }
+
+    .card-expand-chips {
+        gap: 6px;
+    }
+
+    .card-expand-chip {
+        padding: 5px 12px;
     }
 
     .card-expand-status {
