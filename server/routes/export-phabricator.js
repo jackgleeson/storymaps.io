@@ -90,12 +90,12 @@ export default function register(ctx) {
         parentData = await curlPost(apiUrl, txnParams);
       } catch (e) {
         sendSSE(res, 'progress', { type: 'task', title: item.title, status: 'error', error: e.message });
-        failed++;
+        failed += 1 + (item.subtasks?.length || 0); // its subtasks can't be created either
         continue;
       }
       if (parentData.error_code) {
         sendSSE(res, 'progress', { type: 'task', title: item.title, status: 'error', error: parentData.error_info });
-        failed++;
+        failed += 1 + (item.subtasks?.length || 0);
         continue;
       }
       const parentPhid = parentData.result.object.phid;

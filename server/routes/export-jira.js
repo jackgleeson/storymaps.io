@@ -92,12 +92,12 @@ export default function register(ctx) {
         epicData = await safeJson(epicRes);
       } catch (e) {
         sendSSE(res, 'progress', { type: 'epic', summary: epic.summary, status: 'error', error: e.message });
-        failed++;
+        failed += 1 + (epic.stories?.length || 0); // its stories can't be created either
         continue;
       }
       if (epicData.errors || epicData.errorMessages?.length) {
         sendSSE(res, 'progress', { type: 'epic', summary: epic.summary, status: 'error', error: epicData.errors || epicData.errorMessages });
-        failed++;
+        failed += 1 + (epic.stories?.length || 0);
         continue;
       }
       sendSSE(res, 'progress', { type: 'epic', summary: epic.summary, status: 'created', key: epicData.key });

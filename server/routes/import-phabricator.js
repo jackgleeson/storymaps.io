@@ -180,52 +180,48 @@ export default function register(ctx) {
       }
     }
 
-    // Phase 4: Group by parent tasks
-    // Parent tasks = tasks that have children in the set
-    const childPhids = new Set(tasks.filter(t => t.parentPhid).map(t => t.parentPhid));
-    const parentTasks = tasks.filter(t => childPhids.has(t.phid));
-    const childTasksByParent = new Map();
-    for (const t of tasks) {
-      if (t.parentPhid && phidToTask.has(t.parentPhid)) {
-        if (!childTasksByParent.has(t.parentPhid)) childTasksByParent.set(t.parentPhid, []);
-        childTasksByParent.get(t.parentPhid).push(t);
+    // Phase 4: Group each task under its top-level ancestor. Tasks can nest more than two levels
+    // deep, so deeper tasks are flattened into the group of the task at the top, and each task
+    // appears once. The seen set stops a loop of parent links.
+    const rootOf = (task) => {
+      const seen = new Set();
+      let current = task;
+      while (current.parentPhid && !seen.has(current.phid)) {
+        seen.add(current.phid);
+        current = phidToTask.get(current.parentPhid);
       }
+      return current;
+    };
+    const childrenByRoot = new Map();
+    for (const task of tasks) {
+      const root = rootOf(task);
+      if (root === task) continue;
+      if (!childrenByRoot.has(root.phid)) childrenByRoot.set(root.phid, []);
+      childrenByRoot.get(root.phid).push(task);
     }
-    // Orphans = tasks that are not children of any task in the set
-    const childPhidSet = new Set(tasks.filter(t => t.parentPhid).map(t => t.phid));
-    const orphans = tasks.filter(t => !childPhidSet.has(t.phid) && !childPhids.has(t.phid));
+    const toStory = (t) => ({ key: t.identifier, summary: t.summary, description: t.description, status: t.status, points: t.points });
 
     const epics = [];
-    for (const parent of parentTasks) {
-      const children = childTasksByParent.get(parent.phid) || [];
-      epics.push({
-        key: parent.identifier,
-        summary: parent.summary,
-        description: parent.description,
-        status: parent.status,
-        points: parent.points,
-        stories: children.map(c => ({
-          key: c.identifier,
-          summary: c.summary,
-          description: c.description,
-          status: c.status,
-          points: c.points
-        }))
-      });
+    const orphans = [];
+    for (const task of tasks) {
+      if (rootOf(task) !== task) continue;
+      const children = childrenByRoot.get(task.phid);
+      if (children) {
+        epics.push({
+          key: task.identifier,
+          summary: task.summary,
+          description: task.description,
+          status: task.status,
+          points: task.points,
+          stories: children.map(toStory)
+        });
+      } else {
+        orphans.push(task);
+      }
     }
 
     if (orphans.length > 0) {
-      epics.push({
-        key: null,
-        summary: 'Other',
-        stories: orphans.map(o => ({
-          key: o.identifier,
-          summary: o.summary,
-          description: o.description,
-          status: o.status,
-          points: o.points
-        }))
-      });
+      epics.push({ key: null, summary: 'Other', stories: orphans.map(toStory) });
     }
 
     sendSSE(res, 'done', {

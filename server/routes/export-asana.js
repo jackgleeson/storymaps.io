@@ -98,12 +98,12 @@ export default function register(ctx) {
         taskData = await safeJson(taskRes);
       } catch (e) {
         sendSSE(res, 'progress', { type: 'task', name: item.name, status: 'error', error: e.message });
-        failed++;
+        failed += 1 + (item.subtasks?.length || 0); // its subtasks can't be created either
         continue;
       }
       if (taskData.errors) {
         sendSSE(res, 'progress', { type: 'task', name: item.name, status: 'error', error: taskData.errors });
-        failed++;
+        failed += 1 + (item.subtasks?.length || 0);
         continue;
       }
       const parentGid = taskData.data.gid;
