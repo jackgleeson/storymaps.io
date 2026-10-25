@@ -5,7 +5,8 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-export const DATA_DIR = join(__dirname, '..', 'data');
+// DATA_DIR lets the tests run a server with its own data folder
+export const DATA_DIR = process.env.DATA_DIR || join(__dirname, '..', 'data');
 export const LOCK_FILE = join(DATA_DIR, 'locks.json');
 export const STATS_FILE = join(DATA_DIR, 'stats.json');
 export const BACKUPS_DIR = join(DATA_DIR, 'backups');

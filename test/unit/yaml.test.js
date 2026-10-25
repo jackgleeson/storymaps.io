@@ -1,8 +1,8 @@
 import { describe, test } from 'node:test';
 import { strict as assert } from 'node:assert';
 import jsyaml from '#js-yaml';
-import { exportToYaml, importFromYaml, validateYaml } from '../src/transfer/yaml.js';
-import { samples, cardLayout } from './fixtures.js';
+import { exportToYaml, importFromYaml, validateYaml } from '../../src/transfer/yaml.js';
+import { samples, cardLayout } from '../fixtures.js';
 
 const MAP = 'name: Test\nsteps:\n  - Sign up\n';
 

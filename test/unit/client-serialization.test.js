@@ -3,8 +3,8 @@ import { strict as assert } from 'node:assert';
 import * as Y from 'yjs';
 import { state } from '/src/core/state.js';
 import { serialize, deserialize, appendImport } from '/src/core/serialization.js';
-import { serializeDoc, writeDocFromJson } from '../server/serialization.js';
-import { fullMap, smallMap, samples } from './fixtures.js';
+import { serializeDoc, writeDocFromJson } from '../../server/serialization.js';
+import { fullMap, smallMap, samples } from '../fixtures.js';
 
 // serialize() records the site it was exported from
 globalThis.window ??= { location: { hostname: 'storymaps.io' } };

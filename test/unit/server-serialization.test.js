@@ -3,8 +3,8 @@ import { strict as assert } from 'node:assert';
 import * as Y from 'yjs';
 import {
   serializeDoc, writeDocFromJson, diffPush, countCards, contentEtag, appendLogEntry,
-} from '../server/serialization.js';
-import { fullMap, smallMap } from './fixtures.js';
+} from '../../server/serialization.js';
+import { fullMap, smallMap } from '../fixtures.js';
 
 const writeMap = (data) => {
   const doc = new Y.Doc();

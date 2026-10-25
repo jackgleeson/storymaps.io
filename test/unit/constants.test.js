@@ -2,7 +2,7 @@ import { describe, test } from 'node:test';
 import { strict as assert } from 'node:assert';
 import {
   generateId, isValidUrl, normalizePoints, normalizeSliceGoal, normalizeSliceDate, copySliceDetails, escHtml,
-} from '../src/core/constants.js';
+} from '../../src/core/constants.js';
 
 describe('generateId', () => {
   test('is 8 lowercase base36 characters', () => {

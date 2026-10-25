@@ -1,6 +1,6 @@
 import { describe, test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { exportToCsv, importFromCsv } from '../src/transfer/csv.js';
+import { exportToCsv, importFromCsv } from '../../src/transfer/csv.js';
 
 const map = (slices) => ({
   name: 'Test map',

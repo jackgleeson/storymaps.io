@@ -1,13 +1,13 @@
 import { describe, test, beforeEach } from 'node:test';
 import { strict as assert } from 'node:assert';
 import * as Y from 'yjs';
-import registerMaps from '../server/routes/maps.js';
+import registerMaps from '../../server/routes/maps.js';
 import {
   serializeDoc, contentEtag, appendLogEntry, diffPush, writeDocFromJson, countCards, loadAndSerialize,
-} from '../server/serialization.js';
-import { importFromYaml } from '../src/transfer/yaml.js';
-import { importFromCsv } from '../src/transfer/csv.js';
-import { fullMap, smallMap, cardLayout } from './fixtures.js';
+} from '../../server/serialization.js';
+import { importFromYaml } from '../../src/transfer/yaml.js';
+import { importFromCsv } from '../../src/transfer/csv.js';
+import { fullMap, smallMap, cardLayout } from '../fixtures.js';
 
 const LOCK_FILE = 'locks.json';
 const STATS_FILE = 'stats.json';

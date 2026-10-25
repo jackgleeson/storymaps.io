@@ -4,7 +4,7 @@ import { EventEmitter } from 'node:events';
 
 // Allowed origins are read from the environment on import, so test against the defaults
 delete process.env.STORYMAPS_ALLOWED_ORIGINS;
-const { isOriginAllowed, isCliApi, parseBody } = await import('../server/middleware.js');
+const { isOriginAllowed, isCliApi, parseBody } = await import('../../server/middleware.js');
 
 describe('isOriginAllowed', () => {
   test('allows the storymaps.io origins', () => {

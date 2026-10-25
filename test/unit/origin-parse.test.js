@@ -1,6 +1,6 @@
 import { describe, test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { parseOrigins, buildAllowedOrigins } from '../server/middleware.js';
+import { parseOrigins, buildAllowedOrigins } from '../../server/middleware.js';
 
 describe('parseOrigins', () => {
   test('empty input yields empty Set', () => {

@@ -1,7 +1,7 @@
 import { describe, test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import registerLocks from '../server/routes/locks.js';
-import registerBackups from '../server/routes/backups.js';
+import registerLocks from '../../server/routes/locks.js';
+import registerBackups from '../../server/routes/backups.js';
 
 const captureHandlers = (register, extraCtx = {}) => {
   const handlers = {};

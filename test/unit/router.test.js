@@ -1,6 +1,6 @@
 import { describe, test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { createRouter } from '../server/router.js';
+import { createRouter } from '../../server/router.js';
 
 describe('createRouter', () => {
   const setup = () => {

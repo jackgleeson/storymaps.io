@@ -1,6 +1,6 @@
 import { describe, test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { pickClientIp } from '../server/rate-limit.js';
+import { pickClientIp } from '../../server/rate-limit.js';
 
 describe('pickClientIp', () => {
   test('uses socket.remoteAddress when trustProxy is false', () => {

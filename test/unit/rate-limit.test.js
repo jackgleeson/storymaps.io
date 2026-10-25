@@ -3,7 +3,7 @@ import { strict as assert } from 'node:assert';
 
 // Limit by the socket address, whatever the dev shell sets
 delete process.env.TRUST_PROXY;
-const { isRateLimited, isProxyRateLimited } = await import('../server/rate-limit.js');
+const { isRateLimited, isProxyRateLimited } = await import('../../server/rate-limit.js');
 
 // The limiters keep their counts for the whole run, so every test uses its own IP
 let ipCounter = 0;

@@ -15,4 +15,8 @@ jobs:
           node-version: '24'
           cache: 'npm'
       - run: npm ci
-      - run: npm test
+      - name: Unit tests
+        run: npm run test:unit
+      # Starts its own server on a spare port with a temporary data folder
+      - name: Integration tests
+        run: npm run test:integration

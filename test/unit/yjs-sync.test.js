@@ -2,8 +2,8 @@ import { describe, test, afterEach } from 'node:test';
 import { strict as assert } from 'node:assert';
 import { state as sharedState } from '/src/core/state.js';
 import { serialize, deserialize } from '/src/core/serialization.js';
-import { serializeDoc, writeDocFromJson } from '../server/serialization.js';
-import { fullMap, smallMap } from './fixtures.js';
+import { serializeDoc, writeDocFromJson } from '../../server/serialization.js';
+import { fullMap, smallMap } from '../fixtures.js';
 
 // The browser modules look up the board name, ask for animation frames and read the site name
 globalThis.document ??= { getElementById: () => ({ value: '' }) };

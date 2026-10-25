@@ -1,7 +1,7 @@
 import { describe, test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { parseCsv, escapeCSV, parseInlineNotation, formatInlineNotation, exportToCsv, importFromCsv } from '../src/transfer/csv.js';
-import { samples, cardLayout } from './fixtures.js';
+import { parseCsv, escapeCSV, parseInlineNotation, formatInlineNotation, exportToCsv, importFromCsv } from '../../src/transfer/csv.js';
+import { samples, cardLayout } from '../fixtures.js';
 
 const roundTrip = (map) => importFromCsv(exportToCsv(map));
 

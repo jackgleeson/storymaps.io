@@ -3,7 +3,7 @@ import { strict as assert } from 'node:assert';
 
 // The SSRF check is read from the environment on import, so make sure a dev shell can't turn it off
 delete process.env.DISABLE_SSRF_CHECK;
-const { validateExternalUrl, sanitizeFilename, safeJson } = await import('../server/http-helpers.js');
+const { validateExternalUrl, sanitizeFilename, safeJson } = await import('../../server/http-helpers.js');
 
 describe('validateExternalUrl', () => {
   test('returns the origin of a public https URL', () => {
