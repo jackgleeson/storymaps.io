@@ -5,7 +5,7 @@ import { dom } from '/src/ui/dom.js';
 import { state, pushUndo } from '/src/core/state.js';
 import { isMapEditable } from '/src/core/lock.js';
 import * as log from '/src/core/log.js';
-import { CARD_COLORS, STATUS_OPTIONS, el, isValidUrl } from '/src/core/constants.js';
+import { CARD_COLORS, DEFAULT_CARD_COLORS, STATUS_OPTIONS, el, isValidUrl } from '/src/core/constants.js';
 import { createPointsInput, createTagEditor, patchCardForItem } from '/src/ui/ui.js';
 import { STORY_LINES, addLines, enterAction } from '/src/core/story-lines.js';
 
@@ -58,7 +58,9 @@ const ICONS = {
     points: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 9h14M5 15h14M10 4L8 20M16 4l-2 16"/></svg>',
     tags: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5" fill="currentColor"/></svg>',
     link: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
-    colour: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></svg>'
+    colour: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></svg>',
+    open: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>',
+    close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 15l-6-6-6 6"/></svg>'
 };
 
 const statusDot = (status) => {
@@ -181,8 +183,37 @@ const buildColourField = (item, editable, onChange) => {
     return row;
 };
 
-// Status, points, tags, link and colour, the same properties as the card's ... menu.
-// A locked map shows only the values that are set, and no footer if none are.
+// The collapsed footer: one button showing each property with its icon and value, faded when
+// it isn't set. Pressing it opens the full rows.
+const buildSummary = (item) => {
+    const summary = el('button', 'card-expand-summary', { type: 'button', ariaExpanded: 'false' });
+    const part = (label, icon, isSet, ...content) => {
+        const span = el('span', isSet ? 'card-expand-summary-item' : 'card-expand-summary-item unset', { title: label, html: icon });
+        span.append(...content);
+        return span;
+    };
+    const text = (value) => el('span', 'card-expand-summary-text', { text: value });
+    const status = STATUS_OPTIONS[item.status];
+    const hasPoints = item.points != null;
+    const hasLink = isValidUrl(item.url);
+    const swatch = el('span', 'card-expand-summary-swatch');
+    swatch.style.backgroundColor = item.color || DEFAULT_CARD_COLORS.story;
+    summary.append(
+        status
+            ? part('Status', ICONS.status, true, statusDot(item.status), text(status.label))
+            : part('Status', ICONS.status, false, text('Status')),
+        part('Points', ICONS.points, hasPoints, text(hasPoints ? `${item.points} ${item.points === 1 ? 'pt' : 'pts'}` : 'Points')),
+        part('Tags', ICONS.tags, !!item.tags?.length, text(item.tags?.length ? item.tags.join(', ') : 'Tags')),
+        part('Link', ICONS.link, hasLink, text(hasLink ? new URL(item.url).hostname : 'Link')),
+        part('Colour', ICONS.colour, true, swatch),
+        el('span', 'card-expand-toggle', { html: 'Edit' + ICONS.open })
+    );
+    return summary;
+};
+
+// Status, points, tags, link and colour, the same properties as the card's ... menu. An editable
+// card shows them collapsed into one line every time it opens. A locked map shows only the values
+// that are set, and no footer if none are.
 const renderFooter = (item, editable) => {
     const footer = dom.cardExpandFooter;
     footer.innerHTML = '';
@@ -190,16 +221,37 @@ const renderFooter = (item, editable) => {
         patchCardForItem(item);
         _deps.saveToStorage();
     };
+    const fields = el('div', 'card-expand-fields');
     const addRow = (label, icon, field) => {
         if (!field) return;
-        footer.append(el('span', 'card-expand-field-icon', { title: label, ariaLabel: label, html: icon }), field);
+        fields.append(el('span', 'card-expand-field-icon', { title: label, ariaLabel: label, html: icon }), field);
     };
     addRow('Status', ICONS.status, buildStatusField(item, editable, onChange));
     addRow('Points', ICONS.points, buildPointsField(item, editable, onChange));
     addRow('Tags', ICONS.tags, buildTagsField(item, editable, onChange));
     addRow('Link', ICONS.link, buildLinkField(item, editable, onChange));
     addRow('Colour', ICONS.colour, buildColourField(item, editable, onChange));
-    footer.hidden = footer.children.length === 0;
+    footer.hidden = fields.children.length === 0;
+    if (!editable) {
+        footer.append(fields);
+        return;
+    }
+
+    const showLess = el('button', 'card-expand-show-less', { type: 'button', ariaExpanded: 'true', html: 'Show less' + ICONS.close });
+    const collapse = () => {
+        // Fields save on change, which fires on blur, so blur the one in use before it goes
+        if (footer.contains(document.activeElement)) document.activeElement.blur();
+        const summary = buildSummary(item);
+        summary.addEventListener('click', expand);
+        footer.replaceChildren(summary);
+        return summary;
+    };
+    const expand = () => {
+        footer.replaceChildren(fields, showLess);
+        fields.querySelector('button, input')?.focus();
+    };
+    showLess.addEventListener('click', () => collapse().focus());
+    collapse();
 };
 
 export const openExpandModal = (item, { readOnly = false } = {}) => {

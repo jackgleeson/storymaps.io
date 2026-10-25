@@ -6565,18 +6565,112 @@ body.read-only-mode {
     border-radius: 2px;
 }
 
-/* Card expand footer: status, points, tags, link and colour with an icon gutter.
-   Colours are fixed rather than themed because the modal keeps its pastel card colour in dark mode. */
+/* Card expand footer: status, points, tags, link and colour, collapsed into one line until
+   opened, then as rows with an icon gutter. Colours are fixed rather than themed because the modal
+   keeps its pastel card colour in dark mode. */
 .card-expand-footer {
-    display: grid;
-    grid-template-columns: 16px minmax(0, 1fr);
-    gap: 8px 10px;
-    align-items: center;
     flex-shrink: 0;
     margin-top: 12px;
     padding-top: 10px;
     border-top: 1px solid rgba(0, 0, 0, 0.1);
     font-size: 12px;
+    color: #1a1a1a;
+}
+
+.card-expand-fields {
+    display: grid;
+    grid-template-columns: 16px minmax(0, 1fr);
+    gap: 8px 10px;
+    align-items: center;
+}
+
+.card-expand-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 10px;
+    width: calc(100% + 12px);
+    margin: -4px -6px;
+    padding: 4px 6px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #1a1a1a;
+    font-family: inherit;
+    font-size: 12px;
+    text-align: left;
+    cursor: pointer;
+}
+
+.card-expand-summary:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.card-expand-summary-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    max-width: 100%;
+    height: 24px;
+}
+
+.card-expand-summary-item svg {
+    flex-shrink: 0;
+    width: 14px;
+    height: 14px;
+    color: rgba(0, 0, 0, 0.45);
+}
+
+.card-expand-summary-item.unset {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+.card-expand-summary-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.card-expand-summary-swatch {
+    width: 12px;
+    height: 12px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    border-radius: 3px;
+}
+
+.card-expand-toggle,
+.card-expand-show-less {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: rgba(0, 0, 0, 0.55);
+}
+
+.card-expand-toggle {
+    margin-left: auto;
+}
+
+.card-expand-toggle svg,
+.card-expand-show-less svg {
+    width: 14px;
+    height: 14px;
+}
+
+.card-expand-show-less {
+    display: flex;
+    margin: 6px 0 0 auto;
+    padding: 2px 6px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.card-expand-show-less:hover {
+    background: rgba(0, 0, 0, 0.05);
     color: #1a1a1a;
 }
 
@@ -6592,10 +6686,10 @@ body.read-only-mode {
     appearance: none;
 }
 
-.card-expand-footer > .card-expand-status-option,
-.card-expand-footer > .card-expand-points,
-.card-expand-footer > .card-expand-readonly-text,
-.card-expand-footer > .card-expand-link {
+.card-expand-fields > .card-expand-status-option,
+.card-expand-fields > .card-expand-points,
+.card-expand-fields > .card-expand-readonly-text,
+.card-expand-fields > .card-expand-link {
     justify-self: start;
 }
 
@@ -6852,8 +6946,16 @@ button.card-expand-status-option:hover {
 
 /* Bigger tap targets on touch screens */
 @media (pointer: coarse) {
-    .card-expand-footer {
+    .card-expand-fields {
         gap: 10px;
+    }
+
+    .card-expand-summary-item {
+        height: 32px;
+    }
+
+    .card-expand-show-less {
+        padding: 8px 10px;
     }
 
     .card-expand-chips {
