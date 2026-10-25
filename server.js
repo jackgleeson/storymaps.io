@@ -119,14 +119,20 @@ registerStats(ctx);
 registerMaps(ctx);    // /api/maps/new-id must register before /api/maps/:id
 registerLocks(ctx);
 registerBackups(ctx);
-registerExportJira(ctx);
-registerExportPhabricator(ctx);
-registerExportAsana(ctx);
-registerExportLinear(ctx);
-registerImportJira(ctx);
-registerImportAsana(ctx);
-registerImportLinear(ctx);
-registerImportPhabricator(ctx);
+// Imports and exports through the APIs of Jira, Asana, Phabricator and Linear make this server
+// call addresses that people type in. IMPORT_EXPORT_ENABLED=false turns them off, and the app
+// hides them. Imports and exports of files still work.
+const IMPORT_EXPORT_ENABLED = process.env.IMPORT_EXPORT_ENABLED !== 'false';
+if (IMPORT_EXPORT_ENABLED) {
+  registerExportJira(ctx);
+  registerExportPhabricator(ctx);
+  registerExportAsana(ctx);
+  registerExportLinear(ctx);
+  registerImportJira(ctx);
+  registerImportAsana(ctx);
+  registerImportLinear(ctx);
+  registerImportPhabricator(ctx);
+}
 
 // =============================================================================
 // Static File Config
@@ -283,6 +289,11 @@ const server = createServer(async (req, res) => {
           // Fall through to 404
         }
       }
+    }
+
+    // Tell the app when imports and exports through tracker APIs are turned off
+    if (content && cacheKey === '/index.html' && !IMPORT_EXPORT_ENABLED) {
+      content = Buffer.from(content.toString().replace('<html lang="en">', '<html lang="en" data-integrations="off">'));
     }
 
     // Build cache entry from disk content

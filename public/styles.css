@@ -640,6 +640,14 @@ body.welcome-visible #mainMenu > .dropdown-submenu:has(> .dropdown-submenu-trigg
     font-size: 13px;
 }
 
+/* The server has imports and exports through tracker APIs turned off (IMPORT_EXPORT_ENABLED=false).
+   Linear exports only through its API, so Linear leaves the Export menu. */
+[data-integrations="off"] :is(#importJiraBtn, #importAsanaBtn, #importPhabBtn, #importLinearBtn,
+    #exportJiraProxyBtn, #exportAsanaProxyBtn, #exportPhabProxyBtn, #exportLinearProxyBtn),
+[data-integrations="off"] #exportSubmenu [data-integration="linear"] {
+    display: none;
+}
+
 .menu-badge {
     display: inline-block;
     background: #f59e0b;

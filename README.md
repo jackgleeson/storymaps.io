@@ -110,7 +110,7 @@ A story map preserves it. One diagram that shows who the users are, what journey
 The server entry point is `server.js`, which delegates to modules in `server/`:
 - **WebSocket** - Real-time collaboration via y-websocket
 - **Static files** - Serves the client app from `public/` and `src/`
-- **REST API** - Route handlers in `server/routes/` for locks, backups, activity log, stats, format endpoints (`.json`, `.yaml`, `.csv`), and server-proxied third-party imports/exports with SSE progress streaming
+- **REST API** - Route handlers in `server/routes/` for locks, backups, activity log, stats, format endpoints (`.json`, `.yaml`, `.csv`), and server-proxied third-party imports/exports with SSE progress streaming. Requests to Jira, Asana, Phabricator and Linear go only to public addresses over HTTPS. The server checks the address of each host name before connecting, connects to the address it checked, and checks again on every redirect
 - **Middleware** - Origin checks, body parsing, and rate limiting in `server/middleware.js` and `server/rate-limit.js`. Through the API, each address can create 10 maps a minute and 500 a day, push a map or request a new map ID 30 times a minute, and use the import, export, backup and unlock routes 5 times a minute
 
 ### Real-time Sync (Yjs)
@@ -272,6 +272,7 @@ Set these in the `environment` section of the `app` service in `docker-compose.y
 | `STORYMAPS_ALLOWED_ORIGINS` | storymaps.io origins | Comma-separated origins allowed to open WebSocket connections and write to the API, e.g. `https://storymaps.yourcompany.com`. Required when self-hosting on your own domain. `localhost` is always allowed. |
 | `TRUST_PROXY` | unset (`true` in the bundled `docker-compose.yml`) | Set to `true` to take the client IP from `X-Forwarded-For` for rate limiting. Use it behind the bundled Caddy or another trusted proxy; leave it unset if clients can reach the app directly. |
 | `DATA_DIR` | `./data` | Folder for the map database, lock state, counters and backups. |
+| `IMPORT_EXPORT_ENABLED` | `true` | Set to `false` to turn off imports and exports through the APIs of Jira, Asana, Phabricator and Linear. The server then never calls an address someone types in, and the app hides those options. Imports and exports of JSON, YAML and CSV files still work. |
 | `DISABLE_SSRF_CHECK` | unset | Set to `1` to let server-proxied imports and exports call non-HTTPS URLs, localhost, and private network addresses. This turns off SSRF protection, so use it for local development only. |
 
 ### Running Locally (Development)

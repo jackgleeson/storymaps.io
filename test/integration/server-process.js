@@ -14,16 +14,16 @@ const freePort = () => new Promise((resolve) => {
 });
 
 export const testEnv = (dataDir, extra = {}) => {
-  const env = { ...process.env, DATA_DIR: dataDir, ...extra };
-  for (const key of ['NODE_TEST_CONTEXT', 'STORYMAPS_ALLOWED_ORIGINS', 'DISABLE_SSRF_CHECK']) delete env[key];
-  return env;
+  const env = { ...process.env };
+  for (const key of ['NODE_TEST_CONTEXT', 'STORYMAPS_ALLOWED_ORIGINS', 'DISABLE_SSRF_CHECK', 'IMPORT_EXPORT_ENABLED']) delete env[key];
+  return { ...env, DATA_DIR: dataDir, ...extra };
 };
 
-export const startServer = async (dataDir) => {
+export const startServer = async (dataDir, extraEnv = {}) => {
   const port = await freePort();
   // Trust X-Forwarded-For, as production does behind Caddy, so tests can create maps from
   // different addresses without reaching the per-address limits
-  const env = testEnv(dataDir, { PORT: String(port), TRUST_PROXY: 'true' });
+  const env = testEnv(dataDir, { PORT: String(port), TRUST_PROXY: 'true', ...extraEnv });
   const server = spawn(process.execPath, ['server.js'], { cwd: ROOT, env, stdio: ['ignore', 'pipe', 'pipe'] });
   let output = '';
   await new Promise((resolve, reject) => {
