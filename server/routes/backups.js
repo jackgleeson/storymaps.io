@@ -1,5 +1,13 @@
 import { randomBytes } from 'node:crypto';
 
+const MAX_BACKUPS = 5;
+
+// Keep the newest backups by time. Imported backups can be older than the ones already here,
+// such as the backup taken just before an import, so they mustn't push those out.
+const keepNewest = (backups) => backups
+  .sort((a, b) => (Date.parse(a.timestamp) || 0) - (Date.parse(b.timestamp) || 0))
+  .slice(-MAX_BACKUPS);
+
 export default function register(ctx) {
   const { route } = ctx;
   route('GET', '/api/backups/:mapId', async (req, res, { mapId }) => {
@@ -38,8 +46,7 @@ export default function register(ctx) {
       data: JSON.stringify(snapshot),
     };
     backups.push(entry);
-    if (backups.length > 5) backups.splice(0, backups.length - 5);
-    await ctx.writeJson(ctx.getBackupFile(mapId), backups);
+    await ctx.writeJson(ctx.getBackupFile(mapId), keepNewest(backups));
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ id: entry.id, timestamp: entry.timestamp, note: entry.note, mapName: entry.mapName, size: entry.data.length, cardCount: entry.cardCount }));
   });
@@ -58,8 +65,7 @@ export default function register(ctx) {
       for (const b of imported) {
         if (b.id && b.data && !existingIds.has(b.id)) existing.push({ ...b, imported: true });
       }
-      if (existing.length > 5) existing.splice(0, existing.length - 5);
-      await ctx.writeJson(ctx.getBackupFile(mapId), existing);
+      await ctx.writeJson(ctx.getBackupFile(mapId), keepNewest(existing));
     }
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: true }));
