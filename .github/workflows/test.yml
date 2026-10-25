@@ -36,7 +36,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          key: playwright-${{ runner.os }}-chromium-webkit-${{ hashFiles('package-lock.json') }}
       # Chrome for the desktop tests, WebKit for the phone tests
       - name: Install browsers
         run: npx playwright install --with-deps chromium webkit
