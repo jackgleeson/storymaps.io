@@ -200,6 +200,8 @@ export const createPointsInput = (item, onChange, className = 'points-input') =>
     input.value = item.points != null ? item.points : '';
     input.addEventListener('click', (e) => e.stopPropagation());
     input.addEventListener('keydown', (e) => {
+        // Enter means done: leaving the box fires change, which saves the points
+        if (e.key === 'Enter') { e.preventDefault(); input.blur(); return; }
         // Allow navigation, delete, backspace, tab, decimal point
         if (['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
         if (e.key === '.' && !e.target.value.includes('.')) return;
