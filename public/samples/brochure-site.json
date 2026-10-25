@@ -51,6 +51,8 @@
   "slices": [
     {
       "name": "MVP",
+      "goal": "Launch a simple site that explains who we are and what we offer",
+      "targetDate": "2027-01-04",
       "stories": [
         [
           {
@@ -167,6 +169,8 @@
     },
     {
       "name": "V1",
+      "goal": "Turn visitors into enquiries with proof, pricing and clear calls to action",
+      "targetDate": "2027-03-01",
       "stories": [
         [
           {
@@ -266,6 +270,8 @@
     },
     {
       "name": "V2",
+      "goal": "Keep people coming back with fresh content and live support",
+      "targetDate": "2027-05-31",
       "stories": [
         [
           {

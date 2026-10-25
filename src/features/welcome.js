@@ -4,6 +4,7 @@
 import { dom } from '/src/ui/dom.js';
 import { state, initState, hasContent, pushUndo, confirmOverwrite } from '/src/core/state.js';
 import { deserialize } from '/src/core/serialization.js';
+import { shiftSliceDates } from '/src/core/constants.js';
 import { closeMainMenu, zoomToFit } from '/src/ui/navigation.js';
 import { clearPresence, clearCursors } from '/src/ui/presence.js';
 import { clearLockSubscription, updateLockUI } from '/src/core/lock.js';
@@ -162,6 +163,16 @@ export const startNewMap = async () => {
     incrementMapCounter();
 };
 
+// Fetch a sample map, with its slice dates moved so the first is two weeks from today
+const fetchSample = async (name) => {
+    const response = await fetch(`/samples/${name}.json`, { cache: 'no-cache' });
+    if (!response.ok) throw new Error();
+    const start = new Date();
+    start.setDate(start.getDate() + 14);
+    const pad = (n) => String(n).padStart(2, '0');
+    return shiftSliceDates(await response.json(), `${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(start.getDate())}`);
+};
+
 export const startWithSample = async (sampleName, { showToast = true } = {}) => {
     hideWelcomeScreen();
     showLoading();
@@ -172,9 +183,7 @@ export const startWithSample = async (sampleName, { showToast = true } = {}) => 
     history.replaceState({ mapId }, '', `/${mapId}`);
 
     try {
-        const response = await fetch(`/samples/${sampleName}.json`, { cache: 'no-cache' });
-        if (!response.ok) throw new Error();
-        deserialize(await response.json());
+        deserialize(await fetchSample(sampleName));
     } catch {
         await showAlert('Failed to load sample');
     }
@@ -246,10 +255,9 @@ export const loadSample = async (name) => {
 
     showLoading();
     try {
-        const response = await fetch(`/samples/${name}.json`, { cache: 'no-cache' });
-        if (!response.ok) throw new Error();
+        const data = await fetchSample(name);
         pushUndo();
-        deserialize(await response.json());
+        deserialize(data);
         dom.boardName.value = state.name;
         _deps.renderAndSave();
     } catch {

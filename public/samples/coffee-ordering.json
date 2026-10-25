@@ -73,6 +73,8 @@
   "slices": [
     {
       "name": "MVP",
+      "goal": "Customers can order and pay ahead, then pick up their coffee",
+      "targetDate": "2027-01-04",
       "stories": [
         [
           {
@@ -236,6 +238,8 @@
     },
     {
       "name": "V1",
+      "goal": "Make repeat and group orders quicker",
+      "targetDate": "2027-03-01",
       "stories": [
         [
           {
@@ -334,6 +338,8 @@
     },
     {
       "name": "V2",
+      "goal": "Try personalisation and new ways to order",
+      "targetDate": "2027-05-31",
       "stories": [
         [
           {

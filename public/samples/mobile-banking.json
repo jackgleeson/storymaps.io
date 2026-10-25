@@ -139,6 +139,8 @@
   "slices": [
     {
       "name": "MVP",
+      "goal": "Customers can log in and send money to a contact safely",
+      "targetDate": "2027-01-04",
       "stories": [
         [
           {
@@ -406,6 +408,8 @@
     },
     {
       "name": "V1",
+      "goal": "Make everyday transfers faster with biometrics and favourites",
+      "targetDate": "2027-03-01",
       "stories": [
         [],
         [
@@ -612,6 +616,8 @@
     },
     {
       "name": "V2",
+      "goal": "Help customers plan and save with recurring payments and new products",
+      "targetDate": "2027-05-31",
       "stories": [
         [],
         [],

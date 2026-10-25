@@ -57,6 +57,8 @@
   "slices": [
     {
       "name": "MVP",
+      "goal": "See every subscription and never miss a renewal",
+      "targetDate": "2027-01-04",
       "stories": [
         [
           {
@@ -212,6 +214,8 @@
     },
     {
       "name": "V1",
+      "goal": "Spend less time entering subscriptions by importing them",
+      "targetDate": "2027-03-01",
       "stories": [
         [
           {
@@ -336,6 +340,8 @@
     },
     {
       "name": "V2",
+      "goal": "Help people cut the subscriptions they don't use",
+      "targetDate": "2027-05-31",
       "stories": [
         [
           {

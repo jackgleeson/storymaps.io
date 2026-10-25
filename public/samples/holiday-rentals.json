@@ -132,6 +132,8 @@
   "slices": [
     {
       "name": "MVP - Core Marketplace",
+      "goal": "Guests can find, book and pay for a stay, and hosts can list a property",
+      "targetDate": "2027-01-04",
       "stories": [
         [
           {
@@ -420,6 +422,8 @@
     },
     {
       "name": "V1 - Enhanced Experience",
+      "goal": "Make choosing a place easier with maps, reviews and wishlists",
+      "targetDate": "2027-03-01",
       "stories": [
         [
           {
@@ -655,6 +659,8 @@
     },
     {
       "name": "V2 - Scale & Intelligence",
+      "goal": "Grow bookings with smarter recommendations and flexible trips",
+      "targetDate": "2027-05-31",
       "stories": [
         [
           {

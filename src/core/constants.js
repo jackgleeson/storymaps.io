@@ -50,6 +50,21 @@ export const copySliceDetails = (from, to) => {
     return to;
 };
 
+// Move a map's slice target dates so the earliest falls on startDate (YYYY-MM-DD), keeping the
+// gaps between them. Sample maps use this so their dates always read as upcoming.
+const DAY_MS = 86_400_000;
+const toDayNumber = (isoDate) => Date.parse(`${isoDate}T00:00:00Z`) / DAY_MS;
+export const shiftSliceDates = (data, startDate) => {
+    const dates = (data.slices || []).map(s => normalizeSliceDate(s.targetDate)).filter(Boolean);
+    if (dates.length === 0) return data;
+    const offset = toDayNumber(startDate) - Math.min(...dates.map(toDayNumber));
+    for (const slice of data.slices) {
+        const date = normalizeSliceDate(slice.targetDate);
+        if (date) slice.targetDate = new Date((toDayNumber(date) + offset) * DAY_MS).toISOString().slice(0, 10);
+    }
+    return data;
+};
+
 export const CARD_COLORS = {
     red: '#fca5a5',
     rose: '#fecdd3',

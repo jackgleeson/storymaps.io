@@ -74,6 +74,8 @@
   "slices": [
     {
       "name": "MVP",
+      "goal": "Find a recipe and cook it step by step",
+      "targetDate": "2027-01-04",
       "stories": [
         [
           {
@@ -228,6 +230,8 @@
     },
     {
       "name": "V1",
+      "goal": "Suit different diets and make cooking hands-free",
+      "targetDate": "2027-03-01",
       "stories": [
         [
           {
@@ -353,6 +357,8 @@
     },
     {
       "name": "V2",
+      "goal": "Plan meals, shop for them, and share your own recipes",
+      "targetDate": "2027-05-31",
       "stories": [
         [
           {
