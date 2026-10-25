@@ -1,17 +1,19 @@
-import { describe, test, before, after, beforeEach, afterEach } from 'node:test';
+import { describe, test, before, after, beforeEach, afterEach, mock } from 'node:test';
 import { strict as assert } from 'node:assert';
 import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import dns from 'node:dns';
 
 delete process.env.DISABLE_SSRF_CHECK;
+const { fakeHttps } = await import('./fake-https.js');
 const routes = {};
 for (const name of ['export-jira', 'export-linear', 'export-asana', 'export-phabricator', 'import-phabricator']) {
   routes[name] = (await import(`../../server/routes/${name}.js`)).default;
 }
 
 // The export routes call each tracker's API and stream progress back as server-sent events.
-// Jira, Linear and Asana go through fetch(), which is replaced with canned responses here.
+// Jira, Linear and Asana go through https.request, which is answered with canned responses here.
 const handlers = {};
 const ctx = {
   route: (method, path, handler) => { handlers[`${method} ${path}`] = handler; },
@@ -19,19 +21,17 @@ const ctx = {
 };
 Object.values(routes).forEach(register => register(ctx));
 
-const realFetch = globalThis.fetch;
 let requests;
 let respond;
 beforeEach(() => {
   requests = [];
-  globalThis.fetch = async (url, opts = {}) => {
-    const request = { url: String(url), ...opts, json: opts.body ? JSON.parse(opts.body) : undefined };
+  fakeHttps(async (req) => {
+    const request = { ...req, json: req.body ? JSON.parse(req.body) : undefined };
     requests.push(request);
-    const [status, body] = await respond(request);
-    return { status, text: async () => (typeof body === 'string' ? body : JSON.stringify(body)) };
-  };
+    return respond(request);
+  });
 });
-afterEach(() => { globalThis.fetch = realFetch; });
+afterEach(() => mock.restoreAll());
 
 const call = async (path, body, { limited = false } = {}) => {
   const out = { status: null, chunks: [] };
@@ -199,7 +199,7 @@ describe('Asana export', () => {
   });
 });
 
-// Phabricator is called through the curl program rather than fetch(). Put a fake curl first on
+// Phabricator is called through the curl program rather than https.request. Put a fake curl first on
 // the PATH that records each call and answers from a list of canned Conduit responses.
 describe('Phabricator', () => {
   let dir, realPath;
@@ -211,7 +211,7 @@ const dir = process.env.FAKE_CURL_DIR;
 const args = process.argv.slice(2);
 const url = args[args.length - 1];
 const data = args.includes('-d') ? args[args.indexOf('-d') + 1] : '';
-fs.appendFileSync(dir + '/calls.jsonl', JSON.stringify({ url, data }) + '\\n');
+fs.appendFileSync(dir + '/calls.jsonl', JSON.stringify({ url, data, args }) + '\\n');
 const method = new URL(url).pathname.split('/').pop();
 const queue = JSON.parse(fs.readFileSync(dir + '/responses.json', 'utf8'))[method] || [];
 const countsFile = dir + '/counts.json';
@@ -239,8 +239,8 @@ process.stdout.write(JSON.stringify(reply) + '\\n200');
   };
   // Each call's method and form fields
   const calls = () => readFileSync(join(dir, 'calls.jsonl'), 'utf8').trim().split('\n').map(line => {
-    const { url, data } = JSON.parse(line);
-    return { method: new URL(url).pathname.split('/').pop(), host: new URL(url).host, fields: Object.fromEntries(new URLSearchParams(data)) };
+    const { url, data, args } = JSON.parse(line);
+    return { method: new URL(url).pathname.split('/').pop(), host: new URL(url).host, fields: Object.fromEntries(new URLSearchParams(data)), args };
   });
   const task = (id) => ({ result: { object: { id, phid: `PHID-TASK-${id}` } } });
 
@@ -251,6 +251,23 @@ process.stdout.write(JSON.stringify(reply) + '\\n200');
       conduit({ 'user.whoami': [{ result: { userName: 'jack' } }] });
       assert.deepEqual((await call('/api/export/phabricator/verify', creds)).json, { ok: true, userName: 'jack' });
       assert.equal(calls()[0].fields['api.token'], 'api-secret');
+    });
+
+    test('curl connects to the address that was checked, over https only', async () => {
+      conduit({ 'user.whoami': [{ result: { userName: 'jack' } }] });
+      await call('/api/export/phabricator/verify', creds);
+      const { args } = calls()[0];
+      assert.equal(args[args.indexOf('--resolve') + 1], 'phabricator.example.org:443:93.184.215.14');
+      assert.equal(args[args.indexOf('--proto') + 1], '=https');
+    });
+
+    test('a host name that resolves to a private address is refused before curl runs', async () => {
+      conduit({ 'user.whoami': [{ result: { userName: 'jack' } }] });
+      mock.method(dns, 'lookup', (host, options, callback) => callback(null, [{ address: '10.0.0.5', family: 4 }]));
+      const { json } = await call('/api/export/phabricator/verify', creds);
+      assert.equal(json.ok, false);
+      assert.match(json.error, /private address/);
+      assert.equal(existsSync(join(dir, 'calls.jsonl')), false);
     });
 
     test('creates each task with its status and tags, then its subtasks linked to it', async () => {

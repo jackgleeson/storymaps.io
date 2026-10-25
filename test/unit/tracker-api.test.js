@@ -1,13 +1,14 @@
-import { describe, test, beforeEach, afterEach } from 'node:test';
+import { describe, test, beforeEach, afterEach, mock } from 'node:test';
 import { strict as assert } from 'node:assert';
 
 delete process.env.DISABLE_SSRF_CHECK;
+const { fakeHttps } = await import('./fake-https.js');
 const registerJira = (await import('../../server/routes/import-jira.js')).default;
 const registerLinear = (await import('../../server/routes/import-linear.js')).default;
 const registerAsana = (await import('../../server/routes/import-asana.js')).default;
 
 // The import routes call the tracker's API with fetch() and stream progress back as server-sent
-// events. Replace fetch with canned tracker responses and collect the events.
+// events. Answer the tracker calls with canned responses and collect the events.
 const handlers = {};
 const ctx = {
   route: (method, path, handler) => { handlers[`${method} ${path}`] = handler; },
@@ -17,18 +18,16 @@ registerJira(ctx);
 registerLinear(ctx);
 registerAsana(ctx);
 
-const realFetch = globalThis.fetch;
 let requests;
 let respond;
 beforeEach(() => {
   requests = [];
-  globalThis.fetch = async (url, opts = {}) => {
-    requests.push({ url: String(url), ...opts });
-    const [status, body] = await respond(String(url), opts);
-    return { status, text: async () => (typeof body === 'string' ? body : JSON.stringify(body)) };
-  };
+  fakeHttps(async (request) => {
+    requests.push(request);
+    return respond(request.url, request);
+  });
 });
-afterEach(() => { globalThis.fetch = realFetch; });
+afterEach(() => mock.restoreAll());
 
 const call = async (path, body, { limited = false } = {}) => {
   const out = { status: null, chunks: [] };
