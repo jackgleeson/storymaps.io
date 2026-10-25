@@ -23,9 +23,9 @@ export default function register(ctx) {
 
   // POST /api/maps - create a new map
   route('POST', '/api/maps', async (req, res, params, body) => {
-    if (ctx.isRateLimited(req)) {
+    if (ctx.isCreateRateLimited(req)) {
       res.writeHead(429, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Rate limit exceeded' }));
+      res.end(JSON.stringify({ error: 'Too many new maps from your address. Try again later.' }));
       return;
     }
     try {

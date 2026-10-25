@@ -21,7 +21,7 @@ const PORT = process.env.PORT || 8080;
 
 // Shared utilities
 import { DATA_DIR, LOCK_FILE, STATS_FILE, BACKUPS_DIR, getBackupFile, ensureDataDir, readJson, writeJson, generateCardId } from './server/data.js';
-import { isRateLimited, isProxyRateLimited } from './server/rate-limit.js';
+import { isRateLimited, isProxyRateLimited, isCreateRateLimited } from './server/rate-limit.js';
 import { sanitizeFilename } from './server/http-helpers.js';
 import { serializeDoc, contentEtag, loadAndSerialize, appendLogEntry, diffPush, writeDocFromJson, countCards } from './server/serialization.js';
 import { createRouter } from './server/router.js';
@@ -95,7 +95,7 @@ const ctx = {
   getPendingEdits: (mapId) => pendingEdits.get(mapId) || 0,
   readJson, writeJson, DATA_DIR, LOCK_FILE, STATS_FILE, getBackupFile,
   serializeDoc, contentEtag, appendLogEntry, diffPush, writeDocFromJson, countCards,
-  isRateLimited, isProxyRateLimited,
+  isRateLimited, isProxyRateLimited, isCreateRateLimited,
   generateUniqueMapId, generateCardId,
   loadAndSerialize: (mapId, host) => loadAndSerialize(mapId, host, { Y, docs, getPersistence, readJson, LOCK_FILE, getBackupFile }),
 };

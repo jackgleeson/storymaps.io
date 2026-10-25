@@ -46,6 +46,7 @@ const makeServer = () => {
     readJson, writeJson, LOCK_FILE, STATS_FILE, getBackupFile,
     serializeDoc, contentEtag, appendLogEntry, diffPush, writeDocFromJson, countCards,
     isRateLimited: (req) => req.limited === true,
+    isCreateRateLimited: (req) => req.limited === true,
     generateUniqueMapId: () => `map${String(++nextId).padStart(5, '0')}`,
     loadAndSerialize: (mapId, host) => loadAndSerialize(mapId, host, { Y, docs, getPersistence, readJson, LOCK_FILE, getBackupFile }),
   };

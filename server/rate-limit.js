@@ -1,10 +1,3 @@
-const RATE_LIMIT = 30;
-const PROXY_RATE_LIMIT = 5;
-const RATE_WINDOW = 60_000;
-
-const rateLimitMap = new Map();
-const proxyRateLimitMap = new Map();
-
 // Pick the client IP. When trustProxy is true, honour the last entry
 // of X-Forwarded-For (set by the closest trusted proxy, e.g. Caddy).
 // Otherwise return the direct socket address — safe default when the
@@ -20,32 +13,59 @@ export const pickClientIp = (req, { trustProxy } = {}) => {
 const TRUST_PROXY = process.env.TRUST_PROXY === 'true';
 const getClientIp = (req) => pickClientIp(req, { trustProxy: TRUST_PROXY });
 
-const checkLimit = (map, limit, req) => {
+// A limiter allows `limit` requests per `windowMs` from each client IP
+const limiters = [];
+const createLimiter = (limit, windowMs) => {
+  const hits = new Map(); // ip -> request timestamps, oldest first
+  const limiter = {
+    hits,
+    windowMs,
+    // True when this IP has used up its allowance, without counting this request
+    full: (ip, now) => {
+      const timestamps = hits.get(ip);
+      if (!timestamps) return false;
+      while (timestamps.length && timestamps[0] <= now - windowMs) timestamps.shift();
+      return timestamps.length >= limit;
+    },
+    record: (ip, now) => {
+      if (!hits.has(ip)) hits.set(ip, []);
+      hits.get(ip).push(now);
+    },
+  };
+  limiters.push(limiter);
+  return limiter;
+};
+
+// True when any of the limiters is full. Otherwise counts the request against all of them,
+// so a refused request never uses up allowance.
+const checkLimits = (req, ...checked) => {
   const ip = getClientIp(req);
   const now = Date.now();
-  let timestamps = map.get(ip);
-  if (!timestamps) {
-    timestamps = [];
-    map.set(ip, timestamps);
-  }
-  while (timestamps.length && timestamps[0] <= now - RATE_WINDOW) timestamps.shift();
-  if (timestamps.length >= limit) return true;
-  timestamps.push(now);
+  if (checked.some(l => l.full(ip, now))) return true;
+  checked.forEach(l => l.record(ip, now));
   return false;
 };
 
-export const isRateLimited = (req) => checkLimit(rateLimitMap, RATE_LIMIT, req);
-export const isProxyRateLimited = (req) => checkLimit(proxyRateLimitMap, PROXY_RATE_LIMIT, req);
+const api = createLimiter(30, 60_000);
+const proxy = createLimiter(5, 60_000);
+// Creating maps through the API: people and the CLI make one at a time, so this only stops
+// scripts. The daily cap is generous because an office or school can share one address.
+const createPerMinute = createLimiter(10, 60_000);
+const createPerDay = createLimiter(500, 24 * 60 * 60_000);
+
+export const isRateLimited = (req) => checkLimits(req, api);
+export const isProxyRateLimited = (req) => checkLimits(req, proxy);
+export const isCreateRateLimited = (req) => checkLimits(req, createPerMinute, createPerDay);
 
 // Clean up stale entries every 5 minutes. unref() so this timer does
 // not keep the process alive on its own (matters under node --test and
 // for short-lived invocations).
 setInterval(() => {
-  const cutoff = Date.now() - RATE_WINDOW;
-  for (const map of [rateLimitMap, proxyRateLimitMap]) {
-    for (const [ip, timestamps] of map) {
-      while (timestamps.length && timestamps[0] <= cutoff) timestamps.shift();
-      if (!timestamps.length) map.delete(ip);
+  const now = Date.now();
+  for (const { hits, windowMs } of limiters) {
+    for (const [ip, timestamps] of hits) {
+      while (timestamps.length && timestamps[0] <= now - windowMs) timestamps.shift();
+      if (!timestamps.length) hits.delete(ip);
     }
   }
 }, 5 * 60_000).unref();
