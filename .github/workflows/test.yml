@@ -4,9 +4,6 @@ on:
   push:
     branches: [main]
   pull_request:
-  # Nightly, so the phone browser tests run too
-  schedule:
-    - cron: '0 4 * * *'
 
 jobs:
   test:
@@ -28,9 +25,6 @@ jobs:
   e2e:
     name: Browser tests
     runs-on: ubuntu-latest
-    env:
-      # Chrome on every push and pull request; the nightly run adds the phone tests in WebKit
-      PHONE: ${{ github.event_name == 'schedule' }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -43,10 +37,11 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      # Chrome for the desktop tests, WebKit for the phone tests
       - name: Install browsers
-        run: npx playwright install --with-deps chromium ${{ env.PHONE == 'true' && 'webkit' || '' }}
+        run: npx playwright install --with-deps chromium webkit
       - name: Browser tests
-        run: npm run test:e2e -- ${{ env.PHONE == 'true' && ' ' || '--project=chromium' }}
+        run: npm run test:e2e
       - name: Upload the report
         if: failure()
         uses: actions/upload-artifact@v7
