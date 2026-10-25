@@ -256,6 +256,7 @@ Set these in the `environment` section of the `app` service in `docker-compose.y
 | `PORT`   | `8080`  | Server listen port |
 | `STORYMAPS_ALLOWED_ORIGINS` | storymaps.io origins | Comma-separated origins allowed to open WebSocket connections and write to the API, e.g. `https://storymaps.yourcompany.com`. Required when self-hosting on your own domain. `localhost` is always allowed. |
 | `TRUST_PROXY` | unset (`true` in the bundled `docker-compose.yml`) | Set to `true` to take the client IP from `X-Forwarded-For` for rate limiting. Use it behind the bundled Caddy or another trusted proxy; leave it unset if clients can reach the app directly. |
+| `DATA_DIR` | `./data` | Folder for the map database, lock state, counters and backups. |
 | `DISABLE_SSRF_CHECK` | unset | Set to `1` to let server-proxied imports and exports call non-HTTPS URLs, localhost, and private network addresses. This turns off SSRF protection, so use it for local development only. |
 
 ### Running Locally (Development)
@@ -265,7 +266,23 @@ npm install
 npm start
 ```
 
-The server starts on `http://localhost:8080`. Run the tests with `npm test`, and the browser tests with `npm run test:e2e` (they use Playwright and your installed Chrome).
+The server starts on `http://localhost:8080`.
+
+### Running the Tests
+
+```bash
+npm test                  # unit and integration tests
+npm run test:unit         # unit tests only: a few seconds, no server
+npm run test:integration  # starts the server on a spare port with a temporary data folder
+npm run test:e2e          # browser tests in Chrome and phone-sized WebKit
+npm run test:coverage     # unit and integration tests with a coverage report
+```
+
+- **Unit tests** (`test/unit`) cover saving and loading maps, JSON, YAML and CSV import and export, real-time sync including two people editing at once, editing and partial maps, search, locks, backups, the activity log, and the Jira, Asana, Linear and Phabricator imports and exports against canned API responses.
+- **Integration tests** (`test/integration`) start the real server to test WebSocket sync, origin checks, locks, request handling and static files.
+- **Browser tests** (`test/e2e`) use [Playwright](https://playwright.dev) to run the main journeys: editing a map, two people editing at once, menus and undo, locks, and YAML import and export, plus phone layout checks. They start their own server on port 3210 (set `E2E_PORT` to change it), so they can run alongside a dev server. Locally they use your installed Chrome; run `npx playwright install webkit` once for the phone tests.
+
+CI runs all of them on every push to `main` and every pull request.
 
 ## Usage
 1. Visit [storymaps.io](https://storymaps.io) or self-host your own instance
