@@ -438,18 +438,20 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
         menu.appendChild(hideOption);
     }
 
-    // Delete option
-    const deleteOption = el('button', 'options-item options-delete', { text: 'Delete' });
-    deleteOption.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        menu.classList.remove('visible');
-        if (deleteMessage) {
-            if (await showConfirm(deleteMessage)) onDelete();
-        } else {
-            onDelete();
-        }
-    });
-    menu.appendChild(deleteOption);
+    // Delete option (step cards have Delete Column instead)
+    if (onDelete) {
+        const deleteOption = el('button', 'options-item options-delete', { text: 'Delete' });
+        deleteOption.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            menu.classList.remove('visible');
+            if (deleteMessage) {
+                if (await showConfirm(deleteMessage)) onDelete();
+            } else {
+                onDelete();
+            }
+        });
+        menu.appendChild(deleteOption);
+    }
 
     // Delete column option (for step cards only)
     if (onDeleteColumn) {
@@ -831,11 +833,8 @@ export const createColumnCard = (column) => {
     const optionsMenu = createOptionsMenu(
         column,
         CARD_COLORS,
-        () => {
-            column.hidden = true;
-            _renderAndSave();
-        },
-        `Delete "${column.name || 'this step'}"?`,
+        null, // onDelete - steps are removed with Delete Column
+        null,
         (color) => {
             _pushUndo();
             column.color = color;
@@ -854,7 +853,7 @@ export const createColumnCard = (column) => {
             patchCard(card, column);
             _saveToStorage();
         },
-        null, // onHide - not used for step cards (Delete already hides)
+        null, // onHide - not used for step cards
         () => _deleteColumn(column.id)
     );
 

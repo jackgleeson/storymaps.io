@@ -54,10 +54,12 @@ export function jsonToYamlObj(data) {
         partialSlugMap[pm.id] = slugify(pm.name) || pm.id;
     });
 
-    // Classify each step
-    const stepTypes = steps.map(step => {
+    // Classify each step. A hidden step with a name or cards is written as a normal step so its
+    // cards survive (only empty, unnamed hidden steps are spacers).
+    const hasCards = (i) => !!(usersArr[i]?.length || activitiesArr[i]?.length || slices.some(s => s.stories?.[i]?.length));
+    const stepTypes = steps.map((step, i) => {
         if (step.partialMapId) return 'partial';
-        if (step.hidden) return 'spacer';
+        if (step.hidden && !step.name && !hasCards(i)) return 'spacer';
         return 'step';
     });
 
@@ -70,41 +72,17 @@ export function jsonToYamlObj(data) {
     });
     const duplicateNames = new Set(Object.keys(nameCounts).filter(n => nameCounts[n] > 1));
 
-    // Resolve names — namespace duplicates with nearest activity/user
+    // Number duplicate names (Confirm[0], Confirm[1]) so cards point at the right step.
+    // Import strips the number, so the names come back unchanged.
+    const counters = {};
     const resolvedNames = steps.map((step, i) => {
         if (stepTypes[i] !== 'step') return null;
         const name = step.name || '';
         if (!duplicateNames.has(name)) return name;
-        for (let j = i; j >= 0; j--) {
-            if (activitiesArr[j]?.length) return `${activitiesArr[j][0].name}: ${name}`;
-        }
-        for (let j = i; j >= 0; j--) {
-            if (usersArr[j]?.length) return `${usersArr[j][0].name}: ${name}`;
-        }
-        return name;
+        const idx = counters[name] || 0;
+        counters[name] = idx + 1;
+        return `${name}[${idx}]`;
     });
-
-    // Second pass: add :[N] suffix to any still-duplicate resolved names
-    const resolvedCounts = {};
-    resolvedNames.forEach(n => {
-        if (n != null) resolvedCounts[n] = (resolvedCounts[n] || 0) + 1;
-    });
-    const stillDuplicate = new Set(Object.keys(resolvedCounts).filter(n => resolvedCounts[n] > 1));
-    if (stillDuplicate.size) {
-        const counters = {};
-        for (let i = 0; i < resolvedNames.length; i++) {
-            const n = resolvedNames[i];
-            if (n == null || !stillDuplicate.has(n)) continue;
-            const idx = counters[n] || 0;
-            counters[n] = idx + 1;
-            const colonPos = n.indexOf(': ');
-            if (colonPos >= 0) {
-                resolvedNames[i] = n.slice(0, colonPos + 1) + `[${idx}]` + n.slice(colonPos + 1);
-            } else {
-                resolvedNames[i] = `${n}[${idx}]`;
-            }
-        }
-    }
 
     // Build YAML object
     const result = {};
@@ -429,7 +407,8 @@ export function yamlObjToJson(obj) {
     };
 
     if (obj.legend?.length) result.legend = obj.legend;
-    if (obj.notes) result.notes = obj.notes;
+    // Keep empty notes so a push with notes: "" clears them (no notes key leaves them alone)
+    if (typeof obj.notes === 'string') result.notes = obj.notes;
     if (jsonPartialMaps.length) result.partialMaps = jsonPartialMaps;
     if (obj.backups?.length) result.backups = obj.backups;
     return result;
@@ -449,6 +428,10 @@ function backboneToYaml(positionalArr, namesByIndex) {
             const obj = { name: card.name };
             if (card.body) obj.body = card.body;
             if (card.color) obj.color = card.color;
+            if (card.status) obj.status = card.status;
+            if (card.points != null) obj.points = card.points;
+            if (card.tags?.length) obj.tags = [...card.tags];
+            if (card.url) obj.url = card.url;
             obj.step = stepName;
             result.push(obj);
         });

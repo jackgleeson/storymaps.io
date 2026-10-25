@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { generateCardId } from './data.js';
-import { copySliceDetails } from '../src/core/constants.js';
+import { copySliceDetails, normalizePoints } from '../src/core/constants.js';
 
 export const serializeDoc = (doc) => {
   const ymap = doc.getMap('storymap');
@@ -181,7 +181,8 @@ export const diffPush = (oldSnapshot, body, newDoc) => {
         : 'edited slices');
     }
     if (j(old.legend) !== j(body.legend)) parts.push('edited legend');
-    if ((old.notes || '') !== (body.notes || '')) parts.push('edited notes');
+    // No notes key leaves the notes as they were (see writeDocFromJson)
+    if (typeof body.notes === 'string' && (old.notes || '') !== body.notes) parts.push('edited notes');
   }
   if (!parts.length) return null;
 
@@ -251,7 +252,7 @@ export const writeDocFromJson = (doc, data, Y) => {
       return {
         id, name: step.name || '', color: step.color || '', hidden: step.hidden || false,
         body: step.body || '', url: step.url || null, status: step.status || null,
-        points: step.points != null ? step.points : null, tags: step.tags || [],
+        points: normalizePoints(step.points), tags: step.tags || [],
       };
     });
 
@@ -286,7 +287,8 @@ export const writeDocFromJson = (doc, data, Y) => {
       if (card.url) ym.set('url', card.url);
       if (card.hidden) ym.set('hidden', true);
       if (card.status) ym.set('status', card.status);
-      if (card.points != null) ym.set('points', card.points);
+      const points = normalizePoints(card.points);
+      if (points != null) ym.set('points', points);
       if (card.tags?.length) ym.set('tags', JSON.stringify(card.tags));
       return ym;
     };
@@ -347,21 +349,25 @@ export const writeDocFromJson = (doc, data, Y) => {
     });
     ymap.set('legend', yLegend);
 
-    // Notes
-    if (data.notes) {
-      const ytext = doc.getText('notes');
+    // Notes are mostly written in the browser, so a map without a notes key leaves them alone.
+    // Empty notes ("") clear them.
+    const ytext = doc.getText('notes');
+    if (typeof data.notes === 'string' && ytext.toString() !== data.notes) {
       if (ytext.length > 0) ytext.delete(0, ytext.length);
-      ytext.insert(0, data.notes);
+      if (data.notes) ytext.insert(0, data.notes);
     }
 
     // Partial maps: convert from serialized format (positional arrays, `steps` key)
-    // to state format (keyed by IDs, `columns` key) so the client can use them directly
+    // to state format (keyed by IDs, `columns` key) so the client can use them directly.
+    // A map without partial maps stores an empty list rather than deleting the key, because
+    // open clients only replace their partial maps when the key is present.
+    if (!data.partialMaps?.length && ymap.has('partialMaps')) ymap.set('partialMaps', '[]');
     if (data.partialMaps?.length) {
       const mkCard = (c) => ({
         id: generateCardId(),
         name: c.name || '', body: c.body || '', color: c.color || null,
         url: c.url || null, hidden: c.hidden || false, status: c.status || null,
-        points: c.points ?? null, tags: c.tags || [],
+        points: normalizePoints(c.points), tags: c.tags || [],
       });
       const statePMs = data.partialMaps.map(pm => {
         if (pm.columns) return pm; // already in state format

@@ -34,6 +34,13 @@ export const normalizeSliceDate = (value) => {
     return isNaN(new Date(`${value}T00:00:00Z`)) ? '' : value;
 };
 
+// Story points are a number or nothing. Numeric text ("5") becomes a number; anything else is dropped.
+export const normalizePoints = (value) => {
+    if (typeof value !== 'number' && (typeof value !== 'string' || !value.trim())) return null;
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
+};
+
 // Copies a slice's goal and target date from one object to another, leaving out empty values
 export const copySliceDetails = (from, to) => {
     const goal = normalizeSliceGoal(from.goal);

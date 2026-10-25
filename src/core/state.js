@@ -100,6 +100,13 @@ export const pushUndo = () => {
     updateUndoRedoButtons();
 };
 
+// Called when a different map opens, so undo can't bring back the previous map's content
+export const clearUndoHistory = () => {
+    undoStack.length = 0;
+    redoStack.length = 0;
+    updateUndoRedoButtons();
+};
+
 export const undo = () => {
     if (undoStack.length === 0) return;
     const beforeSerialized = _serialize();

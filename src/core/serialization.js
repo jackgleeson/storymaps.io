@@ -1,7 +1,7 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Serialization / deserialization (pure functions)
 
-import { CARD_COLORS, isValidUrl, copySliceDetails } from '/src/core/constants.js';
+import { CARD_COLORS, isValidUrl, copySliceDetails, normalizePoints } from '/src/core/constants.js';
 import { state, createColumn, createStory, createRefColumn } from '/src/core/state.js';
 import { generateId } from '/src/core/constants.js';
 
@@ -27,7 +27,7 @@ const deserializeCard = (obj) => {
         sanitizeUrl(obj.url || obj.u),
         !!(obj.hidden || obj.h),
         obj.status || obj.st || null,
-        ((v) => v != null ? Number(v) : null)(obj.points ?? obj.sp ?? null),
+        normalizePoints(obj.points ?? obj.sp),
         Array.isArray(obj.tags || obj.tg) ? (obj.tags || obj.tg) : [],
         obj.body || obj.b || ''
     );
@@ -40,7 +40,7 @@ const deserializeColumn = (obj) => {
         sanitizeUrl(obj.url || obj.u),
         !!(obj.hidden || obj.h),
         obj.status || obj.st || null,
-        ((v) => v != null ? Number(v) : null)(obj.points ?? obj.sp ?? null),
+        normalizePoints(obj.points ?? obj.sp),
         Array.isArray(obj.tags || obj.tg) ? (obj.tags || obj.tg) : [],
         obj.body || obj.b || ''
     );
@@ -252,9 +252,11 @@ export const appendImport = (data) => {
             const newSlice = {
                 id: generateId(),
                 name: sliceName,
-                collapsed: false,
+                collapsed: !!slice.collapsed,
                 stories: {}
             };
+            if (slice.closedReason) newSlice.closedReason = slice.closedReason;
+            copySliceDetails(slice, newSlice);
             state.columns.forEach(col => {
                 const newColIndex = newCols.indexOf(col);
                 if (newColIndex === -1) {

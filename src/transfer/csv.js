@@ -33,8 +33,8 @@ export const parseCsv = (text) => {
 
     while (i <= len) {
         if (i === len) {
-            // End of input — push last row if non-empty
-            if (row.length > 0 || i > 0) rows.push(row);
+            // End of input — push the last row unless a line break already ended it
+            if (row.length > 0) rows.push(row);
             break;
         }
 
@@ -57,9 +57,10 @@ export const parseCsv = (text) => {
                 }
             }
             row.push(val);
-            // After quoted field, expect comma or newline
+            // After quoted field, expect comma or newline. A comma at the very end leaves an empty last cell.
             if (i < len && text[i] === ',') {
                 i++;
+                if (i === len) row.push('');
             } else if (i < len && (text[i] === '\r' || text[i] === '\n')) {
                 if (text[i] === '\r' && i + 1 < len && text[i + 1] === '\n') i++;
                 i++;
@@ -67,7 +68,8 @@ export const parseCsv = (text) => {
                 row = [];
             }
         } else if (text[i] === '\r' || text[i] === '\n') {
-            // End of row
+            // End of row. Cells consume their own line break, so a row with cells got here after a comma.
+            if (row.length > 0) row.push('');
             if (text[i] === '\r' && i + 1 < len && text[i + 1] === '\n') i++;
             i++;
             rows.push(row);
@@ -82,6 +84,7 @@ export const parseCsv = (text) => {
             row.push(val);
             if (i < len && text[i] === ',') {
                 i++;
+                if (i === len) row.push('');
             } else if (i < len && (text[i] === '\r' || text[i] === '\n')) {
                 if (text[i] === '\r' && i + 1 < len && text[i + 1] === '\n') i++;
                 i++;
@@ -102,21 +105,20 @@ export const parseCsv = (text) => {
 // Inline [key:val, ...] notation
 // ============================================================================
 
+// The notation is a trailing [...] that starts with a known field, so a name like "Support [beta]"
+// keeps its brackets, and brackets inside a body don't end the notation early
+const INLINE_NOTATION = /^(.*?)\s*\[((?:status|points|tags|color|url|body):[\s\S]*)\]$/;
+
 export const parseInlineNotation = (cellText) => {
     if (!cellText || typeof cellText !== 'string') return { name: cellText || '' };
     const text = cellText.trim();
 
-    // Find last [...] that isn't inside the name
-    const bracketIdx = text.lastIndexOf('[');
-    if (bracketIdx < 0 || text[text.length - 1] !== ']') {
-        return { name: text };
-    }
+    const match = text.match(INLINE_NOTATION);
+    if (!match) return { name: text };
 
-    const name = text.slice(0, bracketIdx).trim();
-    const inner = text.slice(bracketIdx + 1, -1).trim();
+    const name = match[1].trim();
+    const inner = match[2].trim();
     const result = { name };
-
-    if (!inner) return result;
 
     // body: is always last and may contain commas — extract it first
     const bodyMatch = inner.match(/,?\s*body:([\s\S]*)$/);
@@ -257,6 +259,7 @@ export function exportToCsv(jsonData) {
             if (step.points != null) meta.points = step.points;
             if (step.tags?.length) meta.tags = step.tags;
             if (step.url) meta.url = step.url;
+            if (step.body) meta.body = step.body;
             stepsRow.push(escapeCSV(formatInlineNotation({ name: step.name || '', ...meta })));
         }
     });
@@ -319,7 +322,7 @@ export function exportToCsv(jsonData) {
     rows.push(stepsRow);
 
     // --- slice rows ---
-    slices.forEach(slice => {
+    slices.forEach((slice, sliceIdx) => {
         const sliceName = slice.name || '';
         const storiesArr = slice.stories || [];
 
@@ -331,7 +334,9 @@ export function exportToCsv(jsonData) {
         if (details.targetDate) metaCells.push(`targetDate:${details.targetDate}`);
         if (slice.collapsed) metaCells.push('collapsed:true');
         if (slice.closedReason) metaCells.push(`closedReason:${slice.closedReason}`);
-        if (metaCells.length) rows.push([`slicemeta:${sliceName}`, ...metaCells].map(escapeCSV));
+        // A slicemeta row also marks where a slice starts when it has the same name as the one before
+        const sameNameAsPrevious = sliceIdx > 0 && (slices[sliceIdx - 1].name || '') === sliceName;
+        if (metaCells.length || sameNameAsPrevious) rows.push([`slicemeta:${sliceName}`, ...metaCells].map(escapeCSV));
 
         // Find max cards per expanded column for this slice
         const maxPerCol = new Array(totalCols).fill(0);
@@ -357,7 +362,6 @@ export function exportToCsv(jsonData) {
             const pm = partialMaps.find(p => p.id === step.partialMapId);
             if (!pm) return;
             const range = stepToExpandedCols.get(vi);
-            const sliceIdx = slices.indexOf(slice);
             const expansion = refStepExpansion.get(vi);
             for (let j = 0; j < expansion.colCount; j++) {
                 const pmColIdx = expansion.startPmCol + j;
@@ -455,13 +459,16 @@ export function importFromCsv(csvString) {
     const stepHeaders = []; // from steps: row
     const userRows = [];
     const activityRows = [];
-    const sliceRows = []; // { sliceName, cells }
-    const sliceDetails = {}; // slice name → { goal, targetDate, collapsed, closedReason }
+    // Slices in file order. A slice is a run of slice:NAME rows with the same name. A slicemeta:NAME
+    // row starts a new one, so two slices with the same name (e.g. both unnamed) stay separate.
+    const sliceBlocks = []; // { name, rows, details }
+    let currentSlice = null;
 
     // Classify rows by first column
     for (const row of grid) {
         const first = (row[0] || '').trim();
         if (!first || first.startsWith('#')) continue;
+        if (!first.startsWith('slice:') && !first.startsWith('slicemeta:')) currentSlice = null;
         if (first === 'name') {
             name = (row[1] || '').trim();
         } else if (first === 'steps') {
@@ -485,7 +492,12 @@ export function importFromCsv(csvString) {
         } else if (first === 'notes') {
             notes = (row[1] || '').trim();
         } else if (first.startsWith('slice:')) {
-            sliceRows.push({ sliceName: first.slice(6), cells: row });
+            const sliceName = first.slice(6);
+            if (currentSlice?.name !== sliceName) {
+                currentSlice = { name: sliceName, rows: [], details: null };
+                sliceBlocks.push(currentSlice);
+            }
+            currentSlice.rows.push(row);
         } else if (first.startsWith('slicemeta:')) {
             const details = {};
             for (let c = 1; c < row.length; c++) {
@@ -495,13 +507,20 @@ export function importFromCsv(csvString) {
                 else if (val === 'collapsed:true') details.collapsed = true;
                 else if (val.startsWith('closedReason:')) details.closedReason = val.slice(13).trim();
             }
-            sliceDetails[first.slice(10)] = details;
+            currentSlice = { name: first.slice(10), rows: [], details };
+            sliceBlocks.push(currentSlice);
         }
     }
 
     if (stepHeaders.length === 0) {
         throw new Error('Missing "steps" row — CSV must have a steps row defining column headers');
     }
+
+    // Export pads every row to the same width, so empty step cells past the last column with cards
+    // are padding (e.g. from a long legend row), not spacers
+    const cardRows = [...userRows, ...activityRows, ...sliceBlocks.flatMap(block => block.rows)];
+    const columnHasCards = (col) => cardRows.some(row => (row[col] || '').trim());
+    while (stepHeaders.length > 1 && !stepHeaders.at(-1).raw && !columnHasCards(stepHeaders.at(-1).col)) stepHeaders.pop();
 
     // Parse steps — handle partials and regular steps
     const partialDefs = {}; // slug → { name, stepNames, colIndices }
@@ -617,20 +636,11 @@ export function importFromCsv(csvString) {
         }
     });
 
-    // Parse slices — group by name, preserve order
-    const sliceOrder = [];
-    const sliceMap = {}; // name → { name, storyGrid }
-    sliceRows.forEach(({ sliceName, cells }) => {
-        if (!sliceMap[sliceName]) {
-            sliceMap[sliceName] = { name: sliceName, rows: [] };
-            sliceOrder.push(sliceName);
-        }
-        sliceMap[sliceName].rows.push(cells);
-    });
+    // A slicemeta row with no slice rows after it describes no slice
+    const sliceList = sliceBlocks.filter(block => block.rows.length > 0);
 
-    const jsonSlices = sliceOrder.map(sliceName => {
+    const jsonSlices = sliceList.map(({ name: sliceName, rows: cellRows, details }) => {
         const stories = Array.from({ length: n }, () => []);
-        const cellRows = sliceMap[sliceName].rows;
         cellRows.forEach(cells => {
             for (let c = 1; c < cells.length; c++) {
                 const val = (cells[c] || '').trim();
@@ -653,7 +663,6 @@ export function importFromCsv(csvString) {
             }
         });
         const slice = { name: sliceName, stories };
-        const details = sliceDetails[sliceName];
         if (details) {
             if (details.collapsed) slice.collapsed = true;
             if (VALID_CLOSED_REASONS.has(details.closedReason)) slice.closedReason = details.closedReason;
@@ -676,7 +685,7 @@ export function importFromCsv(csvString) {
 
         // Collect stories for each slice
         const pmStories = jsonSlices.map((slice, si) => {
-            const sliceCellRows = sliceMap[slice.name].rows;
+            const sliceCellRows = sliceList[si].rows;
             const perStep = Array.from({ length: pmN }, () => []);
             sliceCellRows.forEach(cells => {
                 for (const [col, pmIdx] of pmColToIdx) {

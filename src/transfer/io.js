@@ -79,10 +79,9 @@ export const sanitizeFilename = (name) => {
     return name
         .toLowerCase()
         .replace(/[<>:"/\\|?*\x00-\x1f]/g, '-')
-        .replace(/^\.+/, '')
         .replace(/\s+/g, '-')
         .replace(/-+/g, '-')
-        .replace(/^-+|-+$/g, '')
+        .replace(/^[.-]+|-+$/g, '')
         .substring(0, 200)
         || 'story-map';
 };

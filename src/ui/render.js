@@ -1181,27 +1181,14 @@ export const deleteSelectedCards = async () => {
     if (selection.clickedCards.length === 0) return;
     if (!_isMapEditable()) return;
 
-    const stepClicks = selection.clickedCards.filter(c => c.type === 'step');
+    // Step cards are removed with their column, so a selection of only steps deletes the columns
     const storyClicks = selection.clickedCards.filter(c => c.type === 'story');
+    if (storyClicks.length === 0) return deleteSelectedColumns();
 
-    const cardCount = stepClicks.length + storyClicks.length;
-    if (cardCount === 0) return;
+    const cardCount = storyClicks.length;
     if (!await showConfirm(`Delete ${cardCount} card${cardCount > 1 ? 's' : ''}?`)) return;
 
     _pushUndo();
-
-    // Delete step cards: reset to hidden/empty
-    for (const click of stepClicks) {
-        const col = _state.columns.find(c => c.id === click.columnId);
-        if (col) {
-            col.name = '';
-            col.color = null;
-            col.url = null;
-            col.hidden = true;
-            col.status = null;
-            col.tags = [];
-        }
-    }
 
     // Delete story cards (from users, activities, and slices)
     const storyIds = new Set(storyClicks.map(c => c.storyId));
@@ -1216,29 +1203,6 @@ export const deleteSelectedCards = async () => {
             slice.stories[colId] = slice.stories[colId].filter(s => !storyIds.has(s.id));
         }
     });
-
-    // Remove columns that are now completely empty (hidden step + no content)
-    const emptyColIds = stepClicks
-        .map(c => c.columnId)
-        .filter(colId => {
-            const col = _state.columns.find(c => c.id === colId);
-            if (!col || !col.hidden) return false;
-            if ((_state.users[colId] || []).length > 0) return false;
-            if ((_state.activities[colId] || []).length > 0) return false;
-            return !_state.slices.some(slice => (slice.stories[colId] || []).length > 0);
-        });
-
-    if (emptyColIds.length > 0) {
-        const nonRefCount = _state.columns.filter(c => !c.partialMapId).length;
-        if (nonRefCount - emptyColIds.length >= 1) {
-            _state.columns = _state.columns.filter(c => !emptyColIds.includes(c.id));
-            emptyColIds.forEach(id => {
-                delete _state.users[id];
-                delete _state.activities[id];
-                _state.slices.forEach(slice => delete slice.stories[id]);
-            });
-        }
-    }
 
     _logEvent?.(`Deleted ${cardCount} card${cardCount > 1 ? 's' : ''}`);
     clearSelection();

@@ -5,23 +5,28 @@ const DISABLE_SSRF_CHECK = process.env.DISABLE_SSRF_CHECK === '1';
 export const validateExternalUrl = (input) => {
   if (!input) return null;
   try {
-    const prefixed = input.startsWith('http://') || input.startsWith('https://') ? input : 'https://' + input;
-    const url = new URL(prefixed);
-    if (!DISABLE_SSRF_CHECK && url.protocol !== 'https:') return null;
-    if (DISABLE_SSRF_CHECK) return url.origin;
-    const host = url.hostname.toLowerCase();
-    if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return null;
-    if (host.includes('::ffff:')) return null;
+    // Add https:// only when there's no scheme, so ftp://host is rejected rather than read as host "ftp"
+    const hasScheme = /^[a-z][a-z0-9+.-]*:\/\//i.test(input);
+    const url = new URL(hasScheme ? input : 'https://' + input);
+    if (DISABLE_SSRF_CHECK) return ['http:', 'https:'].includes(url.protocol) ? url.origin : null;
+    if (url.protocol !== 'https:') return null;
+    // Compare without IPv6 brackets or a trailing dot ("localhost." is still localhost)
+    const host = url.hostname.toLowerCase().replace(/^\[|\]$/g, '').replace(/\.+$/, '');
+    if (host === 'localhost' || host.endsWith('.localhost')) return null;
     if (host.endsWith('.local') || host.endsWith('.internal')) return null;
     // Block DNS rebinding services that resolve to arbitrary IPs
     if (/\.(nip|sslip|xip)\.io$/.test(host)) return null;
-    // Block RFC1918 / link-local ranges
+    // Block IPv6 unspecified, loopback, unique local (fc00::/7), link-local (fe80::/10) and IPv4-mapped addresses
+    if (host.includes(':') && /^(::1?|f[cd][0-9a-f]{2}:.*|fe[89ab][0-9a-f]:.*|.*::ffff:.*)$/.test(host)) return null;
+    // Block this-network, private, carrier-grade NAT, loopback, link-local, multicast and reserved IPv4 ranges
     const parts = host.split('.').map(Number);
-    if (parts.length === 4 && parts.every(n => n >= 0 && n <= 255)) {
-      if (parts[0] === 10) return null;
-      if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return null;
-      if (parts[0] === 192 && parts[1] === 168) return null;
-      if (parts[0] === 169 && parts[1] === 254) return null;
+    if (parts.length === 4 && parts.every(n => Number.isInteger(n) && n >= 0 && n <= 255)) {
+      const [a, b] = parts;
+      if (a === 0 || a === 10 || a === 127 || a >= 224) return null;
+      if (a === 100 && b >= 64 && b <= 127) return null;
+      if (a === 169 && b === 254) return null;
+      if (a === 172 && b >= 16 && b <= 31) return null;
+      if (a === 192 && b === 168) return null;
     }
     return url.origin;
   } catch {
@@ -82,5 +87,5 @@ export const curlPost = async (url, params, timeoutMs = 30_000) => {
 };
 
 export const sanitizeFilename = (name) =>
-  (name || '').toLowerCase().replace(/[<>:"/\\|?*\x00-\x1f]/g, '-').replace(/^\.+/, '')
-    .replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '').substring(0, 200) || 'story-map';
+  (name || '').toLowerCase().replace(/[<>:"/\\|?*\x00-\x1f]/g, '-')
+    .replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^[.-]+|-+$/g, '').substring(0, 200) || 'story-map';
