@@ -104,7 +104,8 @@ const createYCard = (obj) => {
     yMap.set('id', obj.id);
     for (const [field, { default: defaultVal }] of Object.entries(CARD_FIELDS)) {
         const value = obj[field];
-        if (field === 'name' || (value && value !== defaultVal)) {
+        // != null rather than truthiness, so 0 points are kept
+        if (field === 'name' || (value != null && value !== defaultVal && value !== '')) {
             yMap.set(field, value ?? defaultVal);
         }
     }
@@ -117,7 +118,7 @@ const updateYCard = (yMap, obj) => {
         const newValue = field === 'name' ? (obj[field] || '') : obj[field];
         const currentValue = yMap.get(field);
         if (currentValue !== newValue) {
-            if (newValue && newValue !== defaultVal) {
+            if (newValue != null && newValue !== defaultVal && newValue !== '') {
                 yMap.set(field, newValue);
             } else if (field === 'name') {
                 yMap.set(field, '');
@@ -213,13 +214,26 @@ const createYBackboneRow = (cardMap, columns) => {
 // Sync
 // =============================================================================
 
+// Two people moving the same item at once can leave two copies of it in a list; show the first
+const uniqueById = (items) => {
+    const seen = new Set();
+    return items.filter(item => {
+        if (item?.id == null) return true;
+        if (seen.has(item.id)) return false;
+        seen.add(item.id);
+        return true;
+    });
+};
+
+const readCardsFromYjs = (cards) => Array.isArray(cards) ? uniqueById(cards.map(cardFromYjs)) : [];
+
 const readBackboneRowFromYjs = (yRow) => {
     const cardMap = {};
     if (!yRow) return cardMap;
     const rowData = typeof yRow.toJSON === 'function' ? yRow.toJSON() : yRow;
     if (typeof rowData === 'object' && rowData !== null) {
         for (const [colId, cards] of Object.entries(rowData)) {
-            cardMap[colId] = Array.isArray(cards) ? cards.map(cardFromYjs) : [];
+            cardMap[colId] = readCardsFromYjs(cards);
         }
     }
     return cardMap;
@@ -235,7 +249,7 @@ export const syncFromYjs = () => {
     if (yColumns) {
         const columnsData = typeof yColumns.toJSON === 'function' ? yColumns.toJSON() : yColumns;
         if (Array.isArray(columnsData)) {
-            _state.columns = columnsData.map(cardFromYjs);
+            _state.columns = uniqueById(columnsData.map(cardFromYjs));
         }
     }
 
@@ -257,8 +271,9 @@ export const syncFromYjs = () => {
 
     const ySlices = ymap.get('slices');
     if (ySlices) {
-        const slicesData = typeof ySlices.toJSON === 'function' ? ySlices.toJSON() : ySlices;
-        if (Array.isArray(slicesData)) {
+        const allSlicesData = typeof ySlices.toJSON === 'function' ? ySlices.toJSON() : ySlices;
+        if (Array.isArray(allSlicesData)) {
+            const slicesData = uniqueById(allSlicesData);
             // Check if old format (slices contain rowType) - migrate on the fly
             const hasOldFormat = slicesData.some(s => s.rowType === 'Users' || s.rowType === 'Activities');
 
@@ -270,12 +285,12 @@ export const syncFromYjs = () => {
                     if (sliceData.rowType === 'Users') {
                         _state.columns.forEach(col => {
                             const columnStories = storiesData[col.id];
-                            _state.users[col.id] = Array.isArray(columnStories) ? columnStories.map(cardFromYjs) : [];
+                            _state.users[col.id] = readCardsFromYjs(columnStories);
                         });
                     } else if (sliceData.rowType === 'Activities') {
                         _state.columns.forEach(col => {
                             const columnStories = storiesData[col.id];
-                            _state.activities[col.id] = Array.isArray(columnStories) ? columnStories.map(cardFromYjs) : [];
+                            _state.activities[col.id] = readCardsFromYjs(columnStories);
                         });
                     } else {
                         releaseSlices.push(sliceData);
@@ -293,7 +308,7 @@ export const syncFromYjs = () => {
                     const storiesData = sliceData.stories || {};
                     _state.columns.forEach(col => {
                         const columnStories = storiesData[col.id];
-                        slice.stories[col.id] = Array.isArray(columnStories) ? columnStories.map(cardFromYjs) : [];
+                        slice.stories[col.id] = readCardsFromYjs(columnStories);
                     });
                     return slice;
                 });
@@ -314,7 +329,7 @@ export const syncFromYjs = () => {
                     const storiesData = sliceData.stories || {};
                     _state.columns.forEach(col => {
                         const columnStories = storiesData[col.id];
-                        slice.stories[col.id] = Array.isArray(columnStories) ? columnStories.map(cardFromYjs) : [];
+                        slice.stories[col.id] = readCardsFromYjs(columnStories);
                     });
                     return slice;
                 });
@@ -326,7 +341,7 @@ export const syncFromYjs = () => {
     if (yLegend) {
         const legendData = typeof yLegend.toJSON === 'function' ? yLegend.toJSON() : yLegend;
         if (Array.isArray(legendData)) {
-            _state.legend = legendData.map(entry => ({
+            _state.legend = uniqueById(legendData).map(entry => ({
                 id: entry.id,
                 color: entry.color || CARD_COLORS.yellow,
                 label: entry.label || ''
@@ -354,26 +369,49 @@ export const syncFromYjs = () => {
     return true;
 };
 
-const syncYArray = (yArray, items, getId, createFn, updateFn) => {
-    const structureMatches = items.length === yArray.length &&
-        items.every((item, i) => {
-            const yItem = yArray.get(i);
-            return yItem && typeof yItem.get === 'function' && yItem.get('id') === getId(item);
-        });
-
-    if (structureMatches) {
-        items.forEach((item, i) => {
-            const yItem = yArray.get(i);
-            updateFn(yItem, item);
-        });
-    } else {
-        while (yArray.length > 0) {
-            yArray.delete(0);
+// Positions (values of seq) in the longest run that is already in increasing order
+const longestIncreasingRun = (seq) => {
+    const tails = [];
+    const prev = new Array(seq.length);
+    seq.forEach((value, i) => {
+        let lo = 0, hi = tails.length;
+        while (lo < hi) {
+            const mid = (lo + hi) >> 1;
+            if (seq[tails[mid]] < value) lo = mid + 1; else hi = mid;
         }
-        items.forEach(item => {
-            yArray.push([createFn(item)]);
-        });
+        prev[i] = lo > 0 ? tails[lo - 1] : -1;
+        tails[lo] = i;
+    });
+    const run = [];
+    for (let i = tails.length ? tails[tails.length - 1] : -1; i >= 0; i = prev[i]) run.push(seq[i]);
+    return run;
+};
+
+const yItemId = (yItem) => (typeof yItem?.get === 'function' ? yItem.get('id') : undefined);
+
+// Bring a Y.Array in line with items by changing only what differs, so that someone else's edit
+// to an item this change didn't touch survives. Items already in the right order stay where they
+// are; removed items, extra copies of an item and moved items are deleted, then new and moved
+// items are inserted. Yjs has no move, so a moved item is a new copy.
+const syncYArray = (yArray, items, getId, createFn, updateFn) => {
+    const targetIds = items.map(getId);
+    const wanted = new Set(targetIds);
+
+    const firstIndex = new Map();
+    yArray.toArray().forEach((yItem, i) => {
+        const id = yItemId(yItem);
+        if (wanted.has(id) && !firstIndex.has(id)) firstIndex.set(id, i);
+    });
+    const keep = new Set(longestIncreasingRun(targetIds.filter(id => firstIndex.has(id)).map(id => firstIndex.get(id))));
+    for (let i = yArray.length - 1; i >= 0; i--) {
+        if (!keep.has(i)) yArray.delete(i, 1);
     }
+
+    items.forEach((item, i) => {
+        const yItem = i < yArray.length ? yArray.get(i) : null;
+        if (yItemId(yItem) === getId(item)) updateFn(yItem, item);
+        else yArray.insert(i, [createFn(item)]);
+    });
 };
 
 const syncSliceStories = (yStories, slice, columns) => {
@@ -506,25 +544,13 @@ export const syncToYjs = () => {
             ymap.set('slices', ySlices);
         }
 
-        const sliceStructureMatches = _state.slices.length === ySlices.length &&
-            _state.slices.every((slice, i) => {
-                const ySlice = ySlices.get(i);
-                return ySlice && typeof ySlice.get === 'function' && ySlice.get('id') === slice.id;
-            });
-
-        if (sliceStructureMatches) {
-            _state.slices.forEach((slice, i) => {
-                const ySlice = ySlices.get(i);
-                updateYSlice(ySlice, slice, _state.columns);
-            });
-        } else {
-            while (ySlices.length > 0) {
-                ySlices.delete(0);
-            }
-            _state.slices.forEach(slice => {
-                ySlices.push([createYSlice(slice, _state.columns)]);
-            });
-        }
+        syncYArray(
+            ySlices,
+            _state.slices,
+            slice => slice.id,
+            slice => createYSlice(slice, _state.columns),
+            (ySlice, slice) => updateYSlice(ySlice, slice, _state.columns)
+        );
 
         let yLegend = ymap.get('legend');
         if (!yLegend || typeof yLegend.toArray !== 'function') {
