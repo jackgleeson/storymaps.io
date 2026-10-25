@@ -29,10 +29,10 @@ export const materializePhantomColumn = (phantomIndex = 0) => {
 };
 
 export const createPartialMap = (name, columnIds) => {
-    pushUndo();
-
     const selectedCols = state.columns.filter(c => columnIds.includes(c.id));
     if (selectedCols.length === 0) return;
+
+    pushUndo();
 
     const pmId = generateId();
 
@@ -340,10 +340,10 @@ export const restorePartialMap = (partialMapId) => {
 };
 
 export const replaceWithPartial = (partialMapId, columnIds) => {
-    pushUndo();
-
     const selectedCols = state.columns.filter(c => columnIds.includes(c.id));
     if (selectedCols.length === 0) return;
+
+    pushUndo();
 
     const firstIdx = state.columns.findIndex(c => c.id === selectedCols[0].id);
 

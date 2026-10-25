@@ -386,7 +386,7 @@ const mapLinearCsvStatus = (status, completed) => {
     return 'planned';
 };
 
-const parseLinearCsv = (csvText) => {
+export const parseLinearCsv = (csvText) => {
     const rows = parseCsv(csvText);
     if (rows.length < 2) return { issues: [], projects: [], teamKey: '', teamName: '' };
 

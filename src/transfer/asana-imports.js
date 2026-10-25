@@ -327,7 +327,7 @@ export const confirmAsanaImport = () => {
 
 // ==================== Asana CSV Parsing ====================
 
-const parseAsanaCsv = (csvText) => {
+export const parseAsanaCsv = (csvText) => {
     const rows = parseCsv(csvText);
     if (rows.length < 2) return { epics: [], projectKey: '' };
 
@@ -345,9 +345,11 @@ const parseAsanaCsv = (csvText) => {
     const iParentTask = col('Parent Task');
     const iSection = col('Section/Column');
 
-    // First pass: index all rows as tasks, identify parent/child
-    const taskMap = new Map(); // name -> epic object (for parent tasks)
-    const taskOrder = [];      // ordered list of parent task names
+    // First pass: index all rows as tasks, identify parent/child. Every top-level task is kept,
+    // even when names repeat; the CSV names a subtask's parent only by name, so subtasks go
+    // under the first task with that name.
+    const tasks = [];          // top-level tasks in file order
+    const taskByName = new Map(); // name -> first top-level task with that name
     const subtaskRows = [];    // rows with a parent
     const sectionOrder = [];   // unique section names in order of first appearance
     const sectionSet = new Set();
@@ -374,24 +376,23 @@ const parseAsanaCsv = (csvText) => {
                 sectionOrder.push(sectionName);
             }
             // This is a top-level task (becomes a step/epic)
-            if (!taskMap.has(name)) {
-                taskMap.set(name, {
-                    key: taskId || name,
-                    summary: name,
-                    description: notes || undefined,
-                    status,
-                    sectionGid: sectionName, // use name as gid for CSV
-                    sectionName,
-                    stories: []
-                });
-                taskOrder.push(name);
-            }
+            const task = {
+                key: taskId || name,
+                summary: name,
+                description: notes || undefined,
+                status,
+                sectionGid: sectionName, // use name as gid for CSV
+                sectionName,
+                stories: []
+            };
+            tasks.push(task);
+            if (!taskByName.has(name)) taskByName.set(name, task);
         }
     }
 
     // Second pass: assign subtasks to their parent tasks
     for (const sub of subtaskRows) {
-        const parent = taskMap.get(sub.parentTask);
+        const parent = taskByName.get(sub.parentTask);
         if (parent) {
             parent.stories.push({
                 key: sub.taskId || '',
@@ -403,7 +404,7 @@ const parseAsanaCsv = (csvText) => {
         // Subtasks whose parent isn't found are dropped (parent not in this project)
     }
 
-    const epics = taskOrder.map(name => taskMap.get(name));
+    const epics = tasks;
     const sections = sectionOrder.map(name => ({ gid: name, name }));
 
     return { epics, sections, projectKey: 'Asana' };

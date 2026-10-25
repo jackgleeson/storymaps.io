@@ -1367,6 +1367,7 @@ export const addColumnAt = (index, hidden = false) => {
 };
 
 export const addStory = (columnId, sliceId, rowType = null, { skipFocus = false } = {}) => {
+    if (!rowType && !_state.slices.some(s => s.id === sliceId)) return;
     _pushUndo();
 
     let storiesArray;
@@ -1384,7 +1385,6 @@ export const addStory = (columnId, sliceId, rowType = null, { skipFocus = false 
         storiesArray = _state.activities[columnId];
     } else {
         const slice = _state.slices.find(s => s.id === sliceId);
-        if (!slice) return;
         slice.stories[columnId] = slice.stories[columnId] || [];
         color = DEFAULT_CARD_COLORS.story;
         slice.stories[columnId].push(_createStory('', color));
@@ -1518,18 +1518,19 @@ const ensureStoriesArray = (columnId, sliceId, rowType) => {
 };
 
 export const moveStory = (storyId, fromColumnId, fromSliceId, toColumnId, toSliceId, toIndex, fromRowType = null, toRowType = null) => {
-    _pushUndo();
+    // Check both ends before changing anything: someone else may have deleted the card, or the
+    // slice it was dropped in, during the drag. Redraw so the card the browser moved goes back.
     const fromStories = getStoriesArray(fromColumnId, fromSliceId, fromRowType);
-    if (!fromStories) return;
+    const storyIndex = fromStories ? fromStories.findIndex(s => s.id === storyId) : -1;
+    const targetExists = toRowType || _state.slices.some(s => s.id === toSliceId);
+    if (storyIndex === -1 || !targetExists) {
+        _renderAndSave();
+        return;
+    }
 
-    const storyIndex = fromStories.findIndex(s => s.id === storyId);
-    if (storyIndex === -1) return;
-
+    _pushUndo();
     const [story] = fromStories.splice(storyIndex, 1);
-
     const toStories = ensureStoriesArray(toColumnId, toSliceId, toRowType);
-    if (!toStories) return;
-
     toStories.splice(toIndex, 0, story);
     _logEvent?.(`Moved card${quoted(story.name)}`, [storyId]);
     _renderAndSave();

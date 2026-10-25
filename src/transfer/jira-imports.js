@@ -256,7 +256,7 @@ const mapJiraCsvStatus = (status) => {
     return 'planned';
 };
 
-const parseJiraCsv = (csvText) => {
+export const parseJiraCsv = (csvText) => {
     const rows = parseCsv(csvText);
     if (rows.length < 2) return { epics: [], projectKey: '' };
 
@@ -275,6 +275,8 @@ const parseJiraCsv = (csvText) => {
     const iPoints = headers.findIndex(h => /story\s*point/i.test(h));
     const iParent = col('Parent key') !== -1 ? col('Parent key') : col('Parent');
     const iProject = col('Project key');
+    // Jira exports one "Labels" column per label
+    const iLabels = headers.map((h, i) => (h === 'Labels' ? i : -1)).filter(i => i !== -1);
 
     // First pass: index all rows
     const epicMap = new Map(); // key -> epic object
@@ -304,11 +306,12 @@ const parseJiraCsv = (csvText) => {
             key, summary, type, status: mapJiraCsvStatus(status),
             description: description || undefined,
             points: isNaN(points) ? undefined : points,
+            labels: iLabels.map(i => (row[i] || '').trim()).filter(Boolean),
             parentKey
         };
 
         if (type === 'epic') {
-            epicMap.set(key, { key, summary, stories: [] });
+            epicMap.set(key, { key, summary, status: item.status, description: item.description, stories: [] });
         }
         storyRows.push(item);
     }
@@ -322,7 +325,8 @@ const parseJiraCsv = (csvText) => {
             summary: item.summary,
             status: item.status,
             description: item.description,
-            points: item.points != null ? item.points : undefined
+            points: item.points != null ? item.points : undefined,
+            labels: item.labels
         };
         const epic = item.parentKey ? epicMap.get(item.parentKey) : null;
         if (epic) {

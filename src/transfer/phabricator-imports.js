@@ -297,7 +297,7 @@ const mapPhabStatus = (status) => {
     return 'done';
 };
 
-const parsePhabricatorCsv = (csvText) => {
+export const parsePhabricatorCsv = (csvText) => {
     const rows = parseCsv(csvText);
     if (rows.length < 2) return { epics: [], projectKey: '', baseUrl: '' };
 
