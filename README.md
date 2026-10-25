@@ -160,14 +160,20 @@ Storymaps is a single Docker container behind a Caddy reverse proxy. It runs on 
    git clone https://github.com/jackgleeson/storymaps.io.git
    cd storymaps.io
    ```
-2. Edit the `Caddyfile` - replace `storymaps.io` with your domain and remove the `www` redirect block. Keep the `header` block, which sets the security headers:
+2. Edit the `Caddyfile` - replace `storymaps.io` with your domain and remove the `www` redirect block. Keep the `header` block (security headers), the `log` block (access logs) and the `header_up` line, which passes each visitor's address to the app. The block at the top trusts Cloudflare's addresses: keep it if your site is behind Cloudflare, otherwise delete it:
    ```
    storymaps.yourcompany.com {
        header {
            # ...security headers, unchanged
        }
 
-       reverse_proxy app:8080
+       log {
+           # ...access logs, unchanged
+       }
+
+       reverse_proxy app:8080 {
+           header_up X-Forwarded-For {client_ip}
+       }
    }
    ```
 3. Edit `docker-compose.yml` and add your domain to the `app` service's `environment` section. `STORYMAPS_ALLOWED_ORIGINS` must list it, or browsers on it can't connect. `TRUST_PROXY=true` is already there; it lets rate limiting see each visitor's IP through Caddy instead of counting everyone as one client:
@@ -238,6 +244,15 @@ All data lives in `./data/` on the host:
 - `backups/` - per-map backup snapshots
 
 Back up this directory regularly (e.g. a cron job with `tar` or `rsync`). To migrate to a new server, copy `data/` across and start the containers.
+
+Caddy keeps access logs in its own volume, rotated at 10 MB and kept for up to 30 days. Read them with `docker compose exec caddy tail -f /data/access.log`.
+
+To delete a map, for example spam, stop the app and run the admin script with its ID. It deletes one map per run. Add `--dry-run` first to see what would be deleted:
+```bash
+docker compose stop app
+docker compose run --rm app node server/admin/delete-map.js <id>
+docker compose start app
+```
 
 ### Updating
 

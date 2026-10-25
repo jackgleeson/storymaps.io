@@ -1,10 +1,8 @@
 import { describe, test, before, after, afterEach } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { request } from 'node:http';
-import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import * as Y from 'yjs';
@@ -12,45 +10,19 @@ import WebSocket from 'ws';
 import { WebsocketProvider } from 'y-websocket';
 import { writeDocFromJson } from '../../server/serialization.js';
 import { smallMap } from '../fixtures.js';
+import { startServer } from './server-process.js';
 
-// Runs the real server.js on a spare port with its own data folder, so it doesn't touch ./data
-// or a dev server that's already running.
-const ROOT = new URL('../../', import.meta.url).pathname;
 const ORIGIN = 'http://localhost:3000';
 let server, base, wsBase, dataDir;
 
-const freePort = () => new Promise((resolve) => {
-  const probe = createServer().listen(0, () => {
-    const { port } = probe.address();
-    probe.close(() => resolve(port));
-  });
-});
-
 before(async () => {
   dataDir = await mkdtemp(join(tmpdir(), 'storymaps-test-'));
-  const port = await freePort();
-  base = `http://localhost:${port}`;
-  wsBase = `ws://localhost:${port}`;
-  const env = { ...process.env, PORT: String(port), DATA_DIR: dataDir };
-  for (const key of ['NODE_TEST_CONTEXT', 'TRUST_PROXY', 'STORYMAPS_ALLOWED_ORIGINS', 'DISABLE_SSRF_CHECK']) delete env[key];
-  server = spawn(process.execPath, ['server.js'], { cwd: ROOT, env, stdio: ['ignore', 'pipe', 'pipe'] });
-  let output = '';
-  await new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error(`server did not start:\n${output}`)), 15_000);
-    server.stdout.on('data', (chunk) => {
-      output += chunk;
-      if (output.includes('Server running')) { clearTimeout(timer); resolve(); }
-    });
-    server.stderr.on('data', (chunk) => { output += chunk; });
-    server.on('exit', (code) => { clearTimeout(timer); reject(new Error(`server exited (${code}):\n${output}`)); });
-  });
+  server = await startServer(dataDir);
+  ({ base, wsBase } = server);
 });
 
 after(async () => {
-  if (server.exitCode === null) {
-    server.kill('SIGTERM');
-    await once(server, 'exit');
-  }
+  await server.stop();
   await rm(dataDir, { recursive: true, force: true });
 });
 
@@ -78,7 +50,9 @@ const rawGet = (path) => new Promise((resolve, reject) => {
   req.end();
 });
 
-const createMap = async (map = smallMap()) => (await api('POST', '/api/maps', { body: map })).json.id;
+let nextAddress = 0;
+const newAddress = () => ({ 'x-forwarded-for': `198.51.100.${++nextAddress}` });
+const createMap = async (map = smallMap()) => (await api('POST', '/api/maps', { body: map, headers: newAddress() })).json.id;
 
 const waitFor = async (check, label, ms = 5_000) => {
   const start = Date.now();
@@ -233,6 +207,17 @@ describe('HTTP API', () => {
     assert.equal((await api('POST', '/api/maps', { body: smallMap() })).status, 201, 'the CLI can create maps without an origin');
   });
 
+  test('one address can create 10 maps a minute, while others still can', async () => {
+    const headers = { 'x-forwarded-for': '203.0.113.50' };
+    for (let i = 0; i < 10; i++) {
+      assert.equal((await api('POST', '/api/maps', { body: smallMap(), headers })).status, 201, `map ${i + 1}`);
+    }
+    const refused = await api('POST', '/api/maps', { body: smallMap(), headers });
+    assert.equal(refused.status, 429);
+    assert.equal(refused.json.error, 'Too many new maps from your address. Try again later.');
+    assert.equal((await api('POST', '/api/maps', { body: smallMap(), headers: newAddress() })).status, 201);
+  });
+
   test('invalid JSON is a 400', async () => {
     const res = await api('POST', '/api/maps', { body: '{nope' });
     assert.equal(res.status, 400);
@@ -283,9 +268,10 @@ describe('pages and files', () => {
   });
 
   test('files outside public and src cannot be read', async () => {
-    for (const path of ['/../server.js', '/src/../server.js', '/src/../../package.json', '/%2e%2e/server.js', '/data/locks.json']) {
+    for (const path of ['/../server.js', '/src/../server.js', '/src/../../package.json', '/%2e%2e/server.js', '/data/locks.json',
+      '/server/admin/delete-map.js', '/src/../server/admin/delete-map.js', '/%2e%2e/server/admin/delete-map.js']) {
       const res = await rawGet(path);
-      assert.ok(!res.text.includes('createServer') && !res.text.includes('"dependencies"') && !res.text.includes('passwordHash'), `${path} leaked a file`);
+      assert.ok(!res.text.includes('createServer') && !res.text.includes('"dependencies"') && !res.text.includes('passwordHash') && !res.text.includes('clearDocument'), `${path} leaked a file`);
     }
   });
 
