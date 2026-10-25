@@ -9,6 +9,7 @@
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "node --import ./test/setup.js --test --test-concurrency=1 'test/unit/**/*.test.js'",
     "test:integration": "node --import ./test/setup.js --test --test-concurrency=1 'test/integration/**/*.test.js'",
+    "test:e2e": "playwright test",
     "test:coverage": "node --import ./test/setup.js --test --test-concurrency=1 --experimental-test-coverage --test-coverage-exclude='test/**' --test-coverage-exclude='public/vendor/**' 'test/**/*.test.js'"
   },
   "keywords": [
@@ -33,6 +34,7 @@
     "@codemirror/commands": "^6.8.0",
     "@codemirror/state": "^6.5.2",
     "@codemirror/view": "^6.36.5",
+    "@playwright/test": "^1.64.1",
     "esbuild": "^0.25.0",
     "firebase-admin": "^13.0.0",
     "y-codemirror.next": "^0.3.5"

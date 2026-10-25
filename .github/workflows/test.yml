@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Nightly, so the phone browser tests run too
+  schedule:
+    - cron: '0 4 * * *'
 
 jobs:
   test:
@@ -21,3 +24,35 @@ jobs:
       # Starts its own server on a spare port with a temporary data folder
       - name: Integration tests
         run: npm run test:integration
+
+  e2e:
+    name: Browser tests
+    runs-on: ubuntu-latest
+    env:
+      # Chrome on every push and pull request; the nightly run adds the phone tests in WebKit
+      PHONE: ${{ github.event_name == 'schedule' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+      - name: Cache browsers
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - name: Install browsers
+        run: npx playwright install --with-deps chromium ${{ env.PHONE == 'true' && 'webkit' || '' }}
+      - name: Browser tests
+        run: npm run test:e2e -- ${{ env.PHONE == 'true' && ' ' || '--project=chromium' }}
+      - name: Upload the report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

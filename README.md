@@ -265,7 +265,7 @@ npm install
 npm start
 ```
 
-The server starts on `http://localhost:8080`. Run the tests with `npm test`.
+The server starts on `http://localhost:8080`. Run the tests with `npm test`, and the browser tests with `npm run test:e2e` (they use Playwright and your installed Chrome).
 
 ## Usage
 1. Visit [storymaps.io](https://storymaps.io) or self-host your own instance

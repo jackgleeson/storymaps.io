@@ -5,3 +5,5 @@ builds/
 data/
 data-migration/
 config.js
+playwright-report/
+test-results/
