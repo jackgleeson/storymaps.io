@@ -6,7 +6,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test --test-concurrency=1 'test/**/*.test.js'"
+    "test": "node --import ./test/setup.js --test --test-concurrency=1 'test/**/*.test.js'",
+    "test:coverage": "node --import ./test/setup.js --test --test-concurrency=1 --experimental-test-coverage --test-coverage-exclude='test/**' --test-coverage-exclude='public/vendor/**' 'test/**/*.test.js'"
   },
   "keywords": [
     "user-story",
