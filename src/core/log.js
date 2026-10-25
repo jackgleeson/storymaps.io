@@ -71,6 +71,8 @@ export const bindYjs = (ydoc, provider = null, mapId = null) => {
  * Detach from Yjs doc.
  */
 export const unbindYjs = () => {
+    // Log a pending edit into the map it was made in, not the next one opened
+    flushTextEdit();
     if (_yarray && _observer) {
         _yarray.unobserve(_observer);
     }
@@ -188,21 +190,22 @@ export const logEvent = (text, ids = []) => {
 
 /**
  * Debounced text-edit logger. Waits 2s of inactivity before logging.
+ * Moving on to another item logs the pending edit straight away, so it isn't lost.
  */
 let _textEditTimer = null;
-let _textEditItemId = null;
+let _textEdit = null;
+
+const flushTextEdit = () => {
+    clearTimeout(_textEditTimer);
+    if (_textEdit) logEvent(`Edited ${_textEdit.label}`, [_textEdit.itemId]);
+    _textEdit = null;
+};
 
 export const logTextEdit = (label, itemId) => {
-    if (_textEditItemId && _textEditItemId !== itemId) {
-        clearTimeout(_textEditTimer);
-        // Flush is unnecessary — the old timer was cleared, and a new item started
-    }
-    _textEditItemId = itemId;
+    if (_textEdit && (_textEdit.itemId !== itemId || _textEdit.label !== label)) flushTextEdit();
+    _textEdit = { label, itemId };
     clearTimeout(_textEditTimer);
-    _textEditTimer = setTimeout(() => {
-        logEvent(`Edited ${label}`, [itemId]);
-        _textEditItemId = null;
-    }, 2000);
+    _textEditTimer = setTimeout(flushTextEdit, 2000);
 };
 
 /**

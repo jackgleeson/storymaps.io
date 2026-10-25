@@ -90,6 +90,33 @@ describe('typing', () => {
     mock.timers.tick(1);
     assert.deepEqual(entries().map(e => [e.text, e.ids]), [['Edited card name', ['card0001']]]);
   });
+
+  test('moving on to another card logs the first edit straight away', () => {
+    log.logTextEdit('card name', 'card0001');
+    mock.timers.tick(500);
+    log.logTextEdit('card name', 'card0002');
+    assert.deepEqual(entries().map(e => [e.text, e.ids]), [['Edited card name', ['card0001']]]);
+    mock.timers.tick(2000);
+    assert.deepEqual(entries().map(e => e.ids[0]), ['card0001', 'card0002']);
+  });
+
+  test('editing the title and then the body of a card logs both', () => {
+    log.logTextEdit('card title', 'card0001');
+    log.logTextEdit('card body', 'card0001');
+    mock.timers.tick(2000);
+    assert.deepEqual(entries().map(e => e.text), ['Edited card title', 'Edited card body']);
+  });
+
+  test('an edit pending when the map is closed is logged in that map, not the next one', () => {
+    log.logTextEdit('card name', 'card0001');
+    const first = doc;
+    log.unbindYjs();
+    doc = new Y.Doc();
+    log.bindYjs(doc);
+    mock.timers.tick(2000);
+    assert.deepEqual(first.getArray('log').toArray().map(e => e.text), ['Edited card name']);
+    assert.deepEqual(entries(), []);
+  });
 });
 
 describe('the Log panel', () => {
