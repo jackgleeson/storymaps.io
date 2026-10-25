@@ -111,7 +111,7 @@ The server entry point is `server.js`, which delegates to modules in `server/`:
 - **WebSocket** - Real-time collaboration via y-websocket
 - **Static files** - Serves the client app from `public/` and `src/`
 - **REST API** - Route handlers in `server/routes/` for locks, backups, activity log, stats, format endpoints (`.json`, `.yaml`, `.csv`), and server-proxied third-party imports/exports with SSE progress streaming
-- **Middleware** - Origin checks, body parsing, and rate limiting in `server/middleware.js` and `server/rate-limit.js`
+- **Middleware** - Origin checks, body parsing, and rate limiting in `server/middleware.js` and `server/rate-limit.js`. Through the API, each address can create 10 maps a minute and 500 a day, push a map or request a new map ID 30 times a minute, and use the import, export, backup and unlock routes 5 times a minute
 
 ### Real-time Sync (Yjs)
 
@@ -160,7 +160,7 @@ Storymaps is a single Docker container behind a Caddy reverse proxy. It runs on 
    git clone https://github.com/jackgleeson/storymaps.io.git
    cd storymaps.io
    ```
-2. Edit the `Caddyfile` - replace `storymaps.io` with your domain and remove the `www` redirect block. Keep the `header` block (security headers), the `log` block (access logs) and the `header_up` line, which passes each visitor's address to the app. The block at the top trusts Cloudflare's addresses: keep it if your site is behind Cloudflare, otherwise delete it:
+2. Edit the `Caddyfile` - replace `storymaps.io` with your domain and remove the `www` redirect block. Keep the `header` block (security headers), the `log` block (access logs) and the `header_up` line, which passes the address of each visitor to the app. The block at the top trusts the Cloudflare addresses: keep it if your site is behind Cloudflare, otherwise delete it:
    ```
    storymaps.yourcompany.com {
        header {
