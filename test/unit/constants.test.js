@@ -1,7 +1,7 @@
 import { describe, test } from 'node:test';
 import { strict as assert } from 'node:assert';
 import {
-  generateId, isValidUrl, normalizePoints, normalizeSliceGoal, normalizeSliceDate, copySliceDetails, escHtml,
+  generateId, isValidUrl, normalizePoints, normalizeSliceGoal, normalizeSliceDate, copySliceDetails, escHtml, shiftSliceDates,
 } from '../../src/core/constants.js';
 
 describe('generateId', () => {
@@ -61,6 +61,35 @@ describe('slice details', () => {
   test('copySliceDetails copies only the details that are set', () => {
     assert.deepEqual(copySliceDetails({ goal: ' Ship ', targetDate: 'soon', name: 'MVP' }, {}), { goal: 'Ship' });
     assert.deepEqual(copySliceDetails({}, { name: 'MVP' }), { name: 'MVP' });
+  });
+});
+
+describe('shiftSliceDates', () => {
+  const map = (...dates) => ({ slices: dates.map((targetDate, i) => ({ name: `S${i}`, ...(targetDate && { targetDate }) })) });
+
+  test('moves the earliest date to the start date and keeps the gaps', () => {
+    const out = shiftSliceDates(map('2027-01-04', '2027-03-01', '2027-05-31'), '2026-11-08');
+    assert.deepEqual(out.slices.map(s => s.targetDate), ['2026-11-08', '2027-01-03', '2027-04-04']);
+  });
+
+  test('works whichever slice has the earliest date', () => {
+    const out = shiftSliceDates(map('2027-03-01', '2027-01-04'), '2026-11-08');
+    assert.deepEqual(out.slices.map(s => s.targetDate), ['2027-01-03', '2026-11-08']);
+  });
+
+  test('leaves slices without a date alone', () => {
+    const out = shiftSliceDates(map('2027-01-04', null, 'soon'), '2026-11-08');
+    assert.deepEqual(out.slices.map(s => s.targetDate), ['2026-11-08', undefined, 'soon']);
+  });
+
+  test('a map with no dates is unchanged', () => {
+    assert.deepEqual(shiftSliceDates(map(null), '2026-11-08'), map(null));
+    assert.deepEqual(shiftSliceDates({}, '2026-11-08'), {});
+  });
+
+  test('a gap across a change to summer time stays the same number of days', () => {
+    const out = shiftSliceDates(map('2027-01-04', '2027-03-01'), '2027-03-20');
+    assert.deepEqual(out.slices.map(s => s.targetDate), ['2027-03-20', '2027-05-15']);
   });
 });
 
