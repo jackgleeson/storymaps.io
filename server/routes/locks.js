@@ -13,6 +13,14 @@ export default function register(ctx) {
       res.end(JSON.stringify({ error: 'Password hash required' }));
       return;
     }
+    // A locked map only takes a new password from someone who sends the current one,
+    // so nobody else can take it over. Locking again with the same password is fine.
+    const current = locks[mapId];
+    if (current?.isLocked && body.passwordHash !== current.passwordHash && body.currentPasswordHash !== current.passwordHash) {
+      res.writeHead(403, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Map is already locked' }));
+      return;
+    }
     locks[mapId] = {
       isLocked: true,
       passwordHash: body.passwordHash,

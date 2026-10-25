@@ -105,7 +105,7 @@ export const subscribeLockState = (mapId) => {
                 lockState.isLocked = !!data.isLocked;
 
                 if (!wasLocked && lockState.isLocked) {
-                    lockState.sessionUnlocked = checkSessionUnlock(mapId);
+                    restoreSessionUnlock(mapId);
                 }
             } else {
                 lockState.isLocked = false;
@@ -131,17 +131,19 @@ export const clearLockSubscription = () => {
     lockState.sessionUnlocked = false;
 };
 
-// Save unlock status to session storage
-const saveSessionUnlock = (mapId) => {
+// Save the unlock to session storage. The password hash is kept (not just true) so that after a
+// reload this tab can still change or remove the lock.
+const saveSessionUnlock = (mapId, hash) => {
     const unlockedMaps = JSON.parse(sessionStorage.getItem('unlockedMaps') || '{}');
-    unlockedMaps[mapId] = true;
+    unlockedMaps[mapId] = hash;
     sessionStorage.setItem('unlockedMaps', JSON.stringify(unlockedMaps));
 };
 
-// Check session storage for prior unlock
-export const checkSessionUnlock = (mapId) => {
+// Restore this tab's unlock, and the password hash when it was saved (older entries are just true)
+export const restoreSessionUnlock = (mapId) => {
     const unlockedMaps = JSON.parse(sessionStorage.getItem('unlockedMaps') || '{}');
-    return !!unlockedMaps[mapId];
+    lockState.sessionUnlocked = !!unlockedMaps[mapId];
+    if (typeof unlockedMaps[mapId] === 'string') lockState.passwordHash = unlockedMaps[mapId];
 };
 
 // Lock the map with a password
@@ -151,16 +153,28 @@ const lockMap = async (password) => {
     const hash = await hashPassword(password);
 
     try {
-        await fetch(`/api/lock/${_state.mapId}`, {
+        const res = await fetch(`/api/lock/${_state.mapId}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ passwordHash: hash }),
+            // The current password lets this tab change the password of a map it has unlocked
+            body: JSON.stringify({ passwordHash: hash, currentPasswordHash: lockState.passwordHash || undefined }),
         });
+        if (res.status === 403) {
+            const message = lockState.sessionUnlocked && !lockState.passwordHash
+                ? 'Unlock the map again to change its lock.'
+                : 'This map has already been locked by someone else.';
+            await loadLockState(_state.mapId);
+            updateLockUI();
+            updateEditability();
+            await showAlert(message);
+            return;
+        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         lockState.isLocked = true;
         lockState.passwordHash = hash;
         lockState.sessionUnlocked = true;
-        saveSessionUnlock(_state.mapId);
+        saveSessionUnlock(_state.mapId, hash);
 
         // Broadcast lock state change via awareness so other clients update immediately
         const provider = _getProvider();
@@ -181,7 +195,11 @@ const lockMap = async (password) => {
 
 // Remove lock entirely (make map publicly editable again)
 export const removeLock = async () => {
-    if (!_state.mapId || !lockState.passwordHash) return;
+    if (!_state.mapId) return;
+    if (!lockState.passwordHash) {
+        await showAlert('Unlock the map again to remove its lock.');
+        return;
+    }
 
     try {
         const res = await fetch(`/api/lock/${_state.mapId}/remove`, {
@@ -264,7 +282,7 @@ const unlockMap = async (password) => {
 
     lockState.passwordHash = inputHash;
     lockState.sessionUnlocked = true;
-    saveSessionUnlock(_state.mapId);
+    saveSessionUnlock(_state.mapId, inputHash);
     _logEvent?.('Unlocked map');
     updateLockUI();
     updateEditability();

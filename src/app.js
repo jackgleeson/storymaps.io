@@ -29,7 +29,7 @@ const { render, initSortable, addColumn, addColumnAt, addStory, addSlice, delete
 const { closeMainMenu, closeAllOptionsMenus, zoomToFit, scrollElementIntoView } = navigation;
 const { loadYjs, createYjsDoc, destroyYjs, syncFromYjs, syncToYjs, getProvider, getYdoc, getYmap, ensureSortable } = yjs;
 const { trackPresence, trackCursor, toggleCursorsVisibility, updateCursorsVisibilityUI, getCursorColor, getSessionId, broadcastDragStart, broadcastDragEnd } = presence;
-const { lockState, loadLockState, subscribeLockState, updateLockUI, updateEditability, checkSessionUnlock, initLockListeners, hideLockModal } = lock;
+const { lockState, loadLockState, subscribeLockState, updateLockUI, updateEditability, restoreSessionUnlock, initLockListeners, hideLockModal } = lock;
 const { renderLegend, renderPartialsList, renderMapStats } = ui;
 
 // =============================================================================
@@ -61,7 +61,7 @@ const subscribeToMap = async (mapId) => {
         await trackPresence();
         trackCursor();
         await loadLockState(mapId);
-        lockState.sessionUnlocked = checkSessionUnlock(mapId);
+        restoreSessionUnlock(mapId);
         subscribeLockState(mapId);
         updateLockUI();
         updateEditability();
@@ -76,7 +76,7 @@ const subscribeToMap = async (mapId) => {
                     if (clientId === ydoc.clientID) continue;
                     if (awarenessState.lock) {
                         loadLockState(mapId).then(() => {
-                            lockState.sessionUnlocked = checkSessionUnlock(mapId);
+                            restoreSessionUnlock(mapId);
                             updateLockUI();
                             updateEditability();
                         });
