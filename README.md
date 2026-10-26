@@ -26,6 +26,8 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **Tasks** - The work to support each step e.g. keyword search, category filters, compare products
 - **Slices** - Horizontal groupings for releases (MVP, v1, v2, etc.)
 
+A larger product can span several maps, one per journey or area, grouped as a **project** so they sit side by side as tabs.
+
 ## App Features
 
 ### Story Mapping
@@ -48,6 +50,17 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **Drag & drop** - reorder cards, columns, and slices; the map auto-scrolls when you drag near its edges
 - **Insert steps & spacers** - right-click a step to add a new step or a spacer column before or after it, or duplicate it; spacer columns visually group steps
 
+### Projects
+- **Related maps as tabs** - group the maps for one product, journey or tutorial into a project; each map shows the others as tabs, and one click moves between them
+- **Project links** - a project opens at `/p/<project>/<map>`, and `/p/<project>` opens the first map; a plain map link never shows projects, so adding a map to a project changes nothing for people who open the plain map link
+- **Start a project** - from the button under the header (on phones, from the main menu), with an optional name; adding maps comes after, from **+ Add map**: make a new map in the project or paste the link to one you have
+- **Manage** - click the project name to rename the project, drag or use the arrows to reorder maps, remove a map, or delete the project
+- **Many to many** - a map can be in any number of projects, and each project keeps a separate order, which suits tutorials that reuse maps
+- **Safe by design** - projects live beside the maps, never inside them, so no project change alters a map; removing a map never deletes the map, removing the last map keeps the project, and deleting a project is a separate step that leaves the maps alone
+- **Live** - tab changes show straight away for everyone with the same project open
+- **Partials or projects** - map partials reuse part of one map inside it; projects group whole maps
+- **Size** - a project holds up to 20 maps
+
 ### Search & Filter
 - **Search** (Ctrl+F) - live search with non-matching cards dimmed
 - **Filter panel** - filter by status, colour, or tag; combine multiple filters
@@ -65,8 +78,7 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **Mobile & tablet** - touch device users join silently without a name prompt; desktop users see them listed as "Mobile user" in the viewer tooltip
 - **Collaborative notepad** - shared notes that sync in real-time
 - **Activity log** - shows when the map was created and last edited, who's here now, recent contributors, and total edits, above a real-time feed of the last 20 map edits; hover an entry to highlight the affected card on the map; entries show the user's name, with icons to distinguish CLI and mobile sources
-- **Shareable URLs** - each map gets a unique link
-- **Projects** - group related maps as tabs at a project link (`/p/<project>`); start one from any map, add a new map or paste the link to one you have, and rename the project, reorder the maps or remove one from the project name button; a map can be in any number of projects and a plain map link never shows them; removing a map never deletes the map or the project, and deleting a project is a separate step that leaves the maps alone
+- **Shareable URLs** - each map gets a unique link, and each project gets a separate link
 - **Lock maps** - password-protect to prevent edits
 
 ### Import & Export
@@ -112,8 +124,8 @@ A story map preserves it. One diagram that shows who the users are, what journey
 The server entry point is `server.js`, which delegates to modules in `server/`:
 - **WebSocket** - Real-time collaboration via y-websocket
 - **Static files** - Serves the client app from `public/` and `src/`
-- **REST API** - Route handlers in `server/routes/` for locks, backups, activity log, stats, format endpoints (`.json`, `.yaml`, `.csv`), and server-proxied third-party imports/exports with SSE progress streaming. Requests to Jira, Asana, Phabricator and Linear go only to public addresses over HTTPS. The server checks the address of each host name before connecting, connects to the address it checked, and checks again on every redirect
-- **Middleware** - Origin checks, body parsing, and rate limiting in `server/middleware.js` and `server/rate-limit.js`. Through the API, each address can create 10 maps a minute and 500 a day, push a map or request a new map ID 30 times a minute, and use the import, export, backup and unlock routes 5 times a minute
+- **REST API** - Route handlers in `server/routes/` for locks, backups, projects, activity log, stats, format endpoints (`.json`, `.yaml`, `.csv`), and server-proxied third-party imports/exports with SSE progress streaming. Requests to Jira, Asana, Phabricator and Linear go only to public addresses over HTTPS. The server checks the address of each host name before connecting, connects to the address it checked, and checks again on every redirect
+- **Middleware** - Origin checks, body parsing, and rate limiting in `server/middleware.js` and `server/rate-limit.js`. Through the API, each address can create 10 maps or projects a minute and 500 a day, push a map, change a project or request a new map ID 30 times a minute, and use the import, export, backup and unlock routes 5 times a minute
 
 ### Real-time Sync (Yjs)
 
@@ -138,9 +150,12 @@ Each map is a [Yjs](https://yjs.dev/) document named after its map ID. The serve
 - The REST API works on the same documents. Format URLs read the in-memory copy if the map is open, and otherwise load it from disk. CLI pushes write into the live document, so people on the map see the change straight away, and add an entry to the activity log.
 - On shutdown the server saves open documents and pending SQLite updates before it exits.
 
+### Projects
+Projects are kept in SQLite next to the map index (`projects` and `project_maps` tables), not in the Yjs documents, so no project change can alter a map. The project routes in `server/routes/projects.js` only accept requests from the site itself. In the app, each tab is a plain link that loads the map fresh, so nothing from one map stays in memory when the next opens. After a change, the app sets a field in the Yjs awareness state, and everyone with the same project open fetches the tabs again; others pick up changes when they return to the browser tab or within 30 seconds.
+
 ### Data Storage
 - **LevelDB** - Yjs document persistence in `data/`
-- **SQLite** - Map index with names and timestamps (`data/maps.db`)
+- **SQLite** - Map index with names and timestamps, and projects (`data/maps.db`)
 - **JSON files** - Lock state (`data/locks.json`), counters (`data/stats.json`), and backups (`data/backups/*.json`)
 
 ### Client
@@ -240,7 +255,7 @@ If you already run nginx, Traefik, HAProxy, or another proxy, you can skip Caddy
 
 All data lives in `./data/` on the host:
 - LevelDB files - Yjs document state
-- `maps.db` - SQLite map index
+- `maps.db` - SQLite map index and projects
 - `locks.json` - lock state
 - `stats.json` - counters
 - `backups/` - per-map backup snapshots
@@ -249,7 +264,7 @@ Back up this directory regularly (e.g. a cron job with `tar` or `rsync`). To mig
 
 Caddy keeps access logs in its own volume, rotated at 10 MB and kept for up to 30 days. Read them with `docker compose exec caddy tail -f /data/access.log`.
 
-To delete a map, for example spam, stop the app and run the admin script with its ID. It deletes one map per run. Add `--dry-run` first to see what would be deleted:
+To delete a map, for example spam, stop the app and run the admin script with the map ID. It deletes one map per run and takes the map out of any projects, which stay in place. Add `--dry-run` first to see what would be deleted:
 ```bash
 docker compose stop app
 docker compose run --rm app node server/admin/delete-map.js <id>
@@ -296,9 +311,9 @@ npm run test:e2e          # browser tests in Chrome and phone-sized WebKit
 npm run test:coverage     # unit and integration tests with a coverage report
 ```
 
-- **Unit tests** (`test/unit`) cover saving and loading maps, JSON, YAML and CSV import and export, real-time sync including two people editing at once, editing and partial maps, search, locks, backups, the activity log, and the Jira, Asana, Linear and Phabricator imports and exports against canned API responses.
-- **Integration tests** (`test/integration`) start the real server to test WebSocket sync, origin checks, locks, request handling and static files.
-- **Browser tests** (`test/e2e`) use [Playwright](https://playwright.dev) to run the main journeys: editing a map, two people editing at once, menus and undo, locks, and YAML import and export, plus phone layout checks. They start their own server on port 3210 (set `E2E_PORT` to change it), so they can run alongside a dev server. Locally they use your installed Chrome; run `npx playwright install webkit` once for the phone tests.
+- **Unit tests** (`test/unit`) cover saving and loading maps, projects, JSON, YAML and CSV import and export, real-time sync including two people editing at once, editing and partial maps, search, locks, backups, the activity log, and the Jira, Asana, Linear and Phabricator imports and exports against canned API responses.
+- **Integration tests** (`test/integration`) start the real server to test WebSocket sync, origin checks, locks, projects, request handling and static files.
+- **Browser tests** (`test/e2e`) use [Playwright](https://playwright.dev) to run the main journeys: editing a map, two people editing at once, menus and undo, locks, projects, and YAML import and export, plus phone layout checks. They start their own server on port 3210 (set `E2E_PORT` to change it), so they can run alongside a dev server. Locally they use your installed Chrome; run `npx playwright install webkit` once for the phone tests.
 
 CI runs all of them on every push to `main` and every pull request.
 
@@ -317,17 +332,18 @@ CI runs all of them on every push to `main` and every pull request.
 12. Click, Shift+click, or marquee-drag to select multiple cards, then use the toolbar to bulk edit
 13. Use the **Notepad** to capture team notes and decisions
 14. Click **Share** to copy the URL, copy the map as an image, or download as PNG
-15. Use **Menu → Lock Map** to password-protect the map from edits
-16. Use **Ctrl+Z** / **Ctrl+Y** to undo and redo, **Ctrl+D** to duplicate
-17. Use **Ctrl+scroll** to zoom, **right-click drag** to pan, **Alt+R** to zoom to fit
-18. Select consecutive columns and use **Menu → Create Partial** to extract shared sequences into reusable map partials; manage them from the **Partials** panel
-19. Use the **view controls** (next to zoom) to toggle focus mode, full screen, dark mode, or cursor visibility
-20. Press **Esc** twice to exit full screen (single Esc still closes modals, search, etc.)
-21. Use **Menu → Backups** to create, restore, or delete map snapshots
-22. Use **Menu → Import** to import from JSON, YAML, CSV, or from Jira, Asana, Phabricator, or Linear (CSV file or API)
-23. Use **Menu → Export** to save as JSON, YAML, or CSV, or export to Jira, Asana, Phabricator, or Linear
-24. Use **Print** to save as PDF
-25. Click **Build with AI** to generate a prompt from your story map for AI coding tools or app builders; select a slice and target, add optional instructions, then copy or open the prompt
+15. Click **Start a project** under the header (or **Menu → Start a project** on phones) to keep related maps together as tabs; add maps with **+ Add map**, and click the project name to rename it, reorder or remove maps, or delete the project
+16. Use **Menu → Lock Map** to password-protect the map from edits
+17. Use **Ctrl+Z** / **Ctrl+Y** to undo and redo, **Ctrl+D** to duplicate
+18. Use **Ctrl+scroll** to zoom, **right-click drag** to pan, **Alt+R** to zoom to fit
+19. Select consecutive columns and use **Menu → Create Partial** to extract shared sequences into reusable map partials; manage them from the **Partials** panel
+20. Use the **view controls** (next to zoom) to toggle focus mode, full screen, dark mode, or cursor visibility
+21. Press **Esc** twice to exit full screen (single Esc still closes modals, search, etc.)
+22. Use **Menu → Backups** to create, restore, or delete map snapshots
+23. Use **Menu → Import** to import from JSON, YAML, CSV, or from Jira, Asana, Phabricator, or Linear (CSV file or API)
+24. Use **Menu → Export** to save as JSON, YAML, or CSV, or export to Jira, Asana, Phabricator, or Linear
+25. Use **Print** to save as PDF
+26. Click **Build with AI** to generate a prompt from your story map for AI coding tools or app builders; select a slice and target, add optional instructions, then copy or open the prompt
 
 ## Support
 If you find this tool useful, consider [buying me a coffee](https://buymeacoffee.com/jackgleeson). It goes towards server costs and helps me keep the app running.
