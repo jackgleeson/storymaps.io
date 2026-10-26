@@ -3445,6 +3445,18 @@ html.dark-mode mark.highlight::after {
     position: relative;
 }
 
+/* Wide screens give the screenshot more room, so the map in it can be read */
+@media (min-width: 1400px) {
+    .welcome-split {
+        max-width: 1440px;
+        gap: 56px;
+    }
+
+    .welcome-visual {
+        flex: 2;
+    }
+}
+
 /* Simulated collaboration cursors */
 .sim-cursor {
     position: absolute;
