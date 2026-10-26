@@ -418,3 +418,45 @@ test('a new map is untitled in both its title and its tab', async ({ page, creat
   await expect(tabs(page).nth(1)).toHaveText('Untitled map');
   await expect(page.locator('#boardName')).toHaveAttribute('placeholder', 'Untitled map');
 });
+
+test('a slice link copied in a project keeps the project, and a plain map copies a plain link', async ({ page, context, createMap }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  const [a, b] = [await createMap(map('Ordering')), await createMap(map('Loyalty'))];
+  await openMap(page, a, 2);
+  await addByLink(page, b);
+  const project = projectOf(page);
+  const origin = new URL(page.url()).origin;
+
+  const copySliceLink = async () => {
+    await page.locator('.slice-container .btn-slice-menu').first().click();
+    await page.getByText('Copy link to slice').click();
+    await expect(page.getByText('Link copied')).toBeVisible();
+    return page.evaluate(() => navigator.clipboard.readText());
+  };
+
+  const link = await copySliceLink();
+  expect(link).toMatch(new RegExp(`^${origin}/p/${project}/${a}#slice-mvp-[a-z0-9]{8}$`));
+
+  // Opening it brings back the tabs, at the slice
+  await page.goto('/');
+  await page.goto(link);
+  await expect(tabs(page)).toHaveText(['Ordering', 'Loyalty']);
+  await expect(page).toHaveURL(link);
+
+  await openMap(page, a, 2);
+  expect(await copySliceLink()).toMatch(new RegExp(`^${origin}/${a}#slice-mvp-[a-z0-9]{8}$`));
+
+  // The name part is only for reading: a link from before a rename still opens the slice,
+  // and so does a link from before the name part existed
+  const id = link.match(/#slice-mvp-([a-z0-9]{8})$/)[1];
+  for (const hash of [`#slice-launch-${id}`, `#slice-${id}`]) {
+    await page.goto('/');
+    await page.goto(`/${a}${hash}`);
+    await expect(page.locator('.step')).toHaveCount(2);
+    await page.waitForTimeout(800);
+    await expect(page.getByText('That slice is no longer in this map')).toHaveCount(0);
+  }
+  await page.goto('/');
+  await page.goto(`/${a}#slice-mvp-zzzzzzzz`);
+  await expect(page.getByText('That slice is no longer in this map')).toBeVisible();
+});

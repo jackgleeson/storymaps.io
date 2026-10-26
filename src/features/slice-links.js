@@ -1,19 +1,24 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
-// Slice links (#slice-<id>), slice goal and target date
+// Slice links (#slice-<name>-<id>), slice goal and target date
 
 import { dom } from '/src/ui/dom.js';
 import { el, normalizeSliceGoal, normalizeSliceDate, SLICE_GOAL_MAX_LENGTH } from '/src/core/constants.js';
 import { showPrompt, showToast } from '/src/core/modals.js';
 import { quoted, logTextEdit } from '/src/core/log.js';
+import { parseLocation, projectPath } from '/src/core/project-links.js';
+import { sliceHash, sliceFromHash } from '/src/core/slice-hash.js';
 
 let _deps = {};
 
 export const init = (deps) => { _deps = deps; };
 
-const SLICE_HASH = /^#slice-([A-Za-z0-9_-]+)$/;
-
-export const sliceLinkUrl = (slice) =>
-    `${window.location.origin}/${encodeURIComponent(_deps.state.mapId)}#slice-${slice.id}`;
+// A map open in a project links to the slice at the project link, so the tabs come with it
+export const sliceLinkUrl = (slice) => {
+    const mapId = _deps.state.mapId;
+    const { projectId, mapId: shownMap } = parseLocation(window.location.pathname);
+    const path = projectId && shownMap === mapId ? projectPath(projectId, mapId) : `/${encodeURIComponent(mapId)}`;
+    return `${window.location.origin}${path}${sliceHash(slice)}`;
+};
 
 export const copySliceLink = async (slice) => {
     const url = sliceLinkUrl(slice);
@@ -123,9 +128,8 @@ const scrollToSlice = (sliceEl, onDone) => {
 // Scroll to and spotlight the slice named in the URL fragment, if there is one.
 // delay lets a freshly opened map show where it starts before the scroll begins.
 export const revealSliceFromHash = (delay = 0) => {
-    const match = window.location.hash.match(SLICE_HASH);
-    if (!match) return;
-    const slice = _deps.state.slices.find(s => s.id === match[1]);
+    const slice = sliceFromHash(window.location.hash, _deps.state.slices);
+    if (slice === undefined) return;
     if (!slice) {
         showToast('That slice is no longer in this map');
         return;

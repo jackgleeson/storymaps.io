@@ -36,7 +36,7 @@ A larger product can span several maps, one per journey or area, grouped as a **
 - **Release slices** - group tasks into MVP, V1, V2 etc.; mark slices complete or collapse them
 - **Slice details** - click a slice's name to rename it and give it an optional goal and target date, shown behind the ⓘ next to the name (or on the banner of a completed slice); on phones the details open as a sheet at the top of the screen, clear of the keyboard
 - **Slice menu** - right-click a slice or click its ☰ to edit details, copy its link, mark it complete, collapse, reopen, or delete it
-- **Slice links** - every slice has its own link (`#slice-<id>`) that scrolls the map to it and briefly spotlights it; copy it from the slice menu, including on locked maps
+- **Slice links** - every slice has a link (`#slice-<name>-<id>`, e.g. `#slice-mvp-xr47fle3`) that scrolls the map to the slice and briefly spotlights it; copy it from the slice menu, including on locked maps. The name part is only for reading, so renaming a slice never breaks a link, and inside a project the copied link keeps the project
 - **Status indicators** - done, in-progress, planned, blocked with per-slice progress tracking
 - **Story points** - estimate effort per card, auto-summed per slice
 - **Tags** - categorize cards with free-text tags, autocomplete from existing tags
