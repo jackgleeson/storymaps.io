@@ -6592,13 +6592,9 @@ body.read-only-mode {
     width: calc(100% + 12px);
     margin: -4px -6px;
     padding: 4px 6px;
-    border: none;
     border-radius: 6px;
-    background: transparent;
     color: #1a1a1a;
-    font-family: inherit;
     font-size: 12px;
-    text-align: left;
     cursor: pointer;
 }
 
@@ -6632,11 +6628,13 @@ body.read-only-mode {
     white-space: nowrap;
 }
 
-.card-expand-summary-swatch {
-    width: 12px;
-    height: 12px;
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    border-radius: 3px;
+.card-expand-summary-link {
+    color: #0369a1;
+    text-decoration: none;
+}
+
+.card-expand-summary-link:hover {
+    text-decoration: underline;
 }
 
 .card-expand-toggle,
@@ -6649,6 +6647,12 @@ body.read-only-mode {
 
 .card-expand-toggle {
     margin-left: auto;
+    padding: 0;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: inherit;
+    cursor: pointer;
 }
 
 .card-expand-toggle svg,

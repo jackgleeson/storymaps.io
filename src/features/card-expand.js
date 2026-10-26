@@ -5,7 +5,7 @@ import { dom } from '/src/ui/dom.js';
 import { state, pushUndo } from '/src/core/state.js';
 import { isMapEditable } from '/src/core/lock.js';
 import * as log from '/src/core/log.js';
-import { CARD_COLORS, DEFAULT_CARD_COLORS, STATUS_OPTIONS, el, isValidUrl } from '/src/core/constants.js';
+import { CARD_COLORS, STATUS_OPTIONS, el, isValidUrl } from '/src/core/constants.js';
 import { createPointsInput, createTagEditor, patchCardForItem } from '/src/ui/ui.js';
 import { STORY_LINES, addLines, enterAction } from '/src/core/story-lines.js';
 
@@ -183,10 +183,10 @@ const buildColourField = (item, editable, onChange) => {
     return row;
 };
 
-// The collapsed footer: one button showing each property with its icon and value, faded when
-// it isn't set. Pressing it opens the full rows.
-const buildSummary = (item) => {
-    const summary = el('button', 'card-expand-summary', { type: 'button', ariaExpanded: 'false' });
+// The collapsed footer: one line showing each property with its icon and value, faded when it
+// isn't set. A set link opens in a new tab; a press anywhere else on the line opens the full rows.
+const buildSummary = (item, expand) => {
+    const summary = el('div', 'card-expand-summary');
     const part = (label, icon, isSet, ...content) => {
         const span = el('span', isSet ? 'card-expand-summary-item' : 'card-expand-summary-item unset', { title: label, html: icon });
         span.append(...content);
@@ -196,19 +196,23 @@ const buildSummary = (item) => {
     const status = STATUS_OPTIONS[item.status];
     const hasPoints = item.points != null;
     const hasLink = isValidUrl(item.url);
-    const swatch = el('span', 'card-expand-summary-swatch');
-    swatch.style.backgroundColor = item.color || DEFAULT_CARD_COLORS.story;
+    const link = hasLink
+        ? el('a', 'card-expand-summary-text card-expand-summary-link', { href: item.url, target: '_blank', rel: 'noopener noreferrer', title: item.url, text: new URL(item.url).hostname })
+        : text('Link');
+    const toggle = el('button', 'card-expand-toggle', { type: 'button', ariaExpanded: 'false', html: 'Edit' + ICONS.open });
     summary.append(
         status
             ? part('Status', ICONS.status, true, statusDot(item.status), text(status.label))
             : part('Status', ICONS.status, false, text('Status')),
         part('Points', ICONS.points, hasPoints, text(hasPoints ? `${item.points} ${item.points === 1 ? 'pt' : 'pts'}` : 'Points')),
         part('Tags', ICONS.tags, !!item.tags?.length, text(item.tags?.length ? item.tags.join(', ') : 'Tags')),
-        part('Link', ICONS.link, hasLink, text(hasLink ? new URL(item.url).hostname : 'Link')),
-        part('Colour', ICONS.colour, true, swatch),
-        el('span', 'card-expand-toggle', { html: 'Edit' + ICONS.open })
+        part('Link', ICONS.link, hasLink, link),
+        toggle
     );
-    return summary;
+    summary.addEventListener('click', (e) => {
+        if (!e.target.closest('a')) expand();
+    });
+    return toggle;
 };
 
 // Status, points, tags, link and colour, the same properties as the card's ... menu. An editable
@@ -241,10 +245,9 @@ const renderFooter = (item, editable) => {
     const collapse = () => {
         // Fields save on change, which fires on blur, so blur the one in use before it goes
         if (footer.contains(document.activeElement)) document.activeElement.blur();
-        const summary = buildSummary(item);
-        summary.addEventListener('click', expand);
-        footer.replaceChildren(summary);
-        return summary;
+        const toggle = buildSummary(item, expand);
+        footer.replaceChildren(toggle.parentElement);
+        return toggle;
     };
     const expand = () => {
         footer.replaceChildren(fields, showLess);
