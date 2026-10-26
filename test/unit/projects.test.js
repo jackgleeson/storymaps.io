@@ -1,4 +1,4 @@
-import { test, beforeEach } from 'node:test';
+import { test, beforeEach, afterEach } from 'node:test';
 import { strict as assert } from 'node:assert';
 import Database from 'better-sqlite3';
 import { createProjects, ProjectError, MAX_PROJECT_MAPS } from '../../server/projects.js';
@@ -16,6 +16,10 @@ beforeEach(() => {
   insert.run('barista', 'Barista');
   insert.run('blank', 'untitled');
 });
+
+// Close each database when its test ends. On Node 24 the SQLite driver crashes the test process
+// at exit if a database with prepared statements is still open.
+afterEach(() => sqlite.close());
 
 const ids = (project) => project.maps.map(m => m.id);
 const projectCount = () => sqlite.prepare('SELECT COUNT(*) AS n FROM projects').get().n;
