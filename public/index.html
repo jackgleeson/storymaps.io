@@ -126,7 +126,7 @@
 <!--        <a href="https://github.com/jackgleeson/storymaps.io/issues" target="_blank" rel="noopener" class="community-link">-->
 <!--            Bug Reports-->
 <!--        </a>-->
-        <input type="text" class="board-name hidden" id="boardName" placeholder="Untitled Story Map">
+        <input type="text" class="board-name hidden" id="boardName" placeholder="Untitled map">
         <div class="search-bar hidden" id="searchBar">
             <input type="text" id="searchInput" placeholder="Search cards...">
             <button class="search-filter-btn" id="searchFilterBtn" title="Filter by status, color, or tag">
@@ -259,6 +259,7 @@
                     </div>
                     <button class="dropdown-item" id="printMap"><span class="menu-icon">🖨️</span> Print</button>
                     <button class="dropdown-item" id="backupsBtn"><span class="menu-icon">💾</span> Backups <span class="backup-count-badge hidden" id="backupCountBadge">0</span></button>
+                    <button class="dropdown-item" id="projectMenuBtn" title="Show this map and others as tabs"><span class="menu-icon">🗂️</span> Start a project</button>
                     <div class="dropdown-divider" id="lockDivider"></div>
                     <button class="dropdown-item" id="lockMapBtn" title="Password-protect this map to prevent edits">
                         <span class="lock-menu-icon">🔓</span> Lock Map (Read-only)
@@ -276,6 +277,15 @@
             </div>
         </div>
     </header>
+
+    <nav class="project-bar" id="projectBar" aria-label="Project" hidden>
+        <button type="button" class="project-name" id="projectName" title="Rename, reorder or remove maps" aria-haspopup="dialog" aria-expanded="false" hidden></button>
+        <div class="project-tabs" id="projectTabs"></div>
+        <button type="button" class="project-add" id="projectAddBtn" aria-haspopup="dialog" aria-expanded="false"></button>
+        <span class="project-hint" id="projectHint">Manage multiple maps in one place</span>
+        <div class="project-backdrop" id="projectBackdrop" hidden></div>
+        <div class="project-panel" id="projectPanel" role="dialog" aria-labelledby="projectPanelTitle" tabindex="-1" hidden></div>
+    </nav>
 
     <div class="welcome-screen" id="welcomeScreen">
         <div class="welcome-split">

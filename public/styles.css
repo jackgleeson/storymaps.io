@@ -10449,3 +10449,562 @@ body.tour-active .btn-slice-menu {
 .notransition * {
     transition: none !important;
 }
+
+/* Project tabs: maps grouped with this one, under the header. A map in no project shows a
+   Start a project button and a line about projects in the gap below the header. */
+.project-bar {
+    --project-accent: #0f766e;
+    --project-hint: #6b7280;
+    position: relative;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    max-width: 1400px;
+    width: 100%;
+    margin: -8px auto 12px;
+}
+
+html.dark-mode .project-bar {
+    --project-accent: #5eead4;
+    --project-hint: #94a3b8;
+}
+
+.project-bar[hidden],
+body.welcome-visible .project-bar {
+    display: none;
+}
+
+/* The project item in the main menu, hidden on the home page */
+#projectMenuBtn[hidden] {
+    display: none;
+}
+
+.project-bar.panel-open {
+    z-index: 1500; /* over the map controls (1000), under dialogs (2000) */
+}
+
+body.in-project:not(.welcome-visible) .header {
+    margin-bottom: 0;
+    border-bottom-color: transparent;
+}
+
+body.in-project .project-bar {
+    align-items: flex-end;
+    gap: 2px;
+    margin: 0 auto 20px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.project-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    max-width: 220px;
+    margin-right: 4px;
+    padding: 8px 12px 9px 0;
+    border: none;
+    border-right: 1px solid var(--color-border-medium);
+    background: none;
+    color: var(--color-text-secondary);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.project-name[hidden] {
+    display: none;
+}
+
+.project-name svg {
+    flex-shrink: 0;
+}
+
+.project-name-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.project-name:hover {
+    color: var(--color-text-primary);
+}
+
+.project-tabs {
+    display: flex;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.project-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+body:not(.in-project) .project-tabs {
+    display: none;
+}
+
+.project-tab {
+    flex-shrink: 0;
+    max-width: 200px;
+    margin-bottom: -1px;
+    padding: 8px 12px;
+    overflow: hidden;
+    border-bottom: 2px solid transparent;
+    color: var(--color-text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.project-tab:hover {
+    color: var(--color-text-primary);
+}
+
+.project-tab.current {
+    border-bottom-color: var(--color-teal);
+    color: var(--color-text-primary);
+    font-weight: 600;
+}
+
+/* Before a project: a soft teal pill, like the secondary buttons in the header */
+.project-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    height: 28px;
+    padding: 0 12px 0 10px;
+    border: 1.5px solid #99f6e4;
+    border-radius: 999px;
+    background: #f0fdfa;
+    color: var(--project-accent);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.project-add:hover,
+.project-add[aria-expanded="true"] {
+    border-color: #5eead4;
+    background: #ccfbf1;
+}
+
+html.dark-mode .project-add {
+    border-color: #115e59;
+    background: rgba(45, 212, 191, 0.08);
+}
+
+html.dark-mode .project-add:hover,
+html.dark-mode .project-add[aria-expanded="true"] {
+    border-color: #14b8a6;
+    background: rgba(45, 212, 191, 0.16);
+}
+
+.project-hint {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--project-hint);
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.project-hint[hidden] {
+    display: none;
+}
+
+/* In a project: Add map sits at the end of the tabs, as plain text */
+body.in-project .project-add,
+html.dark-mode body.in-project .project-add {
+    height: auto;
+    padding: 9px 10px;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    font-size: 12px;
+}
+
+body.in-project .project-add:hover,
+body.in-project .project-add[aria-expanded="true"] {
+    background: var(--color-hover-bg);
+}
+
+.project-tab:focus-visible,
+.project-add:focus-visible,
+.project-name:focus-visible {
+    outline: 2px solid var(--color-teal);
+    outline-offset: -2px;
+    border-radius: 4px;
+}
+
+.project-backdrop {
+    display: none;
+}
+
+.project-panel {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-sizing: border-box;
+    width: 340px;
+    max-width: calc(100vw - 48px);
+    padding: 16px;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 12px;
+    background: var(--color-bg-surface);
+    box-shadow: var(--shadow-modal);
+    color: var(--color-text-primary);
+}
+
+.project-panel[hidden] {
+    display: none;
+}
+
+/* The project box lists maps by name, so it gets more room */
+.project-panel-manage {
+    width: 420px;
+}
+
+.project-panel:focus {
+    outline: none;
+}
+
+.project-panel-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.project-panel-hint {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.project-panel-label {
+    margin: 4px 0 0;
+    color: var(--color-text-secondary);
+    font-size: 12px;
+}
+
+.project-panel-row {
+    display: flex;
+    gap: 6px;
+}
+
+.project-panel-row .project-panel-input {
+    flex: 1;
+}
+
+.project-panel-input {
+    flex: none;
+    min-width: 0;
+    box-sizing: border-box;
+    height: 34px;
+    padding: 0 10px;
+    border: 1px solid var(--color-input-border);
+    border-radius: 8px;
+    background: var(--color-input-bg);
+    color: var(--color-text-primary);
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.project-panel-input:focus {
+    outline: none;
+    border-color: var(--color-teal);
+    box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
+}
+
+.project-panel-primary {
+    height: 36px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(#14b8a6, #0d9488);
+    color: #fff;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.project-panel-primary:hover {
+    background: linear-gradient(#0d9488, #0f766e);
+}
+
+.project-panel-secondary {
+    height: 34px;
+    padding: 0 14px;
+    border: 1.5px solid #99f6e4;
+    border-radius: 8px;
+    background: var(--color-bg-surface);
+    color: var(--project-accent);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+html.dark-mode .project-panel-secondary {
+    border-color: #115e59;
+}
+
+.project-panel-secondary:hover:not(:disabled) {
+    background: var(--color-hover-bg);
+}
+
+.project-panel-secondary:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.project-panel-done {
+    align-self: flex-end;
+    margin-top: 4px;
+}
+
+.project-panel-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.project-panel-error {
+    margin: 0;
+    color: #b91c1c;
+    font-size: 12px;
+}
+
+.project-panel-error[hidden] {
+    display: none;
+}
+
+.project-panel-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 260px;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    list-style: none;
+}
+
+.project-panel-item {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    min-height: 32px;
+    font-size: 13px;
+}
+
+.project-panel-grip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 20px;
+    height: 28px;
+    color: var(--color-text-muted);
+    cursor: grab;
+    touch-action: none;
+}
+
+.project-panel-grip:hover {
+    color: var(--color-text-primary);
+}
+
+.project-panel-item.sortable-ghost {
+    opacity: 0.4;
+}
+
+.project-panel-item.sortable-chosen {
+    background: var(--color-hover-bg);
+    border-radius: 6px;
+}
+
+.project-panel-item-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.project-panel-item-note {
+    color: var(--color-text-muted);
+}
+
+.project-panel-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}
+
+.project-panel-icon:hover:not(:disabled) {
+    background: var(--color-hover-bg);
+    color: var(--color-text-primary);
+}
+
+.project-panel-icon:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+.project-panel-remove {
+    height: 28px;
+    padding: 0 8px;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    color: #b91c1c;
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.project-panel-remove:hover {
+    background: rgba(185, 28, 28, 0.08);
+}
+
+html.dark-mode .project-panel-remove,
+html.dark-mode .project-panel-error {
+    color: #fca5a5;
+}
+
+/* Phones: the header gap is smaller, and the boxes open as a sheet from the bottom of the screen */
+@media (max-width: 600px) {
+    .project-bar {
+        margin: -6px auto 10px;
+    }
+
+    /* On a phone a map in no project shows nothing here, leaving the room to the map; Start a
+       project is in the main menu. The bar shows while its box is open, as the box lives in it. */
+    body:not(.in-project) .project-bar:not(.panel-open) {
+        display: none;
+    }
+
+    body:not(.in-project) .project-bar {
+        height: 0;
+        margin: 0 auto;
+    }
+
+    body:not(.in-project) .project-add,
+    body:not(.in-project) .project-hint {
+        display: none;
+    }
+
+    body.in-project .project-bar {
+        margin-bottom: 16px;
+    }
+
+    .project-panel {
+        position: fixed;
+        top: auto;
+        right: 0;
+        bottom: 0;
+        left: 0 !important;
+        width: auto;
+        max-width: none;
+        max-height: 85vh;
+        padding: 16px 16px calc(24px + env(safe-area-inset-bottom));
+        overflow-y: auto;
+        border-radius: 16px 16px 0 0;
+    }
+
+    /* The project name shows as its icon, leaving the width for the tabs */
+    .project-name-text {
+        display: none;
+    }
+
+    .project-name {
+        padding-right: 10px;
+    }
+
+    .project-backdrop:not([hidden]) {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 1;
+        background: rgba(0, 0, 0, 0.25);
+    }
+
+    .project-panel-list {
+        max-height: 40vh;
+    }
+}
+
+@media (pointer: coarse) {
+    body:not(.in-project) .project-add {
+        height: 30px;
+    }
+
+    .project-tab {
+        padding: 12px;
+    }
+
+    body.in-project .project-add {
+        padding: 12px;
+    }
+
+    .project-name {
+        padding-top: 12px;
+        padding-bottom: 13px;
+    }
+
+    .project-panel-primary {
+        height: 46px;
+        font-size: 15px;
+    }
+
+    .project-panel-input,
+    .project-panel-secondary {
+        height: 44px;
+        font-size: 16px;
+    }
+
+    .project-panel-icon,
+    .project-panel-remove {
+        min-width: 40px;
+        height: 40px;
+    }
+
+    .project-panel-grip {
+        width: 32px;
+        height: 40px;
+    }
+
+    .project-panel-item {
+        min-height: 44px;
+    }
+}
+
+@media print {
+    .project-bar {
+        display: none !important;
+    }
+}

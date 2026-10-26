@@ -66,6 +66,7 @@ A story map preserves it. One diagram that shows who the users are, what journey
 - **Collaborative notepad** - shared notes that sync in real-time
 - **Activity log** - shows when the map was created and last edited, who's here now, recent contributors, and total edits, above a real-time feed of the last 20 map edits; hover an entry to highlight the affected card on the map; entries show the user's name, with icons to distinguish CLI and mobile sources
 - **Shareable URLs** - each map gets a unique link
+- **Projects** - group related maps as tabs at a project link (`/p/<project>`); start one from any map, add a new map or paste the link to one you have, and rename the project, reorder the maps or remove one from the project name button; a map can be in any number of projects and a plain map link never shows them; removing a map never deletes the map or the project, and deleting a project is a separate step that leaves the maps alone
 - **Lock maps** - password-protect to prevent edits
 
 ### Import & Export

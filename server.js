@@ -25,6 +25,7 @@ import { isRateLimited, isProxyRateLimited, isCreateRateLimited } from './server
 import { sanitizeFilename } from './server/http-helpers.js';
 import { serializeDoc, contentEtag, loadAndSerialize, appendLogEntry, diffPush, writeDocFromJson, countCards } from './server/serialization.js';
 import { createRouter } from './server/router.js';
+import { createProjects } from './server/projects.js';
 import { isOriginAllowed, isCliApi, parseBody } from './server/middleware.js';
 
 // Shared client modules: pure transform functions used by both server (format URLs,
@@ -72,11 +73,18 @@ const stmtUpdate = sqlite.prepare(
 const stmtExists = sqlite.prepare('SELECT 1 FROM maps WHERE id = ?');
 const stmtMeta = sqlite.prepare('SELECT created_at, updated_at, edit_count FROM maps WHERE id = ?');
 
+// Map and project IDs: 8 lower-case letters and digits
+const randomId = () => {
+  const num = Array.from(randomBytes(6)).reduce((acc, b) => acc * 256n + BigInt(b), 0n);
+  return num.toString(36).slice(-8).padStart(8, '0');
+};
+
+// Projects: maps grouped as tabs, kept in their own tables next to the map index
+const projects = createProjects(sqlite, { generateId: randomId });
+
 const generateUniqueMapId = () => {
   for (let i = 0; i < 10; i++) {
-    const bytes = randomBytes(6);
-    const num = Array.from(bytes).reduce((acc, b) => acc * 256n + BigInt(b), 0n);
-    const id = num.toString(36).slice(-8).padStart(8, '0');
+    const id = randomId();
     if (!stmtExists.get(id)) return id;
   }
   throw new Error('Failed to generate unique ID');
@@ -91,7 +99,7 @@ const { route, matchRoute } = createRouter();
 const ctx = {
   route,
   Y, docs, getPersistence,
-  stmtInsert, stmtUpdate, stmtExists, stmtMeta, editCountSince,
+  stmtInsert, stmtUpdate, stmtExists, stmtMeta, editCountSince, projects,
   getPendingEdits: (mapId) => pendingEdits.get(mapId) || 0,
   readJson, writeJson, DATA_DIR, LOCK_FILE, STATS_FILE, getBackupFile,
   serializeDoc, contentEtag, appendLogEntry, diffPush, writeDocFromJson, countCards,
@@ -104,6 +112,7 @@ const ctx = {
 import registerStats from './server/routes/stats.js';
 import registerLocks from './server/routes/locks.js';
 import registerBackups from './server/routes/backups.js';
+import registerProjects from './server/routes/projects.js';
 import registerMaps from './server/routes/maps.js';
 import registerExportJira from './server/routes/export-jira.js';
 import registerExportPhabricator from './server/routes/export-phabricator.js';
@@ -119,6 +128,7 @@ registerStats(ctx);
 registerMaps(ctx);    // /api/maps/new-id must register before /api/maps/:id
 registerLocks(ctx);
 registerBackups(ctx);
+registerProjects(ctx);
 // Imports and exports through the APIs of Jira, Asana, Phabricator and Linear make this server
 // call addresses that people type in. IMPORT_EXPORT_ENABLED=false turns them off, and the app
 // hides them. Imports and exports of files still work.
@@ -276,9 +286,11 @@ const server = createServer(async (req, res) => {
       }
     }
 
-    // SPA fallback: serve index.html for map URLs (no extension, not in subdirectories)
+    // SPA fallback: serve index.html for map URLs (no extension, not in subdirectories), samples,
+    // and project links: /p/<project id> and /p/<project id>/<map id>, with or without a slash on the end
     let isHtmlFallback = false;
-    if (!content && ext === '' && (!reqPath.includes('/', 1) || reqPath.startsWith('/sample/'))) {
+    const isProjectPath = /^\/p\/[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)?\/?$/.test(reqPath);
+    if (!content && ext === '' && (!reqPath.includes('/', 1) || reqPath.startsWith('/sample/') || isProjectPath)) {
       cacheKey = '/index.html';
       cached = fileCache.get(cacheKey);
       if (!cached) {

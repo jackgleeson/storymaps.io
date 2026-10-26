@@ -53,12 +53,14 @@ test('deletes exactly one map, leaving maps whose IDs start the same way untouch
   await createMapWithId(server, 'abcd1234', 'Delete me');
   await createMapWithId(server, 'abcd12345', 'Longer ID');
   await createMapWithId(server, 'abcd123', 'Shorter ID');
+  const project = (await call(server.base, 'POST', '/api/projects', { mapIds: ['abcd12345', 'abcd1234', 'abcd123'] })).json.project.id;
+  const alone = (await call(server.base, 'POST', '/api/projects', { mapIds: ['abcd1234'] })).json.project.id;
   await server.stop();
 
   const dryRun = await deleteMap('--dry-run', 'abcd1234');
-  assert.equal(dryRun.stdout, 'abcd1234: would delete data, index, backups, lock\n');
+  assert.equal(dryRun.stdout, 'abcd1234: would delete data, index, projects, backups, lock\n');
   const result = await deleteMap('abcd1234');
-  assert.equal(result.stdout, 'abcd1234: deleted data, index, backups, lock\n');
+  assert.equal(result.stdout, 'abcd1234: deleted data, index, projects, backups, lock\n');
 
   server = await startServer(dataDir);
   try {
@@ -66,6 +68,8 @@ test('deletes exactly one map, leaving maps whose IDs start the same way untouch
     assert.equal((await call(server.base, 'GET', '/api/maps/abcd1234/meta')).status, 404);
     assert.deepEqual((await call(server.base, 'GET', '/api/backups/abcd1234')).json, []);
     assert.equal((await call(server.base, 'GET', '/api/lock/abcd1234')).json.isLocked, false);
+    assert.deepEqual((await call(server.base, 'GET', `/api/projects/${project}`)).json.project.maps.map(m => m.id), ['abcd12345', 'abcd123']);
+    assert.deepEqual((await call(server.base, 'GET', `/api/projects/${alone}`)).json.project.maps, []);
     for (const [id, name] of [['abcd12345', 'Longer ID'], ['abcd123', 'Shorter ID']]) {
       assert.equal((await call(server.base, 'GET', `/api/maps/${id}`)).json.name, name, id);
       assert.equal((await call(server.base, 'GET', `/api/maps/${id}/meta`)).status, 200, id);

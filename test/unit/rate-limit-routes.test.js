@@ -2,6 +2,7 @@ import { describe, test } from 'node:test';
 import { strict as assert } from 'node:assert';
 import registerLocks from '../../server/routes/locks.js';
 import registerBackups from '../../server/routes/backups.js';
+import registerProjects from '../../server/routes/projects.js';
 
 const captureHandlers = (register, extraCtx = {}) => {
   const handlers = {};
@@ -78,4 +79,22 @@ describe('gate does not break the happy path when bucket is OK', () => {
     );
     assert.equal(res.out.status, 200);
   });
+});
+
+describe('project changes return 429 when their bucket is full, and change nothing', () => {
+  const cases = [
+    ['POST /api/projects', 'isCreateRateLimited'],
+    ...['maps', 'remove', 'order', 'name', 'delete'].map(path => [`POST /api/projects/:id/${path}`, 'isRateLimited']),
+  ];
+  for (const [route, limiter] of cases) {
+    test(route, async () => {
+      let called = false;
+      const projects = new Proxy({}, { get: () => () => { called = true; } });
+      const { handlers } = captureHandlers(registerProjects, { projects, isRateLimited: () => false, isCreateRateLimited: () => false, [limiter]: (req) => req.__shouldLimit === true });
+      const res = fakeRes();
+      await handlers[route]({ __shouldLimit: true, headers: {} }, res, { id: 'abc1234567' }, {});
+      assert.equal(res.out.status, 429);
+      assert.equal(called, false);
+    });
+  }
 });

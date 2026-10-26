@@ -23,6 +23,8 @@ import * as welcome from '/src/features/welcome.js';
 import * as partials from '/src/features/partials.js';
 import * as build from '/src/features/build.js';
 import * as sliceLinks from '/src/features/slice-links.js';
+import * as projects from '/src/features/projects.js';
+import { parseLocation, projectPath } from '/src/core/project-links.js';
 
 const { isMapEditable } = lock;
 const { render, initSortable, addColumn, addColumnAt, addStory, addSlice, deleteColumn, deleteStory, deleteSlice, handleColumnSelection, updateSelectionUI, duplicateColumns, duplicateCards, deleteSelectedColumns, deleteSelectedCards, setPreserveToolbar } = renderMod;
@@ -50,6 +52,7 @@ const newMapId = async () => {
 // Subscribe to real-time updates via Yjs. Every way of opening a map comes through here.
 const subscribeToMap = async (mapId) => {
     clearUndoHistory();
+    projects.load(mapId);
     if (!getYdoc()) {
         await createYjsDoc(mapId);
     }
@@ -70,6 +73,7 @@ const subscribeToMap = async (mapId) => {
 
         const provider = getProvider();
         if (provider) {
+            projects.watch(provider, getYmap());
             provider.awareness.on('change', () => {
                 const ydoc = getYdoc();
                 for (const [clientId, awarenessState] of provider.awareness.getStates()) {
@@ -144,6 +148,7 @@ const { openExpandModal, closeExpandModal } = cardExpand;
 // Disconnect from a map before showing the home page, so nothing on the home page can write to it
 const leaveMapForWelcome = () => {
     destroyYjs();
+    projects.clear();
     state.mapId = null;
     showWelcomeScreen();
 };
@@ -282,7 +287,12 @@ const initEventListeners = () => {
             cardExpand.closeExpandViaBack();
             return;
         }
-        const mapId = window.location.pathname.slice(1) || null;
+        const { mapId, projectId } = parseLocation(window.location.pathname);
+        // A project link without a map picks the first map when the page loads
+        if (projectId && !mapId) {
+            window.location.reload();
+            return;
+        }
         // A slice link on the open map only changes the hash; hashchange scrolls to the slice
         if (mapId && mapId === state.mapId && getYdoc() && !dom.welcomeScreen.classList.contains('visible')) return;
         if (mapId) {
@@ -290,6 +300,7 @@ const initEventListeners = () => {
             else leaveMapForWelcome();
         } else {
             destroyYjs();
+            projects.clear();
             showWelcomeScreen();
         }
     });
@@ -310,6 +321,11 @@ const initEventListeners = () => {
     dom.newMapBtn.addEventListener('click', () => {
         closeMainMenu();
         newMap();
+    });
+    projects.initListeners();
+    dom.projectMenuBtn.addEventListener('click', () => {
+        closeMainMenu();
+        projects.openFromMenu();
     });
     dom.copyExistingBtn.addEventListener('click', () => {
         closeMainMenu();
@@ -1266,6 +1282,8 @@ const initEventListeners = () => {
         dom.exportSubmenuTrigger.disabled = !onMap;
         dom.printBtn.disabled = !onMap;
         dom.backupsBtn.disabled = !onMap;
+        // A project starts from a map, so the home page doesn't offer one
+        dom.projectMenuBtn.hidden = !onMap;
     });
 
     // Submenu collapse helper
@@ -1745,7 +1763,8 @@ const loadMapById = async (mapId) => {
 const init = async () => {
     const path = window.location.pathname;
     const sampleMatch = path.match(/^\/sample\/([a-z0-9-]+)$/);
-    const mapId = sampleMatch ? null : (path.slice(1) || null);
+    const where = parseLocation(path);
+    let mapId = sampleMatch ? null : where.mapId;
 
     initEventListeners();
     notepad.init({ state, saveToStorage, isMapEditable, logTextEdit: (label, id) => log.logTextEdit(label, id) });
@@ -1762,11 +1781,48 @@ const init = async () => {
         el.innerHTML = devtoolsHint;
     });
 
+    // A link to a project alone (/p/<project>) opens the first map, or offers a new map for a
+    // project with none
+    if (where.projectId && !mapId) {
+        const project = await projects.fetchProject(where.projectId);
+        if (project?.maps.length) {
+            history.replaceState(null, '', projectPath(where.projectId, project.maps[0].id) + window.location.hash);
+            mapId = project.maps[0].id;
+        } else {
+            history.replaceState(null, '', '/');
+            showWelcomeScreen();
+            if (!project) {
+                await showAlert("This project link doesn't open anything. The project may have been deleted, or the link may be wrong.");
+            } else if (await showConfirm(`${project.name} has no maps yet. Create a new map in it?`)) {
+                window.location.replace(projectPath(where.projectId, 'new'));
+            }
+            return;
+        }
+    }
+
+    // A new map for a project (/p/<project>/new) is only made when the project can take it
+    let notice = null;
+    if (where.projectId && mapId === 'new') {
+        const problem = await projects.roomForNewMap(where.projectId);
+        if (problem?.firstMap) {
+            history.replaceState(null, '', projectPath(where.projectId, problem.firstMap));
+            mapId = problem.firstMap;
+            notice = problem.message;
+        } else if (problem) {
+            history.replaceState(null, '', '/');
+            showWelcomeScreen();
+            await showAlert(problem.message);
+            return;
+        }
+    }
+
     if (sampleMatch) {
         await startWithSample(sampleMatch[1]);
     } else if (mapId === 'new') {
+        // A new map made from the add box of a project (/p/<project>/new) joins that project
         await startNewMap();
-    } else if (mapId === 'tour') {
+        if (where.projectId) await projects.joinNew(where.projectId);
+    } else if (mapId === 'tour' && !where.projectId) {
         await startWithSample('story-mapping-101', { showToast: false });
         dom.controlsRight?.classList.remove('panel-open');
         dom.panelBody?.querySelectorAll('.panel-section').forEach(s => s.classList.remove('open'));
@@ -1790,6 +1846,7 @@ const init = async () => {
     } else {
         showWelcomeScreen();
     }
+    if (notice) await showAlert(notice);
 };
 
 init();
