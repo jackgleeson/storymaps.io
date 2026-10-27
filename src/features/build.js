@@ -81,6 +81,8 @@ function updateBuildPrompt() {
     const isPrototype = (dom.buildAiModeSelect?.value || 'prototype') === 'prototype';
     const qualifier = isPrototype ? 'functional prototype' : 'full app';
     const scope = sliceVal === 'all' ? 'the full map' : `the "${sliceName}" slice`;
+    // The map on the site this app is served from, so a self-hosted copy points at itself
+    const mapUrl = `${window.location.origin}/${encodeURIComponent(state.mapId)}`;
     let prompt;
     if (isCli) {
         const cmd = cliCommands[targetId];
@@ -89,9 +91,9 @@ function updateBuildPrompt() {
             const fileRef = targetId === 'codex' ? 'storymap.yml' : '@storymap.yml';
             let inner = `The storymap file ${fileRef} describes a product plan in user story map format. Use it as a structured specification. Your task: build a ${qualifier} of the features listed in ${cliScope}.`;
             if (extra) inner += ` ${shellEscape(extra)}`;
-            prompt = `npx storymaps pull --force storymaps.io/${state.mapId} && ${cmd} "${inner}"`;
+            prompt = `npx storymaps pull --force ${mapUrl} && ${cmd} "${inner}"`;
         } else if (useFetch) {
-            let inner = `The JSON at https://storymaps.io/${state.mapId}.json describes a product plan in user story map format. Use it as a structured specification. Your task: build a ${qualifier} of the features listed in ${cliScope}.`;
+            let inner = `The JSON at ${mapUrl}.json describes a product plan in user story map format. Use it as a structured specification. Your task: build a ${qualifier} of the features listed in ${cliScope}.`;
             if (extra) inner += ` ${shellEscape(extra)}`;
             prompt = `${cmd} "${inner}"`;
         } else {
@@ -105,7 +107,7 @@ function updateBuildPrompt() {
         if (hasPromptSuffix && isPrototype) instructions += ' Output a single self-contained HTML file with inline CSS and JavaScript. Do not use frameworks that require a build step.';
         if (hasPromptSuffix && !isPrototype) instructions += ' Pick the tech stack yourself and provide the code.';
         if (extra) instructions += ` ${extra}`;
-        prompt = `${instructions}\n\nhttps://storymaps.io/${state.mapId}.json`;
+        prompt = `${instructions}\n\n${mapUrl}.json`;
     } else {
         let instructions = `The JSON below describes a product plan in user story map format.\nUse it as a structured specification. Your task: build a ${qualifier} of the features listed in ${scope}.`;
         if (hasPromptSuffix && isPrototype) instructions += ' Output a single self-contained HTML file with inline CSS and JavaScript. Do not use frameworks that require a build step.';
