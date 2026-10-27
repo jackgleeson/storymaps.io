@@ -339,6 +339,11 @@ export const updateLockUI = () => {
     }
 };
 
+// Fields that never edit the map, so typing in them is fine on a locked map: dialogs (including the
+// lock password), search and its filters, and the project boxes. This runs on every lock check, so
+// blurring them would pull focus out mid-word every few seconds.
+const NOT_MAP_FIELDS = '.modal-overlay, .search-bar, .filter-panel, #projectPanel';
+
 // Enable/disable editing based on lock state
 export const updateEditability = () => {
     const editable = isMapEditable();
@@ -346,7 +351,7 @@ export const updateEditability = () => {
     if (!editable) {
         const active = document.activeElement;
         if (active && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT')) {
-            if (active !== _dom.lockPasswordInput && !active.closest('.modal-overlay')) {
+            if (active !== _dom.lockPasswordInput && !active.closest(NOT_MAP_FIELDS)) {
                 active.blur();
             }
         }
