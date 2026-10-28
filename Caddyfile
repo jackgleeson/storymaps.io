@@ -25,12 +25,14 @@ storymaps.io {
         -Server
     }
 
-    # Access logs, rotated at 10 MB and kept for up to 30 days. The lock password hash sent
+    # Access logs, rotated at 100 MB and kept for up to 30 days. Most requests are lock and
+    # stats polling from open tabs, so each file holds about 15 hours at current traffic, and
+    # 50 old files (gzipped, about 5 MB each) cover the 30 days. The lock password hash sent
     # by the CLI is left out, since credentials are never logged.
     log {
         output file /data/access.log {
-            roll_size 10MiB
-            roll_keep 10
+            roll_size 100MiB
+            roll_keep 50
             roll_keep_for 720h
         }
         format filter {
