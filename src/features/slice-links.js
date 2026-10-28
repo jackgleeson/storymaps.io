@@ -7,6 +7,7 @@ import { showPrompt, showToast } from '/src/core/modals.js';
 import { quoted, logTextEdit } from '/src/core/log.js';
 import { parseLocation, projectPath } from '/src/core/project-links.js';
 import { sliceHash, sliceFromHash } from '/src/core/slice-hash.js';
+import { frozenRowsHeight } from '/src/features/freeze-rows.js';
 
 let _deps = {};
 
@@ -111,13 +112,14 @@ const animateScroll = (wrapper, top, left, onDone) => {
     frame = requestAnimationFrame(step);
 };
 
-// Scroll so the slice's top-left corner sits near the top-left of the map area
+// Scroll so the slice's top-left corner sits near the top-left of the map area, below any rows
+// kept in view
 const scrollToSlice = (sliceEl, onDone) => {
     const wrapper = dom.storyMapWrapper;
     const rect = sliceEl.getBoundingClientRect();
     const wrapperRect = wrapper.getBoundingClientRect();
     const padding = 24;
-    const top = wrapper.scrollTop + rect.top - wrapperRect.top - padding;
+    const top = wrapper.scrollTop + rect.top - wrapperRect.top - padding - frozenRowsHeight();
     let left = wrapper.scrollLeft;
     if (rect.left < wrapperRect.left || rect.left > wrapperRect.left + wrapperRect.width / 2) {
         left += rect.left - wrapperRect.left - padding;

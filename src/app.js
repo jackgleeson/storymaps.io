@@ -23,6 +23,7 @@ import * as welcome from '/src/features/welcome.js';
 import * as partials from '/src/features/partials.js';
 import * as build from '/src/features/build.js';
 import * as sliceLinks from '/src/features/slice-links.js';
+import * as freezeRows from '/src/features/freeze-rows.js';
 import * as projects from '/src/features/projects.js';
 import { parseLocation, projectPath } from '/src/core/project-links.js';
 
@@ -1009,17 +1010,31 @@ const initEventListeners = () => {
                 const mod = await import('/vendor/html-to-image.bundle.js');
                 window._htmlToImage = mod;
             }
-            mapCanvas = await window._htmlToImage.toCanvas(mapEl, {
-                backgroundColor: bgColor,
-                pixelRatio: dpr,
-                skipFonts: true,
-                style: {
-                    transform: 'none',
-                    margin: '0',
-                    minWidth: '0',
-                    padding: '24px',
-                },
-            });
+            // html-to-image copies the live styles of every element, and the map is zoomed in two
+            // parts (src/ui/map-top.js), so it draws an unzoomed copy placed out of view
+            const copy = mapEl.cloneNode(true);
+            copy.style.setProperty('--zoom', '1');
+            Object.assign(copy.style, { position: 'fixed', left: '-100000px', top: '0' });
+            const copyTop = copy.querySelector(':scope > .map-top');
+            if (copyTop) copyTop.style.height = 'auto';
+            document.body.appendChild(copy);
+            try {
+                mapCanvas = await window._htmlToImage.toCanvas(copy, {
+                    backgroundColor: bgColor,
+                    pixelRatio: dpr,
+                    skipFonts: true,
+                    style: {
+                        position: 'static',
+                        left: 'auto',
+                        transform: 'none',
+                        margin: '0',
+                        minWidth: '0',
+                        padding: '24px',
+                    },
+                });
+            } finally {
+                copy.remove();
+            }
         } else {
             // Chrome/Firefox: use html2canvas (foreignObject has rendering issues in Firefox)
             if (!window._html2canvas) {
@@ -1039,6 +1054,10 @@ const initEventListeners = () => {
                         padding: '24px',
                     });
                     clonedMap.style.setProperty('--card-width', '180px');
+                    // The map is zoomed in two parts (src/ui/map-top.js): draw both at full size
+                    clonedMap.style.setProperty('--zoom', '1');
+                    const clonedTop = clonedMap.querySelector(':scope > .map-top');
+                    if (clonedTop) Object.assign(clonedTop.style, { height: 'auto', position: 'static' });
 
                     // Ensure story columns have explicit width
                     for (const col of clonedDoc.querySelectorAll('.story-column')) {
@@ -1483,6 +1502,9 @@ const initEventListeners = () => {
 
     // Pinch-to-zoom on touch devices
     navigation.initPinchZoom();
+
+    // Freeze the top rows while scrolling down
+    freezeRows.init();
 
     // Lock feature event listeners
     initLockListeners();

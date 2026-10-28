@@ -108,7 +108,8 @@ A larger product can span several maps, one per journey or area, grouped as a **
 - **Backup metadata** - each backup shows the map name, card count, size, and relative age
 
 ### Other
-- **View controls** - quick-access toggle buttons for focus mode, full screen, dark mode, and cursor visibility alongside the zoom controls
+- **View controls** - quick-access toggle buttons for focus mode, full screen, dark mode, cursor visibility, and frozen rows alongside the zoom controls
+- **Frozen rows** - users, activities, and steps stay at the top while you scroll down, so every card shows which step it belongs to; freeze just the steps, activities and steps, or nothing from the view controls, saved for your browser
 - **Dark mode** - matches your system theme, or toggle from the view controls
 - **Full Screen Mode** - toggle from the view controls; double-Esc to exit (single Esc still closes modals, search, etc.); auto zoom-to-fit on enter and exit
 - **Focus Mode** - hide card metadata (status, points, tags, links) for a cleaner presentation view; toggle from the view controls; expand icons still appear on hover

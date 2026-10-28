@@ -1417,6 +1417,107 @@ body.welcome-visible .gh-star {
     background-color: rgba(20, 184, 166, 0.1);
 }
 
+/* Freeze rows: the menu opens above the view buttons */
+.bottom-controls {
+    position: relative;
+}
+
+.freeze-menu {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 8px);
+    width: 270px;
+    max-width: calc(100vw - 40px);
+    box-sizing: border-box;
+    margin: 0;
+    padding: 10px 6px 8px;
+    border: 1px solid var(--color-border-medium);
+    border-radius: 10px;
+    background: var(--color-bg-surface);
+    box-shadow: 0 6px 28px rgba(0, 0, 0, 0.16);
+    z-index: 10;
+}
+
+.freeze-menu[hidden] {
+    display: none;
+}
+
+.freeze-menu-title {
+    float: left;
+    width: 100%;
+    padding: 0 10px 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.freeze-option {
+    clear: both;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--color-text-primary);
+    cursor: pointer;
+}
+
+.freeze-option:hover {
+    background-color: var(--color-hover-bg);
+}
+
+/* Drawn by hand: accent-color fills the whole circle in teal, which hides the dot */
+.freeze-option input {
+    -webkit-appearance: none;
+    appearance: none;
+    flex-shrink: 0;
+    margin: 0;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--color-text-muted);
+    border-radius: 50%;
+    background: var(--color-bg-surface);
+    cursor: pointer;
+}
+
+.freeze-option input:checked {
+    border-color: var(--color-teal);
+    background: radial-gradient(circle, var(--color-teal) 0 3.5px, var(--color-bg-surface) 4px);
+}
+
+.freeze-option input:focus-visible {
+    outline: 2px solid var(--color-teal);
+    outline-offset: 2px;
+}
+
+/* A small picture of the three top rows, with the ones kept in view filled in */
+.freeze-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-left: auto;
+}
+
+.freeze-preview i {
+    display: block;
+    width: 24px;
+    height: 4px;
+    border-radius: 1px;
+    background: var(--color-border-medium);
+}
+
+.freeze-preview .freeze-users { background: #fca5a5; }
+.freeze-preview .freeze-activities { background: #93c5fd; }
+.freeze-preview .freeze-steps { background: #86efac; }
+
+.freeze-menu-note {
+    margin: 4px 10px 2px;
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--color-text-secondary);
+}
+
 
 /* Story Map Container */
 .story-map {
@@ -1424,9 +1525,28 @@ body.welcome-visible .gh-star {
     display: inline-flex;
     flex-direction: column;
     margin: 100vh 150vw; /* Infinite canvas: scrollable space on all sides */
+}
+
+/* The map is zoomed in two parts, the top rows and the slices (src/ui/map-top.js). The top part
+   reserves its zoomed height, set from code, so the slices sit straight below it. */
+.map-top {
+    position: relative;
+    z-index: 2; /* Above the slices, so menus from the top rows open over them */
+}
+
+.map-top-inner,
+.map-body {
+    display: flex;
+    flex-direction: column;
     min-width: calc(100vw / var(--zoom, 1)); /* Fill visible area so separators extend */
-    padding-top: 4px; /* Space for highlight glow on top cards */
+    transform: scale(var(--zoom, 1));
     transform-origin: top left;
+}
+
+.map-top-inner {
+    position: relative;
+    width: max-content;
+    padding-top: 4px; /* Space for highlight glow on top cards */
 }
 
 /* Steps Row (Backbone) */
@@ -2019,12 +2139,6 @@ body.tour-active .log-stats {
     min-width: 100%;
 }
 
-.slice-container:first-of-type {
-    border-top: none;
-    margin-top: 0;
-    padding-top: 0;
-}
-
 /* Backbone rows (Users, Activities) */
 .users-row,
 .activities-row,
@@ -2033,6 +2147,22 @@ body.tour-active .log-stats {
     flex-direction: row;
     gap: 10px;
     margin-bottom: 8px;
+}
+
+/* Frozen rows (src/features/freeze-rows.js). The top part of the map sticks to the top of the map
+   area, with a negative offset when only some rows are frozen, so the rows above them go out of
+   view. It isn't zoomed itself, so the browser keeps it exactly in place. */
+.freeze-on .map-top {
+    position: sticky;
+    top: var(--freeze-top, 0px);
+}
+
+.freeze-on .map-top-inner {
+    background-color: var(--color-bg-page);
+}
+
+.freeze-on.rows-stuck .map-top-inner {
+    box-shadow: 0 10px 10px -10px rgba(15, 23, 42, 0.3);
 }
 
 /* Bottom-align user cards so they sit adjacent to Activities below */
@@ -2957,11 +3087,13 @@ html.dark-mode .slice-details-date::-webkit-calendar-picker-indicator {
 }
 
 /* Opening a slice link dims the rest of the map for a moment */
-.story-map.slice-spotlight > * {
+.story-map.slice-spotlight .map-top,
+.story-map.slice-spotlight .map-body > * {
     transition: opacity 0.4s ease;
 }
 
-.story-map.slice-spotlight-on > :not(.slice-spotlight-target) {
+.story-map.slice-spotlight-on .map-top,
+.story-map.slice-spotlight-on .map-body > :not(.slice-spotlight-target) {
     opacity: 0.25;
 }
 
@@ -2985,7 +3117,8 @@ html.dark-mode .slice-container.slice-spotlight-land {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .story-map.slice-spotlight > * {
+    .story-map.slice-spotlight .map-top,
+    .story-map.slice-spotlight .map-body > * {
         transition: none;
     }
     .slice-container.slice-spotlight-land {
@@ -4119,6 +4252,11 @@ html.dark-mode mark.highlight::after {
         width: 100%;
         margin: 0;
         min-width: 0; /* Override infinite-canvas min-width on mobile */
+    }
+
+    .map-top-inner,
+    .map-body {
+        min-width: 0;
     }
 
     .welcome-split {
@@ -6015,6 +6153,16 @@ html.dark-mode mark.highlight::after {
         display: flex;
         margin: 0;
         transform: none !important;
+    }
+
+    .map-top-inner,
+    .map-body {
+        transform: none !important;
+    }
+
+    .map-top {
+        position: static !important;
+        height: auto !important;
     }
 
     .story-column {

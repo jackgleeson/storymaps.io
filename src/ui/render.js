@@ -7,6 +7,7 @@ import { partialMapEditState } from '/src/core/state.js';
 import { showAlert, showConfirm, showPrompt } from '/src/core/modals.js';
 import { quoted } from '/src/core/log.js';
 import { openSliceDetails } from '/src/features/slice-links.js';
+import { mapBody, fitMapTop } from '/src/ui/map-top.js';
 
 let _state = null;
 let _dom = null;
@@ -102,6 +103,13 @@ export const render = () => {
     _dom.storyMap.classList.add('notransition');
     _dom.storyMap.innerHTML = '';
 
+    // The top rows and the slices go in two parts, each zoomed (see map-top.js)
+    const mapTopEl = el('div', 'map-top');
+    const topRows = el('div', 'map-top-inner');
+    mapTopEl.appendChild(topRows);
+    const bodyEl = el('div', 'map-body');
+    _dom.storyMap.append(mapTopEl, bodyEl);
+
     // Apply partial editing class for dimming
     const editingPmId = partialMapEditState.activeId;
     const editingColIds = _getEditingPartialColIds();
@@ -120,16 +128,16 @@ export const render = () => {
 
     // Render Users row
     if (hasUsersContent) {
-        _dom.storyMap.appendChild(createBackboneRow('Users', _state.users));
+        topRows.appendChild(createBackboneRow('Users', _state.users));
     } else {
-        _dom.storyMap.appendChild(createEmptyBackboneRow('Users'));
+        topRows.appendChild(createEmptyBackboneRow('Users'));
     }
 
     // Render Activities row
     if (hasActivitiesContent) {
-        _dom.storyMap.appendChild(createBackboneRow('Activities', _state.activities));
+        topRows.appendChild(createBackboneRow('Activities', _state.activities));
     } else {
-        _dom.storyMap.appendChild(createEmptyBackboneRow('Activities'));
+        topRows.appendChild(createEmptyBackboneRow('Activities'));
     }
 
     // Steps row (the backbone)
@@ -172,12 +180,18 @@ export const render = () => {
         stepsRow.appendChild(createPhantomStep(i));
     }
 
-    _dom.storyMap.appendChild(stepsRow);
+    topRows.appendChild(stepsRow);
 
     // Slices (releases) - render below steps
     _state.slices.forEach((slice, index) => {
-        _dom.storyMap.appendChild(createSliceContainer(slice, index));
+        bodyEl.appendChild(createSliceContainer(slice, index));
     });
+
+    // The top part holds its zoomed height, and keeps it as the rows grow while editing
+    fitMapTop(_dom.storyMap);
+    topRowsObserver ??= new ResizeObserver(() => fitMapTop(_dom.storyMap));
+    topRowsObserver.disconnect();
+    topRowsObserver.observe(topRows);
 
     // Restore scroll position
     _dom.storyMapWrapper.scrollLeft = savedScrollLeft;
@@ -219,6 +233,8 @@ export const render = () => {
     _notepadUpdate();
     updateSelectionUI();
 };
+
+let topRowsObserver = null;
 
 // Store Sortable instances to destroy on re-render
 let sortableInstances = [];
@@ -391,7 +407,7 @@ export const initSortable = async () => {
     // Make release slices sortable (not backbone rows)
     const sliceContainers = document.querySelectorAll('.slice-container');
     if (sliceContainers.length > 0) {
-        const sortable = Sortable.create(_dom.storyMap, {
+        const sortable = Sortable.create(mapBody(_dom.storyMap), {
             animation: 150,
             handle: '.slice-drag-handle',
             ghostClass: 'sortable-ghost',

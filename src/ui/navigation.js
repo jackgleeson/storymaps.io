@@ -2,6 +2,7 @@
 // Navigation: zoom, pan, scroll, menu helpers
 
 import { ZOOM_LEVELS } from '/src/core/constants.js';
+import { fitMapTop } from '/src/ui/map-top.js';
 
 let _dom = null;
 let _state = null;
@@ -97,8 +98,8 @@ const updateZoomScrollBounds = () => {
 };
 
 export const updateZoom = () => {
-    _dom.storyMap.style.transform = `scale(${zoomLevel})`;
     _dom.storyMap.style.setProperty('--zoom', zoomLevel);
+    fitMapTop(_dom.storyMap);
     _dom.zoomReset.textContent = `${Math.round(zoomLevel * 100)}%`;
     updateZoomScrollBounds();
     updatePanMode();
@@ -496,9 +497,9 @@ export const initWheelZoom = () => {
         const cursorX = (e.clientX - wrapperRect.left + wrapper.scrollLeft - mapLeft) / oldZoom;
         const cursorY = (e.clientY - wrapperRect.top + wrapper.scrollTop - mapTop) / oldZoom;
 
-        // Apply transform + label directly (skip updatePanMode to avoid layout thrashing)
-        _dom.storyMap.style.transform = `scale(${zoomLevel})`;
+        // Apply zoom + label directly (skip updatePanMode to avoid layout thrashing)
         _dom.storyMap.style.setProperty('--zoom', zoomLevel);
+        fitMapTop(_dom.storyMap);
         _dom.zoomReset.textContent = `${Math.round(zoomLevel * 100)}%`;
         updateZoomScrollBounds();
 
@@ -557,8 +558,8 @@ export const initPinchZoom = () => {
         const contentY = (midY - wrapperRect.top + wrapper.scrollTop - mapTop) / oldZoom;
 
         zoomLevel = newZoom;
-        _dom.storyMap.style.transform = `scale(${zoomLevel})`;
         _dom.storyMap.style.setProperty('--zoom', zoomLevel);
+        fitMapTop(_dom.storyMap);
         _dom.zoomReset.textContent = `${Math.round(zoomLevel * 100)}%`;
         updateZoomScrollBounds();
 
