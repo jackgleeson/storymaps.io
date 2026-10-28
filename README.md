@@ -90,7 +90,7 @@ A larger product can span several maps, one per journey or area, grouped as a **
 - **Asana** - import from CSV file or via server-proxied REST API; export as CSV or via server-proxied REST API; card body text is used as the task notes
 - **Phabricator** - import from CSV file or via server-proxied Conduit API; export via server-proxied Conduit API, or as a script you run in your browser's console on your Phabricator site (for instances the server can't reach, e.g. behind a VPN); card body text is used as the task description
 - **Linear** - import from CSV file or via server-proxied REST API; export via server-proxied REST API
-- **URL endpoints** - append `.json`, `.yaml`, or `.csv` to any map URL to fetch its data programmatically (e.g. `curl storymaps.io/abc123.csv`); exports include the map ID for traceability
+- **URL endpoints** - append `.json`, `.yaml`, or `.csv` to any map URL, including one inside a project link, to fetch the map data programmatically (e.g. `curl storymaps.io/abc123.csv` or `curl storymaps.io/p/k8f2m9xq/abc123.yaml`); exports include the map ID for traceability
 - **Share as image** - copy map screenshot to clipboard or download as PNG
 - **Print / PDF**
 

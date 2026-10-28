@@ -265,9 +265,11 @@ const server = createServer(async (req, res) => {
       }
     }
 
-    // Format extension: /:mapId.json, /:mapId.yaml, or /:mapId.csv
-    if (!content && !reqPath.includes('/', 1) && (ext === '.json' || ext === '.yaml' || ext === '.csv')) {
-      const mapId = reqPath.slice(1, -ext.length);
+    // Format extension: /:mapId.json, /:mapId.yaml, or /:mapId.csv, and the same at the end of a project
+    // link (/p/:project/:mapId.yaml), so a map seen in a project can be fetched the same way
+    const projectFormat = reqPath.match(/^\/p\/[a-zA-Z0-9_-]+\/([a-zA-Z0-9_-]+)\.(?:json|yaml|csv)$/);
+    if (!content && (!reqPath.includes('/', 1) || projectFormat) && (ext === '.json' || ext === '.yaml' || ext === '.csv')) {
+      const mapId = projectFormat ? projectFormat[1] : reqPath.slice(1, -ext.length);
       if (mapId) {
         const data = await ctx.loadAndSerialize(mapId, req.headers.host);
         if (data) {

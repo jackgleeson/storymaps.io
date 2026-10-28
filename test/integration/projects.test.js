@@ -133,6 +133,29 @@ test('project links serve the app, and other paths under /p do not', async () =>
   }
 });
 
+test('format extensions work at the end of a project link, the same as on a map link', async () => {
+  const a = await newMap('Format map');
+  const { id } = await start(a);
+  const text = async (path) => {
+    const res = await fetch(server.base + path);
+    return { status: res.status, type: res.headers.get('content-type'), body: await res.text() };
+  };
+  for (const ext of ['yaml', 'json', 'csv']) {
+    const viaProject = await text(`/p/${id}/${a}.${ext}`);
+    const plain = await text(`/${a}.${ext}`);
+    assert.equal(viaProject.status, 200, ext);
+    assert.equal(viaProject.type, plain.type, ext);
+    // JSON and CSV carry the time they were read, so compare them without it
+    const strip = (body) => ext === 'json'
+      ? JSON.stringify({ ...JSON.parse(body), exported: null })
+      : body.replace(/^# \d{4}-\d{2}-\d{2}T[\d:.]+Z,*$/m, '');
+    assert.equal(strip(viaProject.body), strip(plain.body), ext);
+  }
+  assert.match((await text(`/p/${id}/${a}.yaml`)).body, /^name: Format map/m);
+  assert.equal((await text(`/p/${id}/zzzzzzzz.yaml`)).status, 404);
+  assert.equal((await text(`/p/${id}/${a}/extra.yaml`)).status, 404);
+});
+
 test('projects are kept when the server restarts', async () => {
   const [a, b] = [await newMap('Kept'), await newMap('Also kept')];
   const { id } = await start(a, b);
