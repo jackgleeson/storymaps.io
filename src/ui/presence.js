@@ -2,6 +2,7 @@
 // Presence tracking and cursor display (via Yjs awareness)
 
 import { showPrompt } from '/src/core/modals.js';
+import { mapTop } from '/src/ui/map-top.js';
 
 let _dom = null;
 let _getProvider = null;
@@ -48,6 +49,7 @@ export const getSessionId = () => {
 // Store cursor elements
 let cursorElements = new Map(); // clientId -> DOM element
 let dragGhostElements = new Map(); // clientId -> DOM element
+const peerCursors = new Map(); // clientId -> last cursor position received
 let cursorThrottleTimeout = null;
 const CURSOR_THROTTLE_MS = 50;
 
@@ -240,11 +242,19 @@ export const trackCursor = () => {
             const mapOffsetLeft = _dom.storyMap.offsetLeft;
             const mapOffsetTop = _dom.storyMap.offsetTop;
             const x = (e.clientX - wrapperRect.left + wrapper.scrollLeft - mapOffsetLeft) / zoomLevel;
-            const y = (e.clientY - wrapperRect.top + wrapper.scrollTop - mapOffsetTop) / zoomLevel;
+            let y = (e.clientY - wrapperRect.top + wrapper.scrollTop - mapOffsetTop) / zoomLevel;
+
+            // Over the top rows, send the position within them: frozen rows sit lower down than
+            // their place in the map, on this screen or the other person's. Unfrozen, it's the
+            // same number either way, so older versions still place it right.
+            const topRect = mapTop(_dom.storyMap)?.getBoundingClientRect();
+            const overTop = !!topRect && e.clientY >= topRect.top && e.clientY < topRect.bottom;
+            if (overTop) y = (e.clientY - topRect.top) / zoomLevel;
 
             awareness.setLocalStateField('mapCursor', {
                 x: Math.round(x),
                 y: Math.round(y),
+                ...(overTop && { top: true }),
                 color: getCursorColor(sessionId),
             });
 
@@ -266,6 +276,7 @@ export const trackCursor = () => {
         cursorOverlay.className = 'cursor-overlay';
         cursorOverlay.style.display = cursorsVisible ? 'block' : 'none';
         _dom.storyMapWrapper.appendChild(cursorOverlay);
+        _dom.storyMapWrapper.addEventListener('scroll', placeCursorsOverTopRows, { passive: true });
     }
 
     // Listen for other users' cursors via awareness
@@ -325,8 +336,9 @@ export const trackCursor = () => {
                 }
             }
 
-            const visualX = cursorData.x * zoomLevel + mapOffsetLeft;
-            const visualY = cursorData.y * zoomLevel + mapOffsetTop;
+            peerCursors.set(key, cursorData);
+            const { x: visualX, y: visualY } = cursorPosition(cursorData, zoomLevel, mapOffsetLeft, mapOffsetTop);
+            cursorEl.style.transition = '';
             cursorEl.style.left = `${visualX}px`;
             cursorEl.style.top = `${visualY}px`;
         }
@@ -336,6 +348,7 @@ export const trackCursor = () => {
             if (!activeClientIds.has(key)) {
                 el.remove();
                 cursorElements.delete(key);
+                peerCursors.delete(key);
             }
         }
 
@@ -386,10 +399,9 @@ export const trackCursor = () => {
             }
 
             // Position at cursor + offset
-            const visualX = cursorData.x * zoomLevel + mapOffsetLeft + 12;
-            const visualY = cursorData.y * zoomLevel + mapOffsetTop + 12;
-            ghostEl.style.left = `${visualX}px`;
-            ghostEl.style.top = `${visualY}px`;
+            const { x: visualX, y: visualY } = cursorPosition(cursorData, zoomLevel, mapOffsetLeft, mapOffsetTop);
+            ghostEl.style.left = `${visualX + 12}px`;
+            ghostEl.style.top = `${visualY + 12}px`;
         }
 
         // Animate out ghosts for clients that stopped dragging or left
@@ -401,6 +413,39 @@ export const trackCursor = () => {
             }
         }
     });
+};
+
+// Where a peer's cursor goes in the cursor overlay, which scrolls with the map. A cursor over the
+// top rows goes where those rows are on this screen, which is lower down while they're frozen.
+const cursorPosition = (cursorData, zoomLevel, mapOffsetLeft, mapOffsetTop) => {
+    const x = cursorData.x * zoomLevel + mapOffsetLeft;
+    const top = cursorData.top && mapTop(_dom.storyMap);
+    if (!top) return { x, y: cursorData.y * zoomLevel + mapOffsetTop };
+    const wrapper = _dom.storyMapWrapper;
+    const topY = top.getBoundingClientRect().top - wrapper.getBoundingClientRect().top + wrapper.scrollTop;
+    return { x, y: topY + cursorData.y * zoomLevel };
+};
+
+// Frozen rows stay put while this screen scrolls, so cursors over them move with them
+const placeCursorsOverTopRows = () => {
+    const zoomLevel = _zoomLevelGetter();
+    const mapOffsetLeft = _dom.storyMap.offsetLeft;
+    const mapOffsetTop = _dom.storyMap.offsetTop;
+    for (const [key, cursorData] of peerCursors) {
+        if (!cursorData.top) continue;
+        const { x, y } = cursorPosition(cursorData, zoomLevel, mapOffsetLeft, mapOffsetTop);
+        const cursorEl = cursorElements.get(key);
+        if (cursorEl) {
+            cursorEl.style.transition = 'none';
+            cursorEl.style.top = `${y}px`;
+            cursorEl.style.left = `${x}px`;
+        }
+        for (const [ghostKey, ghostEl] of dragGhostElements) {
+            if (!ghostKey.startsWith(key + ':')) continue;
+            ghostEl.style.top = `${y + 12}px`;
+            ghostEl.style.left = `${x + 12}px`;
+        }
+    }
 };
 
 // Find story text by ID from current state

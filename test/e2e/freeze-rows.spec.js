@@ -108,3 +108,40 @@ test('zooming in at the top keeps the rows in place, not stuck over the cards be
   });
   expect(gap).toBeGreaterThan(0);
 });
+
+// Where another person's cursor tip is drawn, and whether it lies inside an element on this screen
+const cursorInside = (page, selector) => page.evaluate((selector) => {
+  const cursor = document.querySelector('.remote-cursor');
+  if (!cursor) return false;
+  const tip = cursor.getBoundingClientRect();
+  const box = document.querySelector(selector).getBoundingClientRect();
+  return tip.left >= box.left && tip.left <= box.right && tip.top >= box.top && tip.top <= box.bottom;
+}, selector);
+
+const pointAt = async (page, selector) => {
+  const box = await page.locator(selector).boundingBox();
+  await page.mouse.move(box.x + box.width / 2 - 5, box.y + box.height / 2 - 5);
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 3 });
+};
+
+test('a cursor over the frozen rows shows over the same rows on the other screen', async ({ page, createMap, openSecondTab }) => {
+  const id = await createMap(LONG_MAP);
+  const other = await openSecondTab();
+  await openMap(page, id);
+  await openMap(other, id);
+
+  // One screen scrolled with its rows frozen at the top, the other at the top of the map
+  await scrollDown(page, 900);
+  await expect(page.locator('#storyMapWrapper')).toHaveClass(/rows-stuck/);
+  await expect(other.locator('#storyMapWrapper')).not.toHaveClass(/rows-stuck/);
+
+  await pointAt(page, '.step:nth-child(4)');
+  await expect.poll(() => cursorInside(other, '.step:nth-child(4)')).toBe(true);
+
+  await pointAt(other, '.step:nth-child(2)');
+  await expect.poll(() => cursorInside(page, '.step:nth-child(2)')).toBe(true);
+
+  // Still over the step after this screen scrolls further, as the frozen rows don't move
+  await scrollDown(page, 200);
+  await expect.poll(() => cursorInside(page, '.step:nth-child(2)')).toBe(true);
+});
