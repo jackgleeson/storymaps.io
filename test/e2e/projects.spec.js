@@ -180,6 +180,48 @@ test('New map makes a map in the project, and its tab follows its title', async 
   await expect(tabs(page).nth(1)).toHaveAttribute('href', `/p/${project}/${newId}`);
 });
 
+test('Copy this map puts the copy in the project, next to the original', async ({ page, createMap, pullMap }) => {
+  const a = await createMap(map('Ordering'));
+  const b = await createMap(map('Loyalty'));
+  await openMap(page, a, 2);
+  await addByLink(page, b);
+  const project = projectOf(page);
+  await expect(tabs(page)).toHaveText(['Ordering', 'Loyalty']);
+
+  await openMenu(page, 'copyExistingBtn');
+  expect(await acceptDialog(page)).toContain('added to Untitled project next to this map');
+  await expect(page).toHaveURL(new RegExp(`/p/${project}/[a-z0-9]+$`));
+  const copy = new URL(page.url()).pathname.split('/').pop();
+  expect(copy).not.toBe(a);
+  await expect(tabs(page)).toHaveText(['Ordering', 'Ordering (Copy)', 'Loyalty']);
+  await expect(tabs(page).nth(1)).toHaveAttribute('aria-current', 'page');
+  await expect.poll(async () => (await pullMap(copy)).slices?.[0]?.stories).toEqual((await pullMap(a)).slices[0].stories);
+
+  // The other maps list it too, and back returns to the original
+  await tabs(page).last().click();
+  await expect(tabs(page)).toHaveText(['Ordering', 'Ordering (Copy)', 'Loyalty']);
+  await page.goBack();
+  await page.goBack();
+  await expect(page).toHaveURL(new RegExp(`/p/${project}/${a}$`));
+});
+
+test('Copy this map on a plain map link makes a plain copy', async ({ page, createMap }) => {
+  const a = await createMap(map('Ordering'));
+  await openMap(page, a, 2);
+  await startProject(page);
+  await page.goto(`/${a}`);
+  await expect(page.locator('.step')).toHaveCount(2);
+
+  await openMenu(page, 'copyExistingBtn');
+  const message = await acceptDialog(page);
+  expect(message).toContain('A copy will be created with a new URL.');
+  expect(message).not.toContain('project');
+  await expect(page).toHaveURL(/\/[a-z0-9]+$/);
+  await expect(page).not.toHaveURL(new RegExp(`/${a}$`));
+  await expect(page).not.toHaveURL(/\/p\//);
+  await expect(tabs(page)).toHaveCount(0);
+});
+
 test('a new map for a project that no longer exists is not created', async ({ page }) => {
   let created = false;
   page.on('request', (req) => { if (req.url().includes('/api/maps/new-id')) created = true; });

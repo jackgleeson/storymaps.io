@@ -66,6 +66,8 @@ export const createProjects = (sqlite, { generateId }) => {
     removeMapEverywhere: sqlite.prepare('DELETE FROM project_maps WHERE map_id = ?'),
     removeAllMaps: sqlite.prepare('DELETE FROM project_maps WHERE project_id = ?'),
     setPosition: sqlite.prepare('UPDATE project_maps SET position = ? WHERE project_id = ? AND map_id = ?'),
+    position: sqlite.prepare('SELECT position FROM project_maps WHERE project_id = ? AND map_id = ?'),
+    makeRoomAfter: sqlite.prepare('UPDATE project_maps SET position = position + 1 WHERE project_id = ? AND position > ?'),
     deleteProject: sqlite.prepare('DELETE FROM projects WHERE id = ?'),
   };
 
@@ -110,12 +112,16 @@ export const createProjects = (sqlite, { generateId }) => {
     throw new Error('Failed to generate unique project ID');
   };
 
-  const addMember = (projectId, mapId, now) => {
+  // A map joins at the end, or straight after another map in the project when one is named
+  const addMember = (projectId, mapId, now, after) => {
     if (q.isMember.get(projectId, mapId)) throw new ProjectError(409, 'That map is already in this project');
     if (q.count.get(projectId).n >= MAX_PROJECT_MAPS) {
       throw new ProjectError(400, `A project holds up to ${MAX_PROJECT_MAPS} maps`);
     }
-    q.insertMember.run(projectId, mapId, (q.lastPosition.get(projectId).p ?? -1) + 1, now);
+    const before = after == null ? null : q.position.get(projectId, after);
+    if (after != null && !before) throw new ProjectError(404, 'That map is not in this project');
+    if (before) q.makeRoomAfter.run(projectId, before.position);
+    q.insertMember.run(projectId, mapId, before ? before.position + 1 : (q.lastPosition.get(projectId).p ?? -1) + 1, now);
   };
 
   // The project, or null when there is no project with that ID
@@ -138,11 +144,13 @@ export const createProjects = (sqlite, { generateId }) => {
     return view(projectId);
   });
 
-  const add = sqlite.transaction((projectId, mapId) => {
+  // Add a map, at the end or after the map named in after (a copy goes next to the original)
+  const add = sqlite.transaction((projectId, mapId, after) => {
     requireProject(projectId);
     checkMap(mapId);
+    if (after != null) checkId(after, 'map');
     const now = new Date().toISOString();
-    addMember(projectId, mapId, now);
+    addMember(projectId, mapId, now, after);
     q.touch.run(now, projectId);
     return view(projectId);
   });

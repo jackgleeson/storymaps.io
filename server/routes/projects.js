@@ -48,7 +48,7 @@ export default function register(ctx) {
     answer(res, () => fn(id, body || {}));
   });
 
-  write('/api/projects/:id/maps', (id, body) => projects.add(id, body.mapId));
+  write('/api/projects/:id/maps', (id, body) => projects.add(id, body.mapId, body.after));
   write('/api/projects/:id/remove', (id, body) => projects.remove(id, body.mapId));
   write('/api/projects/:id/order', (id, body) => projects.reorder(id, body.mapIds));
   write('/api/projects/:id/name', (id, body) => projects.rename(id, body.name));

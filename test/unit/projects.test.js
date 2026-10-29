@@ -78,6 +78,16 @@ test('maps added later go on the end, once each', () => {
   rejects(() => projects.add(id, 42), 400);
 });
 
+test('a map can join straight after another map, as a copy does', () => {
+  const { id } = projects.create(['ordering', 'loyalty']);
+  assert.deepEqual(ids(projects.add(id, 'barista', 'ordering')), ['ordering', 'barista', 'loyalty']);
+  assert.deepEqual(ids(projects.add(id, 'blank', 'loyalty')), ['ordering', 'barista', 'loyalty', 'blank']);
+  projects.remove(id, 'blank');
+  rejects(() => projects.add(id, 'blank', 'nope'), 404, /not in this project/);
+  rejects(() => projects.add(id, 'blank', '../etc'), 400);
+  assert.deepEqual(ids(projects.get(id)), ['ordering', 'barista', 'loyalty']);
+});
+
 test(`a project holds up to ${MAX_PROJECT_MAPS} maps`, () => {
   const insert = sqlite.prepare("INSERT INTO maps (id, name, created_at, updated_at) VALUES (?, 'm', '', '')");
   const many = Array.from({ length: MAX_PROJECT_MAPS }, (_, i) => `m${i}`);

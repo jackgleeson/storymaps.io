@@ -527,13 +527,17 @@ export const roomForNewMap = async (projectId) => {
     }
 };
 
-// A new map made from the add box of a project (/p/<project>/new) joins that project
-export const joinNew = async (projectId) => {
+// The project shown around the open map, or null
+export const current = () => _project ? { id: _project.id, name: _project.name, mapCount: _project.maps.length } : null;
+
+// A new map made from the add box of a project (/p/<project>/new) joins that project at the end.
+// A copy of a map in a project joins it straight after the original.
+export const joinNew = async (projectId, after) => {
     if (!_mapId) return;
     _projectId = projectId;
     const seq = ++_seq;
     try {
-        const project = await request(`/${encodeURIComponent(projectId)}/maps`, { mapId: _mapId });
+        const project = await request(`/${encodeURIComponent(projectId)}/maps`, { mapId: _mapId, after });
         setAddress(projectPath(projectId, _mapId));
         apply(projectId, seq, project);
     } catch (err) {

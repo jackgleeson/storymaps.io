@@ -12,6 +12,8 @@ import { destroyYjs } from '/src/core/yjs.js';
 import { showAlert, showConfirm } from '/src/core/modals.js';
 import * as tour from '/src/features/tour.js';
 import { closeSearch } from '/src/features/search.js';
+import * as projects from '/src/features/projects.js';
+import { MAX_PROJECT_MAPS } from '/src/core/project-links.js';
 
 let _deps = {};
 
@@ -224,9 +226,16 @@ export const newMap = async () => {
     incrementMapCounter();
 };
 
+// A copy of a map shown in a project goes in the project too, next to the original
 export const copyMap = async () => {
     _deps.saveToStorage();
-    if (!await showConfirm('Copy this map?\n\nA copy will be created with a new URL.')) {
+    const project = projects.current();
+    const original = state.mapId;
+    const joins = project && project.mapCount < MAX_PROJECT_MAPS;
+    let message = 'Copy this map?\n\nA copy will be created with a new URL.';
+    if (joins) message = `Copy this map?\n\nA copy will be created with a new URL, and added to ${project.name} next to this map.`;
+    else if (project) message += ` ${project.name} already has ${MAX_PROJECT_MAPS} maps, the most a project can hold, so the copy won't be in it.`;
+    if (!await showConfirm(message)) {
         return;
     }
     destroyYjs();
@@ -241,6 +250,7 @@ export const copyMap = async () => {
 
     await _deps.createYjsDoc(mapId);
     _deps.subscribeToMap(mapId);
+    if (joins) await projects.joinNew(project.id, original);
     _deps.saveToStorage();
     incrementMapCounter();
 };
