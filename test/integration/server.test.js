@@ -96,6 +96,30 @@ describe('WebSocket sync', () => {
     assert.equal(code, 4403);
   });
 
+  // A flood of one-byte message fragments once made the server hold far more memory than the
+  // message size limit allows, until it ran out (GHSA-96hv-2xvq-fx4p, fixed in ws 8.21.0)
+  test('closes a connection that floods tiny message fragments, and keeps serving', async () => {
+    const ws = new WebSocket(`${wsBase}/flood123`, { origin: ORIGIN });
+    await once(ws, 'open');
+    const closed = once(ws, 'close');
+    const MAX = 200_000;
+    let sent = 0;
+    const fragment = Buffer.alloc(1);
+    const send = () => {
+      if (ws.readyState !== WebSocket.OPEN || sent >= MAX) return;
+      sent++;
+      ws.send(fragment, { fin: false }, (err) => { if (!err) send(); });
+    };
+    send();
+    const timeout = new Promise((resolve) => setTimeout(() => resolve(['timed out']), 15_000));
+    const [code] = await Promise.race([closed, timeout]);
+    ws.terminate();
+    // The server's close frame can be lost while the client is still sending, so any close
+    // counts. Sends finish before the server reads them, so the count sent proves nothing.
+    assert.notEqual(code, 'timed out', `the server should cut the connection off after ${sent} fragments`);
+    assert.equal((await api('GET', '/api/stats')).status, 200);
+  });
+
   test('a client gets a map made over the API', async () => {
     const id = await createMap();
     const { ymap } = await connect(id);

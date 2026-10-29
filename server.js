@@ -404,6 +404,9 @@ const trackedDocs = new Set();
 const wss = new WebSocketServer({ server });
 
 wss.on('connection', (ws, req) => {
+  // A connection that breaks the protocol (too many fragments, a message over the size limit)
+  // emits 'error', then ws closes it. Without a listener, the error would crash the server.
+  ws.on('error', (err) => console.warn(`WebSocket connection closed: ${err.message}`));
   if (!isOriginAllowed(req.headers.origin)) {
     ws.close(4403, 'Forbidden');
     return;
