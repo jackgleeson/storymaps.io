@@ -460,3 +460,48 @@ test('a slice link copied in a project keeps the project, and a plain map copies
   await page.goto(`/${a}#slice-mvp-zzzzzzzz`);
   await expect(page.getByText('That slice is no longer in this map')).toBeVisible();
 });
+
+test('arrows, the wheel and the current tab move along tabs that overflow the bar', async ({ page, request }) => {
+  const ids = [];
+  for (let i = 0; i < 12; i++) {
+    const res = await request.post('/api/maps', {
+      data: map(`A long map name number ${i + 1}`),
+      headers: { 'Content-Type': 'text/yaml', 'X-Forwarded-For': `198.20.${i}.${Math.floor(Math.random() * 250)}` },
+    });
+    ids.push((await res.json()).id);
+  }
+  const res = await request.post('/api/projects', { data: { mapIds: ids, name: 'Many' }, headers: { origin: 'http://localhost' } });
+  const project = (await res.json()).project.id;
+  const strip = page.locator('#projectTabs');
+  const left = page.locator('#projectScrollLeft');
+  const right = page.locator('#projectScrollRight');
+  const scrolled = () => strip.evaluate(el => el.scrollLeft);
+
+  // At the first map, only the right arrow shows
+  await page.goto(`/p/${project}/${ids[0]}`);
+  await expect(tabs(page)).toHaveCount(12);
+  await expect(right).toBeVisible();
+  await expect(left).toBeHidden();
+
+  await right.click();
+  await expect.poll(scrolled).toBeGreaterThan(100);
+  await expect(left).toBeVisible();
+  await left.click();
+  await expect.poll(scrolled).toBe(0);
+
+  // An up-and-down wheel over the tabs moves along them
+  const box = await strip.boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.wheel(0, 300);
+  await expect.poll(scrolled).toBeGreaterThan(200);
+
+  // Opening the last map brings its tab fully into view
+  await page.goto(`/p/${project}/${ids[11]}`);
+  await expect.poll(() => page.evaluate(() => {
+    const s = document.getElementById('projectTabs').getBoundingClientRect();
+    const t = document.querySelector('.project-tab.current').getBoundingClientRect();
+    return t.left >= s.left - 1 && t.right <= s.right + 1;
+  })).toBe(true);
+  await expect(left).toBeVisible();
+  await expect(right).toBeHidden();
+});

@@ -22,6 +22,8 @@ let _project = null;    // { id, name, maps: [{ id, name }] } once known
 let _seq = 0;           // only the newest answer from the server is shown
 let _changing = 0;      // changes waiting for the server; a refresh then could show the tabs from before
 let _reveal = false;    // scroll the current tab into view at the next render
+let _tabsMoved = false; // the person moved along the tabs, so stop bringing the current one back
+let _tabSizes = null;   // watches the strip and its tabs, which widen as the font loads
 let _provider = null;
 let _panel = null;      // 'start', 'add' or 'manage' while that box is open
 let _trigger = null;    // the button that opened the box, focused again when it closes
@@ -182,7 +184,12 @@ const render = () => {
             text: mapLabel(map),
         });
     }));
-    if (_reveal) revealCurrentTab();
+    if (_reveal) {
+        _tabsMoved = false;
+        revealCurrentTab();
+    }
+    watchTabSizes();
+    updateTabScroll();
     // In a project the button adds a map beside the tabs; before that it starts the project
     dom.projectAddBtn.innerHTML = _project ? `${ICONS.plus}<span>Add map</span>` : `${ICONS.stack}<span>Start a project</span>`;
     dom.projectAddBtn.title = _project ? `Add a map to ${_project.name}` : 'Keep related maps in one place, as tabs';
@@ -193,7 +200,8 @@ const render = () => {
     if (_panel === 'manage') renderManageList();
 };
 
-// Scroll the tab strip, and only the strip, so the current tab shows
+// Scroll the tab strip, and only the strip, so the current tab shows. It goes in the middle, clear
+// of the faded edges and arrows when the tabs overflow.
 const revealCurrentTab = () => {
     const strip = dom.projectTabs;
     const tab = strip.querySelector('.project-tab.current');
@@ -201,8 +209,39 @@ const revealCurrentTab = () => {
     _reveal = false;
     const left = tab.offsetLeft - strip.offsetLeft;
     if (left < strip.scrollLeft || left + tab.offsetWidth > strip.scrollLeft + strip.clientWidth) {
-        strip.scrollLeft = Math.max(0, left - 24);
+        strip.scrollLeft = Math.max(0, left - (strip.clientWidth - tab.offsetWidth) / 2);
     }
+};
+
+// When the tabs don't all fit, fade the edges with more beyond them and show an arrow there
+const updateTabScroll = () => {
+    const strip = dom.projectTabs;
+    if (!strip) return;
+    const moreLeft = strip.scrollLeft > 1;
+    const moreRight = strip.scrollLeft + strip.clientWidth < strip.scrollWidth - 1;
+    strip.classList.toggle('more-left', moreLeft);
+    strip.classList.toggle('more-right', moreRight);
+    dom.projectScrollLeft.hidden = !moreLeft;
+    dom.projectScrollRight.hidden = !moreRight;
+};
+
+// Tabs change width as the font loads and maps are renamed, and the strip narrows as the header
+// settles on a phone. Until the person moves along the tabs, keep the current one in view.
+const watchTabSizes = () => {
+    _tabSizes ??= new ResizeObserver(() => {
+        if (!_tabsMoved) revealCurrentTab();
+        updateTabScroll();
+    });
+    _tabSizes.disconnect();
+    _tabSizes.observe(dom.projectTabs);
+    dom.projectTabs.querySelectorAll('.project-tab').forEach(tab => _tabSizes.observe(tab));
+};
+
+// An arrow moves along most of a strip's width, keeping a tab's worth in view for context
+const scrollTabs = (direction) => {
+    _tabsMoved = true;
+    const strip = dom.projectTabs;
+    strip.scrollBy({ left: direction * Math.max(120, strip.clientWidth - 120), behavior: 'smooth' });
 };
 
 // The tab for the current map follows the title as it changes
@@ -520,6 +559,19 @@ export const initListeners = () => {
         if (_panel === 'manage') closePanel();
         else openPanel('manage', dom.projectName);
     });
+    dom.projectTabs.addEventListener('scroll', updateTabScroll, { passive: true });
+    dom.projectTabs.addEventListener('touchstart', () => { _tabsMoved = true; }, { passive: true });
+    dom.projectScrollLeft.addEventListener('click', () => scrollTabs(-1));
+    dom.projectScrollRight.addEventListener('click', () => scrollTabs(1));
+    // An up-and-down wheel moves along the tabs, as they only scroll sideways
+    dom.projectTabs.addEventListener('wheel', (e) => {
+        const strip = dom.projectTabs;
+        if (e.ctrlKey || Math.abs(e.deltaY) <= Math.abs(e.deltaX) || strip.scrollWidth <= strip.clientWidth) return;
+        e.preventDefault();
+        _tabsMoved = true;
+        // Firefox can count in lines rather than pixels
+        strip.scrollLeft += e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+    }, { passive: false });
     // The current tab is the map already open
     dom.projectTabs.addEventListener('click', (e) => {
         if (e.target.closest('.project-tab.current') && !e.metaKey && !e.ctrlKey && !e.shiftKey && e.button === 0) e.preventDefault();

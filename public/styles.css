@@ -10693,6 +10693,15 @@ body.in-project .project-bar {
     color: var(--color-text-primary);
 }
 
+/* The tab strip scrolls sideways with its scrollbar hidden. When tabs overflow, the edges fade and
+   arrows at each end move along (src/features/projects.js). The arrows sit over the ends of the
+   strip, so showing one doesn't push the tabs. */
+.project-tabs-wrap {
+    position: relative;
+    display: flex;
+    min-width: 0;
+}
+
 .project-tabs {
     display: flex;
     min-width: 0;
@@ -10704,7 +10713,56 @@ body.in-project .project-bar {
     display: none;
 }
 
-body:not(.in-project) .project-tabs {
+.project-tabs.more-left {
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 56px);
+    mask-image: linear-gradient(to right, transparent 0, #000 56px);
+}
+
+.project-tabs.more-right {
+    -webkit-mask-image: linear-gradient(to left, transparent 0, #000 56px);
+    mask-image: linear-gradient(to left, transparent 0, #000 56px);
+}
+
+.project-tabs.more-left.more-right {
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 56px, #000 calc(100% - 56px), transparent 100%);
+}
+
+.project-scroll {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}
+
+.project-scroll[hidden] {
+    display: none;
+}
+
+.project-scroll:hover {
+    background-color: var(--color-hover-bg);
+    color: var(--color-text-primary);
+}
+
+.project-scroll-left {
+    left: 0;
+}
+
+.project-scroll-right {
+    right: 0;
+}
+
+body:not(.in-project) .project-tabs-wrap {
     display: none;
 }
 
