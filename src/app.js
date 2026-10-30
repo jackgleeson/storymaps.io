@@ -981,7 +981,7 @@ const initEventListeners = () => {
         const onMap = !dom.welcomeScreen.classList.contains('visible');
         dom.shareScreenshot.disabled = !onMap;
         dom.shareDownload.disabled = !onMap;
-        // In a project, the project link comes first, and the map link shares the map alone
+        // In a project, the project link comes first, then the link to this map in the project
         const inProject = onMap && !!projects.current();
         dom.shareProjectLink.hidden = !inProject;
         dom.shareCopyLink.textContent = inProject ? 'Share this map link' : 'Share URL';
@@ -1004,10 +1004,8 @@ const initEventListeners = () => {
     });
     dom.shareCopyLink.addEventListener('click', (e) => {
         e.stopPropagation();
-        // The whole map, even if it was opened from a slice link. In a project, the map alone.
-        shareLink(projects.current() && state.mapId
-            ? `${location.origin}/${encodeURIComponent(state.mapId)}`
-            : window.location.href.split('#')[0]);
+        // The whole map, even if it was opened from a slice link. In a project, it opens with the tabs.
+        shareLink(window.location.href.split('#')[0]);
     });
     const captureMap = async () => {
         const dpr = Math.max(window.devicePixelRatio || 2, 2);

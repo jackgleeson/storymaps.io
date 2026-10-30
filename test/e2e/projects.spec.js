@@ -503,7 +503,7 @@ test('a slice link copied in a project keeps the project, and a plain map copies
   await expect(page.getByText('That slice is no longer in this map')).toBeVisible();
 });
 
-test('Share offers the project link first in a project, and the map alone after it', async ({ page, context, createMap }) => {
+test('Share offers the project link first in a project, then this map in the project', async ({ page, context, createMap }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   const [a, b] = [await createMap(map('Ordering')), await createMap(map('Loyalty'))];
   await openMap(page, a, 2);
@@ -537,7 +537,7 @@ test('Share offers the project link first in a project, and the map alone after 
 
   await page.locator('#shareBtn').click();
   await share.locator('#shareCopyLink').click();
-  expect(await copied()).toBe(`${origin}/${a}`);
+  expect(await copied()).toBe(`${origin}/p/${project}/${a}`);
 
   // The project box has the link too
   await projectName(page).click();
