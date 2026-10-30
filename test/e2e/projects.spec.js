@@ -503,6 +503,57 @@ test('a slice link copied in a project keeps the project, and a plain map copies
   await expect(page.getByText('That slice is no longer in this map')).toBeVisible();
 });
 
+test('Share offers the project link first in a project, and the map alone after it', async ({ page, context, createMap }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  const [a, b] = [await createMap(map('Ordering')), await createMap(map('Loyalty'))];
+  await openMap(page, a, 2);
+  const origin = new URL(page.url()).origin;
+  const share = page.locator('#shareMenu');
+  const copied = () => page.evaluate(() => navigator.clipboard.readText());
+
+  // A map in no project has the one link
+  await page.locator('#shareBtn').click();
+  await expect(share.locator('#shareProjectLink')).toBeHidden();
+  await expect(share.locator('#shareCopyLink .share-menu-label')).toHaveText('Share URL');
+  await expect(share.locator('#shareCopyLink .share-menu-note')).toBeHidden();
+  await share.locator('#shareCopyLink').click();
+  expect(await copied()).toBe(`${origin}/${a}`);
+
+  await page.locator('#projectAddBtn').click();
+  await panel(page).getByRole('button', { name: 'Create project' }).click();
+  await expect(page.locator('#appToast')).toHaveText('Project created. To share every map in it, use Share, then Share project link.');
+  await addByLink(page, b);
+  const project = projectOf(page);
+
+  await page.locator('#shareBtn').click();
+  await expect(share.locator('.share-menu-item:visible')).toHaveText([
+    /^Share project link\s*Every map in the project, as tabs\. Opens on the first tab, so put the latest map first\.$/,
+    /^Share this map link\s*Only this map, without the project tabs$/,
+    'Share as image',
+    'Download image',
+  ]);
+  await share.locator('#shareProjectLink').click();
+  await expect(share).toBeHidden();
+  expect(await copied()).toBe(`${origin}/p/${project}`);
+
+  await page.locator('#shareBtn').click();
+  await share.locator('#shareCopyLink').click();
+  expect(await copied()).toBe(`${origin}/${a}`);
+
+  // The project box has the link too
+  await projectName(page).click();
+  await expect(panel(page).getByLabel('Project link')).toHaveValue(`${origin}/p/${project}`);
+  await page.evaluate(() => navigator.clipboard.writeText(''));
+  await panel(page).getByRole('button', { name: 'Copy', exact: true }).click();
+  await expect(panel(page).getByRole('button', { name: 'Copied', exact: true })).toBeVisible();
+  expect(await copied()).toBe(`${origin}/p/${project}`);
+
+  // The shared project link opens the first map, with every tab
+  await page.goto(`/p/${project}`);
+  await expect(page).toHaveURL(new RegExp(`/p/${project}/${a}$`));
+  await expect(tabs(page)).toHaveText(['Ordering', 'Loyalty']);
+});
+
 test('arrows, the wheel and the current tab move along tabs that overflow the bar', async ({ page, request }) => {
   const ids = [];
   for (let i = 0; i < 12; i++) {

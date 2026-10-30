@@ -9,7 +9,7 @@
 import { dom } from '/src/ui/dom.js';
 import { state } from '/src/core/state.js';
 import { el } from '/src/core/constants.js';
-import { showAlert, showConfirm } from '/src/core/modals.js';
+import { showAlert, showConfirm, showToast } from '/src/core/modals.js';
 import { parseMapId, parseLocation, projectPath, moveItem, MAX_PROJECT_MAPS } from '/src/core/project-links.js';
 import { ensureSortable } from '/src/core/yjs.js';
 
@@ -311,6 +311,7 @@ const buildStart = () => {
         if (!project) return;
         closePanel();
         enter(project);
+        showToast('Project created. To share every map in it, use Share, then Share project link.', 6000);
     };
     create.addEventListener('click', submit);
     input.addEventListener('keydown', (e) => {
@@ -380,6 +381,23 @@ const buildManage = () => {
             input.blur();
         }
     });
+    // The project link, to share in place of links to single maps
+    const linkLabel = el('label', 'project-panel-label', { htmlFor: 'projectLinkCopy', text: 'Project link' });
+    const link = el('input', 'project-panel-input project-panel-link', { id: 'projectLinkCopy', type: 'text', value: projectLink() || '', readOnly: true, spellcheck: false });
+    link.addEventListener('focus', () => link.select());
+    const copy = el('button', 'project-panel-secondary', { type: 'button', text: 'Copy' });
+    copy.addEventListener('click', async () => {
+        try {
+            await navigator.clipboard.writeText(link.value);
+            copy.textContent = 'Copied';
+            setTimeout(() => { copy.textContent = 'Copy'; }, 2000);
+        } catch {
+            link.focus();
+        }
+    });
+    const linkRow = el('div', 'project-panel-row');
+    linkRow.append(link, copy);
+    const linkHint = el('p', 'project-panel-hint', { text: 'Share this link and people always get every map in the project. It opens on the first tab, so put the latest map first.' });
     const listLabel = el('p', 'project-panel-label', { id: 'projectMapsLabel', text: 'Maps' });
     const list = el('ol', 'project-panel-list', { id: 'projectMapsList', ariaLabelledby: 'projectMapsLabel' });
     // Deleting the project is its own action, never a side effect of removing maps
@@ -396,7 +414,7 @@ const buildManage = () => {
         renderManageList();
         makeListSortable(list);
     });
-    return [heading, label, input, listLabel, list, error, footer];
+    return [heading, label, input, linkLabel, linkRow, linkHint, listLabel, list, error, footer];
 };
 
 // Drag a map by the handle to a new place in the list; the arrows do the same from the keyboard
@@ -526,6 +544,9 @@ export const roomForNewMap = async (projectId) => {
         return null;
     }
 };
+
+// The link to the project shown around the open map, which opens on its first tab, or null
+export const projectLink = () => _project ? `${location.origin}/p/${encodeURIComponent(_project.id)}` : null;
 
 // The project shown around the open map, or null
 export const current = () => _project ? { id: _project.id, name: _project.name, mapCount: _project.maps.length } : null;

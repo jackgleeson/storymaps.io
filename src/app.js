@@ -981,13 +981,16 @@ const initEventListeners = () => {
         const onMap = !dom.welcomeScreen.classList.contains('visible');
         dom.shareScreenshot.disabled = !onMap;
         dom.shareDownload.disabled = !onMap;
+        // In a project, the project link comes first, and the map link shares the map alone
+        const inProject = onMap && !!projects.current();
+        dom.shareProjectLink.hidden = !inProject;
+        dom.shareCopyLink.querySelector('.share-menu-label').textContent = inProject ? 'Share this map link' : 'Share URL';
+        dom.shareCopyLink.querySelector('.share-menu-note').hidden = !inProject;
+        dom.shareMenu.classList.toggle('has-notes', inProject);
         dom.shareMenu.classList.toggle('visible');
     });
-    dom.shareCopyLink.addEventListener('click', async (e) => {
-        e.stopPropagation();
+    const shareLink = async (url) => {
         dom.shareMenu.classList.remove('visible');
-        // The whole map, even if it was opened from a slice link
-        const url = window.location.href.split('#')[0];
         try {
             await navigator.clipboard.writeText(url);
             dom.shareBtn.querySelector('.btn-label').textContent = ' Copied!';
@@ -995,6 +998,18 @@ const initEventListeners = () => {
         } catch {
             await showPrompt('Copy this link to share:', url);
         }
+    };
+    dom.shareProjectLink.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const link = projects.projectLink();
+        if (link) shareLink(link);
+    });
+    dom.shareCopyLink.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // The whole map, even if it was opened from a slice link. In a project, the map alone.
+        shareLink(projects.current() && state.mapId
+            ? `${location.origin}/${encodeURIComponent(state.mapId)}`
+            : window.location.href.split('#')[0]);
     });
     const captureMap = async () => {
         const dpr = Math.max(window.devicePixelRatio || 2, 2);
