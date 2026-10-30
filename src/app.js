@@ -984,9 +984,7 @@ const initEventListeners = () => {
         // In a project, the project link comes first, and the map link shares the map alone
         const inProject = onMap && !!projects.current();
         dom.shareProjectLink.hidden = !inProject;
-        dom.shareCopyLink.querySelector('.share-menu-label').textContent = inProject ? 'Share this map link' : 'Share URL';
-        dom.shareCopyLink.querySelector('.share-menu-note').hidden = !inProject;
-        dom.shareMenu.classList.toggle('has-notes', inProject);
+        dom.shareCopyLink.textContent = inProject ? 'Share this map link' : 'Share URL';
         dom.shareMenu.classList.toggle('visible');
     });
     const shareLink = async (url) => {

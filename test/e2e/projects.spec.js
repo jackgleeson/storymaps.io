@@ -514,21 +514,20 @@ test('Share offers the project link first in a project, and the map alone after 
   // A map in no project has the one link
   await page.locator('#shareBtn').click();
   await expect(share.locator('#shareProjectLink')).toBeHidden();
-  await expect(share.locator('#shareCopyLink .share-menu-label')).toHaveText('Share URL');
-  await expect(share.locator('#shareCopyLink .share-menu-note')).toBeHidden();
+  await expect(share.locator('#shareCopyLink')).toHaveText('Share URL');
   await share.locator('#shareCopyLink').click();
   expect(await copied()).toBe(`${origin}/${a}`);
 
   await page.locator('#projectAddBtn').click();
   await panel(page).getByRole('button', { name: 'Create project' }).click();
-  await expect(page.locator('#appToast')).toHaveText('Project created. To share every map in it, use Share, then Share project link.');
+  await expect(page.locator('#appToast')).toHaveText('Project created. To share it, use Share project link.');
   await addByLink(page, b);
   const project = projectOf(page);
 
   await page.locator('#shareBtn').click();
   await expect(share.locator('.share-menu-item:visible')).toHaveText([
-    /^Share project link\s*Every map in the project, as tabs\. Opens on the first tab, so put the latest map first\.$/,
-    /^Share this map link\s*Only this map, without the project tabs$/,
+    'Share project link',
+    'Share this map link',
     'Share as image',
     'Download image',
   ]);

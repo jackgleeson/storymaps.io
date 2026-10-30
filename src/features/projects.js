@@ -311,7 +311,7 @@ const buildStart = () => {
         if (!project) return;
         closePanel();
         enter(project);
-        showToast('Project created. To share every map in it, use Share, then Share project link.', 6000);
+        showToast('Project created. To share it, use Share project link.', 6000);
     };
     create.addEventListener('click', submit);
     input.addEventListener('keydown', (e) => {
@@ -397,7 +397,6 @@ const buildManage = () => {
     });
     const linkRow = el('div', 'project-panel-row');
     linkRow.append(link, copy);
-    const linkHint = el('p', 'project-panel-hint', { text: 'Share this link and people always get every map in the project. It opens on the first tab, so put the latest map first.' });
     const listLabel = el('p', 'project-panel-label', { id: 'projectMapsLabel', text: 'Maps' });
     const list = el('ol', 'project-panel-list', { id: 'projectMapsList', ariaLabelledby: 'projectMapsLabel' });
     // Deleting the project is its own action, never a side effect of removing maps
@@ -414,7 +413,7 @@ const buildManage = () => {
         renderManageList();
         makeListSortable(list);
     });
-    return [heading, label, input, linkLabel, linkRow, linkHint, listLabel, list, error, footer];
+    return [heading, label, input, linkLabel, linkRow, listLabel, list, error, footer];
 };
 
 // Drag a map by the handle to a new place in the list; the arrows do the same from the keyboard

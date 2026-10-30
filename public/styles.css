@@ -354,25 +354,7 @@ body.welcome-visible .header {
     transition: background-color 0.1s ease;
 }
 
-/* In a project the link items say what each link shares */
-.share-menu.has-notes {
-    width: 260px;
-}
-
-.share-menu-label,
-.share-menu-note {
-    display: block;
-}
-
-.share-menu-note {
-    margin-top: 2px;
-    color: var(--color-text-secondary);
-    font-size: 12px;
-    line-height: 1.4;
-}
-
-.share-menu-item[hidden],
-.share-menu-note[hidden] {
+.share-menu-item[hidden] {
     display: none;
 }
 
