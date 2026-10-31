@@ -25,6 +25,8 @@ import * as build from '/src/features/build.js';
 import * as sliceLinks from '/src/features/slice-links.js';
 import * as freezeRows from '/src/features/freeze-rows.js';
 import * as projects from '/src/features/projects.js';
+import * as recentMaps from '/src/features/recent-maps.js';
+import * as bookmarkNudge from '/src/features/bookmark-nudge.js';
 import { parseLocation, projectPath } from '/src/core/project-links.js';
 
 const { isMapEditable } = lock;
@@ -60,6 +62,8 @@ const subscribeToMap = async (mapId) => {
 
     syncFromYjs();
     render();
+    recentMaps.noteOpened();
+    bookmarkNudge.start(mapId);
 
     const deferredTracking = async () => {
         await trackPresence();
@@ -75,6 +79,9 @@ const subscribeToMap = async (mapId) => {
         const provider = getProvider();
         if (provider) {
             projects.watch(provider, getYmap());
+            recentMaps.watch(getYmap());
+            // A map read from disk can get its name after it first opened
+            recentMaps.noteOpened();
             provider.awareness.on('change', () => {
                 const ydoc = getYdoc();
                 for (const [clientId, awarenessState] of provider.awareness.getStates()) {
@@ -324,6 +331,8 @@ const initEventListeners = () => {
         newMap();
     });
     projects.initListeners();
+    recentMaps.initListeners();
+    bookmarkNudge.initListeners();
     dom.projectMenuBtn.addEventListener('click', () => {
         closeMainMenu();
         projects.openFromMenu();
@@ -1314,11 +1323,13 @@ const initEventListeners = () => {
         dom.backupsBtn.disabled = !onMap;
         // A project starts from a map, so the home page doesn't offer one
         dom.projectMenuBtn.hidden = !onMap;
+        recentMaps.fillMenu();
     });
 
     // Submenu collapse helper
     const collapseSubmenus = (...except) => {
         const all = [
+            [dom.recentSubmenuTrigger, dom.recentSubmenu],
             [dom.samplesSubmenuTrigger, dom.samplesSubmenu],
             [dom.importSubmenuTrigger, dom.importSubmenu],
             [dom.exportSubmenuTrigger, dom.exportSubmenu],
@@ -1331,6 +1342,14 @@ const initEventListeners = () => {
             menu.querySelectorAll('.integration-options').forEach(o => o.classList.remove('visible'));
         });
     };
+
+    // Recent maps submenu toggle
+    dom.recentSubmenuTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        collapseSubmenus(dom.recentSubmenuTrigger);
+        dom.recentSubmenuTrigger.classList.toggle('expanded');
+        dom.recentSubmenu.classList.toggle('visible');
+    });
 
     // Samples submenu toggle
     dom.samplesSubmenuTrigger.addEventListener('click', (e) => {
@@ -1825,6 +1844,7 @@ const init = async () => {
             history.replaceState(null, '', '/');
             showWelcomeScreen();
             if (!project) {
+                recentMaps.forgetProject(where.projectId);
                 await showAlert("This project link doesn't open anything. The project may have been deleted, or the link may be wrong.");
             } else if (await showConfirm(`${project.name} has no maps yet. Create a new map in it?`)) {
                 window.location.replace(projectPath(where.projectId, 'new'));
@@ -1874,6 +1894,8 @@ const init = async () => {
             });
             setTimeout(showTutorialToast, 800);
         } else {
+            // The map is gone, so it leaves the recent list too
+            recentMaps.forgetMap(mapId);
             leaveMapForWelcome();
         }
     } else {

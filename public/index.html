@@ -178,6 +178,10 @@
                 <div class="dropdown-menu" id="mainMenu">
                     <button class="dropdown-item" id="newMapBtn"><span class="menu-icon">📄</span> New</button>
                     <button class="dropdown-item" id="copyExistingBtn" title="Duplicate this map to a new URL"><span class="menu-icon">📑</span> Copy this map</button>
+                    <div class="dropdown-submenu" id="recentSubmenuWrap" hidden>
+                        <button class="dropdown-item dropdown-submenu-trigger" id="recentSubmenuTrigger"><span><span class="menu-icon">🕘</span> Recent maps</span></button>
+                        <div class="dropdown-submenu-content" id="recentSubmenu"></div>
+                    </div>
                     <div class="dropdown-submenu">
                         <button class="dropdown-item dropdown-submenu-trigger" id="samplesSubmenuTrigger"><span><span class="menu-icon">📚</span> Samples</span></button>
                         <div class="dropdown-submenu-content" id="samplesSubmenu">
@@ -309,6 +313,7 @@
                         <button class="btn btn-large" id="welcomeTourBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: -2px;"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill="currentColor" stroke="none"/></svg>Take the Tour</button>
                         <button class="btn btn-large btn-secondary" id="welcomeNewBtn">Start Mapping</button>
                     </div>
+                    <button type="button" class="recent-line" id="recentMapsBtn" aria-haspopup="dialog" aria-expanded="false" hidden><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Open a recent map</button>
                     <span class="welcome-counter" id="welcomeCounter"></span>
                     <div class="welcome-samples">
                         <p class="welcome-samples-label">Try a sample story map</p>

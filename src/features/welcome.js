@@ -13,6 +13,8 @@ import { showAlert, showConfirm } from '/src/core/modals.js';
 import * as tour from '/src/features/tour.js';
 import { closeSearch } from '/src/features/search.js';
 import * as projects from '/src/features/projects.js';
+import * as recentMaps from '/src/features/recent-maps.js';
+import * as bookmarkNudge from '/src/features/bookmark-nudge.js';
 import { MAX_PROJECT_MAPS } from '/src/core/project-links.js';
 
 let _deps = {};
@@ -91,6 +93,8 @@ export const showWelcomeScreen = () => {
     state.mapLoaded = false;
     document.body.classList.add('welcome-visible');
     dom.welcomeScreen.classList.add('visible');
+    bookmarkNudge.stop();
+    recentMaps.updateHomeLine();
     dom.storyMapWrapper.classList.remove('visible');
     dom.boardName.classList.add('hidden');
     dom.zoomControls.classList.add('hidden');

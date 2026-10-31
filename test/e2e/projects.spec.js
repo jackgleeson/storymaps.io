@@ -520,7 +520,10 @@ test('Share offers the project link first in a project, then this map in the pro
 
   await page.locator('#projectAddBtn').click();
   await panel(page).getByRole('button', { name: 'Create project' }).click();
-  await expect(page.locator('#appToast')).toHaveText('Project created. To share it, use Share project link.');
+  // The reminder to bookmark the project shows in place of the note on sharing it
+  await expect(page.locator('#bookmarkNudge')).toContainText('Bookmark this project');
+  await expect(page.locator('#appToast')).not.toContainText('Project created');
+  await page.locator('#bookmarkNudge').getByRole('button', { name: 'Got it' }).click();
   await addByLink(page, b);
   const project = projectOf(page);
 

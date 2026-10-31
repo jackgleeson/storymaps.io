@@ -12,6 +12,7 @@ import { el } from '/src/core/constants.js';
 import { showAlert, showConfirm, showToast } from '/src/core/modals.js';
 import { parseMapId, parseLocation, projectPath, moveItem, MAX_PROJECT_MAPS } from '/src/core/project-links.js';
 import { ensureSortable } from '/src/core/yjs.js';
+import { readRecent, writeRecent, openedAgo } from '/src/core/recent-maps.js';
 
 const REFRESH_MS = 30_000;
 const CACHE_KEY = 'project:';
@@ -28,6 +29,9 @@ let _provider = null;
 let _panel = null;      // 'start', 'add' or 'manage' while that box is open
 let _trigger = null;    // the button that opened the box, focused again when it closes
 const _seenSignals = new Map();
+let _onShown = null;    // told when the server answers with the project around the open map
+let _onNamed = null;    // told when a project is started or renamed here; true when it showed something
+let _renamed = false;   // the project was renamed while its box was open
 
 const ICONS = {
     plus: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
@@ -36,6 +40,7 @@ const ICONS = {
     down: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>',
     grip: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>',
 };
+
 
 const mapLabel = (map) => map.id === _mapId ? (state.name || dom.boardName.value || 'Untitled map') : (map.name || 'Untitled map');
 
@@ -92,7 +97,14 @@ const apply = (projectId, seq, project) => {
         _project = project;
     }
     render();
+    _onShown?.();
 };
+
+// Call fn each time the project around the open map is confirmed by the server, or found gone
+export const onShown = (fn) => { _onShown = fn; };
+
+// Call fn when a project is started here, or renamed once its box closes
+export const onNamed = (fn) => { _onNamed = fn; };
 
 // Start showing a project around the open map
 const enter = (project) => {
@@ -149,11 +161,11 @@ const showError = (err, errorEl) => {
     }
 };
 
-// Start a project with the open map in it
-const start = async (name, errorEl) => {
+// Start a project with the open map in it, and any others picked
+const start = async (name, others, errorEl) => {
     if (errorEl) errorEl.hidden = true;
     try {
-        return await request('', { mapIds: [_mapId], name });
+        return await request('', { mapIds: [_mapId, ...others], name });
     } catch (err) {
         showError(err, errorEl);
         return null;
@@ -265,6 +277,10 @@ const closePanel = ({ restoreFocus = true } = {}) => {
     dom.projectName.setAttribute('aria-expanded', 'false');
     if (restoreFocus) _trigger?.focus();
     _trigger = null;
+    if (_renamed) {
+        _renamed = false;
+        _onNamed?.();
+    }
 };
 
 const openPanel = (kind, trigger) => {
@@ -282,10 +298,10 @@ const openPanel = (kind, trigger) => {
     const bar = dom.projectBar.getBoundingClientRect();
     const at = (trigger || dom.projectAddBtn).getBoundingClientRect();
     panel.style.left = `${Math.max(0, Math.min(at.left - bar.left, bar.width - panel.offsetWidth))}px`;
-    // The start box starts on the name field; the add box on New map; the manage box on the box
-    // itself, so a phone doesn't open its keyboard for a name that's already set
+    // The start box starts on the name field; the add box on its first recent map, or New map; the
+    // manage box on the box itself, so a phone doesn't open its keyboard for a name that's already set
     if (kind === 'start') panel.querySelector('input')?.focus();
-    else if (kind === 'add') panel.querySelector('button')?.focus();
+    else if (kind === 'add') panel.querySelector('.project-recent-tick, button')?.focus();
     else panel.focus();
 };
 
@@ -296,7 +312,54 @@ const errorLine = () => {
     return error;
 };
 
-// Start a project with this map in it. Maps are added afterwards, from Add map.
+// Maps opened recently in this browser, newest first, leaving out the ones given
+const recentMaps = (leaveOut) => readRecent().filter(e => e.kind === 'map' && !leaveOut.includes(e.id));
+
+// Maps opened recently, with tick boxes, for the start and add boxes. The fixed map is shown
+// ticked and can't be unticked. Ticks stop once room maps are ticked, so the project can take
+// them all. onChange is told how many are ticked.
+const recentPicker = (entries, { room, fixed = null, onChange }) => {
+    const now = Date.now();
+    const row = (e, { checked = false, disabled = false, note = '' } = {}) => {
+        const name = e.name || 'Untitled map';
+        const box = el('input', 'project-recent-tick', { type: 'checkbox', value: e.id, checked, disabled });
+        const text = el('span', 'project-recent-name', { text: name, title: `${name}, ${location.host}/${e.id}` });
+        if (note) text.append(el('span', 'project-panel-item-note', { text: ` ${note}` }));
+        const label = el('label');
+        label.append(box, text, el('span', 'project-recent-when', { text: openedAgo(e.at, now) }));
+        const item = el('li', 'project-recent-item');
+        item.append(label);
+        return item;
+    };
+    const heading = el('p', 'project-panel-label', { id: 'projectRecentLabel', text: 'Maps you\'ve opened recently' });
+    const list = el('ul', 'project-recent', { ariaLabelledby: 'projectRecentLabel' });
+    if (fixed) list.append(row(fixed, { checked: true, disabled: true, note: '(this map)' }));
+    list.append(...entries.map(e => row(e)));
+    const picked = () => [...list.querySelectorAll('.project-recent-tick:checked:not(:disabled)')].map(box => box.value);
+    const recount = () => {
+        const full = picked().length >= room;
+        list.querySelectorAll('.project-recent-tick:not(:checked)').forEach((box) => { box.disabled = full; });
+        onChange(picked().length);
+    };
+    list.addEventListener('change', recount);
+    const clear = el('button', 'project-recent-clear', { type: 'button', text: 'Clear list' });
+    clear.addEventListener('click', async () => {
+        if (!await showConfirm('Clear the list of recent maps?\n\nThe maps aren\'t deleted, and still open from their links.')) return;
+        writeRecent([]);
+        if (_panel) openPanel(_panel, _trigger);
+    });
+    const foot = el('p', 'project-recent-foot');
+    foot.append(el('span', '', { text: 'Maps opened in this browser. Only you see this list.' }), clear);
+    // A map now in the project leaves the list
+    const drop = (mapId) => {
+        list.querySelector(`.project-recent-tick[value="${CSS.escape(mapId)}"]`)?.closest('li').remove();
+        room--;
+    };
+    return { nodes: [heading, list, foot], picked, recount, drop };
+};
+
+// Start a project with this map in it, and any maps opened recently that are ticked. Other maps
+// are added afterwards, from Add map.
 const buildStart = () => {
     const heading = el('h2', 'project-panel-title', { id: 'projectPanelTitle', text: 'Start a project' });
     const intro = el('p', 'project-panel-hint', { text: 'A project keeps related maps in one place. The maps sit alongside each other as tabs, and you can move between them in one click.' });
@@ -304,14 +367,22 @@ const buildStart = () => {
     const input = el('input', 'project-panel-input', { id: 'projectStartName', type: 'text', placeholder: 'Untitled project', maxLength: 100, autocomplete: 'off' });
     const create = el('button', 'project-panel-primary', { type: 'button', text: 'Create project' });
     const error = errorLine();
+    const recent = recentMaps([_mapId]);
+    const fixed = { id: _mapId, name: state.name || dom.boardName.value, at: readRecent().find(e => e.kind === 'map' && e.id === _mapId)?.at ?? Date.now() };
+    const picker = recent.length ? recentPicker(recent, {
+        room: MAX_PROJECT_MAPS - 1,
+        fixed,
+        onChange: (n) => { create.textContent = n ? `Create project with ${n + 1} maps` : 'Create project'; },
+    }) : null;
     const submit = async () => {
         create.disabled = true;
-        const project = await start(input.value, error);
+        const project = await start(input.value, picker?.picked() || [], error);
         create.disabled = false;
         if (!project) return;
         closePanel();
         enter(project);
-        showToast('Project created. To share it, use Share project link.', 6000);
+        // The reminder to bookmark the project, or else a note on sharing it
+        if (!_onNamed?.()) showToast('Project created. To share it, use Share project link.', 6000);
     };
     create.addEventListener('click', submit);
     input.addEventListener('keydown', (e) => {
@@ -320,7 +391,7 @@ const buildStart = () => {
             submit();
         }
     });
-    return [heading, intro, label, input, error, create];
+    return [heading, intro, label, input, ...(picker?.nodes || []), error, create];
 };
 
 const buildAdd = () => {
@@ -364,7 +435,31 @@ const buildAdd = () => {
     const row = el('div', 'project-panel-row');
     row.append(input, addBtn);
     const hint = el('p', 'project-panel-hint', { text: 'Adding a map to a project doesn\'t change the map or the map link, and a map can be in other projects too. Removing a map from a project never deletes the map.' });
-    return [heading, newBtn, label, row, error, hint];
+    const recent = recentMaps(_project.maps.map(m => m.id));
+    if (!recent.length) return [heading, newBtn, label, row, error, hint];
+
+    // With maps opened recently, ticking them comes first, then pasting a link, then New map
+    const addPicked = el('button', 'project-panel-primary', { type: 'button', text: 'Add maps', disabled: true });
+    const picker = recentPicker(recent, {
+        room: MAX_PROJECT_MAPS - _project.maps.length,
+        onChange: (n) => {
+            addPicked.textContent = n ? `Add ${n} ${n === 1 ? 'map' : 'maps'}` : 'Add maps';
+            addPicked.disabled = !n;
+        },
+    });
+    addPicked.addEventListener('click', async () => {
+        addPicked.disabled = true;
+        for (const mapId of picker.picked()) {
+            // Stop at a map the project can't take, with the ones added so far gone from the list
+            if (!await change('/maps', { mapId }, error)) return picker.recount();
+            picker.drop(mapId);
+        }
+        closePanel();
+    });
+    heading.textContent = `Add maps to ${_project.name}`;
+    newBtn.className = 'project-panel-secondary';
+    label.textContent = 'Or paste the link to a map';
+    return [heading, ...picker.nodes, addPicked, label, row, newBtn, error, hint];
 };
 
 const buildManage = () => {
@@ -373,12 +468,20 @@ const buildManage = () => {
     const input = el('input', 'project-panel-input', { id: 'projectNameInput', type: 'text', value: _project?.name || '', maxLength: 100, autocomplete: 'off' });
     const error = errorLine();
     input.addEventListener('change', () => {
-        if (input.value.trim() && input.value.trim() !== _project?.name) change('/name', { name: input.value }, error);
+        if (input.value.trim() && input.value.trim() !== _project?.name) {
+            // The reminder waits for the box to close, which may be before the server answers
+            change('/name', { name: input.value }, error).then((done) => {
+                if (!done) return;
+                if (_panel === 'manage') _renamed = true;
+                else _onNamed?.();
+            });
+        }
     });
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            input.blur();
+            // Saves the name, keeping the keyboard in the box so Escape still closes it
+            dom.projectPanel.focus();
         }
     });
     // The project link, to share in place of links to single maps
@@ -475,6 +578,7 @@ const renderManageList = () => {
 // Show the tabs for a map that has just opened, when the page address names a project: from
 // the last visit straight away, then from the server
 export const load = (mapId) => {
+    _renamed = false;
     closePanel({ restoreFocus: false });
     const where = parseLocation(location.pathname);
     _mapId = mapId;
@@ -489,6 +593,7 @@ export const load = (mapId) => {
 
 // Hide the tabs when no map is open
 export const clear = () => {
+    _renamed = false;
     closePanel({ restoreFocus: false });
     _mapId = null;
     _projectId = null;
