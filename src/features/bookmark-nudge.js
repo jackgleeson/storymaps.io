@@ -48,9 +48,9 @@ const turnedOff = () => {
 
 // How to bookmark on this device
 const howTo = () => {
-    if (window.matchMedia('(pointer: coarse)').matches) return 'Add this page to your bookmarks.';
+    if (window.matchMedia('(pointer: coarse)').matches) return 'Add it from your browser menu.';
     const mac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
-    return `Press ${mac ? 'Cmd' : 'Ctrl'} + D to bookmark it.`;
+    return `Press ${mac ? 'Cmd' : 'Ctrl'} + D.`;
 };
 
 // Under the middle of what it points at, kept inside the screen
@@ -117,7 +117,7 @@ const canShow = (key) => !_callout && !!_mapId && _mapId === state.mapId
 const noteRenamed = () => {
     if (!dom.boardName.value.trim() || parseLocation(location.pathname).projectId || !canShow(_mapId)) return;
     markShown(_mapId);
-    show({ what: 'map', text: 'The link is the only way back to it.', link: location.href.split('#')[0], anchor: dom.boardName });
+    show({ what: 'map', text: 'Bookmark it to come back to it any time.', link: location.href.split('#')[0], anchor: dom.boardName });
 };
 
 // After a project is started or renamed here, once per project. True when it shows.
@@ -125,7 +125,7 @@ const noteProjectNamed = () => {
     const project = projects.current();
     if (!project || dom.projectName.hidden || !canShow(`p:${project.id}`)) return false;
     markShown(`p:${project.id}`);
-    show({ what: 'project', text: 'The project link is the only way back to it and its maps.', link: projects.projectLink(), anchor: dom.projectName });
+    show({ what: 'project', text: 'Bookmark it to come back to it and its maps any time.', link: projects.projectLink(), anchor: dom.projectName });
     return true;
 };
 

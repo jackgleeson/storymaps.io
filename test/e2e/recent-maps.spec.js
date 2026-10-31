@@ -122,7 +122,7 @@ test('naming a map shows the bookmark reminder once for that map', async ({ page
   await rename('Ordering v2');
   await expect(callout).toBeVisible();
   await expect(callout).toContainText('Bookmark this map');
-  await expect(callout).toContainText('The link is the only way back to it. Press Ctrl + D to bookmark it.');
+  await expect(callout).toContainText('Bookmark it to come back to it any time. Press Ctrl + D.');
   // It sits under the title
   const title = await page.locator('#boardName').boundingBox();
   const box = await callout.boundingBox();
@@ -231,7 +231,7 @@ test('a map in a project shows no map reminder; the project shows its own when s
   await expect(panel).toBeHidden();
   await expect(callout).toBeVisible();
   await expect(callout).toContainText('Bookmark this project');
-  await expect(callout).toContainText('The project link is the only way back to it and its maps.');
+  await expect(callout).toContainText('Bookmark it to come back to it and its maps any time. Press Ctrl + D.');
   const name = await page.locator('#projectName').boundingBox();
   expect((await callout.boundingBox()).y).toBeGreaterThan(name.y + name.height);
   await callout.getByRole('button', { name: 'Copy link' }).click();
