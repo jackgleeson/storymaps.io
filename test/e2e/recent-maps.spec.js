@@ -59,22 +59,26 @@ test('a map opened in a project is listed as the project, reopening on that map'
   await expect(list(page).locator('.recent-row')).toHaveAttribute('href', `/p/${project}/${b}`);
 });
 
-test('the main menu lists recent maps without the open one, and Clear list empties it', async ({ page, createMap }) => {
+test('the main menu lists recent maps, the open one greyed, and Clear list empties it', async ({ page, createMap }) => {
   const [a, b] = [await createMap(map('Ordering')), await createMap(map('Loyalty'))];
+  const open = page.locator('#recentSubmenu .recent-menu-open');
+  // With only the open map, it is still listed, as open now and not a link
   await openMap(page, a);
-  // With only the open map, there is nothing to list
-  await page.locator('#menuBtn').click();
-  await expect(page.locator('#recentSubmenuWrap')).toBeHidden();
+  await openRecentInMenu(page);
+  await expect(menuRows(page)).toHaveText(['Ordering']);
+  await expect(open).toContainText('Open now');
+  await expect(page.locator('#recentSubmenu a.recent-menu-item')).toHaveCount(0);
   await page.keyboard.press('Escape');
 
   await openMap(page, b);
   await openRecentInMenu(page);
-  await expect(menuRows(page)).toHaveText(['Ordering']);
-  await menuRows(page).first().click();
+  await expect(menuRows(page)).toHaveText(['Loyalty', 'Ordering']);
+  await expect(open.locator('.recent-name')).toHaveText('Loyalty');
+  await page.locator('#recentSubmenu a.recent-menu-item').click();
   await expect(page).toHaveURL(new RegExp(`/${a}$`));
 
   await openRecentInMenu(page);
-  await expect(menuRows(page)).toHaveText(['Loyalty']);
+  await expect(menuRows(page)).toHaveText(['Ordering', 'Loyalty']);
   await page.locator('#recentSubmenu .recent-menu-clear').click();
   expect(await acceptDialog(page)).toContain('Clear the list of recent maps?');
   await page.goto('/');
@@ -92,13 +96,15 @@ test('one map can be removed, and a map that no longer exists leaves the list', 
   await list(page).getByRole('button', { name: 'Remove Loyalty from recent maps' }).click();
   await expect(rows(page)).toHaveText(['Ordering']);
 
-  // A link to a map the server doesn't have
-  await page.evaluate(() => {
+  // A link to a map the server doesn't have. A new ID each run, as opening one leaves it known to
+  // the server, and a retry would find it.
+  const gone = `gone${Math.random().toString(36).slice(2, 6)}`;
+  await page.evaluate((id) => {
     const list = JSON.parse(localStorage.getItem('recentMaps'));
-    list.unshift({ kind: 'map', id: 'gone0000', name: 'Old map', at: Date.now() });
+    list.unshift({ kind: 'map', id, name: 'Old map', at: Date.now() });
     localStorage.setItem('recentMaps', JSON.stringify(list));
-  });
-  await page.goto('/gone0000');
+  }, gone);
+  await page.goto(`/${gone}`);
   await expect(page.locator('#welcomeNewBtn')).toBeVisible();
   await homeLine(page).click();
   await expect(rows(page)).toHaveText(['Ordering']);
@@ -252,4 +258,37 @@ test('a map in a project shows no map reminder; the project shows its own when s
   await panel.getByRole('button', { name: 'Create project' }).click();
   await expect(callout).toContainText('Bookmark this project');
   await expect(page.locator('#appToast')).not.toContainText('Project created');
+});
+
+test('a deleted project leaves the list, and a project without the map reopens on its first map', async ({ page, request, createMap }) => {
+  const [a, b, c] = [await createMap(map('Ordering')), await createMap(map('Loyalty')), await createMap(map('Barista'))];
+  const make = async (name, mapIds) => (await (await request.post('/api/projects', { data: { mapIds, name }, headers: { origin: 'http://localhost' } })).json()).project.id;
+  const [kept, gone] = [await make('Coffee app', [a, b]), await make('Old plans', [c])];
+  const panel = page.locator('#projectPanel');
+  const recent = () => page.evaluate(() => JSON.parse(localStorage.getItem('recentMaps') || '[]').map(e => `${e.kind}:${e.name}:${e.mapId || ''}`));
+
+  // Deleting a project here
+  await page.goto(`/p/${gone}/${c}`);
+  await expect(page.locator('#projectTabs .project-tab')).toHaveCount(1);
+  await expect.poll(recent).toEqual([`project:Old plans:${c}`]);
+  await page.locator('#projectName').click();
+  await panel.getByRole('button', { name: 'Delete project' }).click();
+  expect(await acceptDialog(page)).toContain('Delete the project "Old plans"?');
+  await expect(page).toHaveURL(new RegExp(`/${c}$`));
+  await expect.poll(recent).toEqual(['map:Barista:']);
+
+  // Removing the open map from a project
+  await page.goto(`/p/${kept}/${a}`);
+  await expect(page.locator('#projectTabs .project-tab')).toHaveCount(2);
+  await page.locator('#projectName').click();
+  await panel.getByRole('button', { name: 'Remove Ordering from the project' }).click();
+  await acceptDialog(page);
+  await expect(page).toHaveURL(new RegExp(`/${a}$`));
+  await expect.poll(recent).toEqual(['map:Ordering:', `project:Coffee app:${b}`, 'map:Barista:']);
+
+  // Deleted somewhere else: gone once its link is opened
+  await request.post(`/api/projects/${kept}/delete`, { data: {}, headers: { origin: 'http://localhost' } });
+  await page.goto(`/p/${kept}/${b}`);
+  await expect(page).toHaveURL(new RegExp(`/${b}$`));
+  await expect.poll(recent).toEqual(['map:Loyalty:', 'map:Ordering:', 'map:Barista:']);
 });

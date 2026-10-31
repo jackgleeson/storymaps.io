@@ -29,7 +29,7 @@ let _provider = null;
 let _panel = null;      // 'start', 'add' or 'manage' while that box is open
 let _trigger = null;    // the button that opened the box, focused again when it closes
 const _seenSignals = new Map();
-let _onShown = null;    // told when the server answers with the project around the open map
+let _onShown = null;    // told when the server answers about the project around the open map
 let _onNamed = null;    // told when a project is started or renamed here; true when it showed something
 let _renamed = false;   // the project was renamed while its box was open
 
@@ -97,10 +97,11 @@ const apply = (projectId, seq, project) => {
         _project = project;
     }
     render();
-    _onShown?.();
+    _onShown?.(projectId, project);
 };
 
-// Call fn each time the project around the open map is confirmed by the server, or found gone
+// Call fn(projectId, project) each time the server answers about the project around the open map:
+// project is null when the project is gone, and may no longer have the open map in it
 export const onShown = (fn) => { _onShown = fn; };
 
 // Call fn when a project is started here, or renamed once its box closes

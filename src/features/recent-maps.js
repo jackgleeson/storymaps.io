@@ -70,6 +70,24 @@ export const forgetProject = (projectId) => {
     updateHomeLine();
 };
 
+// The server answered about the project around the open map. A project that's gone leaves the
+// list. A project that no longer has this map reopens on its first map instead, or leaves the list
+// when it has none.
+const noteProject = (projectId, project) => {
+    if (!project) {
+        forgetProject(projectId);
+    } else if (!project.maps.some(m => m.id === state.mapId)) {
+        const first = project.maps[0]?.id;
+        writeRecent(readRecent()
+            .map(e => e.kind === 'project' && e.id === projectId && e.mapId === state.mapId
+                ? (first ? { ...e, mapId: first, maps: project.maps.length } : null)
+                : e)
+            .filter(Boolean));
+        updateHomeLine();
+    }
+    noteOpened();
+};
+
 const removeFromList = (entry) => {
     writeRecent(readRecent().filter(e => !(e.kind === entry.kind && e.id === entry.id)));
     updateHomeLine();
@@ -181,16 +199,22 @@ const closeList = ({ restoreFocus = true } = {}) => {
 };
 
 // =============================================================================
-// Main menu: Recent maps, without the map that's open
+// Main menu: Recent maps, with the map or project that's open shown but not as a link
 // =============================================================================
 
 export const fillMenu = () => {
     const wrap = dom.recentSubmenuWrap;
     if (!wrap) return;
-    const list = readRecent().filter(e => !isOpen(e));
+    const list = readRecent();
     wrap.hidden = list.length === 0;
     const now = Date.now();
     const items = list.slice(0, MENU_LIMIT).map((e) => {
+        if (isOpen(e)) {
+            const here = el('span', `dropdown-item recent-menu-item recent-menu-open recent-row-${e.kind}`, { ariaCurrent: 'page' });
+            here.append(...entryParts(e, now));
+            here.lastChild.textContent = 'Open now';
+            return here;
+        }
         const link = el('a', `dropdown-item recent-menu-item recent-row-${e.kind}`, { href: entryPath(e) });
         link.append(...entryParts(e, now));
         return link;
@@ -221,6 +245,6 @@ export const initListeners = () => {
     });
     window.addEventListener('resize', placeList);
     dom.boardName.addEventListener('input', noteRenamed);
-    projects.onShown(noteOpened);
+    projects.onShown(noteProject);
     updateHomeLine();
 };

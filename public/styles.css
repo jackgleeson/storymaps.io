@@ -11530,6 +11530,14 @@ html.dark-mode .recent-icon-project {
     margin-left: 12px;
 }
 
+/* The map or project that's open: listed, but not a link */
+.dropdown-item.recent-menu-open,
+.dropdown-item.recent-menu-open:hover {
+    background: none;
+    opacity: 0.55;
+    cursor: default;
+}
+
 .dropdown-item.recent-menu-clear {
     color: var(--color-text-muted);
     font-size: 12px;
