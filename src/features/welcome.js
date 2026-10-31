@@ -113,6 +113,8 @@ export const showWelcomeScreen = () => {
 export const hideWelcomeScreen = () => {
     state.mapLoaded = true;
     document.body.classList.remove('welcome-visible');
+    // The home page scrolls, the map page doesn't: start the map at the top
+    window.scrollTo(0, 0);
     dom.welcomeScreen.classList.remove('visible');
     dom.storyMapWrapper.classList.add('visible');
     dom.boardName.classList.remove('hidden');

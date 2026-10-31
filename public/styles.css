@@ -71,7 +71,10 @@
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: var(--color-bg-page);
+    /* dvh is the visible height. On phones vh includes the space under the address bar,
+       so the page could scroll by that much and hide the header */
     height: 100vh;
+    height: 100dvh;
     padding: 24px;
     display: flex;
     flex-direction: column;

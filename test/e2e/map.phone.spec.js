@@ -23,3 +23,16 @@ test('the main menu opens on a phone', async ({ page, createMap }) => {
   await page.locator('#menuBtn').tap();
   await expect(page.locator('#newMapBtn')).toBeVisible();
 });
+
+test('a map opened from a scrolled home page starts with the header in view', async ({ page }) => {
+  // Phones measure 100vh with the address bar hidden, so with the bar showing the map page is
+  // taller than the screen. The emulated phone has no bar, so make the page 56px taller
+  await page.goto('/');
+  await page.addStyleTag({ content: 'body:not(.welcome-visible) { height: calc(100vh + 56px) !important; }' });
+  await page.evaluate(() => window.scrollTo(0, 3000));
+  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(56);
+  await page.locator('.welcome-screen [data-sample="recipe-app"]').tap();
+  await expect(page.locator('.story-map-wrapper')).toBeVisible();
+  expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  await expect(page.locator('#menuBtn')).toBeInViewport();
+});
