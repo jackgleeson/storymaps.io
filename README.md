@@ -55,6 +55,9 @@ A larger product can span several maps, one per journey or area, grouped as a **
 - **Project links** - a project opens at `/p/<project>/<map>`, and `/p/<project>` opens the first map; a plain map link never shows projects, so adding a map to a project changes nothing for people who open the plain map link
 - **Start a project** - from the button under the header (on phones, from the main menu), with an optional name; adding maps comes after, from **+ Add map**: make a new map in the project or paste the link to one you have
 - **Manage** - click the project name to rename the project, drag or use the arrows to reorder maps, remove a map, or delete the project
+- **Share a project** - in a project, Share offers the project link first and the map on its own after it; Manage project shows the link with a Copy button
+- **Copy within a project** - Copy this map on a project link adds the copy to the project, straight after the original
+- **Many tabs** - when the tabs overflow the bar, arrows and faded edges show more; the mouse wheel scrolls them sideways, and the open map stays in view
 - **Many to many** - a map can be in any number of projects, and each project keeps a separate order, which suits tutorials that reuse maps
 - **Safe by design** - projects live beside the maps, never inside them, so no project change alters a map; removing a map never deletes the map, removing the last map keeps the project, and deleting a project is a separate step that leaves the maps alone
 - **Live** - tab changes show straight away for everyone with the same project open
@@ -98,6 +101,8 @@ A larger product can span several maps, one per journey or area, grouped as a **
 - **Infinite canvas** - Ctrl+scroll to zoom, right-click drag, or touch-drag to pan
 - **Pinch-to-zoom** - two-finger pinch to zoom on touch devices
 - **Zoom to fit** (Alt+R / Shift+0) - auto-fit all content to viewport
+- **Recent maps** - the maps and projects opened in this browser, from the line under Start Mapping on the home page and from **Recent maps** in the main menu; it keeps the last 20, each can be removed, and the list stays in the browser and is never sent to the server
+- **Bookmark reminder** - naming a map or a project shows a reminder to bookmark it, once each
 - **Keyboard shortcuts** - undo/redo (Ctrl+Z / Ctrl+Y), search (Ctrl+F), duplicate (Ctrl+D), delete (Delete/Backspace), zoom, pan
 
 ### Backups
@@ -115,16 +120,28 @@ A larger product can span several maps, one per journey or area, grouped as a **
 - **Focus Mode** - hide card metadata (status, points, tags, links) for a cleaner presentation view; toggle from the view controls; expand icons still appear on hover
 - **Copy map** - duplicate an existing map to a new URL
 - **Guided tour** - interactive walkthrough that teaches story mapping concepts using a Lego house example, with live demos of slices, legend cards, dark mode, the notepad, and the activity log
-- **Build with AI** - export your story map as a structured prompt to AI coding tools (Claude, ChatGPT, Gemini, Copilot) or app builders (Lovable, v0, Bolt, Replit); select a specific release slice, choose between Prototype (quick preview) and Full App (production-ready) build modes, add custom instructions, and copy the prompt or open it directly; CLI tool integration for Claude Code, Codex, and Gemini CLI via `npx storymaps`
+- **Build with AI** - turn the map into a prompt for app builders (Lovable, v0, Replit, Base44, Bolt), AI chat (ChatGPT, Claude, Gemini) or AI coding agents (Claude Code, Codex, Gemini CLI, Cursor, Windsurf, GitHub Copilot); pick a slice or the whole map, choose Prototype or Full App, add your own instructions, and copy the prompt. The prompt links to the map as YAML (`<map>.yaml`), or has the YAML in it for chat apps and when **Include map URL** is off. For Claude Code, Codex and Gemini CLI it is a terminal command that downloads the map with `npx storymaps pull` first
 - **Sample maps** - load examples to learn the methodology
 - **Map counter** - community stat showing total maps created
 - **Auto-save** - continuous save to local storage and server
+
+## Command Line
+
+The [Storymaps CLI](https://github.com/jackgleeson/storymaps-cli) keeps a map as a YAML file next to your code, so it can be version-controlled, reviewed in pull requests and handed to an AI coding agent:
+
+```bash
+npx storymaps pull storymaps.io/abc123    # download the map as storymap.yml
+npx storymaps diff                        # see what you changed
+npx storymaps push                        # send the changes back; people on the map see them straight away
+```
+
+It also has `init`, `status`, `log`, `lock`, `validate` and `convert`, and works with self-hosted instances. See the [CLI README](https://github.com/jackgleeson/storymaps-cli#readme) for every command.
 
 ## Architecture
 
 The server entry point is `server.js`, which delegates to modules in `server/`:
 - **WebSocket** - Real-time collaboration via y-websocket
-- **Static files** - Serves the client app from `public/` and `src/`
+- **Static files** - Serves the client app from `public/` and `src/`. Paths that can be a map, a project or a sample get the app page; anything else, like `/.env` or `/wp-login.php`, gets a 404
 - **REST API** - Route handlers in `server/routes/` for locks, backups, projects, activity log, stats, format endpoints (`.json`, `.yaml`, `.csv`), and server-proxied third-party imports/exports with SSE progress streaming. Requests to Jira, Asana, Phabricator and Linear go only to public addresses over HTTPS. The server checks the address of each host name before connecting, connects to the address it checked, and checks again on every redirect
 - **Middleware** - Origin checks, body parsing, and rate limiting in `server/middleware.js` and `server/rate-limit.js`. Through the API, each address can create 10 maps or projects a minute and 500 a day, push a map, change a project or request a new map ID 30 times a minute, and use the import, export, backup and unlock routes 5 times a minute
 
@@ -332,19 +349,20 @@ CI runs all of them on every push to `main` and every pull request.
 11. Use **Ctrl+F** to search or open the **Filter** panel to filter by status, colour, or tag
 12. Click, Shift+click, or marquee-drag to select multiple cards, then use the toolbar to bulk edit
 13. Use the **Notepad** to capture team notes and decisions
-14. Click **Share** to copy the URL, copy the map as an image, or download as PNG
+14. Click **Share** to copy the URL, copy the map as an image, or download as PNG; in a project, **Share project link** copies the link to the whole project
 15. Click **Start a project** under the header (or **Menu → Start a project** on phones) to keep related maps together as tabs; add maps with **+ Add map**, and click the project name to rename it, reorder or remove maps, or delete the project
 16. Use **Menu → Lock Map** to password-protect the map from edits
 17. Use **Ctrl+Z** / **Ctrl+Y** to undo and redo, **Ctrl+D** to duplicate
 18. Use **Ctrl+scroll** to zoom, **right-click drag** to pan, **Alt+R** to zoom to fit
 19. Select consecutive columns and use **Menu → Create Partial** to extract shared sequences into reusable map partials; manage them from the **Partials** panel
-20. Use the **view controls** (next to zoom) to toggle focus mode, full screen, dark mode, or cursor visibility
+20. Use the **view controls** (next to zoom) to toggle focus mode, full screen, dark mode, cursor visibility, or frozen rows
 21. Press **Esc** twice to exit full screen (single Esc still closes modals, search, etc.)
 22. Use **Menu → Backups** to create, restore, or delete map snapshots
 23. Use **Menu → Import** to import from JSON, YAML, CSV, or from Jira, Asana, Phabricator, or Linear (CSV file or API)
 24. Use **Menu → Export** to save as JSON, YAML, or CSV, or export to Jira, Asana, Phabricator, or Linear
 25. Use **Print** to save as PDF
-26. Click **Build with AI** to generate a prompt from your story map for AI coding tools or app builders; select a slice and target, add optional instructions, then copy or open the prompt
+26. Click **Build with AI** to generate a prompt from your story map for AI coding tools or app builders; select a slice and target, add optional instructions, then copy the prompt
+27. Use **Menu → Recent maps**, or the line under **Start Mapping** on the home page, to go back to a map or project you opened before
 
 ## Support
 If you find this tool useful, consider [buying me a coffee](https://buymeacoffee.com/jackgleeson). It goes towards server costs and helps me keep the app running.
