@@ -3,6 +3,7 @@
 
 import { dom } from '/src/ui/dom.js';
 import { serialize } from '/src/core/serialization.js';
+import { exportToYaml } from '/src/transfer/yaml.js';
 import { showConfirm } from '/src/core/modals.js';
 
 let _deps = {};
@@ -70,50 +71,49 @@ function updateBuildPrompt() {
         dom.buildAiCliToggle.checked = isCli;
         dom.buildAiFetchToggle.checked = !isChat;
     }
-    // Chat targets can't fetch URLs; hide the toggle and force inline JSON
-    dom.buildAiFetchToggleRow.style.display = isChat ? 'none' : '';
+    // Chat targets can't fetch URLs, so the map goes in the prompt. Terminal tools always fetch
+    // or pull it: YAML doesn't survive being squeezed into a quoted shell command
+    dom.buildAiFetchToggleRow.style.display = isChat || isCli ? 'none' : '';
     if (isChat) dom.buildAiFetchToggle.checked = false;
-    // CLI on: fetch visible but visually disabled; re-enables when CLI toggled off
+    if (isCli) dom.buildAiFetchToggle.checked = true;
     const useCli = isCli && dom.buildAiCliToggle.checked;
-    dom.buildAiFetchToggleRow.classList.toggle('disabled', useCli);
-    if (useCli) dom.buildAiFetchToggle.checked = true;
     const useFetch = dom.buildAiFetchToggle.checked;
     const isPrototype = (dom.buildAiModeSelect?.value || 'prototype') === 'prototype';
     const qualifier = isPrototype ? 'functional prototype' : 'full app';
-    const scope = sliceVal === 'all' ? 'the full map' : `the "${sliceName}" slice`;
+    const slice = sliceVal === 'all' ? null : state.slices[sliceVal];
+    // A slice with no name shows as "Slice 1" here, but the map has no slice by that name: point at it by position
+    const sliceRef = (q) => !slice ? 'the full map'
+        : slice.name ? `the ${q}${sliceName}${q} slice`
+        : `slice ${+sliceVal + 1} in the slices list (it has no name)`;
+    const scope = sliceRef('"');
     // The map on the site this app is served from, so a self-hosted copy points at itself
     const mapUrl = `${window.location.origin}/${encodeURIComponent(state.mapId)}`;
     let prompt;
     if (isCli) {
         const cmd = cliCommands[targetId];
-        const cliScope = sliceVal === 'all' ? 'the full map' : `the '${sliceName.replace(/'/g, "\\'")}' slice`;
+        const cliScope = slice?.name ? `the '${sliceName.replace(/'/g, "\\'")}' slice` : sliceRef();
         if (useCli) {
             const fileRef = targetId === 'codex' ? 'storymap.yml' : '@storymap.yml';
             let inner = `The storymap file ${fileRef} describes a product plan in user story map format. Use it as a structured specification. Your task: build a ${qualifier} of the features listed in ${cliScope}.`;
             if (extra) inner += ` ${shellEscape(extra)}`;
             prompt = `npx storymaps pull --force ${mapUrl} && ${cmd} "${inner}"`;
-        } else if (useFetch) {
-            let inner = `The JSON at ${mapUrl}.json describes a product plan in user story map format. Use it as a structured specification. Your task: build a ${qualifier} of the features listed in ${cliScope}.`;
-            if (extra) inner += ` ${shellEscape(extra)}`;
-            prompt = `${cmd} "${inner}"`;
         } else {
-            const json = shellEscape(JSON.stringify(serialize()));
-            let inner = `The JSON below describes a product plan in user story map format. Use it as a structured specification. Your task: build a ${qualifier} of the features listed in ${cliScope}.\\n\\n${json}`;
+            let inner = `The YAML at ${mapUrl}.yaml describes a product plan in user story map format. Use it as a structured specification. Your task: build a ${qualifier} of the features listed in ${cliScope}.`;
             if (extra) inner += ` ${shellEscape(extra)}`;
             prompt = `${cmd} "${inner}"`;
         }
     } else if (useFetch) {
-        let instructions = `The JSON at the URL below describes a product plan in user story map format.\nUse it as a structured specification. Your task: build a ${qualifier} of the features listed in ${scope}.`;
+        let instructions = `The YAML at the URL below describes a product plan in user story map format.\nUse it as a structured specification. Your task: build a ${qualifier} of the features listed in ${scope}.`;
         if (hasPromptSuffix && isPrototype) instructions += ' Output a single self-contained HTML file with inline CSS and JavaScript. Do not use frameworks that require a build step.';
         if (hasPromptSuffix && !isPrototype) instructions += ' Pick the tech stack yourself and provide the code.';
         if (extra) instructions += ` ${extra}`;
-        prompt = `${instructions}\n\n${mapUrl}.json`;
+        prompt = `${instructions}\n\n${mapUrl}.yaml`;
     } else {
-        let instructions = `The JSON below describes a product plan in user story map format.\nUse it as a structured specification. Your task: build a ${qualifier} of the features listed in ${scope}.`;
+        let instructions = `The YAML below describes a product plan in user story map format.\nUse it as a structured specification. Your task: build a ${qualifier} of the features listed in ${scope}.`;
         if (hasPromptSuffix && isPrototype) instructions += ' Output a single self-contained HTML file with inline CSS and JavaScript. Do not use frameworks that require a build step.';
         if (hasPromptSuffix && !isPrototype) instructions += ' Pick the tech stack yourself and provide the code.';
         if (extra) instructions += ` ${extra}`;
-        prompt = `${instructions}\n\n${JSON.stringify(serialize())}`;
+        prompt = `${instructions}\n\n${exportToYaml(serialize())}`;
     }
     dom.buildAiPrompt.value = prompt;
     dom.buildAiPrompt.rows = (useFetch || useCli) ? 3 : Math.min(12, prompt.split('\n').length + 1);
@@ -155,7 +155,6 @@ export const init = (deps) => {
         allTargetGrids().forEach(g => g.querySelectorAll('.build-ai-target').forEach(b => b.classList.remove('selected')));
         dom.buildAiTargets.querySelector('.build-ai-target').classList.add('selected');
         _lastTargetId = null;
-        dom.buildAiFetchToggleRow.classList.remove('disabled');
         dom.buildAiInstructionsInput.value = '';
         updateBuildPrompt();
         dom.buildAiModal.classList.add('visible');

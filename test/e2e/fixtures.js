@@ -108,3 +108,10 @@ export const addCard = async (page, name, column = 0) => {
   await page.keyboard.press('Escape');
   await expect(page.locator('#cardExpandModal')).toBeHidden();
 };
+
+// Sections of the Build with AI modal shorter than their content. The modal scrolls when it is taller than
+// the screen, and used to squash sections like the prompt instead
+export const squashedSections = (page) => page.evaluate(() =>
+  [...document.querySelector('.build-ai-body').children]
+    .filter(el => el.offsetParent && el.getBoundingClientRect().height < el.scrollHeight - 2)
+    .map(el => el.className || el.id));

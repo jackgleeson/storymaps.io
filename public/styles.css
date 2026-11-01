@@ -8355,6 +8355,11 @@ body.focus-mode .step.card-hovered .btn-expand {
     gap: 8px;
 }
 
+/* When the content is taller than the screen the body scrolls, rather than squashing a box like the prompt to nothing */
+.build-ai-body > * {
+    flex-shrink: 0;
+}
+
 .build-ai-label {
     font-size: 10.5px;
     font-weight: 600;
@@ -8491,11 +8496,6 @@ body.focus-mode .step.card-hovered .btn-expand {
     font-weight: 600;
     color: var(--color-text-secondary);
     letter-spacing: 0.01em;
-}
-
-.build-ai-toggle-row.disabled {
-    opacity: 0.35;
-    pointer-events: none;
 }
 
 .build-ai-selects-grid {
