@@ -24,12 +24,17 @@ export const lockState = {
 };
 
 let lockPollInterval = null;
+let lockPoll = null; // checks the open map, kept so a page coming back into view can check at once
 
 // Track previous editability to avoid unnecessary sortable reinit
 let wasEditable = true;
 
 export const init = ({ state, getProvider, getYdoc, getCursorColor, render, notepadUpdate, saveToStorage, closeMainMenu, initSortable, renderLegend, logEvent }) => {
     _state = state;
+    // The lock poll skips a hidden page: check at once when it comes back into view
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') lockPoll?.();
+    });
     _dom = {
         lockMapBtn: document.getElementById('lockMapBtn'),
         readOnlyBanner: document.getElementById('readOnlyBanner'),
@@ -117,7 +122,12 @@ export const subscribeLockState = (mapId) => {
         }
     };
 
-    lockPollInterval = setInterval(pollLock, 3000);
+    // A hidden page skips the poll and checks once when it comes back into view. Lock changes still
+    // arrive at once through awareness; the poll is the fallback
+    lockPoll = pollLock;
+    lockPollInterval = setInterval(() => {
+        if (document.visibilityState === 'visible') pollLock();
+    }, 3000);
 };
 
 // Clear lock poll
@@ -126,6 +136,7 @@ export const clearLockSubscription = () => {
         clearInterval(lockPollInterval);
         lockPollInterval = null;
     }
+    lockPoll = null;
     lockState.isLocked = false;
     lockState.passwordHash = null;
     lockState.sessionUnlocked = false;
