@@ -288,11 +288,14 @@ const server = createServer(async (req, res) => {
       }
     }
 
-    // SPA fallback: serve index.html for map URLs (no extension, not in subdirectories), samples,
-    // and project links: /p/<project id> and /p/<project id>/<map id>, with or without a slash on the end
+    // SPA fallback: serve index.html for paths that can be a map ID (also /new and /tour), samples,
+    // and project links: /p/<project id> and /p/<project id>/<map id>, with or without a slash on the end.
+    // Anything else, like /.env or /wp-login.php from scanners, is a 404
     let isHtmlFallback = false;
-    const isProjectPath = /^\/p\/[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)?\/?$/.test(reqPath);
-    if (!content && ext === '' && (!reqPath.includes('/', 1) || reqPath.startsWith('/sample/') || isProjectPath)) {
+    const isAppPath = /^\/[a-zA-Z0-9_-]{1,64}$/.test(reqPath)
+      || /^\/sample\/[a-zA-Z0-9_-]+$/.test(reqPath)
+      || /^\/p\/[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)?\/?$/.test(reqPath);
+    if (!content && isAppPath) {
       cacheKey = '/index.html';
       cached = fileCache.get(cacheKey);
       if (!cached) {

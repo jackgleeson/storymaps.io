@@ -299,6 +299,18 @@ describe('pages and files', () => {
     }
   });
 
+  test('map, project and sample links get the app, and paths scanners probe are a 404', async () => {
+    for (const path of ['/abc12345', '/new', '/tour', '/sample/recipe-app', '/p/abc12345', '/p/abc12345/def67890', '/p/abc12345/']) {
+      const res = await rawGet(path);
+      assert.equal(res.status, 200, path);
+      assert.ok(res.text.includes('<html'), `${path} got the app`);
+    }
+    for (const path of ['/.env', '/%2eenv', '/.git/config', '/.git', '/wp-login.php', '/:3000', '/[id]', '/*',
+      '/abc12345/', '/blog/wp-includes/js/json2.js', '/sample/x/y']) {
+      assert.equal((await rawGet(path)).status, 404, path);
+    }
+  });
+
   test('a map can be downloaded as JSON, YAML or CSV from its URL', async () => {
     const id = await createMap();
     assert.equal(JSON.parse((await api('GET', `/${id}.json`)).text).name, 'Small');
