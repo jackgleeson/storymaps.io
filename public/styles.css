@@ -3506,12 +3506,13 @@ mark.highlight::after {
     color: var(--color-teal);
 }
 
-html.dark-mode mark.highlight { color: #fef3c7; }
+/* Teal on dark, like the other accents on the home page */
+html.dark-mode mark.highlight { color: #5eead4; }
 html.dark-mode mark.highlight::before {
-    background: rgba(250, 204, 21, 0.16);
+    background: rgba(45, 212, 191, 0.14);
 }
 html.dark-mode mark.highlight::after {
-    background: rgba(248, 113, 113, 0.75);
+    background: rgba(45, 212, 191, 0.85);
 }
 
 .welcome-content h1 {
