@@ -306,8 +306,7 @@ const initEventListeners = () => {
         // A slice link on the open map only changes the hash; hashchange scrolls to the slice
         if (mapId && mapId === state.mapId && getYdoc() && !dom.welcomeScreen.classList.contains('visible')) return;
         if (mapId) {
-            if (await loadMapById(mapId)) hideWelcomeScreen();
-            else leaveMapForWelcome();
+            await openMapInPage(mapId);
         } else {
             destroyYjs();
             projects.clear();
@@ -332,7 +331,7 @@ const initEventListeners = () => {
         closeMainMenu();
         newMap();
     });
-    projects.initListeners();
+    projects.initListeners({ openMap: openMapInPage });
     recentMaps.initListeners();
     bookmarkNudge.initListeners();
     dom.projectMenuBtn.addEventListener('click', () => {
@@ -1764,6 +1763,13 @@ const mapKnownToServer = async (mapId) => {
     } catch {
         return null;
     }
+};
+
+// Open a map without loading the page again, for back and forward and for project tabs, so full
+// screen and the view stay as they are
+const openMapInPage = async (mapId) => {
+    if (await loadMapById(mapId)) hideWelcomeScreen();
+    else leaveMapForWelcome();
 };
 
 const loadMapById = async (mapId) => {

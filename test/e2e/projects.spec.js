@@ -107,6 +107,25 @@ test('tabs open each map fresh at the project link, and back returns to the last
   await expect(tabs(page).first()).toHaveAttribute('aria-current', 'page');
 });
 
+test('switching tabs keeps full screen, opening the map in the page', async ({ page, createMap }) => {
+  const [a, b] = [await createMap(map('Ordering', 'Browse', 'Pay')), await createMap(map('Loyalty', 'Join', 'Redeem'))];
+  await openMap(page, a, 2);
+  await addByLink(page, b);
+  await page.evaluate(() => { window.samePage = true; });
+  await page.locator('#toggleFullscreenBtn').click();
+  await expect.poll(() => page.evaluate(() => !!document.fullscreenElement)).toBe(true);
+
+  await tabs(page).nth(1).click();
+  await expect(page.locator('.step .step-text').first()).toHaveValue('Join');
+  await expect(tabs(page).nth(1)).toHaveAttribute('aria-current', 'page');
+  expect(await page.evaluate(() => window.samePage), 'no new page was loaded').toBe(true);
+  expect(await page.evaluate(() => !!document.fullscreenElement), 'still in full screen').toBe(true);
+
+  await tabs(page).nth(0).click();
+  await expect(page.locator('.step .step-text').first()).toHaveValue('Browse');
+  expect(await page.evaluate(() => !!document.fullscreenElement)).toBe(true);
+});
+
 test('a map in two projects shows each one at its own link', async ({ page, createMap }) => {
   const [shared, b, c] = [await createMap(map('Shared')), await createMap(map('Coffee')), await createMap(map('Tutorial'))];
   await openMap(page, shared, 2);

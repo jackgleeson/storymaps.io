@@ -679,7 +679,11 @@ export const openFromMenu = () => {
     openPanel(_project ? 'manage' : 'start', _project ? dom.projectName : dom.projectAddBtn);
 };
 
-export const initListeners = () => {
+// openMap(mapId) opens a map in the page, as back and forward do
+let _openMap = null;
+
+export const initListeners = ({ openMap } = {}) => {
+    _openMap = openMap;
     dom.projectAddBtn.addEventListener('click', () => {
         const kind = _project ? 'add' : 'start';
         if (_panel === kind) closePanel();
@@ -702,9 +706,16 @@ export const initListeners = () => {
         // Firefox can count in lines rather than pixels
         strip.scrollLeft += e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
     }, { passive: false });
-    // The current tab is the map already open
+    // Another tab opens its map in the page rather than loading a new one, so full screen and the
+    // view stay as they are. Ctrl, Cmd or Shift still follow the link, to open it somewhere else.
+    // The current tab is the map already open.
     dom.projectTabs.addEventListener('click', (e) => {
-        if (e.target.closest('.project-tab.current') && !e.metaKey && !e.ctrlKey && !e.shiftKey && e.button === 0) e.preventDefault();
+        const tab = e.target.closest('.project-tab');
+        if (!tab || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+        e.preventDefault();
+        if (tab.classList.contains('current') || !_openMap) return;
+        history.pushState({}, '', tab.getAttribute('href'));
+        _openMap(parseLocation(location.pathname).mapId);
     });
     dom.projectBackdrop.addEventListener('click', () => closePanel());
     dom.projectPanel.addEventListener('keydown', (e) => {
