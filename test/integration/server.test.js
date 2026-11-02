@@ -245,6 +245,8 @@ describe('HTTP API', () => {
     assert.equal((await api('POST', '/api/maps', { body: smallMap() })).status, 201, 'the CLI can create maps without an origin');
     const backup = await api('POST', `/api/backups/${id}`, { body: { note: 'x' }, headers: { 'x-forwarded-for': '203.0.113.78' } });
     assert.equal(backup.status, 200, 'the CLI can make a backup without an origin');
+    const [entry] = (await api('GET', `/api/maps/${id}/log`)).json;
+    assert.deepEqual([entry.src, entry.text], ['cli', 'Created backup'], 'and it goes in the activity log');
   });
 
   test('one address can create 10 maps a minute, while others still can', async () => {

@@ -109,6 +109,21 @@ const ctx = {
   isRateLimited, isProxyRateLimited, isCreateRateLimited,
   generateUniqueMapId, generateCardId,
   loadAndSerialize: (mapId, host) => loadAndSerialize(mapId, host, { Y, docs, getPersistence, readJson, LOCK_FILE, getBackupFile }),
+  // Add a CLI entry to a map's activity log, as a push does. An open map gets it straight away and
+  // counts it as an edit when it next saves; a closed one is loaded, given the entry and saved.
+  logToMap: async (mapId, text) => {
+    const open = docs.get(mapId);
+    if (open) { appendLogEntry(open, text); return; }
+    const persistence = getPersistence();
+    if (!persistence) return;
+    const doc = new Y.Doc();
+    await persistence.bindState(mapId, doc);
+    appendLogEntry(doc, text);
+    await persistence.provider.storeUpdate(mapId, Y.encodeStateAsUpdate(doc));
+    const { name } = serializeDoc(doc);
+    doc.destroy();
+    stmtUpdate.run(name || 'untitled', new Date().toISOString(), 1, mapId);
+  },
 };
 
 // Register all route modules

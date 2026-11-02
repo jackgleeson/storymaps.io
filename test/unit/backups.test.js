@@ -6,9 +6,10 @@ import { countCards } from '../../server/serialization.js';
 import { smallMap } from '../fixtures.js';
 
 // The backups and stats routes from server.js, with the JSON files kept in memory
-let handlers, files, maps, docs, mapCount;
+let handlers, files, maps, docs, mapCount, logged;
 beforeEach(() => {
   mapCount = 0;
+  logged = [];
   handlers = {};
   files = new Map();
   maps = new Map([['abc12345', { app: 'storymap', v: 1, exported: 'x', name: 'Small', id: 'abc12345', site: 'localhost', locked: false, ...smallMap() }]]);
@@ -28,13 +29,14 @@ beforeEach(() => {
     loadAndSerialize: async (mapId) => structuredClone(maps.get(mapId) ?? null),
     countCards,
     countMaps: () => mapCount,
+    logToMap: async (mapId, text) => { logged.push([mapId, text]); },
     docs,
   };
   registerBackups(ctx);
   registerStats(ctx);
 });
 
-const call = async (method, path, { body = {}, limited = false } = {}) => {
+const call = async (method, path, { body = {}, limited = false, origin } = {}) => {
   const [key, params] = Object.keys(handlers).map(k => {
     const [m, p] = k.split(' ');
     if (m !== method) return null;
@@ -43,7 +45,7 @@ const call = async (method, path, { body = {}, limited = false } = {}) => {
   }).find(Boolean) || [];
   assert.ok(key, `no route for ${method} ${path}`);
   const res = { status: null, body: null };
-  await handlers[key]({ headers: { host: 'localhost' }, limited }, { writeHead: (s) => { res.status = s; }, end: (b) => { res.body = JSON.parse(b); } }, params, body);
+  await handlers[key]({ headers: { host: 'localhost', ...(origin && { origin }) }, limited }, { writeHead: (s) => { res.status = s; }, end: (b) => { res.body = JSON.parse(b); } }, params, body);
   return res;
 };
 
@@ -65,6 +67,17 @@ describe('backups', () => {
     for (const key of ['id', 'site', 'locked', 'exported']) assert.equal(key in saved, false, key);
     assert.deepEqual(saved.steps, smallMap().steps);
     assert.equal(res.body.size, full.data.length);
+  });
+
+  test('a backup from the CLI goes in the activity log, and one from the app is left to the app', async () => {
+    await call('POST', '/api/backups/abc12345', { body: { note: 'cli test' } });
+    await call('POST', '/api/backups/abc12345', { body: { note: 'From the app' }, origin: 'https://storymaps.io' });
+    assert.deepEqual(logged, [['abc12345', 'Created backup']]);
+  });
+
+  test('the backup the CLI makes before a restore is left to the restore entry', async () => {
+    await call('POST', '/api/backups/abc12345', { body: { note: 'Auto: before restore' } });
+    assert.deepEqual(logged, []);
   });
 
   test('the list shows each backup without its data', async () => {

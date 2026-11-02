@@ -174,14 +174,19 @@ export default function register(ctx) {
 
     try {
       const existingDoc = ctx.docs.get(mapId);
-      // A push adds one activity-log entry, which counts as one edit
+      // A push adds one activity-log entry, which counts as one edit. A restore from the CLI says
+      // so with X-Restored-Backup, and is logged as a restore rather than a list of changes.
       let logged = false;
+      const restored = !!req.headers['x-restored-backup'];
+      const logPush = (doc, result) => {
+        const entry = restored ? { text: 'Restored backup', ids: result?.ids || [] } : result;
+        if (entry) { ctx.appendLogEntry(doc, entry.text, entry.ids); logged = true; }
+      };
 
       if (existingDoc) {
         const oldSnapshot = ctx.serializeDoc(existingDoc);
         ctx.writeDocFromJson(existingDoc, body, ctx.Y);
-        const result = ctx.diffPush(oldSnapshot, body, existingDoc);
-        if (result) { ctx.appendLogEntry(existingDoc, result.text, result.ids); logged = true; }
+        logPush(existingDoc, ctx.diffPush(oldSnapshot, body, existingDoc));
       } else {
         const persistence = ctx.getPersistence();
         if (!persistence) {
@@ -193,8 +198,7 @@ export default function register(ctx) {
         await persistence.bindState(mapId, doc);
         const oldSnapshot = ctx.serializeDoc(doc);
         ctx.writeDocFromJson(doc, body, ctx.Y);
-        const result = ctx.diffPush(oldSnapshot, body, doc);
-        if (result) { ctx.appendLogEntry(doc, result.text, result.ids); logged = true; }
+        logPush(doc, ctx.diffPush(oldSnapshot, body, doc));
         await persistence.provider.storeUpdate(mapId, ctx.Y.encodeStateAsUpdate(doc));
         doc.destroy();
       }

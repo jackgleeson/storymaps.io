@@ -45,6 +45,10 @@ export default function register(ctx) {
       data: JSON.stringify(snapshot),
     };
     await ctx.updateJson(ctx.getBackupFile(mapId), [], (backups) => keepNewest([...backups, entry]));
+    // The app logs its own backups with the person's name. A request with no origin comes from the
+    // CLI or a script, so the server logs it. Backups made as part of another change, like the one
+    // before a restore, are left to that change's own entry.
+    if (!req.headers.origin && !entry.note.startsWith('Auto: ')) await ctx.logToMap(mapId, 'Created backup');
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ id: entry.id, timestamp: entry.timestamp, note: entry.note, mapName: entry.mapName, size: entry.data.length, cardCount: entry.cardCount }));
   });

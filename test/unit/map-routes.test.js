@@ -167,6 +167,14 @@ describe('PUT /api/maps/:id', () => {
     assert.equal(server.rows.get(id).edit_count, 1);
   });
 
+  test('a restore from the CLI is logged as a restore, even when it changes nothing', async () => {
+    await server.call('PUT', `/api/maps/${id}`, { body: edited(), headers: { 'x-restored-backup': '0123456789ab' } });
+    await server.call('PUT', `/api/maps/${id}`, { body: edited(), headers: { 'x-restored-backup': '0123456789ab' } });
+    const log = (await server.call('GET', `/api/maps/${id}/log`)).json;
+    assert.deepEqual(log.slice(0, 2).map(e => e.text), ['Restored backup', 'Restored backup']);
+    assert.equal(server.rows.get(id).edit_count, 2);
+  });
+
   test('a push that changes nothing is not counted as an edit', async () => {
     await server.call('PUT', `/api/maps/${id}`, { body: smallMap() });
     assert.equal(server.rows.get(id).edit_count, 0);
