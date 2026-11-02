@@ -126,6 +126,22 @@ test('switching tabs keeps full screen, opening the map in the page', async ({ p
   expect(await page.evaluate(() => !!document.fullscreenElement)).toBe(true);
 });
 
+test('a tab shows the loading spinner while its map opens', async ({ page, createMap }) => {
+  const [a, b] = [await createMap(map('Ordering', 'Browse', 'Pay')), await createMap(map('Loyalty', 'Join', 'Redeem'))];
+  await openMap(page, a, 2);
+  await addByLink(page, b);
+  // Hold the second map back, as a slow connection would. The spinner waits 400ms, and two
+  // seconds leaves the test plenty of time to see it.
+  await page.route(`**/api/maps/${b}/meta`, async (route) => {
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    await route.continue();
+  });
+  await tabs(page).nth(1).click();
+  await expect(page.locator('#loadingIndicator')).toBeVisible();
+  await expect(page.locator('.step .step-text').first()).toHaveValue('Join');
+  await expect(page.locator('#loadingIndicator')).toBeHidden();
+});
+
 test('a map in two projects shows each one at its own link', async ({ page, createMap }) => {
   const [shared, b, c] = [await createMap(map('Shared')), await createMap(map('Coffee')), await createMap(map('Tutorial'))];
   await openMap(page, shared, 2);

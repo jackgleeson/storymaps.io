@@ -1532,6 +1532,15 @@ body.welcome-visible .gh-star {
 
 
 /* Story Map Container */
+/* Opening another map in the page: the board fades out, and back in once the map fits the screen */
+.story-map-wrapper.map-fading .story-map {
+    transition: opacity 0.15s ease;
+}
+
+.story-map-wrapper.map-switching .story-map {
+    opacity: 0;
+}
+
 .story-map {
     position: relative; /* Required for cursor positioning */
     display: inline-flex;

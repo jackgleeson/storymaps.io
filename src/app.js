@@ -1766,10 +1766,27 @@ const mapKnownToServer = async (mapId) => {
 };
 
 // Open a map without loading the page again, for back and forward and for project tabs, so full
-// screen and the view stay as they are
+// screen stays as it is. The board fades out while the map arrives, and back in once the new map
+// fits the screen, so it never shows at the last map's zoom first. The spinner only shows if the
+// map is slow, so a quick switch doesn't flash it.
 const openMapInPage = async (mapId) => {
-    if (await loadMapById(mapId)) hideWelcomeScreen();
-    else leaveMapForWelcome();
+    const board = dom.storyMapWrapper;
+    clearTimeout(board._fadeTimer);
+    board.classList.add('map-fading', 'map-switching');
+    const spinner = setTimeout(showLoading, 400);
+    const loaded = await loadMapById(mapId);
+    clearTimeout(spinner);
+    hideLoading();
+    if (!loaded) {
+        board.classList.remove('map-fading', 'map-switching');
+        leaveMapForWelcome();
+        return;
+    }
+    hideWelcomeScreen();
+    zoomToFit();
+    board.classList.remove('map-switching');
+    board._fadeTimer = setTimeout(() => board.classList.remove('map-fading'), 200);
+    requestAnimationFrame(() => sliceLinks.revealSliceFromHash(350));
 };
 
 const loadMapById = async (mapId) => {
