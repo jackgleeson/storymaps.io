@@ -22,6 +22,7 @@ const ICONS = {
 let _pop = null;     // the list under the home page line, while open
 let _shade = null;   // behind the list on a phone
 let _nameTimer = null;
+let _poppingListState = false; // the list closed and took back its history entry: skip that popstate
 
 const label = (e) => e.name || (e.kind === 'project' ? 'Untitled project' : 'Untitled map');
 
@@ -150,7 +151,11 @@ const renderList = () => {
     foot.append(el('span', '', { text: 'Bookmark maps you want to keep.' }), clear);
     const ul = el('ul', 'recent-list');
     ul.append(...rows);
-    _pop.replaceChildren(el('p', 'recent-title', { id: 'recentMapsTitle', text: 'Recently opened in this browser' }), ul, foot);
+    const close = el('button', 'recent-close', { type: 'button', html: ICONS.cross, title: 'Close', ariaLabel: 'Close recent maps' });
+    close.addEventListener('click', () => closeList());
+    const head = el('div', 'recent-head');
+    head.append(el('p', 'recent-title', { id: 'recentMapsTitle', text: 'Recently opened in this browser' }), close);
+    _pop.replaceChildren(head, ul, foot);
 };
 
 const placeList = () => {
@@ -170,7 +175,7 @@ const placeList = () => {
 const openList = () => {
     if (_pop) return;
     _shade = el('div', 'recent-shade');
-    _shade.addEventListener('click', () => closeList());
+    _shade.addEventListener('click', () => closeList({ restoreFocus: false }));
     _pop = el('div', 'recent-pop', { id: 'recentMapsPop', role: 'dialog', ariaLabelledby: 'recentMapsTitle', tabIndex: -1 });
     _pop.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
@@ -178,17 +183,30 @@ const openList = () => {
             closeList();
         }
     });
+    // Open a row in place of the list's history entry, so back from that map comes to the home page
+    _pop.addEventListener('click', (e) => {
+        const row = e.target.closest('a.recent-row');
+        if (!row || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        location.replace(row.href);
+    });
     document.body.append(_shade, _pop);
     renderList();
     if (!_pop) return;
+    // The back button closes the list rather than leaving the site: give it a history entry to go back from
+    history.pushState({ recentList: true }, '');
     placeList();
     dom.recentMapsBtn.setAttribute('aria-expanded', 'true');
     dom.recentMapsBtn.classList.add('open');
     (_pop.querySelector('a') || _pop).focus();
 };
 
-const closeList = ({ restoreFocus = true } = {}) => {
+const closeList = ({ restoreFocus = true, viaBack = false } = {}) => {
     if (!_pop) return;
+    if (!viaBack && history.state?.recentList) {
+        _poppingListState = true;
+        history.back();
+    }
     _pop.remove();
     _shade?.remove();
     _pop = null;
@@ -196,6 +214,17 @@ const closeList = ({ restoreFocus = true } = {}) => {
     dom.recentMapsBtn?.setAttribute('aria-expanded', 'false');
     dom.recentMapsBtn?.classList.remove('open');
     if (restoreFocus) dom.recentMapsBtn?.focus();
+};
+
+// For the popstate handler: true when the event belonged to the list, which is then closed
+export const handlePopState = () => {
+    if (_poppingListState) {
+        _poppingListState = false;
+        return true;
+    }
+    if (!_pop) return false;
+    closeList({ viaBack: true });
+    return true;
 };
 
 // =============================================================================
@@ -240,8 +269,9 @@ export const initListeners = () => {
         if (_pop) closeList();
         else openList();
     });
+    // The shade closes the list on its own click, so the tap doesn't land on what's under it
     document.addEventListener('pointerdown', (e) => {
-        if (_pop && !_pop.contains(e.target) && !dom.recentMapsBtn.contains(e.target) && !e.target.closest?.('.modal-overlay, .modal')) closeList({ restoreFocus: false });
+        if (_pop && !_pop.contains(e.target) && e.target !== _shade && !dom.recentMapsBtn.contains(e.target) && !e.target.closest?.('.modal-overlay, .modal')) closeList({ restoreFocus: false });
     });
     window.addEventListener('resize', placeList);
     dom.boardName.addEventListener('input', noteRenamed);

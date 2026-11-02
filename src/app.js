@@ -290,6 +290,8 @@ const initEventListeners = () => {
             cardExpand.clearPoppingExpandState();
             return;
         }
+        // Back closes the recent maps list, on the home page
+        if (recentMaps.handlePopState()) return;
         // Back button closes expand modal instead of navigating
         if (cardExpand.getExpandedItem()) {
             cardExpand.closeExpandViaBack();

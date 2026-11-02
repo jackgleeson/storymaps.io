@@ -34,10 +34,18 @@ test('maps opened here are listed from the home page, newest first, and open fro
   await expect(list(page).locator('.recent-when').first()).toHaveText('Just now');
   await expect(list(page).locator('.recent-foot')).toContainText('Bookmark maps you want to keep.');
 
-  // Escape closes it, back on the line that opened it
+  // Escape closes it, back on the line that opened it. The close button is for phones
+  await expect(list(page).getByRole('button', { name: 'Close recent maps' })).toBeHidden();
   await page.keyboard.press('Escape');
   await expect(list(page)).toBeHidden();
   await expect(homeLine(page)).toBeFocused();
+
+  // Back closes it too, staying on the home page
+  await homeLine(page).click();
+  await expect(list(page)).toBeVisible();
+  await page.goBack();
+  await expect(list(page)).toBeHidden();
+  await expect(page.locator('#welcomeNewBtn')).toBeVisible();
 
   await homeLine(page).click();
   await rows(page).filter({ hasText: 'Ordering' }).click();

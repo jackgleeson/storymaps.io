@@ -11393,6 +11393,33 @@ html.dark-mode .recent-line {
     outline: none;
 }
 
+.recent-head {
+    display: flex;
+    align-items: center;
+}
+
+/* Only on a phone, where the list is a sheet over the page */
+.recent-close {
+    display: none;
+    flex-shrink: 0;
+    margin-left: auto;
+    padding: 8px;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}
+
+.recent-close svg {
+    width: 16px;
+    height: 16px;
+}
+
+.recent-close:focus-visible {
+    outline: 2px solid var(--color-teal);
+}
+
 .recent-title {
     margin: 4px 14px 6px;
     color: var(--color-text-secondary);
@@ -11574,6 +11601,11 @@ html.dark-mode .recent-icon-project {
     .recent-row {
         padding: 11px 4px 11px 18px;
         font-size: 15px;
+    }
+
+    .recent-close {
+        display: flex;
+        margin-right: 8px;
     }
 
     .recent-title,
