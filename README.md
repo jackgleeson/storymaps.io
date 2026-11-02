@@ -109,7 +109,7 @@ A larger product can span several maps, one per journey or area, grouped as a **
 - **Manual backups** - create named snapshots of your map (up to 5 kept)
 - **Auto backups** - safety snapshots created automatically before imports and restores
 - **Restore** - roll back to any backup with one click; a safety backup is created first
-- **Portable backups** - backups travel with JSON/YAML exports and imports; imported backups are tagged so you can tell them apart from local ones
+- **Portable backups** - backups travel with JSON/YAML exports and imports; imported backups are tagged so you can tell them apart from local ones. Map links like `/<map>.yaml` give the map as it is now, without its backups
 - **Backup metadata** - each backup shows the map name, card count, size, and relative age
 
 ### Other

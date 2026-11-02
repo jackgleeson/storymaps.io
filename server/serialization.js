@@ -106,7 +106,7 @@ export const loadAndSerialize = async (mapId, host, { Y, docs, getPersistence, r
     const locks = await readJson(LOCK_FILE, {});
     const site = (host || '').replace(/:\d+$/, '');
     data = { app, v, exported, name, id: mapId, site, locked: !!locks[mapId]?.isLocked, ...rest };
-    // Include backups for format URLs and exports
+    // Include backups for the routes that need them; links like /<map>.yaml and the CLI API leave them out
     const backups = await readJson(getBackupFile(mapId), []);
     if (backups.length) data.backups = backups;
   }

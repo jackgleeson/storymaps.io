@@ -271,8 +271,11 @@ const server = createServer(async (req, res) => {
     if (!content && (!reqPath.includes('/', 1) || projectFormat) && (ext === '.json' || ext === '.yaml' || ext === '.csv')) {
       const mapId = projectFormat ? projectFormat[1] : reqPath.slice(1, -ext.length);
       if (mapId) {
-        const data = await ctx.loadAndSerialize(mapId, req.headers.host);
-        if (data) {
+        const loaded = await ctx.loadAndSerialize(mapId, req.headers.host);
+        if (loaded) {
+          // The map as it is now, without its backups: AI tools fetch these links, and old copies of
+          // the map would only mislead them. Export in the app still brings the backups along.
+          const { backups, ...data } = loaded;
           const body = ext === '.csv'
             ? exportToCsv(data)
             : ext === '.yaml'

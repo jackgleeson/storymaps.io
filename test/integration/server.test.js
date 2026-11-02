@@ -319,6 +319,17 @@ describe('pages and files', () => {
     assert.match(csv.headers.get('content-disposition'), /filename="small\.csv"/);
   });
 
+  test('a map downloaded from its URL leaves out its backups', async () => {
+    const id = await createMap();
+    const headers = { origin: ORIGIN, 'x-forwarded-for': '203.0.113.77' };
+    assert.equal((await api('POST', `/api/backups/${id}`, { body: { note: 'before import' }, headers })).status, 200);
+    assert.equal((await api('GET', `/api/backups/${id}`)).json.length, 1, 'the backup was made');
+    assert.equal(JSON.parse((await api('GET', `/${id}.json`)).text).backups, undefined);
+    const yaml = (await api('GET', `/${id}.yaml`)).text;
+    assert.match(yaml, /^name: Small/m);
+    assert.doesNotMatch(yaml, /backups:|before import/);
+  });
+
   test('/favicon.ico redirects to the SVG icon', async () => {
     const res = await fetch(`${base}/favicon.ico`, { redirect: 'manual' });
     assert.equal(res.status, 302);
