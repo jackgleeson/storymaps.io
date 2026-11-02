@@ -389,12 +389,24 @@ const initEventListeners = () => {
             dom.toggleDarkModeBtn.classList.toggle('active', darkMode);
             dom.toggleDarkModeBtn.title = darkMode ? 'Light mode' : 'Dark mode';
         }
+        // The main menu offers the other theme, for the home page, which has no view controls
+        const themeLabel = document.getElementById('themeMenuLabel');
+        if (themeLabel) themeLabel.textContent = darkMode ? 'Light mode' : 'Dark mode';
+        const themeIcon = document.getElementById('themeMenuIcon');
+        if (themeIcon) themeIcon.textContent = darkMode ? '☀️' : '🌙';
+        const heroDark = document.getElementById('welcomeHeroDark');
+        if (heroDark) heroDark.media = darkMode ? 'all' : 'not all';
     }
     applyDarkMode();
-    dom.toggleDarkModeBtn?.addEventListener('click', () => {
+    const toggleDarkMode = () => {
         darkMode = !darkMode;
         try { localStorage.setItem('darkMode', darkMode); } catch (e) {}
         applyDarkMode();
+    };
+    dom.toggleDarkModeBtn?.addEventListener('click', toggleDarkMode);
+    document.getElementById('themeMenuBtn')?.addEventListener('click', () => {
+        closeMainMenu();
+        toggleDarkMode();
     });
     window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
         try { if (localStorage.getItem('darkMode') !== null) return; } catch (ex) {}

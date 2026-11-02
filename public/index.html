@@ -194,6 +194,7 @@
                         </div>
                     </div>
                     <button class="dropdown-item" id="tourMenuBtn"><span class="menu-icon">🎓</span> Take a Tour</button>
+                    <button class="dropdown-item" id="themeMenuBtn"><span class="menu-icon" id="themeMenuIcon">🌙</span> <span id="themeMenuLabel">Dark mode</span></button>
                     <div class="dropdown-divider"></div>
                     <div class="dropdown-submenu">
                         <button class="dropdown-item dropdown-submenu-trigger" id="importSubmenuTrigger"><span><span class="menu-icon">📥</span> Import</span></button>
@@ -329,7 +330,12 @@
                 </div>
             </div>
             <div class="welcome-visual">
-                <img src="/resources/screenshot.png" alt="Storymaps.io user story mapping interface" class="welcome-hero-img" fetchpriority="high" width="1532" height="886">
+                <picture>
+                    <source srcset="/resources/screenshot-dark.png" media="(prefers-color-scheme: dark)" id="welcomeHeroDark">
+                    <img src="/resources/screenshot.png" alt="Storymaps.io user story mapping interface" class="welcome-hero-img" fetchpriority="high" width="1532" height="886">
+                </picture>
+                <!-- The dark screenshot follows the theme chosen here, which can differ from the system one -->
+                <script>document.getElementById('welcomeHeroDark').media = document.documentElement.classList.contains('dark-mode') ? 'all' : 'not all';</script>
                 <div class="sim-cursor" id="cursor-jessica">
                     <svg viewBox="0 0 16 20" fill="none"><path d="M1 1l5.5 17L9 11.5 15.5 9z" fill="#ef4444" stroke="#fff" stroke-width="1.2"/></svg>
                     <span class="sim-cursor-label" style="background:#ef4444">Jessica</span>

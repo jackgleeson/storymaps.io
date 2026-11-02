@@ -541,6 +541,11 @@ body.welcome-visible #mainMenu > .dropdown-submenu:has(> .dropdown-submenu-trigg
     display: none;
 }
 
+/* A map has the theme switch in its view controls; the home page has it in the menu */
+body:not(.welcome-visible) #themeMenuBtn {
+    display: none;
+}
+
 .dropdown-divider {
     height: 0;
     border: none;
@@ -3501,12 +3506,12 @@ mark.highlight::after {
     color: var(--color-teal);
 }
 
-html.dark-mode mark.highlight { color: #e2e8f0; }
+html.dark-mode mark.highlight { color: #fef3c7; }
 html.dark-mode mark.highlight::before {
-    background: rgba(254,240,138,0.25);
+    background: rgba(250, 204, 21, 0.16);
 }
 html.dark-mode mark.highlight::after {
-    background: rgba(220,60,60,0.45);
+    background: rgba(248, 113, 113, 0.75);
 }
 
 .welcome-content h1 {
@@ -8753,8 +8758,9 @@ html.dark-mode {
 
     /* Component-specific */
     --color-notepad-rule: #232f42;
-    --color-welcome-bg-from: #0f172a;
-    --color-welcome-bg-to: #1e293b;
+    /* Darker towards the bottom, so cards and buttons keep their fill against it */
+    --color-welcome-bg-from: #111b2f;
+    --color-welcome-bg-to: #0b1222;
     --color-loading-bg: #1e293b;
     --color-loading-text: #64748b;
     --color-loading-spinner-track: #334155;
@@ -9054,10 +9060,23 @@ html.dark-mode .welcome-content h1 {
     color: #f1f5f9;
 }
 html.dark-mode .welcome-subtitle {
-    color: #94a3b8;
+    color: #cbd5e1;
 }
 html.dark-mode .welcome-integrations-text {
-    color: #64748b;
+    color: #8392a8;
+}
+/* The brand blues are lost on a dark background: use their lighter shades */
+html.dark-mode .welcome-integration[data-import="jira"] svg {
+    fill: #4c9aff;
+}
+html.dark-mode .welcome-integration[data-import="phabricator"] svg path[fill="#069"] {
+    fill: #3d9fd6;
+}
+html.dark-mode .welcome-integration[data-import="phabricator"] svg path[fill="#900"] {
+    fill: #e0464b;
+}
+html.dark-mode .welcome-integration[data-import="linear"] svg {
+    fill: #8a93e6;
 }
 html.dark-mode .welcome-integration {
     background: var(--color-bg-surface);
@@ -9074,11 +9093,13 @@ html.dark-mode .welcome-counter {
 html.dark-mode .welcome-counter .count {
     color: #e2e8f0;
 }
+/* The screenshot sits in a faint teal glow, like the cards on a dark map */
 html.dark-mode .welcome-hero-img {
-    border-color: #334155;
+    border-color: #2b3a52;
     box-shadow:
-        0 20px 40px rgba(0, 0, 0, 0.3),
-        0 8px 16px rgba(0, 0, 0, 0.2);
+        0 0 0 1px rgba(45, 212, 191, 0.06),
+        0 24px 60px -12px rgba(20, 184, 166, 0.22),
+        0 20px 40px rgba(0, 0, 0, 0.45);
 }
 html.dark-mode .welcome-bottom {
     border-top-color: #1e293b;
