@@ -67,10 +67,10 @@ describe('backups', () => {
     assert.deepEqual(Object.keys(meta).sort(), ['cardCount', 'id', 'mapName', 'note', 'size', 'timestamp']);
   });
 
-  test('only the newest five backups are kept', async () => {
-    for (let i = 1; i <= 6; i++) await call('POST', '/api/backups/abc12345', { body: { note: `Backup ${i}` } });
+  test('only the newest eight backups are kept', async () => {
+    for (let i = 1; i <= 9; i++) await call('POST', '/api/backups/abc12345', { body: { note: `Backup ${i}` } });
     const notes = (await call('GET', '/api/backups/abc12345')).body.map(b => b.note);
-    assert.deepEqual(notes, ['Backup 2', 'Backup 3', 'Backup 4', 'Backup 5', 'Backup 6']);
+    assert.deepEqual(notes, ['Backup 2', 'Backup 3', 'Backup 4', 'Backup 5', 'Backup 6', 'Backup 7', 'Backup 8', 'Backup 9']);
   });
 
   test('backing up a map that does not exist is a 404', async () => {
@@ -110,19 +110,19 @@ describe('importing backups', () => {
 
   test('older imported backups do not push out newer ones, like the backup taken just before the import', async () => {
     const { id: beforeImport } = (await call('POST', '/api/backups/abc12345', { body: { note: 'Auto: before import' } })).body;
-    const older = Array.from({ length: 5 }, (_, i) => backup(`00000000000${i}`, `2025-0${i + 1}-01T00:00:00Z`));
+    const older = Array.from({ length: 8 }, (_, i) => backup(`00000000000${i}`, `2025-0${i + 1}-01T00:00:00Z`));
     await call('POST', '/api/backups/abc12345/import', { body: { backups: older } });
     const ids = (await call('GET', '/api/backups/abc12345')).body.map(b => b.id);
-    assert.equal(ids.length, 5);
+    assert.equal(ids.length, 8);
     assert.ok(ids.includes(beforeImport), 'the backup taken before the import is kept');
   });
 
   test('newer imported backups replace the oldest ones', async () => {
-    const old = Array.from({ length: 5 }, (_, i) => backup(`00000000000${i}`, `2025-0${i + 1}-01T00:00:00Z`));
+    const old = Array.from({ length: 8 }, (_, i) => backup(`00000000000${i}`, `2025-0${i + 1}-01T00:00:00Z`));
     await call('POST', '/api/backups/abc12345/import', { body: { backups: old } });
     await call('POST', '/api/backups/abc12345/import', { body: { backups: [backup('ffffffffffff', '2026-06-01T00:00:00Z')] } });
     const ids = (await call('GET', '/api/backups/abc12345')).body.map(b => b.id);
-    assert.deepEqual(ids, ['000000000001', '000000000002', '000000000003', '000000000004', 'ffffffffffff']);
+    assert.deepEqual(ids, ['000000000001', '000000000002', '000000000003', '000000000004', '000000000005', '000000000006', '000000000007', 'ffffffffffff']);
   });
 
   test('ignores a body without a list of backups', async () => {

@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 
-const MAX_BACKUPS = 5;
+const MAX_BACKUPS = 8;
 
 // Keep the newest backups by time. Imported backups can be older than the ones already here,
 // such as the backup taken just before an import, so they mustn't push those out.

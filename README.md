@@ -106,11 +106,12 @@ A larger product can span several maps, one per journey or area, grouped as a **
 - **Keyboard shortcuts** - undo/redo (Ctrl+Z / Ctrl+Y), search (Ctrl+F), duplicate (Ctrl+D), delete (Delete/Backspace), zoom, pan
 
 ### Backups
-- **Manual backups** - create named snapshots of your map (up to 5 kept)
+- **Manual backups** - create named snapshots of your map (up to 8 kept)
 - **Auto backups** - safety snapshots created automatically before imports and restores
 - **Restore** - roll back to any backup with one click; a safety backup is created first
 - **Portable backups** - backups travel with JSON/YAML exports and imports; imported backups are tagged so you can tell them apart from local ones. Map links like `/<map>.yaml` give the map as it is now, without its backups
 - **Backup metadata** - each backup shows the map name, card count, size, and relative age
+- **From the command line** - `storymaps backup`, `storymaps backups` and `storymaps restore` make, list and restore the same backups
 
 ### Other
 - **View controls** - quick-access toggle buttons for focus mode, full screen, dark mode, cursor visibility, and frozen rows alongside the zoom controls
@@ -135,7 +136,7 @@ npx storymaps diff                        # see what you changed
 npx storymaps push                        # send the changes back; people on the map see them straight away
 ```
 
-It also has `init`, `status`, `log`, `lock`, `validate` and `convert`, and works with self-hosted instances. See the [CLI README](https://github.com/jackgleeson/storymaps-cli#readme) for every command.
+It also has `init`, `status`, `log`, `lock`, `backup`, `restore`, `validate` and `convert`, and works with self-hosted instances. See the [CLI README](https://github.com/jackgleeson/storymaps-cli#readme) for every command.
 
 ## Architecture
 

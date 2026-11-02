@@ -42,6 +42,7 @@ describe('isCliApi', () => {
     assert.ok(isCliApi('/api/lock/abc12345', 'POST'));
     assert.ok(isCliApi('/api/lock/abc12345/unlock', 'POST'));
     assert.ok(isCliApi('/api/lock/abc12345/remove', 'POST'));
+    assert.ok(isCliApi('/api/backups/abc12345', 'POST'));
   });
 
   test('does not match reads', () => {
@@ -49,7 +50,9 @@ describe('isCliApi', () => {
   });
 
   test('does not match other write routes', () => {
-    assert.ok(!isCliApi('/api/backups/abc12345', 'POST'));
+    assert.ok(!isCliApi('/api/backups/abc12345/import', 'POST'));
+    assert.ok(!isCliApi('/api/backups/abc12345/0123456789ab', 'DELETE'));
+    assert.ok(!isCliApi('/api/backups/abc12345', 'PUT'));
     assert.ok(!isCliApi('/api/maps/abc12345/log', 'POST'));
     assert.ok(!isCliApi('/api/lock/abc12345/other', 'POST'));
     assert.ok(!isCliApi('/api/import/jira', 'POST'));

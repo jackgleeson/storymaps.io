@@ -224,11 +224,13 @@ describe('HTTP API', () => {
 
   test('writes from another site are refused, except the CLI routes', async () => {
     const id = await createMap();
-    const fromEvil = await api('POST', `/api/backups/${id}`, { body: { note: 'x' }, headers: { origin: 'https://evil.example' } });
+    const fromEvil = await api('POST', `/api/backups/${id}/import`, { body: { backups: [] }, headers: { origin: 'https://evil.example' } });
     assert.equal(fromEvil.status, 403);
-    const noOrigin = await api('POST', `/api/backups/${id}`, { body: { note: 'x' } });
+    const noOrigin = await api('POST', `/api/backups/${id}/import`, { body: { backups: [] } });
     assert.equal(noOrigin.status, 403);
     assert.equal((await api('POST', '/api/maps', { body: smallMap() })).status, 201, 'the CLI can create maps without an origin');
+    const backup = await api('POST', `/api/backups/${id}`, { body: { note: 'x' }, headers: { 'x-forwarded-for': '203.0.113.78' } });
+    assert.equal(backup.status, 200, 'the CLI can make a backup without an origin');
   });
 
   test('one address can create 10 maps a minute, while others still can', async () => {
