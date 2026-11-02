@@ -36,7 +36,6 @@ export default function register(ctx) {
       return;
     }
     const { id, site, locked, exported, backups: _b, ...snapshot } = data;
-    const backups = await ctx.readJson(ctx.getBackupFile(mapId), []);
     const entry = {
       id: randomBytes(6).toString('hex'),
       timestamp: new Date().toISOString(),
@@ -45,8 +44,7 @@ export default function register(ctx) {
       cardCount: ctx.countCards(snapshot),
       data: JSON.stringify(snapshot),
     };
-    backups.push(entry);
-    await ctx.writeJson(ctx.getBackupFile(mapId), keepNewest(backups));
+    await ctx.updateJson(ctx.getBackupFile(mapId), [], (backups) => keepNewest([...backups, entry]));
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ id: entry.id, timestamp: entry.timestamp, note: entry.note, mapName: entry.mapName, size: entry.data.length, cardCount: entry.cardCount }));
   });
@@ -60,12 +58,13 @@ export default function register(ctx) {
     }
     const imported = Array.isArray(body?.backups) ? body.backups : [];
     if (imported.length) {
-      const existing = await ctx.readJson(ctx.getBackupFile(mapId), []);
-      const existingIds = new Set(existing.map(b => b.id));
-      for (const b of imported) {
-        if (b.id && b.data && !existingIds.has(b.id)) existing.push({ ...b, imported: true });
-      }
-      await ctx.writeJson(ctx.getBackupFile(mapId), keepNewest(existing));
+      await ctx.updateJson(ctx.getBackupFile(mapId), [], (existing) => {
+        const existingIds = new Set(existing.map(b => b.id));
+        for (const b of imported) {
+          if (b.id && b.data && !existingIds.has(b.id)) existing.push({ ...b, imported: true });
+        }
+        return keepNewest(existing);
+      });
     }
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: true }));
@@ -84,12 +83,11 @@ export default function register(ctx) {
   });
 
   route('DELETE', '/api/backups/:mapId/:backupId', async (req, res, { mapId, backupId }) => {
-    const backups = await ctx.readJson(ctx.getBackupFile(mapId), []);
-    const idx = backups.findIndex(b => b.id === backupId);
-    if (idx !== -1) {
+    await ctx.updateJson(ctx.getBackupFile(mapId), [], (backups) => {
+      const idx = backups.findIndex(b => b.id === backupId);
+      if (idx === -1) return false;
       backups.splice(idx, 1);
-      await ctx.writeJson(ctx.getBackupFile(mapId), backups);
-    }
+    });
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: true }));
   });

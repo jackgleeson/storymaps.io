@@ -6,9 +6,9 @@ import { countCards } from '../../server/serialization.js';
 import { smallMap } from '../fixtures.js';
 
 // The backups and stats routes from server.js, with the JSON files kept in memory
-let handlers, files, maps, docs;
-const STATS_FILE = 'stats.json';
+let handlers, files, maps, docs, mapCount;
 beforeEach(() => {
+  mapCount = 0;
   handlers = {};
   files = new Map();
   maps = new Map([['abc12345', { app: 'storymap', v: 1, exported: 'x', name: 'Small', id: 'abc12345', site: 'localhost', locked: false, ...smallMap() }]]);
@@ -17,11 +17,17 @@ beforeEach(() => {
     route: (method, path, handler) => { handlers[`${method} ${path}`] = handler; },
     isProxyRateLimited: (req) => req.limited === true,
     readJson: async (path, fallback) => (files.has(path) ? structuredClone(files.get(path)) : fallback),
-    writeJson: async (path, data) => { files.set(path, structuredClone(data)); },
+    updateJson: async (path, fallback, fn) => {
+      const data = files.has(path) ? structuredClone(files.get(path)) : fallback;
+      const result = await fn(data);
+      if (result === false) return data;
+      files.set(path, structuredClone(result === undefined ? data : result));
+      return result === undefined ? data : result;
+    },
     getBackupFile: (mapId) => `backups/${mapId}.json`,
     loadAndSerialize: async (mapId) => structuredClone(maps.get(mapId) ?? null),
     countCards,
-    STATS_FILE,
+    countMaps: () => mapCount,
     docs,
   };
   registerBackups(ctx);
@@ -132,16 +138,17 @@ describe('importing backups', () => {
 });
 
 describe('stats', () => {
-  test('counts maps made and the people on open maps', async () => {
-    files.set(STATS_FILE, { mapCount: 41 });
+  test('counts the maps in the index and the people on open maps', async () => {
+    mapCount = 41;
     const people = (n) => ({ awareness: { getStates: () => new Map(Array.from({ length: n }, (_, i) => [i, {}])) } });
     docs.set('map00001', people(2));
     docs.set('map00002', people(1));
     assert.deepEqual((await call('GET', '/api/stats')).body, { mapCount: 41, activeUsers: 3 });
   });
 
-  test('a new map adds one to the count', async () => {
-    assert.deepEqual((await call('POST', '/api/stats')).body, { mapCount: 1 });
-    assert.deepEqual((await call('POST', '/api/stats')).body, { mapCount: 2 });
+  test('a page from before the count came from the index can still post, and changes nothing', async () => {
+    mapCount = 7;
+    assert.deepEqual((await call('POST', '/api/stats')).body, { mapCount: 7 });
+    assert.deepEqual((await call('POST', '/api/stats')).body, { mapCount: 7 });
   });
 });

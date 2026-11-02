@@ -45,9 +45,6 @@ export default function register(ctx) {
       }
 
       ctx.stmtInsert.run(id, body.name || 'untitled', now, now);
-      const stats = await ctx.readJson(ctx.STATS_FILE, { mapCount: 0 });
-      stats.mapCount = (stats.mapCount || 0) + 1;
-      await ctx.writeJson(ctx.STATS_FILE, stats);
 
       const site = (req.headers.host || '').replace(/:\d+$/, '');
       const proto = req.headers['x-forwarded-proto'] || 'http';

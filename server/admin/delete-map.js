@@ -13,7 +13,7 @@ import { rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import Database from 'better-sqlite3';
 import { LeveldbPersistence } from 'y-leveldb';
-import { DATA_DIR, LOCK_FILE, getBackupFile, readJson, writeJson } from '../data.js';
+import { DATA_DIR, LOCK_FILE, getBackupFile, readJson, updateJson } from '../data.js';
 import { createProjects } from '../projects.js';
 
 const args = process.argv.slice(2);
@@ -51,8 +51,7 @@ try {
     if (found.projects) projects.forget(id);
     if (found.backups) await rm(getBackupFile(id));
     if (found.lock) {
-      delete locks[id];
-      await writeJson(LOCK_FILE, locks);
+      await updateJson(LOCK_FILE, {}, (current) => { delete current[id]; });
     }
   }
   console.log(`${id}: ${dryRun ? 'would delete' : 'deleted'} ${what.join(', ')}`);

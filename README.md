@@ -123,7 +123,7 @@ A larger product can span several maps, one per journey or area, grouped as a **
 - **Guided tour** - interactive walkthrough that teaches story mapping concepts using a Lego house example, with live demos of slices, legend cards, dark mode, the notepad, and the activity log
 - **Build with AI** - turn the map into a prompt for app builders (Lovable, v0, Replit, Base44, Bolt), AI chat (ChatGPT, Claude, Gemini) or AI coding agents (Claude Code, Codex, Gemini CLI, Cursor, Windsurf, GitHub Copilot); pick a slice or the whole map, choose Prototype or Full App, add your own instructions, and copy the prompt. The prompt links to the map as YAML (`<map>.yaml`), or has the YAML in it for chat apps and when **Include map URL** is off. For Claude Code, Codex and Gemini CLI it is a terminal command that downloads the map with `npx storymaps pull` first
 - **Sample maps** - load examples to learn the methodology
-- **Map counter** - community stat showing total maps created
+- **Map counter** - community stat showing total maps created, counted from the map index
 - **Auto-save** - continuous save to local storage and server
 
 ## Command Line
@@ -175,7 +175,7 @@ Projects are kept in SQLite next to the map index (`projects` and `project_maps`
 ### Data Storage
 - **LevelDB** - Yjs document persistence in `data/`
 - **SQLite** - Map index with names and timestamps, and projects (`data/maps.db`)
-- **JSON files** - Lock state (`data/locks.json`), counters (`data/stats.json`), and backups (`data/backups/*.json`)
+- **JSON files** - Lock state (`data/locks.json`) and backups (`data/backups/*.json`), each saved to a temporary file and renamed into place, one change at a time
 
 ### Client
 The client has no build step - ES modules are loaded directly from `src/`. Third-party libraries (Yjs, CodeMirror, html-to-image, js-yaml, html2canvas) are vendored as pre-built bundles in `public/vendor/`.
@@ -276,7 +276,6 @@ All data lives in `./data/` on the host:
 - LevelDB files - Yjs document state
 - `maps.db` - SQLite map index and projects
 - `locks.json` - lock state
-- `stats.json` - counters
 - `backups/` - per-map backup snapshots
 
 Back up this directory regularly (e.g. a cron job with `tar` or `rsync`). To migrate to a new server, copy `data/` across and start the containers.

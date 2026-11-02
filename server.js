@@ -20,7 +20,7 @@ const __dirname = dirname(__filename);
 const PORT = process.env.PORT || 8080;
 
 // Shared utilities
-import { DATA_DIR, LOCK_FILE, STATS_FILE, BACKUPS_DIR, getBackupFile, ensureDataDir, readJson, writeJson, generateCardId } from './server/data.js';
+import { DATA_DIR, LOCK_FILE, BACKUPS_DIR, getBackupFile, ensureDataDir, readJson, updateJson, generateCardId } from './server/data.js';
 import { isRateLimited, isProxyRateLimited, isCreateRateLimited } from './server/rate-limit.js';
 import { sanitizeFilename } from './server/http-helpers.js';
 import { serializeDoc, contentEtag, loadAndSerialize, appendLogEntry, diffPush, writeDocFromJson, countCards } from './server/serialization.js';
@@ -72,6 +72,8 @@ const stmtUpdate = sqlite.prepare(
 );
 const stmtExists = sqlite.prepare('SELECT 1 FROM maps WHERE id = ?');
 const stmtMeta = sqlite.prepare('SELECT created_at, updated_at, edit_count FROM maps WHERE id = ?');
+// The "story maps created" count on the home page: every map with a row in the index
+const stmtCount = sqlite.prepare('SELECT count(*) AS n FROM maps');
 
 // Map and project IDs: 8 lower-case letters and digits
 const randomId = () => {
@@ -101,7 +103,8 @@ const ctx = {
   Y, docs, getPersistence,
   stmtInsert, stmtUpdate, stmtExists, stmtMeta, editCountSince, projects,
   getPendingEdits: (mapId) => pendingEdits.get(mapId) || 0,
-  readJson, writeJson, DATA_DIR, LOCK_FILE, STATS_FILE, getBackupFile,
+  readJson, updateJson, DATA_DIR, LOCK_FILE, getBackupFile,
+  countMaps: () => stmtCount.get().n,
   serializeDoc, contentEtag, appendLogEntry, diffPush, writeDocFromJson, countCards,
   isRateLimited, isProxyRateLimited, isCreateRateLimited,
   generateUniqueMapId, generateCardId,

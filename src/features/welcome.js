@@ -79,16 +79,6 @@ const unsubscribeFromCounter = () => {
     }
 };
 
-const incrementMapCounter = async () => {
-    try {
-        const res = await fetch('/api/stats', { method: 'POST' });
-        const data = await res.json();
-        localStorage.setItem('mapCount', data.mapCount);
-    } catch {
-        // Silently fail - counter is non-essential
-    }
-};
-
 export const showWelcomeScreen = () => {
     state.mapLoaded = false;
     document.body.classList.add('welcome-visible');
@@ -168,7 +158,6 @@ export const startNewMap = async () => {
     requestAnimationFrame(zoomToFit);
     setTimeout(showTutorialToast, 800);
     _deps.saveToStorage();
-    incrementMapCounter();
 };
 
 // Fetch a sample map, with its slice dates moved so the first is two weeks from today
@@ -203,7 +192,6 @@ export const startWithSample = async (sampleName, { showToast = true } = {}) => 
     requestAnimationFrame(zoomToFit);
     if (showToast) setTimeout(showTutorialToast, 800);
     _deps.saveToStorage();
-    incrementMapCounter();
 };
 
 export const newMap = async () => {
@@ -229,7 +217,6 @@ export const newMap = async () => {
     await _deps.createYjsDoc(mapId);
     _deps.subscribeToMap(mapId);
     _deps.saveToStorage();
-    incrementMapCounter();
 };
 
 // A copy of a map shown in a project goes in the project too, next to the original
@@ -258,7 +245,6 @@ export const copyMap = async () => {
     _deps.subscribeToMap(mapId);
     if (joins) await projects.joinNew(project.id, original);
     _deps.saveToStorage();
-    incrementMapCounter();
 };
 
 export const loadSample = async (name) => {

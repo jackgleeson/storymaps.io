@@ -222,6 +222,20 @@ describe('HTTP API', () => {
     assert.equal((await api('GET', '/api/nothing')).status, 404);
   });
 
+  test('the map count is the maps that exist, even when many are made at the same moment', async () => {
+    const before = (await api('GET', '/api/stats')).json.mapCount;
+    const made = await Promise.all(Array.from({ length: 30 }, () => api('POST', '/api/maps', { body: smallMap(), headers: newAddress() })));
+    assert.ok(made.every(r => r.status === 201));
+    assert.equal((await api('GET', '/api/stats')).json.mapCount, before + 30);
+  });
+
+  test('backups made at the same moment all land in a file that still reads', async () => {
+    const id = await createMap();
+    const made = await Promise.all(Array.from({ length: 6 }, (_, i) => api('POST', `/api/backups/${id}`, { body: { note: `b${i}` }, headers: { origin: ORIGIN, ...newAddress() } })));
+    assert.ok(made.every(r => r.status === 200));
+    assert.equal((await api('GET', `/api/backups/${id}`)).json.length, 6);
+  });
+
   test('writes from another site are refused, except the CLI routes', async () => {
     const id = await createMap();
     const fromEvil = await api('POST', `/api/backups/${id}/import`, { body: { backups: [] }, headers: { origin: 'https://evil.example' } });

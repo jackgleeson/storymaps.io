@@ -10,7 +10,7 @@ const captureHandlers = (register, extraCtx = {}) => {
     route: (method, path, handler) => { handlers[`${method} ${path}`] = handler; },
     isProxyRateLimited: () => false,
     readJson: async () => ({}),
-    writeJson: async () => {},
+    updateJson: async (path, fallback, fn) => fn(fallback),
     LOCK_FILE: '/dev/null',
     getBackupFile: () => '/dev/null',
     loadAndSerialize: async () => ({ name: 'x', steps: [] }),

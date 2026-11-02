@@ -10,13 +10,12 @@ import { importFromCsv } from '../../src/transfer/csv.js';
 import { fullMap, smallMap, cardLayout } from '../fixtures.js';
 
 const LOCK_FILE = 'locks.json';
-const STATS_FILE = 'stats.json';
 
 // The route context from server.js, with LevelDB, SQLite and the JSON files replaced by memory
 const makeServer = () => {
   const handlers = {};
   const stored = new Map(); // map ID -> Yjs update, standing in for LevelDB
-  const files = new Map();  // path -> JSON, standing in for locks.json, stats.json and backups
+  const files = new Map();  // path -> JSON, standing in for locks.json and backups
   const rows = new Map();   // map ID -> SQLite row
   const docs = new Map();   // maps open in a browser
   let nextId = 0;
@@ -30,7 +29,13 @@ const makeServer = () => {
     },
   };
   const readJson = async (path, fallback) => (files.has(path) ? structuredClone(files.get(path)) : fallback);
-  const writeJson = async (path, data) => { files.set(path, structuredClone(data)); };
+  const updateJson = async (path, fallback, fn) => {
+    const data = await readJson(path, fallback);
+    const result = await fn(data);
+    if (result === false) return data;
+    files.set(path, structuredClone(result === undefined ? data : result));
+    return result === undefined ? data : result;
+  };
   const getBackupFile = (id) => `backups/${id}.json`;
   const getPersistence = () => persistence;
 
@@ -43,7 +48,7 @@ const makeServer = () => {
     stmtMeta: { get: (id) => rows.get(id) },
     editCountSince: null,
     getPendingEdits: () => 0,
-    readJson, writeJson, LOCK_FILE, STATS_FILE, getBackupFile,
+    readJson, updateJson, LOCK_FILE, getBackupFile,
     serializeDoc, contentEtag, appendLogEntry, diffPush, writeDocFromJson, countCards,
     isRateLimited: (req) => req.limited === true,
     isCreateRateLimited: (req) => req.limited === true,
@@ -92,7 +97,7 @@ describe('POST /api/maps', () => {
     assert.equal(res.json.url, 'https://localhost/map00001');
   });
 
-  test('stores the content, a log entry, the map index row and the map count', async () => {
+  test('stores the content, a log entry and the map index row', async () => {
     const id = await create(server, fullMap());
     const got = await server.call('GET', `/api/maps/${id}`);
     const { app, v, exported, id: _id, site, locked, ...content } = got.json;
@@ -100,7 +105,6 @@ describe('POST /api/maps', () => {
     const log = (await server.call('GET', `/api/maps/${id}/log`)).json;
     assert.deepEqual(log.map(e => e.text), ['Created map via CLI']);
     assert.equal(server.rows.get(id).name, 'Coffee app');
-    assert.deepEqual(server.files.get(STATS_FILE), { mapCount: 1 });
   });
 
   test('is rate limited', async () => {
