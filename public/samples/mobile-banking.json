@@ -140,7 +140,7 @@
     {
       "name": "MVP",
       "goal": "Customers can log in and send money to a contact safely",
-      "targetDate": "2027-01-04",
+      "targetDate": "2026-11-17",
       "stories": [
         [
           {
@@ -237,11 +237,21 @@
           }
         ],
         [],
+        [
+          {
+            "name": "Skip for MVP",
+            "color": "#93c5fd"
+          }
+        ],
         [],
         [],
         [],
-        [],
-        [],
+        [
+          {
+            "name": "Skip for MVP",
+            "color": "#93c5fd"
+          }
+        ],
         [],
         []
       ]
@@ -249,7 +259,7 @@
     {
       "name": "V1",
       "goal": "Move money between your own accounts and apply for products",
-      "targetDate": "2027-02-01",
+      "targetDate": "2026-12-15",
       "stories": [
         [],
         [
@@ -446,7 +456,7 @@
     {
       "name": "V2",
       "goal": "Make everyday transfers faster with biometrics and favourites",
-      "targetDate": "2027-03-01",
+      "targetDate": "2027-01-12",
       "stories": [
         [],
         [
@@ -662,7 +672,7 @@
     {
       "name": "V3",
       "goal": "Help customers plan and save with recurring payments and new products",
-      "targetDate": "2027-05-31",
+      "targetDate": "2027-04-13",
       "stories": [
         [],
         [],
