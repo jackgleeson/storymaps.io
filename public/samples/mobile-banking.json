@@ -155,6 +155,7 @@
         [
           {
             "name": "Email and password login",
+            "url": "https://phabricator.com/acme/T202",
             "status": "done",
             "points": 3,
             "tags": [
@@ -196,6 +197,7 @@
         [
           {
             "name": "Summary screen",
+            "url": "https://phabricator.com/acme/T275",
             "status": "done",
             "points": 2,
             "tags": [
@@ -206,6 +208,7 @@
         [
           {
             "name": "Confirm button",
+            "url": "https://phabricator.com/acme/T254",
             "status": "done",
             "points": 1,
             "tags": [
@@ -277,6 +280,7 @@
           },
           {
             "name": "Daily transfer limit policy",
+            "url": "https://phabricator.com/acme/T270",
             "status": "done",
             "points": 2,
             "tags": [
@@ -315,6 +319,7 @@
         [
           {
             "name": "Select source account",
+            "url": "https://phabricator.com/acme/T298",
             "status": "done",
             "points": 1,
             "tags": [
@@ -345,6 +350,7 @@
           },
           {
             "name": "Show both balances",
+            "url": "https://phabricator.com/acme/T226",
             "status": "done",
             "points": 2,
             "tags": [
@@ -367,6 +373,7 @@
           },
           {
             "name": "Instant transfer confirmed",
+            "url": "https://phabricator.com/acme/T257",
             "status": "done",
             "points": 1,
             "tags": [
@@ -378,6 +385,7 @@
         [
           {
             "name": "List available products",
+            "url": "https://phabricator.com/acme/T291",
             "status": "done",
             "points": 2,
             "tags": [
@@ -444,6 +452,7 @@
         [
           {
             "name": "Biometric login",
+            "url": "https://phabricator.com/acme/T295",
             "status": "done",
             "points": 3,
             "tags": [
@@ -453,6 +462,7 @@
           },
           {
             "name": "Remember device",
+            "url": "https://phabricator.com/acme/T287",
             "status": "done",
             "points": 2,
             "tags": [
@@ -483,6 +493,7 @@
         [
           {
             "name": "Add new recipient",
+            "url": "https://phabricator.com/acme/T250",
             "status": "done",
             "points": 3,
             "tags": [
@@ -515,6 +526,7 @@
           },
           {
             "name": "Select source account",
+            "url": "https://phabricator.com/acme/T256",
             "status": "done",
             "points": 3,
             "tags": [
@@ -533,6 +545,7 @@
           },
           {
             "name": "Schedule for later",
+            "url": "https://phabricator.com/acme/T297",
             "status": "planned",
             "tags": [
               "payments",
@@ -543,6 +556,7 @@
         [
           {
             "name": "Biometric confirmation",
+            "url": "https://phabricator.com/acme/T244",
             "status": "in-progress",
             "tags": [
               "security"
@@ -559,6 +573,7 @@
           },
           {
             "name": "Send another",
+            "url": "https://phabricator.com/acme/T310",
             "status": "planned",
             "tags": [
               "ux"
@@ -598,6 +613,7 @@
         [
           {
             "name": "Compare products side by side",
+            "url": "https://phabricator.com/acme/T240",
             "status": "in-progress",
             "tags": [
               "ux"
@@ -653,6 +669,7 @@
         [
           {
             "name": "Recurring transfer",
+            "url": "https://phabricator.com/acme/T300",
             "status": "planned",
             "tags": [
               "payments",
@@ -679,6 +696,7 @@
         [
           {
             "name": "Spending limit alert",
+            "url": "https://phabricator.com/acme/T201",
             "status": "planned",
             "tags": [
               "compliance",
@@ -729,6 +747,7 @@
         [
           {
             "name": "In-app video verification",
+            "url": "https://phabricator.com/acme/T246",
             "status": "planned",
             "tags": [
               "mobile",

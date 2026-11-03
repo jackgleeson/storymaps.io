@@ -67,6 +67,7 @@
         [
           {
             "name": "Company intro",
+            "url": "https://asana.com/acme/WEB-6",
             "status": "done",
             "points": 1,
             "tags": [
@@ -77,6 +78,7 @@
         [
           {
             "name": "Service list",
+            "url": "https://asana.com/acme/WEB-36",
             "status": "done",
             "points": 2,
             "tags": [
@@ -98,6 +100,7 @@
         [
           {
             "name": "Contact form",
+            "url": "https://asana.com/acme/WEB-28",
             "status": "done",
             "points": 2,
             "tags": [
@@ -115,6 +118,7 @@
         [
           {
             "name": "Navigation menu",
+            "url": "https://asana.com/acme/WEB-17",
             "status": "done",
             "points": 1,
             "tags": [
@@ -210,6 +214,7 @@
         [
           {
             "name": "Team photos",
+            "url": "https://asana.com/acme/WEB-20",
             "status": "in-progress",
             "tags": [
               "content"
@@ -217,6 +222,7 @@
           },
           {
             "name": "Company history",
+            "url": "https://asana.com/acme/WEB-34",
             "status": "planned",
             "tags": [
               "content"
@@ -226,6 +232,7 @@
         [
           {
             "name": "Service detail pages",
+            "url": "https://asana.com/acme/WEB-35",
             "status": "in-progress",
             "tags": [
               "dev",
@@ -234,6 +241,7 @@
           },
           {
             "name": "Pricing info",
+            "url": "https://asana.com/acme/WEB-1",
             "status": "planned",
             "tags": [
               "content"
@@ -264,6 +272,7 @@
         [
           {
             "name": "Location map",
+            "url": "https://asana.com/acme/WEB-46",
             "status": "done",
             "points": 2,
             "tags": [
@@ -317,6 +326,7 @@
           },
           {
             "name": "News & updates feed",
+            "url": "https://asana.com/acme/WEB-43",
             "status": "planned",
             "tags": [
               "dev",
@@ -339,6 +349,7 @@
           },
           {
             "name": "FAQ section",
+            "url": "https://asana.com/acme/WEB-24",
             "status": "planned",
             "tags": [
               "content",
@@ -366,6 +377,7 @@
         [
           {
             "name": "Booking calendar",
+            "url": "https://asana.com/acme/WEB-27",
             "status": "planned",
             "tags": [
               "dev"
@@ -373,6 +385,7 @@
           },
           {
             "name": "Newsletter signup",
+            "url": "https://asana.com/acme/WEB-10",
             "status": "planned",
             "tags": [
               "dev"

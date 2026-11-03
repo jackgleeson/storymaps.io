@@ -146,6 +146,7 @@
         [
           {
             "name": "Listing cards with key details",
+            "url": "https://jira.com/acme/HOL-67",
             "body": "Photo, price, and rating",
             "status": "done",
             "points": 3,
@@ -185,6 +186,7 @@
         [
           {
             "name": "View check-in instructions",
+            "url": "https://jira.com/acme/HOL-48",
             "status": "done",
             "points": 2,
             "tags": ["frontend"]
@@ -193,6 +195,7 @@
         [
           {
             "name": "View house rules and WiFi info",
+            "url": "https://jira.com/acme/HOL-118",
             "status": "done",
             "points": 2,
             "tags": ["frontend"]
@@ -201,6 +204,7 @@
         [
           {
             "name": "Rate stay 1-5 stars",
+            "url": "https://jira.com/acme/HOL-101",
             "status": "done",
             "points": 2,
             "tags": ["frontend", "backend"]
@@ -210,6 +214,7 @@
         [
           {
             "name": "Add property details",
+            "url": "https://jira.com/acme/HOL-60",
             "body": "Title, type, beds, baths",
             "status": "done",
             "points": 3,
@@ -243,6 +248,7 @@
         [
           {
             "name": "Send check-in details to guest",
+            "url": "https://jira.com/acme/HOL-43",
             "status": "done",
             "points": 2,
             "tags": ["frontend"]
@@ -251,6 +257,7 @@
         [
           {
             "name": "Payout to bank via Stripe Connect",
+            "url": "https://jira.com/acme/HOL-4",
             "status": "done",
             "points": 5,
             "tags": ["backend", "api"]
@@ -266,12 +273,14 @@
         [
           {
             "name": "Date picker for check-in/check-out",
+            "url": "https://jira.com/acme/HOL-52",
             "status": "done",
             "points": 3,
             "tags": ["frontend"]
           },
           {
             "name": "Guest count selector",
+            "url": "https://jira.com/acme/HOL-12",
             "status": "done",
             "points": 1,
             "tags": ["frontend"]
@@ -284,6 +293,7 @@
         [
           {
             "name": "Sort by price low/high",
+            "url": "https://jira.com/acme/HOL-89",
             "status": "done",
             "points": 2,
             "tags": ["frontend"]
@@ -296,6 +306,7 @@
         [
           {
             "name": "Description, amenities, house rules",
+            "url": "https://jira.com/acme/HOL-27",
             "status": "done",
             "points": 2,
             "tags": ["frontend"]
@@ -308,6 +319,7 @@
           },
           {
             "name": "Host profile card with response rate",
+            "url": "https://jira.com/acme/HOL-46",
             "status": "done",
             "points": 2,
             "tags": ["frontend"]
@@ -316,6 +328,7 @@
         [
           {
             "name": "Price breakdown with all fees",
+            "url": "https://jira.com/acme/HOL-73",
             "body": "Nightly rate, cleaning, service fee, taxes",
             "status": "done",
             "points": 3,
@@ -362,6 +375,7 @@
         [
           {
             "name": "Write text review",
+            "url": "https://jira.com/acme/HOL-19",
             "status": "done",
             "points": 2,
             "tags": ["frontend"]
@@ -382,12 +396,14 @@
           },
           {
             "name": "Set amenities checklist",
+            "url": "https://jira.com/acme/HOL-59",
             "status": "done",
             "points": 2,
             "tags": ["frontend"]
           },
           {
             "name": "Add house rules and check-in info",
+            "url": "https://jira.com/acme/HOL-63",
             "status": "done",
             "points": 2,
             "tags": ["frontend"]
@@ -396,12 +412,14 @@
         [
           {
             "name": "Add cleaning fee",
+            "url": "https://jira.com/acme/HOL-76",
             "status": "done",
             "points": 1,
             "tags": ["frontend"]
           },
           {
             "name": "Minimum and maximum stay length",
+            "url": "https://jira.com/acme/HOL-44",
             "status": "done",
             "points": 2,
             "tags": ["frontend", "backend"]
@@ -422,6 +440,7 @@
           },
           {
             "name": "Enable instant book (auto-accept)",
+            "url": "https://jira.com/acme/HOL-72",
             "status": "done",
             "points": 2,
             "tags": ["backend"]
@@ -487,6 +506,7 @@
           },
           {
             "name": "Save listing to wishlist",
+            "url": "https://jira.com/acme/HOL-104",
             "status": "done",
             "points": 2,
             "tags": ["frontend", "backend"]
@@ -524,6 +544,7 @@
           },
           {
             "name": "Promo code / coupon support",
+            "url": "https://jira.com/acme/HOL-177",
             "status": "planned",
             "tags": ["frontend", "backend"]
           },
@@ -540,11 +561,13 @@
           },
           {
             "name": "In-app messaging with host",
+            "url": "https://jira.com/acme/HOL-105",
             "status": "in-progress",
             "tags": ["frontend", "backend"]
           },
           {
             "name": "Push notifications for booking updates",
+            "url": "https://jira.com/acme/HOL-111",
             "status": "planned",
             "tags": ["backend", "mobile"]
           }
@@ -552,6 +575,7 @@
         [
           {
             "name": "Smart lock code delivery",
+            "url": "https://jira.com/acme/HOL-153",
             "status": "planned",
             "tags": ["api", "backend"]
           },
@@ -586,6 +610,7 @@
           },
           {
             "name": "Host can respond to reviews",
+            "url": "https://jira.com/acme/HOL-133",
             "status": "in-progress",
             "tags": ["frontend", "backend"]
           }
@@ -604,6 +629,7 @@
           },
           {
             "name": "Multi-language listing descriptions",
+            "url": "https://jira.com/acme/HOL-143",
             "status": "planned",
             "tags": ["backend"]
           }
@@ -635,6 +661,7 @@
           },
           {
             "name": "Bulk date management",
+            "url": "https://jira.com/acme/HOL-31",
             "status": "planned",
             "tags": ["frontend"]
           }
@@ -642,6 +669,7 @@
         [
           {
             "name": "Saved quick replies",
+            "url": "https://jira.com/acme/HOL-10",
             "body": "For common guest questions",
             "status": "in-progress",
             "tags": ["frontend"]
@@ -682,6 +710,7 @@
           },
           {
             "name": "Revenue chart by month",
+            "url": "https://jira.com/acme/HOL-117",
             "status": "planned",
             "tags": ["frontend"]
           },
@@ -723,6 +752,7 @@
           },
           {
             "name": "Price prediction (best time to book)",
+            "url": "https://jira.com/acme/HOL-122",
             "status": "planned",
             "tags": ["ai", "backend"]
           }
@@ -747,6 +777,7 @@
           },
           {
             "name": "Travel insurance add-on",
+            "url": "https://jira.com/acme/HOL-23",
             "status": "planned",
             "tags": ["backend"]
           },
@@ -771,6 +802,7 @@
         [
           {
             "name": "Face recognition self-check-in",
+            "url": "https://jira.com/acme/HOL-125",
             "status": "planned",
             "tags": ["ai", "mobile"]
           },
@@ -801,6 +833,7 @@
           },
           {
             "name": "Verified stay badges",
+            "url": "https://jira.com/acme/HOL-45",
             "status": "planned",
             "tags": ["backend"]
           }
@@ -809,6 +842,7 @@
         [
           {
             "name": "Co-hosting (invite additional hosts)",
+            "url": "https://jira.com/acme/HOL-152",
             "status": "planned",
             "tags": ["frontend", "backend"]
           },
@@ -827,6 +861,7 @@
           },
           {
             "name": "Competitor rate monitoring",
+            "url": "https://jira.com/acme/HOL-50",
             "status": "planned",
             "tags": ["backend", "api"]
           }
@@ -852,6 +887,7 @@
           },
           {
             "name": "Guest loyalty program",
+            "url": "https://jira.com/acme/HOL-11",
             "body": "Repeat booking rewards",
             "status": "planned",
             "tags": ["backend"]
@@ -860,6 +896,7 @@
         [
           {
             "name": "IoT device management",
+            "url": "https://jira.com/acme/HOL-18",
             "body": "Thermostat, lights, smart locks",
             "status": "planned",
             "tags": ["api", "backend"]
@@ -878,11 +915,13 @@
           },
           {
             "name": "Market insights and pricing trends",
+            "url": "https://jira.com/acme/HOL-38",
             "status": "planned",
             "tags": ["ai", "backend"]
           },
           {
             "name": "Portfolio performance tracker",
+            "url": "https://jira.com/acme/HOL-139",
             "body": "Multi-property overview",
             "status": "planned",
             "tags": ["frontend"]

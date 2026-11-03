@@ -63,6 +63,7 @@
         [
           {
             "name": "Enter name, cost, and billing cycle",
+            "url": "https://linear.app/acme/SUB-37",
             "status": "done",
             "points": 2,
             "tags": [
@@ -114,6 +115,7 @@
         [
           {
             "name": "Mark subscription as cancelled",
+            "url": "https://linear.app/acme/SUB-1",
             "status": "done",
             "points": 1,
             "tags": [
@@ -156,6 +158,7 @@
           },
           {
             "name": "Sort by next renewal date",
+            "url": "https://linear.app/acme/SUB-7",
             "status": "done",
             "points": 2,
             "tags": [
@@ -188,6 +191,7 @@
           },
           {
             "name": "Spending trend graph (3-6-12 months)",
+            "url": "https://linear.app/acme/SUB-71",
             "status": "in-progress",
             "tags": [
               "frontend"
@@ -246,6 +250,7 @@
           },
           {
             "name": "Import from bank statement CSV",
+            "url": "https://linear.app/acme/SUB-59",
             "status": "planned",
             "tags": [
               "backend"
@@ -259,6 +264,7 @@
         [
           {
             "name": "Price change indicator",
+            "url": "https://linear.app/acme/SUB-28",
             "status": "in-progress",
             "tags": [
               "frontend",
@@ -274,6 +280,7 @@
           },
           {
             "name": "Filter by category or status",
+            "url": "https://linear.app/acme/SUB-9",
             "status": "done",
             "points": 2,
             "tags": [
@@ -284,6 +291,7 @@
         [
           {
             "name": "Push notifications (mobile)",
+            "url": "https://linear.app/acme/SUB-38",
             "status": "in-progress",
             "tags": [
               "mobile",
@@ -348,6 +356,7 @@
           },
           {
             "name": "Read-only shared view",
+            "url": "https://linear.app/acme/SUB-66",
             "status": "planned",
             "tags": [
               "frontend"
@@ -364,6 +373,7 @@
         [
           {
             "name": "Bank account sync via Plaid",
+            "url": "https://linear.app/acme/SUB-47",
             "status": "planned",
             "tags": [
               "backend",
@@ -379,6 +389,7 @@
         [
           {
             "name": "Budget goal per category",
+            "url": "https://linear.app/acme/SUB-27",
             "status": "planned",
             "tags": [
               "frontend",
@@ -420,6 +431,7 @@
           },
           {
             "name": "Compare similar services",
+            "url": "https://linear.app/acme/SUB-70",
             "body": "e.g. Spotify vs Apple Music",
             "status": "planned",
             "tags": [
@@ -431,6 +443,7 @@
         [
           {
             "name": "One-click cancel through API",
+            "url": "https://linear.app/acme/SUB-64",
             "status": "planned",
             "tags": [
               "backend",
@@ -454,6 +467,7 @@
           },
           {
             "name": "Collaborative household budget",
+            "url": "https://linear.app/acme/SUB-58",
             "status": "planned",
             "tags": [
               "frontend",
