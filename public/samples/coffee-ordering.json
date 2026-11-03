@@ -14,6 +14,7 @@
     [],
     [],
     [],
+    [],
     [
       {
         "name": "Coffee Shop",
@@ -28,6 +29,7 @@
         "color": "#93c5fd"
       }
     ],
+    [],
     [],
     [],
     [],
@@ -58,6 +60,10 @@
       "color": "#86efac"
     },
     {
+      "name": "Confirmation",
+      "color": "#86efac"
+    },
+    {
       "name": "Track Order",
       "color": "#86efac"
     },
@@ -74,7 +80,7 @@
     {
       "name": "MVP",
       "goal": "Customers can order and pay ahead, then pick up their coffee",
-      "targetDate": "2027-01-04",
+      "targetDate": "2026-11-17",
       "stories": [
         [
           {
@@ -106,16 +112,14 @@
             "status": "done",
             "points": 5,
             "tags": ["frontend", "backend"]
-          },
+          }
+        ],
+        [
           {
             "name": "Order confirmation screen",
             "status": "done",
             "points": 2,
             "tags": ["frontend"]
-          },
-          {
-            "name": "Handle payment failures?",
-            "color": "#fecdd3"
           }
         ],
         [
@@ -133,16 +137,6 @@
             "status": "done",
             "points": 3,
             "tags": ["frontend", "backend"]
-          },
-          {
-            "name": "Mark order as ready",
-            "status": "done",
-            "points": 2,
-            "tags": ["frontend", "backend"]
-          },
-          {
-            "name": "Alert sound for new orders?",
-            "color": "#bef264"
           }
         ]
       ]
@@ -150,7 +144,7 @@
     {
       "name": "V1",
       "goal": "Customers can make a drink their own, follow their order, and get it delivered",
-      "targetDate": "2027-02-01",
+      "targetDate": "2026-12-15",
       "stories": [
         [
           {
@@ -208,8 +202,13 @@
             "status": "done",
             "points": 3,
             "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Handle payment failures?",
+            "color": "#fecdd3"
           }
         ],
+        [],
         [
           {
             "name": "Real-time status updates",
@@ -248,6 +247,16 @@
         ],
         [
           {
+            "name": "Alert sound for new orders?",
+            "color": "#bef264"
+          },
+          {
+            "name": "Mark order as ready",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend", "backend"]
+          },
+          {
             "name": "Mark order as started",
             "status": "done",
             "points": 2,
@@ -259,7 +268,7 @@
     {
       "name": "V2",
       "goal": "Make repeat and group orders quicker",
-      "targetDate": "2027-03-01",
+      "targetDate": "2027-01-12",
       "stories": [
         [
           {
@@ -313,6 +322,7 @@
             "tags": ["frontend", "backend"]
           }
         ],
+        [],
         [
           {
             "name": "Live barista queue position",
@@ -359,7 +369,7 @@
     {
       "name": "V3",
       "goal": "Try personalisation and new ways to order",
-      "targetDate": "2027-05-31",
+      "targetDate": "2027-04-13",
       "stories": [
         [
           {
@@ -394,6 +404,7 @@
             "tags": ["backend"]
           }
         ],
+        [],
         [
           {
             "name": "Predictive order timing",
