@@ -1914,7 +1914,7 @@ const init = async () => {
         await startNewMap();
         if (where.projectId) await projects.joinNew(where.projectId);
     } else if (mapId === 'tour' && !where.projectId) {
-        await startWithSample('story-mapping-101', { showToast: false });
+        await startWithSample('lego-house', { showToast: false });
         dom.controlsRight?.classList.remove('panel-open');
         dom.panelBody?.querySelectorAll('.panel-section').forEach(s => s.classList.remove('open'));
         document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));

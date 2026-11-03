@@ -276,7 +276,7 @@ export const initListeners = () => {
         if (state.mapId && hasContent() && !await showConfirm('Load the tour sample?\n\nYou can return to this map using the back button.')) {
             return;
         }
-        await startWithSample('story-mapping-101', { showToast: false });
+        await startWithSample('lego-house', { showToast: false });
         // Close legend panel so tour starts clean
         dom.controlsRight?.classList.remove('panel-open');
         dom.panelBody?.querySelectorAll('.panel-section').forEach(s => s.classList.remove('open'));

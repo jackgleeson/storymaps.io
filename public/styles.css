@@ -10621,7 +10621,7 @@ body.tour-active .btn-slice-menu {
 
 /* Hide tour options on touch devices (tour requires desktop) */
 @media (pointer: coarse) {
-    [data-sample="story-mapping-101"],
+    [data-sample="lego-house"],
     #tourMenuBtn,
     #welcomeTourBtn {
         display: none !important;
