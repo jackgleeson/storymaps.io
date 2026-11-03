@@ -795,5 +795,5 @@
       "label": "Edge cases"
     }
   ],
-  "notes": "KR: MVP scope locked, sprint starts Monday\n\nTN: QR scanning blocked on camera API decision, parked for V3\n\nKR: Legal flagged PSD2 strong customer auth, need compliance sign-off before launch\n\nMP: Product applications flow scoped as lightweight V1, expand after Send Money ships"
+  "notes": "Kevin: MVP scope locked, sprint starts Monday\n\nTanya: QR scanning blocked on camera API decision, parked for V3\n\nKevin: Legal flagged PSD2 strong customer auth, need compliance sign-off before launch\n\nMarcus: Product applications flow scoped as lightweight V1, expand after Send Money ships"
 }

@@ -952,5 +952,5 @@
       "label": "Design"
     }
   ],
-  "notes": "JL: MVP must nail two-sided trust - reviews, verified profiles, and secure payments are non-negotiable\n\nAK: Stripe Connect for host payouts needs careful testing - money movement is high-risk\n\nSR: Map view is the #1 requested feature from beta testers, prioritize for V2\n\nJL: iCal sync is essential for hosts already on Airbnb/VRBO - without it we lose the multi-platform hosts\n\nAK: Dynamic pricing in V3 depends on having enough booking data from V2 - don't rush it\n\nSR: Cancellation policy engine is more complex than it looks - flexible/moderate/strict each has different refund timelines"
+  "notes": "Jess: MVP must nail secure payments and payouts. Host profiles, guest reviews and verification follow in V1 and V2\n\nArun: Stripe Connect for host payouts needs careful testing - money movement is high-risk\n\nSofia: Map view is the #1 requested feature from beta testers, prioritize for V2\n\nJess: iCal sync is essential for hosts already on Airbnb/VRBO - without it we lose the multi-platform hosts\n\nArun: Dynamic pricing in V3 depends on having enough booking data from V2 - don't rush it\n\nSofia: Cancellation policy engine is more complex than it looks - flexible/moderate/strict each has different refund timelines"
 }

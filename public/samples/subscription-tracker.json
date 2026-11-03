@@ -505,5 +505,5 @@
       "label": "Design Decisions"
     }
   ],
-  "notes": "MVP Looks good - core tracking and basic reminders.\n\nV2 focus: email auto-detect is highest priority, most-requested feature\n\nPlaid integration deferred to V3 due to cost and compliance review\n\nAccessibility: screen reader audit planned for post-V2"
+  "notes": "MVP looks good - core tracking and basic reminders.\n\nV2 focus: email auto-detect is highest priority, most-requested feature\n\nPlaid integration deferred to V3 due to cost and compliance review\n\nAccessibility: screen reader audit planned for post-V2"
 }

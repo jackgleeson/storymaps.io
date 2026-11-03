@@ -504,5 +504,5 @@
       "label": "Design"
     }
   ],
-  "notes": "MP: Dietary filters are V2 priority, highest-voted feature request\n\nTN: Lock down recipe data schema before API work starts\n\nAL: Accessibility audit booked for post-V2, don't let it slip\n\nMP: Grocery API partner search ongoing, blocked for V3 until signed"
+  "notes": "Maya: Dietary filters are V2 priority, highest-voted feature request\n\nTom: Lock down recipe data schema before API work starts\n\nAlex: Accessibility audit booked for post-V2, don't let it slip\n\nMaya: Grocery API partner search ongoing, blocked for V3 until signed"
 }
