@@ -85,7 +85,7 @@
         [
           {
             "name": "Drinks by category",
-            "url": "https://jira.com/acme/COF-55",
+            "url": "https://jira.com/test-company/COF-55",
             "status": "done",
             "points": 3,
             "tags": ["frontend", "backend"]
@@ -102,7 +102,7 @@
         [
           {
             "name": "Order summary with total",
-            "url": "https://jira.com/acme/COF-20",
+            "url": "https://jira.com/test-company/COF-20",
             "status": "done",
             "points": 2,
             "tags": ["frontend"]
@@ -111,7 +111,7 @@
         [
           {
             "name": "Apple Pay / Google Pay",
-            "url": "https://jira.com/acme/COF-8",
+            "url": "https://jira.com/test-company/COF-8",
             "status": "done",
             "points": 5,
             "tags": ["frontend", "backend"]
@@ -142,7 +142,7 @@
         [
           {
             "name": "View incoming orders",
-            "url": "https://jira.com/acme/COF-26",
+            "url": "https://jira.com/test-company/COF-26",
             "status": "done",
             "points": 3,
             "tags": ["frontend", "backend"]
@@ -208,7 +208,7 @@
         [
           {
             "name": "Credit card",
-            "url": "https://jira.com/acme/COF-16",
+            "url": "https://jira.com/test-company/COF-16",
             "status": "done",
             "points": 3,
             "tags": ["frontend", "backend"]
@@ -222,7 +222,7 @@
         [
           {
             "name": "Real-time status updates",
-            "url": "https://jira.com/acme/COF-52",
+            "url": "https://jira.com/test-company/COF-52",
             "status": "done",
             "points": 5,
             "tags": ["frontend", "backend"]
@@ -242,7 +242,7 @@
           },
           {
             "name": "Live driver tracking",
-            "url": "https://jira.com/acme/COF-56",
+            "url": "https://jira.com/test-company/COF-56",
             "status": "in-progress",
             "tags": ["frontend", "api"]
           },
@@ -290,7 +290,7 @@
           },
           {
             "name": "Nutritional info",
-            "url": "https://jira.com/acme/COF-65",
+            "url": "https://jira.com/test-company/COF-65",
             "status": "planned",
             "tags": ["backend", "api"]
           },
@@ -344,7 +344,7 @@
           },
           {
             "name": "Delay alert notification",
-            "url": "https://jira.com/acme/COF-14",
+            "url": "https://jira.com/test-company/COF-14",
             "status": "planned",
             "tags": ["mobile", "backend"]
           }
@@ -352,7 +352,7 @@
         [
           {
             "name": "Schedule delivery time",
-            "url": "https://jira.com/acme/COF-7",
+            "url": "https://jira.com/test-company/COF-7",
             "status": "in-progress",
             "tags": ["frontend", "backend"]
           },
@@ -365,19 +365,19 @@
         [
           {
             "name": "Daily sales dashboard",
-            "url": "https://jira.com/acme/COF-71",
+            "url": "https://jira.com/test-company/COF-71",
             "status": "planned",
             "tags": ["frontend", "backend"]
           },
           {
             "name": "86 an item from menu",
-            "url": "https://jira.com/acme/COF-74",
+            "url": "https://jira.com/test-company/COF-74",
             "status": "planned",
             "tags": ["frontend", "backend"]
           },
           {
             "name": "Peak hour alerts",
-            "url": "https://jira.com/acme/COF-4",
+            "url": "https://jira.com/test-company/COF-4",
             "status": "planned",
             "tags": ["backend"]
           }
@@ -397,7 +397,7 @@
           },
           {
             "name": "Mood-based recommendations",
-            "url": "https://jira.com/acme/COF-44",
+            "url": "https://jira.com/test-company/COF-44",
             "status": "planned",
             "tags": ["ai", "backend"]
           }
@@ -434,7 +434,7 @@
         [
           {
             "name": "Drone delivery",
-            "url": "https://jira.com/acme/COF-17",
+            "url": "https://jira.com/test-company/COF-17",
             "status": "planned",
             "tags": ["hardware", "api"]
           }
@@ -442,7 +442,7 @@
         [
           {
             "name": "Staff scheduling",
-            "url": "https://jira.com/acme/COF-47",
+            "url": "https://jira.com/test-company/COF-47",
             "status": "planned",
             "tags": ["frontend", "backend"]
           },

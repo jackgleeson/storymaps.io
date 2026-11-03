@@ -99,7 +99,7 @@
           },
           {
             "name": "Step-by-step instructions",
-            "url": "https://asana.com/acme/REC-45",
+            "url": "https://asana.com/test-company/REC-45",
             "status": "done",
             "points": 3,
             "tags": [
@@ -166,7 +166,7 @@
           },
           {
             "name": "Category filters",
-            "url": "https://asana.com/acme/REC-68",
+            "url": "https://asana.com/test-company/REC-68",
             "status": "done",
             "points": 3,
             "tags": [
@@ -218,7 +218,7 @@
         [
           {
             "name": "Add title and photo",
-            "url": "https://asana.com/acme/REC-43",
+            "url": "https://asana.com/test-company/REC-43",
             "status": "done",
             "points": 2,
             "tags": [
@@ -227,7 +227,7 @@
           },
           {
             "name": "Add ingredients",
-            "url": "https://asana.com/acme/REC-36",
+            "url": "https://asana.com/test-company/REC-36",
             "status": "done",
             "points": 3,
             "tags": [
@@ -267,7 +267,7 @@
           },
           {
             "name": "Sort by rating",
-            "url": "https://asana.com/acme/REC-31",
+            "url": "https://asana.com/test-company/REC-31",
             "status": "done",
             "points": 3,
             "tags": [
@@ -290,7 +290,7 @@
           },
           {
             "name": "User ratings & reviews",
-            "url": "https://asana.com/acme/REC-71",
+            "url": "https://asana.com/test-company/REC-71",
             "status": "planned",
             "tags": [
               "frontend",
@@ -396,7 +396,7 @@
           },
           {
             "name": "Seasonal recipe spotlight",
-            "url": "https://asana.com/acme/REC-62",
+            "url": "https://asana.com/test-company/REC-62",
             "status": "planned",
             "tags": [
               "backend"
@@ -442,7 +442,7 @@
         [
           {
             "name": "Sync across devices",
-            "url": "https://asana.com/acme/REC-4",
+            "url": "https://asana.com/test-company/REC-4",
             "status": "planned",
             "tags": [
               "backend"
@@ -453,7 +453,7 @@
         [
           {
             "name": "Video upload for steps",
-            "url": "https://asana.com/acme/REC-29",
+            "url": "https://asana.com/test-company/REC-29",
             "status": "planned",
             "tags": [
               "frontend",
@@ -472,7 +472,7 @@
         [
           {
             "name": "Embeddable recipe widget",
-            "url": "https://asana.com/acme/REC-70",
+            "url": "https://asana.com/test-company/REC-70",
             "status": "planned",
             "tags": [
               "frontend"
