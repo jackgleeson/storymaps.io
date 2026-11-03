@@ -139,7 +139,7 @@
       "stories": [
         [
           {
-            "name": "Pick category ",
+            "name": "Pick category",
             "body": "(streaming, music, fitness, etc.)",
             "status": "done",
             "points": 2,
