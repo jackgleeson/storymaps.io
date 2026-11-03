@@ -62,7 +62,57 @@
             "tags": [
               "design"
             ]
-          },
+          }
+        ],
+        [
+          {
+            "name": "Company intro",
+            "status": "done",
+            "points": 1,
+            "tags": [
+              "content"
+            ]
+          }
+        ],
+        [
+          {
+            "name": "Service list",
+            "status": "done",
+            "points": 2,
+            "tags": [
+              "dev",
+              "content"
+            ]
+          }
+        ],
+        [
+          {
+            "name": "Client logos",
+            "status": "done",
+            "points": 1,
+            "tags": [
+              "design"
+            ]
+          }
+        ],
+        [
+          {
+            "name": "Contact form",
+            "status": "done",
+            "points": 2,
+            "tags": [
+              "dev"
+            ]
+          }
+        ]
+      ]
+    },
+    {
+      "name": "V1",
+      "goal": "Round out each page and help people find the site",
+      "targetDate": "2027-02-01",
+      "stories": [
+        [
           {
             "name": "Navigation menu",
             "status": "done",
@@ -86,14 +136,6 @@
         ],
         [
           {
-            "name": "Company intro",
-            "status": "done",
-            "points": 1,
-            "tags": [
-              "content"
-            ]
-          },
-          {
             "name": "Mission statement",
             "status": "done",
             "points": 1,
@@ -103,15 +145,6 @@
           }
         ],
         [
-          {
-            "name": "Service list",
-            "status": "done",
-            "points": 2,
-            "tags": [
-              "dev",
-              "content"
-            ]
-          },
           {
             "name": "Basic descriptions",
             "status": "done",
@@ -129,25 +162,8 @@
             ]
           }
         ],
+        [],
         [
-          {
-            "name": "Client logos",
-            "status": "done",
-            "points": 1,
-            "tags": [
-              "design"
-            ]
-          }
-        ],
-        [
-          {
-            "name": "Contact form",
-            "status": "done",
-            "points": 2,
-            "tags": [
-              "dev"
-            ]
-          },
           {
             "name": "Email address",
             "status": "done",
@@ -168,7 +184,7 @@
       ]
     },
     {
-      "name": "V1",
+      "name": "V2",
       "goal": "Turn visitors into enquiries with proof, pricing and clear calls to action",
       "targetDate": "2027-03-01",
       "stories": [
@@ -269,7 +285,7 @@
       ]
     },
     {
-      "name": "V2",
+      "name": "V3",
       "goal": "Keep people coming back with fresh content and live support",
       "targetDate": "2027-05-31",
       "stories": [

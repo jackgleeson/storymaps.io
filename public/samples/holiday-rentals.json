@@ -141,7 +141,129 @@
             "status": "done",
             "points": 3,
             "tags": ["frontend", "backend"]
+          }
+        ],
+        [
+          {
+            "name": "Listing cards with key details",
+            "body": "Photo, price, and rating",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend"]
+          }
+        ],
+        [
+          {
+            "name": "Photo gallery with swipe",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend"]
+          }
+        ],
+        [
+          {
+            "name": "Select dates and guest count",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
           },
+          {
+            "name": "Stripe payment integration",
+            "status": "done",
+            "points": 5,
+            "tags": ["backend", "api"]
+          }
+        ],
+        [
+          {
+            "name": "View upcoming reservations",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend", "backend"]
+          }
+        ],
+        [
+          {
+            "name": "View check-in instructions",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
+          }
+        ],
+        [
+          {
+            "name": "View house rules and WiFi info",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
+          }
+        ],
+        [
+          {
+            "name": "Rate stay 1-5 stars",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend", "backend"]
+          }
+        ],
+        [],
+        [
+          {
+            "name": "Add property details",
+            "body": "Title, type, beds, baths",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend"]
+          }
+        ],
+        [
+          {
+            "name": "Set nightly base rate",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend", "backend"]
+          }
+        ],
+        [
+          {
+            "name": "Block and unblock dates",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend", "backend"]
+          }
+        ],
+        [
+          {
+            "name": "Accept or decline booking",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend", "backend"]
+          }
+        ],
+        [
+          {
+            "name": "Send check-in details to guest",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
+          }
+        ],
+        [
+          {
+            "name": "Payout to bank via Stripe Connect",
+            "status": "done",
+            "points": 5,
+            "tags": ["backend", "api"]
+          }
+        ]
+      ]
+    },
+    {
+      "name": "V1 - Booking Confidence",
+      "goal": "Give guests and hosts the detail they need to book with confidence",
+      "targetDate": "2027-02-01",
+      "stories": [
+        [
           {
             "name": "Date picker for check-in/check-out",
             "status": "done",
@@ -161,13 +283,6 @@
         ],
         [
           {
-            "name": "Listing cards with key details",
-            "body": "Photo, price, and rating",
-            "status": "done",
-            "points": 3,
-            "tags": ["frontend"]
-          },
-          {
             "name": "Sort by price low/high",
             "status": "done",
             "points": 2,
@@ -179,12 +294,6 @@
           }
         ],
         [
-          {
-            "name": "Photo gallery with swipe",
-            "status": "done",
-            "points": 3,
-            "tags": ["frontend"]
-          },
           {
             "name": "Description, amenities, house rules",
             "status": "done",
@@ -206,12 +315,6 @@
         ],
         [
           {
-            "name": "Select dates and guest count",
-            "status": "done",
-            "points": 2,
-            "tags": ["frontend"]
-          },
-          {
             "name": "Price breakdown with all fees",
             "body": "Nightly rate, cleaning, service fee, taxes",
             "status": "done",
@@ -219,23 +322,11 @@
             "tags": ["frontend", "backend"]
           },
           {
-            "name": "Stripe payment integration",
-            "status": "done",
-            "points": 5,
-            "tags": ["backend", "api"]
-          },
-          {
             "name": "What if payment fails mid-booking?",
             "color": "#fecdd3"
           }
         ],
         [
-          {
-            "name": "View upcoming reservations",
-            "status": "done",
-            "points": 2,
-            "tags": ["frontend", "backend"]
-          },
           {
             "name": "Cancel booking with refund rules",
             "status": "done",
@@ -250,12 +341,6 @@
         ],
         [
           {
-            "name": "View check-in instructions",
-            "status": "done",
-            "points": 2,
-            "tags": ["frontend"]
-          },
-          {
             "name": "Contact host button (email)",
             "status": "done",
             "points": 1,
@@ -268,12 +353,6 @@
         ],
         [
           {
-            "name": "View house rules and WiFi info",
-            "status": "done",
-            "points": 2,
-            "tags": ["frontend"]
-          },
-          {
             "name": "Report issue to host",
             "status": "done",
             "points": 2,
@@ -281,12 +360,6 @@
           }
         ],
         [
-          {
-            "name": "Rate stay 1-5 stars",
-            "status": "done",
-            "points": 2,
-            "tags": ["frontend", "backend"]
-          },
           {
             "name": "Write text review",
             "status": "done",
@@ -301,13 +374,6 @@
         ],
         [],
         [
-          {
-            "name": "Add property details",
-            "body": "Title, type, beds, baths",
-            "status": "done",
-            "points": 3,
-            "tags": ["frontend"]
-          },
           {
             "name": "Upload photos with drag-and-drop",
             "status": "done",
@@ -329,12 +395,6 @@
         ],
         [
           {
-            "name": "Set nightly base rate",
-            "status": "done",
-            "points": 2,
-            "tags": ["frontend", "backend"]
-          },
-          {
             "name": "Add cleaning fee",
             "status": "done",
             "points": 1,
@@ -349,12 +409,6 @@
         ],
         [
           {
-            "name": "Block and unblock dates",
-            "status": "done",
-            "points": 3,
-            "tags": ["frontend", "backend"]
-          },
-          {
             "name": "Sync with external calendar (iCal)?",
             "color": "#bef264"
           }
@@ -364,12 +418,6 @@
             "name": "View incoming booking requests",
             "status": "done",
             "points": 2,
-            "tags": ["frontend", "backend"]
-          },
-          {
-            "name": "Accept or decline booking",
-            "status": "done",
-            "points": 3,
             "tags": ["frontend", "backend"]
           },
           {
@@ -386,12 +434,6 @@
         ],
         [
           {
-            "name": "Send check-in details to guest",
-            "status": "done",
-            "points": 2,
-            "tags": ["frontend"]
-          },
-          {
             "name": "View guest info summary",
             "status": "done",
             "points": 1,
@@ -406,12 +448,6 @@
             "tags": ["frontend", "backend"]
           },
           {
-            "name": "Payout to bank via Stripe Connect",
-            "status": "done",
-            "points": 5,
-            "tags": ["backend", "api"]
-          },
-          {
             "name": "Monthly earnings summary",
             "status": "done",
             "points": 2,
@@ -421,7 +457,7 @@
       ]
     },
     {
-      "name": "V1 - Enhanced Experience",
+      "name": "V2 - Enhanced Experience",
       "goal": "Make choosing a place easier with maps, reviews and wishlists",
       "targetDate": "2027-03-01",
       "stories": [
@@ -658,7 +694,7 @@
       ]
     },
     {
-      "name": "V2 - Scale & Intelligence",
+      "name": "V3 - Scale & Intelligence",
       "goal": "Grow bookings with smarter recommendations and flexible trips",
       "targetDate": "2027-05-31",
       "stories": [
@@ -877,5 +913,5 @@
       "label": "Design"
     }
   ],
-  "notes": "JL: MVP must nail two-sided trust - reviews, verified profiles, and secure payments are non-negotiable\n\nAK: Stripe Connect for host payouts needs careful testing - money movement is high-risk\n\nSR: Map view is the #1 requested feature from beta testers, prioritize for V1\n\nJL: iCal sync is essential for hosts already on Airbnb/VRBO - without it we lose the multi-platform hosts\n\nAK: Dynamic pricing in V2 depends on having enough booking data from V1 - don't rush it\n\nSR: Cancellation policy engine is more complex than it looks - flexible/moderate/strict each has different refund timelines"
+  "notes": "JL: MVP must nail two-sided trust - reviews, verified profiles, and secure payments are non-negotiable\n\nAK: Stripe Connect for host payouts needs careful testing - money movement is high-risk\n\nSR: Map view is the #1 requested feature from beta testers, prioritize for V2\n\nJL: iCal sync is essential for hosts already on Airbnb/VRBO - without it we lose the multi-platform hosts\n\nAK: Dynamic pricing in V3 depends on having enough booking data from V2 - don't rush it\n\nSR: Cancellation policy engine is more complex than it looks - flexible/moderate/strict each has different refund timelines"
 }

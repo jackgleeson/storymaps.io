@@ -161,10 +161,6 @@
               "security",
               "auth"
             ]
-          },
-          {
-            "name": "Account locked after failed attempts",
-            "color": "#fecdd3"
           }
         ],
         [
@@ -185,14 +181,6 @@
             "tags": [
               "ux"
             ]
-          },
-          {
-            "name": "Recent recipients",
-            "status": "done",
-            "points": 2,
-            "tags": [
-              "ux"
-            ]
           }
         ],
         [
@@ -203,22 +191,6 @@
             "tags": [
               "ux"
             ]
-          },
-          {
-            "name": "Show available balance",
-            "status": "done",
-            "points": 2,
-            "tags": [
-              "api"
-            ]
-          },
-          {
-            "name": "Daily transfer limit policy",
-            "status": "done",
-            "points": 2,
-            "tags": [
-              "compliance"
-            ]
           }
         ],
         [
@@ -228,15 +200,6 @@
             "points": 2,
             "tags": [
               "ux"
-            ]
-          },
-          {
-            "name": "Show fees",
-            "status": "done",
-            "points": 2,
-            "tags": [
-              "payments",
-              "api"
             ]
           }
         ],
@@ -258,10 +221,6 @@
               "security",
               "auth"
             ]
-          },
-          {
-            "name": "Insufficient funds after review",
-            "color": "#fecdd3"
           }
         ],
         [
@@ -272,7 +231,77 @@
             "tags": [
               "ux"
             ]
+          }
+        ],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "name": "V1",
+      "goal": "Move money between your own accounts and apply for products",
+      "targetDate": "2027-02-01",
+      "stories": [
+        [],
+        [
+          {
+            "name": "Account locked after failed attempts",
+            "color": "#fecdd3"
+          }
+        ],
+        [],
+        [
+          {
+            "name": "Recent recipients",
+            "status": "done",
+            "points": 2,
+            "tags": [
+              "ux"
+            ]
+          }
+        ],
+        [
+          {
+            "name": "Show available balance",
+            "status": "done",
+            "points": 2,
+            "tags": [
+              "api"
+            ]
           },
+          {
+            "name": "Daily transfer limit policy",
+            "status": "done",
+            "points": 2,
+            "tags": [
+              "compliance"
+            ]
+          }
+        ],
+        [
+          {
+            "name": "Show fees",
+            "status": "done",
+            "points": 2,
+            "tags": [
+              "payments",
+              "api"
+            ]
+          }
+        ],
+        [
+          {
+            "name": "Insufficient funds after review",
+            "color": "#fecdd3"
+          }
+        ],
+        [
           {
             "name": "Reference number",
             "status": "done",
@@ -407,7 +436,7 @@
       ]
     },
     {
-      "name": "V1",
+      "name": "V2",
       "goal": "Make everyday transfers faster with biometrics and favourites",
       "targetDate": "2027-03-01",
       "stories": [
@@ -615,7 +644,7 @@
       ]
     },
     {
-      "name": "V2",
+      "name": "V3",
       "goal": "Help customers plan and save with recurring payments and new products",
       "targetDate": "2027-05-31",
       "stories": [
@@ -737,5 +766,5 @@
       "label": "Edge cases"
     }
   ],
-  "notes": "KR: MVP scope locked, sprint starts Monday\n\nTN: QR scanning blocked on camera API decision, parked for V2\n\nKR: Legal flagged PSD2 strong customer auth, need compliance sign-off before launch\n\nMP: Product applications flow scoped as lightweight V1, expand after Send Money ships"
+  "notes": "KR: MVP scope locked, sprint starts Monday\n\nTN: QR scanning blocked on camera API decision, parked for V3\n\nKR: Legal flagged PSD2 strong customer auth, need compliance sign-off before launch\n\nMP: Product applications flow scoped as lightweight V1, expand after Send Money ships"
 }

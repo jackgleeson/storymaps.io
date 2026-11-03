@@ -70,25 +70,12 @@
             ]
           },
           {
-            "name": "Pick category ",
-            "body": "(streaming, music, fitness, etc.)",
-            "status": "done",
-            "points": 2,
-            "tags": [
-              "frontend"
-            ]
-          },
-          {
             "name": "Set renewal date",
             "status": "done",
             "points": 1,
             "tags": [
               "frontend"
             ]
-          },
-          {
-            "name": "Auto-detect billing cycle from bank data?",
-            "color": "#bef264"
           }
         ],
         [
@@ -100,7 +87,65 @@
               "frontend",
               "backend"
             ]
+          }
+        ],
+        [
+          {
+            "name": "Email reminder 3 days before renewal",
+            "status": "done",
+            "points": 3,
+            "tags": [
+              "backend",
+              "notifications"
+            ]
+          }
+        ],
+        [
+          {
+            "name": "Monthly spending total",
+            "status": "done",
+            "points": 2,
+            "tags": [
+              "frontend",
+              "backend"
+            ]
+          }
+        ],
+        [
+          {
+            "name": "Mark subscription as cancelled",
+            "status": "done",
+            "points": 1,
+            "tags": [
+              "frontend",
+              "backend"
+            ]
+          }
+        ],
+        []
+      ]
+    },
+    {
+      "name": "V1",
+      "goal": "Understand spending by category and over time",
+      "targetDate": "2027-02-01",
+      "stories": [
+        [
+          {
+            "name": "Pick category ",
+            "body": "(streaming, music, fitness, etc.)",
+            "status": "done",
+            "points": 2,
+            "tags": [
+              "frontend"
+            ]
           },
+          {
+            "name": "Auto-detect billing cycle from bank data?",
+            "color": "#bef264"
+          }
+        ],
+        [
           {
             "name": "Show total monthly cost",
             "status": "done",
@@ -120,15 +165,6 @@
         ],
         [
           {
-            "name": "Email reminder 3 days before renewal",
-            "status": "done",
-            "points": 3,
-            "tags": [
-              "backend",
-              "notifications"
-            ]
-          },
-          {
             "name": "In-app notification badge",
             "status": "done",
             "points": 2,
@@ -142,15 +178,6 @@
           }
         ],
         [
-          {
-            "name": "Monthly spending total",
-            "status": "done",
-            "points": 2,
-            "tags": [
-              "frontend",
-              "backend"
-            ]
-          },
           {
             "name": "Breakdown by category",
             "status": "done",
@@ -178,15 +205,6 @@
         ],
         [
           {
-            "name": "Mark subscription as cancelled",
-            "status": "done",
-            "points": 1,
-            "tags": [
-              "frontend",
-              "backend"
-            ]
-          },
-          {
             "name": "Pause subscription tracking",
             "status": "done",
             "points": 2,
@@ -213,7 +231,7 @@
       ]
     },
     {
-      "name": "V1",
+      "name": "V2",
       "goal": "Spend less time entering subscriptions by importing them",
       "targetDate": "2027-03-01",
       "stories": [
@@ -339,7 +357,7 @@
       ]
     },
     {
-      "name": "V2",
+      "name": "V3",
       "goal": "Help people cut the subscriptions they don't use",
       "targetDate": "2027-05-31",
       "stories": [
@@ -468,5 +486,5 @@
       "label": "Design Decisions"
     }
   ],
-  "notes": "MVP Looks good - core tracking and basic reminders. \n\nV1 focus: email auto-detect is highest priority, most-requested feature\n\nPlaid integration deferred to V2 due to cost and compliance review\n\nAccessibility: screen reader audit planned for post-V1"
+  "notes": "MVP Looks good - core tracking and basic reminders. \n\nV2 focus: email auto-detect is highest priority, most-requested feature\n\nPlaid integration deferred to V3 due to cost and compliance review\n\nAccessibility: screen reader audit planned for post-V2"
 }

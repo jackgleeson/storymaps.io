@@ -79,23 +79,6 @@
       "stories": [
         [
           {
-            "name": "Search by name",
-            "status": "done",
-            "points": 2,
-            "tags": [
-              "frontend"
-            ]
-          },
-          {
-            "name": "Category filters",
-            "status": "done",
-            "points": 3,
-            "tags": [
-              "frontend",
-              "backend"
-            ]
-          },
-          {
             "name": "Recipe cards with photo",
             "status": "done",
             "points": 3,
@@ -103,10 +86,6 @@
               "frontend",
               "design"
             ]
-          },
-          {
-            "name": "Show cook time and difficulty on cards",
-            "color": "#d8b4fe"
           }
         ],
         [
@@ -125,7 +104,80 @@
             "tags": [
               "frontend"
             ]
+          }
+        ],
+        [
+          {
+            "name": "Check off completed steps",
+            "status": "done",
+            "points": 2,
+            "tags": [
+              "frontend"
+            ]
+          }
+        ],
+        [
+          {
+            "name": "Heart button to save",
+            "status": "done",
+            "points": 1,
+            "tags": [
+              "frontend"
+            ]
           },
+          {
+            "name": "Saved recipes list",
+            "status": "done",
+            "points": 2,
+            "tags": [
+              "frontend",
+              "backend"
+            ]
+          }
+        ],
+        [],
+        [],
+        [
+          {
+            "name": "Copy link to recipe",
+            "status": "done",
+            "points": 1,
+            "tags": [
+              "frontend"
+            ]
+          }
+        ]
+      ]
+    },
+    {
+      "name": "V1",
+      "goal": "Search and filter recipes, and add recipes of your own",
+      "targetDate": "2027-02-01",
+      "stories": [
+        [
+          {
+            "name": "Search by name",
+            "status": "done",
+            "points": 2,
+            "tags": [
+              "frontend"
+            ]
+          },
+          {
+            "name": "Category filters",
+            "status": "done",
+            "points": 3,
+            "tags": [
+              "frontend",
+              "backend"
+            ]
+          },
+          {
+            "name": "Show cook time and difficulty on cards",
+            "color": "#d8b4fe"
+          }
+        ],
+        [
           {
             "name": "Serving size",
             "status": "done",
@@ -150,36 +202,11 @@
             ]
           },
           {
-            "name": "Check off completed steps",
-            "status": "done",
-            "points": 2,
-            "tags": [
-              "frontend"
-            ]
-          },
-          {
             "name": "Keep recipe view minimal while cooking",
             "color": "#d8b4fe"
           }
         ],
         [
-          {
-            "name": "Heart button to save",
-            "status": "done",
-            "points": 1,
-            "tags": [
-              "frontend"
-            ]
-          },
-          {
-            "name": "Saved recipes list",
-            "status": "done",
-            "points": 2,
-            "tags": [
-              "frontend",
-              "backend"
-            ]
-          },
           {
             "name": "What if saved recipe is deleted by author?",
             "color": "#fecdd3"
@@ -214,14 +241,6 @@
         ],
         [
           {
-            "name": "Copy link to recipe",
-            "status": "done",
-            "points": 1,
-            "tags": [
-              "frontend"
-            ]
-          },
-          {
             "name": "Recipe URLs need to work without login",
             "color": "#a5f3fc"
           }
@@ -229,7 +248,7 @@
       ]
     },
     {
-      "name": "V1",
+      "name": "V2",
       "goal": "Suit different diets and make cooking hands-free",
       "targetDate": "2027-03-01",
       "stories": [
@@ -356,7 +375,7 @@
       ]
     },
     {
-      "name": "V2",
+      "name": "V3",
       "goal": "Plan meals, shop for them, and share your own recipes",
       "targetDate": "2027-05-31",
       "stories": [
@@ -475,5 +494,5 @@
       "label": "Design"
     }
   ],
-  "notes": "MP: Dietary filters are V1 priority, highest-voted feature request\n\nTN: Lock down recipe data schema before API work starts\n\nAL: Accessibility audit booked for post-V1, don't let it slip\n\nMP: Grocery API partner search ongoing, blocked for V2 until signed"
+  "notes": "MP: Dietary filters are V2 priority, highest-voted feature request\n\nTN: Lock down recipe data schema before API work starts\n\nAL: Accessibility audit booked for post-V2, don't let it slip\n\nMP: Grocery API partner search ongoing, blocked for V3 until signed"
 }
