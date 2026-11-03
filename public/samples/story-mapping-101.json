@@ -64,7 +64,8 @@
   ],
   "slices": [
     {
-      "name": "V1:\nBasic House",
+      "name": "V1",
+      "goal": "A basic house you can build from the box",
       "stories": [
         [],
         [

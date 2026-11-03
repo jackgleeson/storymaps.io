@@ -250,7 +250,7 @@ const STEPS = [
     {
         target: '.slice-label-container',
         title: 'Release Slices',
-        body: 'Horizontal rows group tasks into releases. This map has one slice, <strong>Version 1: Basic House</strong>. It represents version 1 of the product, the essentials you ship first.',
+        body: 'Horizontal rows group tasks into releases. This map has one slice, <strong>V1</strong>, with the goal of a basic house. It represents version 1 of the product, the essentials you ship first.',
         icon: '\u{1F4E6}',
     },
     {
