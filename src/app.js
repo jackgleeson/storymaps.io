@@ -1617,6 +1617,7 @@ lock.init({
     closeMainMenu,
     initSortable,
     renderLegend,
+    renderPartialsList,
     logEvent: (text, ids) => log.logEvent(text, ids),
 });
 

@@ -14,6 +14,7 @@ let _saveToStorage = null;
 let _closeMainMenu = null;
 let _initSortable = null;
 let _renderLegend = null;
+let _renderPartialsList = null;
 let _logEvent = null;
 
 // Lock state - tracks whether map is locked and if current session has unlocked it
@@ -29,7 +30,7 @@ let lockPoll = null; // checks the open map, kept so a page coming back into vie
 // Track previous editability to avoid unnecessary sortable reinit
 let wasEditable = true;
 
-export const init = ({ state, getProvider, getYdoc, getCursorColor, render, notepadUpdate, saveToStorage, closeMainMenu, initSortable, renderLegend, logEvent }) => {
+export const init = ({ state, getProvider, getYdoc, getCursorColor, render, notepadUpdate, saveToStorage, closeMainMenu, initSortable, renderLegend, renderPartialsList, logEvent }) => {
     _state = state;
     // The lock poll skips a hidden page: check at once when it comes back into view
     document.addEventListener('visibilitychange', () => {
@@ -61,6 +62,7 @@ export const init = ({ state, getProvider, getYdoc, getCursorColor, render, note
     _closeMainMenu = closeMainMenu;
     _initSortable = initSortable;
     _renderLegend = renderLegend;
+    _renderPartialsList = renderPartialsList;
     _logEvent = logEvent;
 };
 
@@ -373,6 +375,8 @@ export const updateEditability = () => {
         wasEditable = editable;
         _initSortable();
         _renderLegend();
+        // A map with no partials offers the tab only when it can be edited
+        _renderPartialsList();
         _notepadUpdate();
     }
 };

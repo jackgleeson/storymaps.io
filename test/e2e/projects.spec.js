@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { test, expect, openMap, acceptDialog, openMenu } from './fixtures.js';
 
 const map = (name, a = 'First', b = 'Second') => `name: ${name}
@@ -124,6 +125,21 @@ test('switching tabs keeps full screen, opening the map in the page', async ({ p
   await tabs(page).nth(0).click();
   await expect(page.locator('.step .step-text').first()).toHaveValue('Browse');
   expect(await page.evaluate(() => !!document.fullscreenElement)).toBe(true);
+});
+
+test('a map opened from the tab of a locked map can still make partials', async ({ page, createMap, request }) => {
+  const [a, b] = [await createMap(map('Ordering', 'Browse', 'Pay')), await createMap(map('Loyalty', 'Join', 'Redeem'))];
+  await openMap(page, a, 2);
+  await addByLink(page, b);
+  await request.post(`/api/lock/${a}`, { data: { passwordHash: createHash('sha256').update('elsewhere').digest('hex') } });
+  await page.reload();
+  await expect(page.getByText('This map is read-only')).toBeVisible();
+  await expect(page.locator('#partialsToggle')).toBeDisabled();
+
+  await tabs(page).nth(1).click();
+  await expect(page.locator('.step .step-text').first()).toHaveValue('Join');
+  await expect(page.getByText('This map is read-only')).toBeHidden();
+  await expect(page.locator('#partialsToggle')).toBeEnabled({ timeout: 5000 });
 });
 
 test('a tab shows the loading spinner while its map opens', async ({ page, createMap }) => {
