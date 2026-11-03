@@ -82,7 +82,77 @@
             "status": "done",
             "points": 3,
             "tags": ["frontend", "backend"]
+          }
+        ],
+        [
+          {
+            "name": "Choose size",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
+          }
+        ],
+        [
+          {
+            "name": "Order summary with total",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
+          }
+        ],
+        [
+          {
+            "name": "Apple Pay / Google Pay",
+            "status": "done",
+            "points": 5,
+            "tags": ["frontend", "backend"]
           },
+          {
+            "name": "Order confirmation screen",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend"]
+          },
+          {
+            "name": "Handle payment failures?",
+            "color": "#fecdd3"
+          }
+        ],
+        [
+          {
+            "name": "Push notification when ready",
+            "status": "done",
+            "points": 3,
+            "tags": ["mobile", "backend"]
+          }
+        ],
+        [],
+        [
+          {
+            "name": "View incoming orders",
+            "status": "done",
+            "points": 3,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Mark order as ready",
+            "status": "done",
+            "points": 2,
+            "tags": ["frontend", "backend"]
+          },
+          {
+            "name": "Alert sound for new orders?",
+            "color": "#bef264"
+          }
+        ]
+      ]
+    },
+    {
+      "name": "V1",
+      "goal": "Customers can make a drink their own, follow their order, and get it delivered",
+      "targetDate": "2027-02-01",
+      "stories": [
+        [
           {
             "name": "Photo and price on cards",
             "status": "done",
@@ -101,12 +171,6 @@
           }
         ],
         [
-          {
-            "name": "Choose size",
-            "status": "done",
-            "points": 2,
-            "tags": ["frontend"]
-          },
           {
             "name": "Select milk type",
             "status": "done",
@@ -136,36 +200,14 @@
             "status": "done",
             "points": 2,
             "tags": ["frontend"]
-          },
-          {
-            "name": "Order summary with total",
-            "status": "done",
-            "points": 2,
-            "tags": ["frontend"]
           }
         ],
         [
-          {
-            "name": "Apple Pay / Google Pay",
-            "status": "done",
-            "points": 5,
-            "tags": ["frontend", "backend"]
-          },
           {
             "name": "Credit card",
             "status": "done",
             "points": 3,
             "tags": ["frontend", "backend"]
-          },
-          {
-            "name": "Order confirmation screen",
-            "status": "done",
-            "points": 2,
-            "tags": ["frontend"]
-          },
-          {
-            "name": "Handle payment failures?",
-            "color": "#fecdd3"
           }
         ],
         [
@@ -174,12 +216,6 @@
             "status": "done",
             "points": 5,
             "tags": ["frontend", "backend"]
-          },
-          {
-            "name": "Push notification when ready",
-            "status": "done",
-            "points": 3,
-            "tags": ["mobile", "backend"]
           },
           {
             "name": "Estimated wait time",
@@ -212,32 +248,16 @@
         ],
         [
           {
-            "name": "View incoming orders",
-            "status": "done",
-            "points": 3,
-            "tags": ["frontend", "backend"]
-          },
-          {
             "name": "Mark order as started",
             "status": "done",
             "points": 2,
             "tags": ["frontend", "backend"]
-          },
-          {
-            "name": "Mark order as ready",
-            "status": "done",
-            "points": 2,
-            "tags": ["frontend", "backend"]
-          },
-          {
-            "name": "Alert sound for new orders?",
-            "color": "#bef264"
           }
         ]
       ]
     },
     {
-      "name": "V1",
+      "name": "V2",
       "goal": "Make repeat and group orders quicker",
       "targetDate": "2027-03-01",
       "stories": [
@@ -337,7 +357,7 @@
       ]
     },
     {
-      "name": "V2",
+      "name": "V3",
       "goal": "Try personalisation and new ways to order",
       "targetDate": "2027-05-31",
       "stories": [
@@ -425,5 +445,5 @@
       "label": "Design"
     }
   ],
-  "notes": "Team standup: Dietary filters are top-voted feature request for V1\n\nPayment: Lock down gift card provider before V1 dev starts\n\nDelivery: Driver tracking API partnership in progress"
+  "notes": "Team standup: Dietary filters are top-voted feature request for V2\n\nPayment: Lock down gift card provider before V2 dev starts\n\nDelivery: Driver tracking API partnership in progress"
 }

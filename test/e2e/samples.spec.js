@@ -22,10 +22,10 @@ test('a sample from the menu shows each slice goal, with the first target date t
   await acceptDialog(page);
   await expect(page.locator('#boardName')).toHaveValue('Coffee Ordering App');
 
-  await expect(page.locator('.slice-info')).toHaveCount(3);
+  await expect(page.locator('.slice-info')).toHaveCount(4);
   expect(await sliceDetails(page, 0)).toEqual(['Customers can order and pay ahead, then pick up their coffee', await inTwoWeeks(page)]);
   const [goal] = await sliceDetails(page, 1);
-  expect(goal).toBe('Make repeat and group orders quicker');
+  expect(goal).toBe('Customers can make a drink their own, follow their order, and get it delivered');
 });
 
 test('a sample opened from the welcome page has upcoming dates too', async ({ page }) => {
