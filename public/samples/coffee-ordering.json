@@ -130,7 +130,12 @@
             "tags": ["mobile", "backend"]
           }
         ],
-        [],
+        [
+          {
+            "name": "Delivery pushed to V1",
+            "color": "#93c5fd"
+          }
+        ],
         [
           {
             "name": "View incoming orders",
