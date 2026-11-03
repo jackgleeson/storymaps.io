@@ -58,7 +58,7 @@
     {
       "name": "MVP",
       "goal": "See every subscription and never miss a renewal",
-      "targetDate": "2027-01-04",
+      "targetDate": "2026-11-17",
       "stories": [
         [
           {
@@ -124,13 +124,18 @@
             ]
           }
         ],
-        []
+        [
+          {
+            "name": "Skip for MVP",
+            "color": "#93c5fd"
+          }
+        ]
       ]
     },
     {
       "name": "V1",
       "goal": "Understand spending by category and over time",
-      "targetDate": "2027-02-01",
+      "targetDate": "2026-12-15",
       "stories": [
         [
           {
@@ -237,7 +242,7 @@
     {
       "name": "V2",
       "goal": "Spend less time entering subscriptions by importing them",
-      "targetDate": "2027-03-01",
+      "targetDate": "2027-01-12",
       "stories": [
         [
           {
@@ -368,7 +373,7 @@
     {
       "name": "V3",
       "goal": "Help people cut the subscriptions they don't use",
-      "targetDate": "2027-05-31",
+      "targetDate": "2027-04-13",
       "stories": [
         [
           {
@@ -431,8 +436,8 @@
           },
           {
             "name": "Compare similar services",
-            "url": "https://linear.app/test-company/SUB-70",
             "body": "e.g. Spotify vs Apple Music",
+            "url": "https://linear.app/test-company/SUB-70",
             "status": "planned",
             "tags": [
               "backend",
@@ -500,5 +505,5 @@
       "label": "Design Decisions"
     }
   ],
-  "notes": "MVP Looks good - core tracking and basic reminders. \n\nV2 focus: email auto-detect is highest priority, most-requested feature\n\nPlaid integration deferred to V3 due to cost and compliance review\n\nAccessibility: screen reader audit planned for post-V2"
+  "notes": "MVP Looks good - core tracking and basic reminders.\n\nV2 focus: email auto-detect is highest priority, most-requested feature\n\nPlaid integration deferred to V3 due to cost and compliance review\n\nAccessibility: screen reader audit planned for post-V2"
 }
