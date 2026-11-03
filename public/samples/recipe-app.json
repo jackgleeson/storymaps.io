@@ -75,7 +75,7 @@
     {
       "name": "MVP",
       "goal": "Find a recipe and cook it step by step",
-      "targetDate": "2027-01-04",
+      "targetDate": "2026-11-17",
       "stories": [
         [
           {
@@ -137,7 +137,26 @@
           }
         ],
         [],
-        [],
+        [
+          {
+            "name": "Add title and photo",
+            "url": "https://asana.com/test-company/REC-43",
+            "status": "done",
+            "points": 2,
+            "tags": [
+              "frontend"
+            ]
+          },
+          {
+            "name": "Add ingredients",
+            "url": "https://asana.com/test-company/REC-36",
+            "status": "done",
+            "points": 3,
+            "tags": [
+              "frontend"
+            ]
+          }
+        ],
         [
           {
             "name": "Copy link to recipe",
@@ -146,6 +165,10 @@
             "tags": [
               "frontend"
             ]
+          },
+          {
+            "name": "Recipe URLs need to work without login",
+            "color": "#a5f3fc"
           }
         ]
       ]
@@ -153,7 +176,7 @@
     {
       "name": "V1",
       "goal": "Search and filter recipes, and add recipes of your own",
-      "targetDate": "2027-02-01",
+      "targetDate": "2026-12-15",
       "stories": [
         [
           {
@@ -217,24 +240,6 @@
         [],
         [
           {
-            "name": "Add title and photo",
-            "url": "https://asana.com/test-company/REC-43",
-            "status": "done",
-            "points": 2,
-            "tags": [
-              "frontend"
-            ]
-          },
-          {
-            "name": "Add ingredients",
-            "url": "https://asana.com/test-company/REC-36",
-            "status": "done",
-            "points": 3,
-            "tags": [
-              "frontend"
-            ]
-          },
-          {
             "name": "Add steps",
             "status": "done",
             "points": 2,
@@ -243,18 +248,13 @@
             ]
           }
         ],
-        [
-          {
-            "name": "Recipe URLs need to work without login",
-            "color": "#a5f3fc"
-          }
-        ]
+        []
       ]
     },
     {
       "name": "V2",
       "goal": "Suit different diets and make cooking hands-free",
-      "targetDate": "2027-03-01",
+      "targetDate": "2027-01-12",
       "stories": [
         [
           {
@@ -383,7 +383,7 @@
     {
       "name": "V3",
       "goal": "Plan meals, shop for them, and share your own recipes",
-      "targetDate": "2027-05-31",
+      "targetDate": "2027-04-13",
       "stories": [
         [
           {
