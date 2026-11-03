@@ -11107,7 +11107,8 @@ html.dark-mode .project-panel-secondary {
     white-space: nowrap;
 }
 
-.project-panel-item-note {
+.project-panel-item-note,
+.project-panel-count {
     color: var(--color-text-muted);
 }
 

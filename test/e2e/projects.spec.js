@@ -322,6 +322,7 @@ test('the project box renames the project, reorders maps and takes them out', as
 
   await projectName(page).click();
   await expect(panel(page).getByRole('heading')).toHaveText('Project');
+  await expect(panel(page).locator('#projectMapsLabel')).toHaveText('Maps (3)');
   const name = panel(page).getByLabel('Name');
   await name.fill('Coffee App');
   await name.press('Enter');
@@ -337,6 +338,7 @@ test('the project box renames the project, reorders maps and takes them out', as
   expect(await acceptDialog(page)).toBe(`Remove "Loyalty" from Coffee App?\n\nThe map isn't deleted, and still opens at ${new URL(page.url()).host}/${b}.`);
   await expect(tabs(page)).toHaveText(['Ordering', 'Barista']);
   await expect(panel(page).locator('.project-panel-item')).toHaveCount(2);
+  await expect(panel(page).locator('#projectMapsLabel')).toHaveText('Maps (2)');
 
   // Taking out the map you're on shows it on its own, at its own link
   await panel(page).getByRole('button', { name: 'Remove Ordering from the project' }).click();

@@ -502,6 +502,7 @@ const buildManage = () => {
     const linkRow = el('div', 'project-panel-row');
     linkRow.append(link, copy);
     const listLabel = el('p', 'project-panel-label', { id: 'projectMapsLabel', text: 'Maps' });
+    listLabel.append(el('span', 'project-panel-count', { id: 'projectMapsCount' }));
     const list = el('ol', 'project-panel-list', { id: 'projectMapsList', ariaLabelledby: 'projectMapsLabel' });
     // Deleting the project is its own action, never a side effect of removing maps
     const remove = el('button', 'project-panel-remove project-panel-delete', { type: 'button', text: 'Delete project' });
@@ -541,6 +542,8 @@ const renderManageList = () => {
     if (!list) return;
     const maps = _project?.maps || [];
     const ids = maps.map(m => m.id);
+    const count = document.getElementById('projectMapsCount');
+    if (count) count.textContent = ` (${maps.length})`;
     const focused = document.activeElement?.closest?.('#projectMapsList') ? document.activeElement.dataset.action + ':' + document.activeElement.dataset.mapId : null;
     list.replaceChildren(...maps.map((map, i) => {
         const name = mapLabel(map);
