@@ -2979,19 +2979,32 @@ body.main-menu-open .step:hover {
     background: #1d4ed8;
 }
 
+/* While the cards show: a lock and "Read-only", divided from "Hide cards" by a thin line */
 .slice-peek-readonly {
     flex-shrink: 0;
-    margin-left: 10px;
-    padding: 1px 6px;
-    border: 1px solid currentColor;
-    border-radius: 3px;
-    font-size: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 14px;
+    padding-right: 10px;
+    border-right: 1px solid rgba(6, 95, 70, 0.25);
+    font-size: 11px;
+    font-weight: 500;
     color: #047857;
     white-space: nowrap;
 }
 
+.slice-peek-lock {
+    display: inline-flex;
+}
+
+.slice-peek-readonly + .slice-peek-action {
+    margin-left: 6px;
+}
+
 .slice-closed-banner .slice-peek-readonly {
-    color: #1e40af;
+    color: #1d4ed8;
+    border-right-color: rgba(30, 64, 175, 0.25);
 }
 
 /* Peeking: the cards of a closed slice show read-only under its banner. They use the partial map

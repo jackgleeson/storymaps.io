@@ -1238,7 +1238,17 @@ const createClosedBannerRow = (slice, peeking) => {
     if (slice.name) toggle.appendChild(el('span', 'slice-completed-name', { text: slice.name }));
     toggle.appendChild(el('span', 'slice-completed-text', { text: slice.name ? ` - ${statusText}` : statusText }));
     toggle.appendChild(el('span', 'slice-card-count', { text: `${cards} ${cards === 1 ? 'card' : 'cards'}` }));
-    if (peeking) toggle.appendChild(el('span', 'slice-peek-readonly', { text: 'Read-only' }));
+    if (peeking) {
+        const readOnly = el('span', 'slice-peek-readonly');
+        readOnly.append(
+            el('span', 'slice-peek-lock', {
+                ariaHidden: 'true',
+                html: '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+            }),
+            document.createTextNode('Read-only'),
+        );
+        toggle.appendChild(readOnly);
+    }
     // Says what a click does, so the banner reads as a control
     const action = el('span', 'slice-peek-action');
     action.append(
