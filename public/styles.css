@@ -2946,14 +2946,22 @@ body.main-menu-open .step:hover {
 .slice-card-count {
     flex-shrink: 0;
     margin-left: 10px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #047857;
     font-size: 11px;
-    color: #047857;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #fff;
     white-space: nowrap;
 }
 
-.slice-closed-banner .slice-peek-chevron,
-.slice-closed-banner .slice-card-count {
+.slice-closed-banner .slice-peek-chevron {
     color: #1e40af;
+}
+
+.slice-closed-banner .slice-card-count {
+    background: #1d4ed8;
 }
 
 .slice-peek-readonly {
@@ -2972,10 +2980,14 @@ body.main-menu-open .step:hover {
 }
 
 /* Peeking: the cards of a closed slice show read-only under its banner. They use the partial map
-   preview columns, without the blue outline. */
+   preview columns, with a ring in the colour of the banner instead of the blue partial outline. */
 .slice-peek-col.partial-map-preview-col .story-card {
-    box-shadow: var(--shadow-card);
+    box-shadow: 0 0 0 2px #34d399, var(--shadow-card);
     cursor: default;
+}
+
+.slice-peek-closed .slice-peek-col.partial-map-preview-col .story-card {
+    box-shadow: 0 0 0 2px #60a5fa, var(--shadow-card);
 }
 
 /* The gutter keeps the closed slice controls, beside the banner */
@@ -9720,7 +9732,11 @@ html.dark-mode .partial-map-preview-col .story-card {
     box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.6), 0 0 12px rgba(45, 212, 191, 0.15);
 }
 html.dark-mode .slice-peek-col.partial-map-preview-col .story-card {
-    box-shadow: var(--shadow-card);
+    box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.75), var(--shadow-card);
+}
+
+html.dark-mode .slice-peek-closed .slice-peek-col.partial-map-preview-col .story-card {
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.75), var(--shadow-card);
 }
 
 /* Selection toolbar partial button */

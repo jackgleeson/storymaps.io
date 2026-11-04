@@ -1254,7 +1254,7 @@ const createClosedBannerRow = (slice, peeking) => {
 // The cards of a closed slice while someone peeks: read-only, like a partial map preview, so
 // they can't be edited, moved or deleted until the slice is reopened
 const createPeekRow = (slice) => {
-    const row = el('div', 'stories-row slice-peek-row');
+    const row = el('div', `stories-row slice-peek-row${slice.closedReason === 'closed' ? ' slice-peek-closed' : ''}`);
     const peekColumn = (col, stories) => {
         const colEl = createPreviewStoryColumn(col, stories, slice.id);
         colEl.classList.add('slice-peek-col');
