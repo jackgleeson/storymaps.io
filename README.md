@@ -33,16 +33,17 @@ A larger product can span several maps, one per journey or area, grouped as a **
 ### Story Mapping
 - **Users, Activities & Steps (Backbone)** - define the user journey left-to-right
 - **Task cards** - break down work under each step
-- **Release slices** - group tasks into MVP, V1, V2 etc.; mark slices complete or collapse them
+- **Release slices** - group tasks into MVP, V1, V2 etc.; mark slices complete or close them
+- **Complete and closed slices** - a complete or closed slice folds into a banner that shows how many cards it holds. Click the banner to show its cards read-only, in your browser only, without reopening it for anyone else. Marking a slice complete when some cards have a status other than Done offers to move them to the top of the next open slice, or a new one, in one undo step; a complete slice with unfinished cards notes how many on its banner
 - **Slice details** - click a slice's name to rename it and give it an optional goal and target date, shown behind the ⓘ next to the name (or on the banner of a completed slice); on phones the details open as a sheet at the top of the screen, clear of the keyboard
-- **Slice menu** - right-click a slice or click its ☰ to edit details, copy its link, mark it complete, collapse, reopen, or delete it
+- **Slice menu** - right-click a slice or click its ☰ to edit details, copy its link, mark it complete, close, reopen, or delete it
 - **Slice links** - every slice has a link (`#slice-<name>-<id>`, e.g. `#slice-mvp-xr47fle3`) that scrolls the map to the slice and briefly spotlights it; copy it from the slice menu, including on locked maps. The name part is only for reading, so renaming a slice never breaks a link, and inside a project the copied link keeps the project
 - **Status indicators** - done, in-progress, planned, blocked with per-slice progress tracking
 - **Story points** - estimate effort per card, auto-summed per slice
 - **Tags** - categorize cards with free-text tags, autocomplete from existing tags
-- **Overview** - counts of cards, steps, slices, users and activities, overall progress across slices, and how many cards are in each legend category
+- **Overview** - counts of cards, steps, slices, users and activities, overall progress across slices, and how many cards are in each legend category, including cards inside partials; complete and closed slices show their state with a faded progress bar
 - **Legend** - define colour-coded card categories (e.g. Tasks, Notes, Questions, Edge Cases) in the Overview tab
-- **Map Partials** - reusable story map fragments that eliminate duplication when multiple user journeys converge on shared steps; extract a sequence of columns once, reference it from anywhere, and expand inline to see the detail
+- **Map Partials** - reusable story map fragments that eliminate duplication when multiple user journeys converge on shared steps; extract a sequence of columns once, reference it from anywhere, and expand inline to see the detail. Under a collapsed partial, each slice says how many of its cards are inside; **Show cards** brings the partial's steps back in your browser, and **Hide cards** in the header above them folds them away again
 - **Card title & body** - each card has a short title visible on the map and an optional body for longer descriptions or details
 - **Expanded view** - click the expand button on any card to edit the title and body in a larger modal; its footer shows status, points, tags and a link you can open on one line, and Edit opens them with colour for changing; cards with body text show an expand indicator
 - **Story chips** - in the expanded view of a story card, add a user story (As a, I want, So that), a scenario (Given, When, Then) or an acceptance criteria list to the body in one click; Enter moves to the next line to fill in, and starts the next item in a list
@@ -88,7 +89,7 @@ A larger product can span several maps, one per journey or area, grouped as a **
 - **JSON** - import/export story maps as JSON files
 - **YAML** - import/export as human-readable YAML; author maps in a text editor, version-control them in git, or generate from scripts
 - **CSV** - import/export as spreadsheet-friendly CSV
-- **Slice details travel too** - slice goals, target dates, and completed or collapsed state are kept in JSON, YAML, and CSV exports, imports, and backups
+- **Slice details travel too** - slice goals, target dates, and complete or closed state are kept in JSON, YAML, and CSV exports, imports, and backups
 - **Jira** - import from CSV file or via server-proxied REST API; export as CSV or via server-proxied REST API; card body text is used as the issue description
 - **Asana** - import from CSV file or via server-proxied REST API; export as CSV or via server-proxied REST API; card body text is used as the task notes
 - **Phabricator** - import from CSV file or via server-proxied Conduit API; export via server-proxied Conduit API, or as a script you run in your browser's console on your Phabricator site (for instances the server can't reach, e.g. behind a VPN); card body text is used as the task description
@@ -341,7 +342,7 @@ CI runs all of them on every push to `main` and every pull request.
 3. Click **+** to add steps (columns) to the backbone, or right-click a step to add a step or spacer column before or after it
 4. Click **+** in a column to add tasks
 5. Click **+ Add Slice** to create release groupings, then click a slice's name to rename it or set a goal and target date
-6. Right-click a slice or click its **☰** to copy a link to it, mark it complete, or collapse it
+6. Right-click a slice or click its **☰** to copy a link to it, mark it complete, or close it; click the banner of a complete or closed slice to see its cards
 7. Click the **expand** button on a card to add a description in the body field and set its status, points, tags, link, or colour; the title stays visible on the map
 8. Click the **...** menu on cards to set colours, status, links, tags, or story points
 9. Drag tasks to reorder or move between columns; select several cards first to drag them together

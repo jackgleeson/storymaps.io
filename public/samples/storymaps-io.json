@@ -343,7 +343,15 @@
             "status": "done"
           },
           {
-            "name": "Collapse finished slices",
+            "name": "Close slices set aside",
+            "status": "done"
+          },
+          {
+            "name": "Show a closed slice's cards",
+            "status": "done"
+          },
+          {
+            "name": "Move unfinished cards on complete",
             "status": "done"
           },
           {
@@ -372,6 +380,10 @@
           },
           {
             "name": "Expand inline to see detail",
+            "status": "done"
+          },
+          {
+            "name": "Show a partial's cards from a slice",
             "status": "done"
           }
         ],
