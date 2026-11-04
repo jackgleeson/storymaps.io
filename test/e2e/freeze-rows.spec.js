@@ -145,3 +145,21 @@ test('a cursor over the frozen rows shows over the same rows on the other screen
   await scrollDown(page, 200);
   await expect.poll(() => cursorInside(page, '.step:nth-child(2)')).toBe(true);
 });
+
+test('typing in a card in the frozen rows leaves the map where it is', async ({ page, createMap }) => {
+  await openMap(page, await createMap(LONG_MAP));
+  const wrapper = page.locator('#storyMapWrapper');
+  const scrollTop = () => wrapper.evaluate(w => w.scrollTop);
+  const before = await scrollTop();
+  // Click by position: a locator click would scroll the card into view first
+  const box = await page.locator('.users-row .story-card textarea').first().boundingBox();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await page.keyboard.press('ControlOrMeta+A');
+  await page.keyboard.type('Regular customer', { delay: 20 });
+  expect(await scrollTop()).toBe(before);
+  // Once focus leaves the frozen rows, scrolling into view stops below them again
+  await page.keyboard.press('Escape');
+  await page.locator('#storyMapWrapper').evaluate(w => w.focus?.());
+  await page.locator('body').click({ position: { x: 5, y: 5 } });
+  await expect.poll(() => wrapper.evaluate(w => w.style.scrollPaddingTop)).not.toBe('0px');
+});

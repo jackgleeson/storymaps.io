@@ -18,6 +18,8 @@ let stickAt = null;
 // The height of the rows above the frozen ones, which go out of view, in screen pixels
 let hiddenAbove = 0;
 let lastZoom = null;
+// Something in the frozen rows has focus
+let focusInRows = false;
 
 const readMode = () => {
     try { return normalizeFreezeMode(localStorage.getItem(STORAGE_KEY)); } catch { return normalizeFreezeMode(null); }
@@ -51,7 +53,7 @@ const update = () => {
         hiddenAbove = 0;
         wrapper.classList.remove('rows-stuck');
         wrapper.style.removeProperty('--freeze-top');
-        wrapper.style.scrollPaddingTop = '';
+        setScrollPadding();
         return;
     }
 
@@ -62,12 +64,20 @@ const update = () => {
     // The top part is the first thing in the map
     stickAt = map.offsetTop + hiddenAbove;
     // Scrolling something into view stops below the frozen rows, not under them
-    wrapper.style.scrollPaddingTop = `${frozenRowsHeight()}px`;
+    setScrollPadding();
 
     // Zooming keeps the middle of the view still, which scrolls the map. If the rows were in their
     // own place before the zoom, keep them there, rather than let them stick over the cards below.
     if (zoomed && !wasStuck && wrapper.scrollTop > stickAt) wrapper.scrollTop = Math.floor(stickAt);
     onScroll();
+};
+
+// Scrolling something into view stops below the frozen rows, not under them, except while
+// something in the frozen rows has focus
+const setScrollPadding = () => {
+    const wrapper = dom.storyMapWrapper;
+    if (!wrapper) return;
+    wrapper.style.scrollPaddingTop = stickAt === null ? '' : focusInRows ? '0px' : `${frozenRowsHeight()}px`;
 };
 
 // How much of the top of the map area the frozen rows cover once they stick, in screen pixels,
@@ -125,6 +135,17 @@ export const init = () => {
     resize.observe(map);
     resize.observe(wrapper);
     wrapper.addEventListener('scroll', onScroll, { passive: true });
+    // While something in the frozen rows has focus, such as a user card being typed in, the scroll
+    // padding is off: the browser keeps a focused card and its text cursor clear of the padding,
+    // and these sit inside it, so typing would scroll the map down by the rows' height.
+    wrapper.addEventListener('focusin', (e) => {
+        focusInRows = !!mapTop(map)?.contains(e.target);
+        setScrollPadding();
+    });
+    wrapper.addEventListener('focusout', () => {
+        focusInRows = false;
+        setScrollPadding();
+    });
 
     dom.toggleFreezeBtn.addEventListener('click', () => {
         if (isMenuOpen()) closeMenu();
