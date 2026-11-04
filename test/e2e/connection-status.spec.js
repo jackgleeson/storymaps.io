@@ -85,3 +85,30 @@ test('switching the network off shows the notice at once, and switching it back 
   await expect(notice(page)).toBeHidden({ timeout: 5000 });
   await expect.poll(async () => (await pullMap(id)).slices[0].stories[0][0].name).toBe('Menu, edited offline');
 });
+
+test('a connection that goes silent without closing is noticed within seconds', async ({ page, createMap, pullMap }) => {
+  const id = await createMap(MAP);
+  // Pass messages both ways until the line goes dead, as when wifi drops but the socket stays
+  // open. While it's dead, new connections fail, as they would with no network.
+  let dead = false;
+  await page.routeWebSocket(/.*/, ws => {
+    if (dead) { ws.close(); return; }
+    const server = ws.connectToServer();
+    ws.onMessage(m => { if (!dead) server.send(m); });
+    server.onMessage(m => { if (!dead) ws.send(m); });
+  });
+  await openMap(page, id);
+  await page.waitForTimeout(500);
+  dead = true;
+  const started = Date.now();
+  await expect(notice(page)).toBeVisible({ timeout: 10_000 });
+  expect(Date.now() - started).toBeLessThan(9000);
+
+  // Edits from then on count as unsynced, and arrive once the line works again
+  await firstCard(page).fill('Menu, edited while silent');
+  await firstCard(page).blur();
+  await expect(notice(page)).toHaveText('Offline. Your changes will sync when you reconnect.');
+  dead = false;
+  await expect(notice(page)).toHaveText('Back online. Your changes are saved.', { timeout: 10_000 });
+  await expect.poll(async () => (await pullMap(id)).slices[0].stories[0][0].name).toBe('Menu, edited while silent');
+});
