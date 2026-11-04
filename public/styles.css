@@ -6642,6 +6642,27 @@ html.dark-mode .connection-notice::before {
     background: #f59e0b;
 }
 
+/* Back online, for a moment */
+.connection-notice.is-online {
+    border-color: #10b981;
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.connection-notice.is-online::before {
+    background: #059669;
+}
+
+html.dark-mode .connection-notice.is-online {
+    border-color: #047857;
+    background: #022c22;
+    color: #a7f3d0;
+}
+
+html.dark-mode .connection-notice.is-online::before {
+    background: #34d399;
+}
+
 /* Phones: above the bottom controls, and under the panel when it's open */
 @media (max-width: 600px) {
     .connection-notice {

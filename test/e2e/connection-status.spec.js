@@ -80,6 +80,8 @@ test('switching the network off shows the notice at once, and switching it back 
   await expect(notice(page)).toHaveText('Offline. Your changes will sync when you reconnect.');
 
   await context.setOffline(false);
-  await expect(notice(page)).toBeHidden({ timeout: 10_000 });
+  await expect(notice(page)).toHaveText('Back online. Your changes are saved.', { timeout: 10_000 });
+  await expect(notice(page)).toHaveClass(/is-online/);
+  await expect(notice(page)).toBeHidden({ timeout: 5000 });
   await expect.poll(async () => (await pullMap(id)).slices[0].stories[0][0].name).toBe('Menu, edited offline');
 });
