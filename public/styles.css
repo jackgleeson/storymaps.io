@@ -2840,7 +2840,8 @@ body.main-menu-open .step:hover {
         display: none;
     }
 
-    .slice-collapsed .slice-controls-row {
+    .slice-collapsed .slice-controls-row,
+    .slice-peeking .slice-controls-row {
         gap: 0;
     }
 
@@ -2955,14 +2956,48 @@ body.main-menu-open .step:hover {
     color: #1e40af;
 }
 
-/* Peeking: the cards of a closed slice show faded under its banner */
-.slice-peeking .slice-stories-area > .stories-row:not(.slice-completed-row) .story-card {
-    opacity: 0.7;
+.slice-peek-readonly {
+    flex-shrink: 0;
+    margin-left: 10px;
+    padding: 1px 6px;
+    border: 1px solid currentColor;
+    border-radius: 3px;
+    font-size: 10px;
+    color: #047857;
+    white-space: nowrap;
 }
 
-.slice-peeking .slice-stories-area > .stories-row:not(.slice-completed-row) .story-card:hover,
-.slice-peeking .slice-stories-area > .stories-row:not(.slice-completed-row) .story-card:focus-within {
-    opacity: 1;
+.slice-closed-banner .slice-peek-readonly {
+    color: #1e40af;
+}
+
+/* Peeking: the cards of a closed slice show read-only and faded under its banner. They use the
+   partial map preview columns, without the blue outline. */
+.slice-peek-col.partial-map-preview-col .story-card {
+    box-shadow: var(--shadow-card);
+    opacity: 0.65;
+    cursor: default;
+}
+
+/* The gutter keeps the closed slice controls, beside the banner */
+.slice-peeking .slice-label-container {
+    padding-top: 0;
+}
+
+.slice-peeking .slice-controls-row {
+    min-height: 36px;
+    margin-top: 0;
+    padding-top: 0;
+    justify-content: flex-start;
+    gap: 7px;
+}
+
+.slice-peeking .slice-controls-row .slice-drag-handle {
+    margin-right: -4px;
+}
+
+.slice-peeking .slice-controls-row .slice-menu {
+    margin-left: auto;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -9281,7 +9316,8 @@ html.dark-mode .slice-drag-handle {
 }
 
 /* Slice collapsed label */
-html.dark-mode .slice-collapsed .slice-label-container {
+html.dark-mode .slice-collapsed .slice-label-container,
+html.dark-mode .slice-peeking .slice-label-container {
     background: var(--color-bg-surface);
 }
 
@@ -9683,6 +9719,9 @@ html.dark-mode .step.partial-map-preview-col {
 }
 html.dark-mode .partial-map-preview-col .story-card {
     box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.6), 0 0 12px rgba(45, 212, 191, 0.15);
+}
+html.dark-mode .slice-peek-col.partial-map-preview-col .story-card {
+    box-shadow: var(--shadow-card);
 }
 
 /* Selection toolbar partial button */

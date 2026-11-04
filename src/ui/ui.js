@@ -1184,10 +1184,19 @@ const createSliceName = (slice) => {
 // Slices someone is peeking into: a closed slice shown open in this browser only, never saved
 const _peekedSlices = new Set();
 
+// The banner stays where it was. Otherwise the browser can keep a slice further down in place
+// instead, which scrolls the new cards up under the frozen rows.
 const togglePeek = (sliceId) => {
+    const bannerTop = () => _dom.storyMap
+        .querySelector(`.slice-container[data-slice-id="${CSS.escape(sliceId)}"] .slice-completed-banner`)
+        ?.getBoundingClientRect().top;
+    const before = bannerTop();
     if (_peekedSlices.has(sliceId)) _peekedSlices.delete(sliceId);
     else _peekedSlices.add(sliceId);
     if (!rerenderSlice(sliceId)) _renderAndSave();
+    const after = bannerTop();
+    const wrapper = _dom.storyMap.closest('.story-map-wrapper');
+    if (before != null && after != null && wrapper) wrapper.scrollTop += after - before;
 };
 
 // Every card in a slice, including those in partial map columns
@@ -1221,13 +1230,16 @@ const createClosedBannerRow = (slice, peeking) => {
     const toggle = el('button', 'slice-peek-toggle', {
         type: 'button',
         ariaExpanded: String(peeking),
-        title: peeking ? 'Hide the cards' : 'Show the cards. The slice stays closed for everyone else.',
+        title: peeking
+            ? 'Hide the cards. Reopen the slice from its ☰ menu to edit them.'
+            : 'Show the cards, read-only. The slice stays closed for everyone else.',
     });
     toggle.appendChild(el('span', 'slice-peek-chevron', { ariaHidden: 'true', text: '›' }));
     // The name truncates on one line; the status after it always shows
     if (slice.name) toggle.appendChild(el('span', 'slice-completed-name', { text: slice.name }));
     toggle.appendChild(el('span', 'slice-completed-text', { text: slice.name ? ` - ${statusText}` : statusText }));
     toggle.appendChild(el('span', 'slice-card-count', { text: `${cards} ${cards === 1 ? 'card' : 'cards'}` }));
+    if (peeking) toggle.appendChild(el('span', 'slice-peek-readonly', { text: 'Read-only' }));
     toggle.addEventListener('click', (e) => {
         e.stopPropagation();
         togglePeek(slice.id);
@@ -1239,19 +1251,43 @@ const createClosedBannerRow = (slice, peeking) => {
     return row;
 };
 
+// The cards of a closed slice while someone peeks: read-only, like a partial map preview, so
+// they can't be edited, moved or deleted until the slice is reopened
+const createPeekRow = (slice) => {
+    const row = el('div', 'stories-row slice-peek-row');
+    const peekColumn = (col, stories) => {
+        const colEl = createPreviewStoryColumn(col, stories, slice.id);
+        colEl.classList.add('slice-peek-col');
+        return colEl;
+    };
+    const expandedIds = partialMapEditState.expandedIds;
+    const hasAnyExpanded = expandedIds.size > 0 && !partialMapEditState.activeId;
+    _state.columns.forEach(col => {
+        if (col._editingHidden) return;
+        if (!col.partialMapId) {
+            row.appendChild(peekColumn(col, slice.stories[col.id]));
+            return;
+        }
+        const pm = hasAnyExpanded && expandedIds.has(col.partialMapId)
+            ? _state.partialMaps.find(p => p.id === col.partialMapId) : null;
+        if (pm) pm.columns.forEach(pmCol => row.appendChild(peekColumn(pmCol, pm.stories[slice.id]?.[pmCol.id])));
+        else row.appendChild(createPartialMapRefCell(col));
+    });
+    for (let i = 0; i < PHANTOM_BUFFER; i++) {
+        row.appendChild(el('div', 'story-column collapsed-column-placeholder'));
+    }
+    return row;
+};
+
 export const createSliceContainer = (slice, index) => {
     const peeking = slice.collapsed && _peekedSlices.has(slice.id);
-    const collapsed = slice.collapsed && !peeking;
     let containerClass = 'slice-container';
-    if (collapsed) {
-        containerClass += ' slice-collapsed';
-    }
-    if (peeking) containerClass += ' slice-peeking';
+    if (slice.collapsed) containerClass += peeking ? ' slice-peeking' : ' slice-collapsed';
     const container = el('div', containerClass, { dataSliceId: slice.id });
 
     const labelContainer = el('div', 'slice-label-container', { dataSliceId: slice.id });
 
-    if (collapsed) {
+    if (slice.collapsed) {
         const controlsRow = el('div', 'slice-controls-row');
         const dragHandle = el('div', 'slice-drag-handle', { html: '↕', title: 'Drag to reorder' });
         controlsRow.appendChild(dragHandle);
@@ -1263,7 +1299,8 @@ export const createSliceContainer = (slice, index) => {
         container.appendChild(labelContainer);
 
         const storiesArea = el('div', 'slice-stories-area');
-        storiesArea.appendChild(createClosedBannerRow(slice, false));
+        storiesArea.appendChild(createClosedBannerRow(slice, peeking));
+        if (peeking) storiesArea.appendChild(createPeekRow(slice));
         container.appendChild(storiesArea);
 
         return container;
@@ -1318,7 +1355,6 @@ export const createSliceContainer = (slice, index) => {
     container.appendChild(labelContainer);
 
     const storiesArea = el('div', 'slice-stories-area');
-    if (peeking) storiesArea.appendChild(createClosedBannerRow(slice, true));
     const storiesRow = el('div', 'stories-row');
 
     const editingColIds = _getEditingPartialColIds();
