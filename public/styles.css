@@ -1777,15 +1777,15 @@ html.dark-mode .map-stats-slice-count.map-stats-closed {
 }
 
 .partial-map-ref-meta {
-    font-size: 10px;
-    color: #0d9488;
+    font-size: 11px;
+    color: #0f766e;
     font-weight: 600;
     letter-spacing: 0.02em;
 }
 
 .partial-map-ref-range {
-    font-size: 9px;
-    color: #2dd4bf;
+    font-size: 10px;
+    color: #0f766e;
     text-align: center;
     line-height: 1.2;
     max-width: 100%;
