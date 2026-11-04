@@ -61,6 +61,19 @@ const onUpdate = (_update, origin) => {
     if (_notice && !_notice.hidden) render();
 };
 
+// The socket only notices a lost network after 30 seconds without a message, but the browser
+// knows straight away. Drop the connection and say so at once, and reconnect when it's back.
+const onOffline = () => {
+    _provider?.disconnect();
+    clearTimeout(_showTimer);
+    _showTimer = null;
+    show();
+};
+
+const onOnline = () => {
+    _provider?.connect();
+};
+
 const onBeforeUnload = (e) => {
     if (!_unsynced) return;
     e.preventDefault();
@@ -75,6 +88,8 @@ export const bind = (provider, ydoc) => {
     provider.on('sync', onSync);
     ydoc.on('update', onUpdate);
     window.addEventListener('beforeunload', onBeforeUnload);
+    window.addEventListener('offline', onOffline);
+    window.addEventListener('online', onOnline);
 };
 
 export const unbind = () => {
@@ -82,6 +97,8 @@ export const unbind = () => {
     _provider?.off('sync', onSync);
     _ydoc?.off('update', onUpdate);
     window.removeEventListener('beforeunload', onBeforeUnload);
+    window.removeEventListener('offline', onOffline);
+    window.removeEventListener('online', onOnline);
     _provider = null;
     _ydoc = null;
     _unsynced = false;

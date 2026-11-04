@@ -68,3 +68,18 @@ test('closing the tab while connected does not ask', async ({ page, createMap })
   await page.close({ runBeforeUnload: true });
   expect(asked).toBe(false);
 });
+
+test('switching the network off shows the notice at once, and switching it back on reconnects', async ({ page, context, createMap, pullMap }) => {
+  const id = await createMap(MAP);
+  await openMap(page, id);
+  await context.setOffline(true);
+  await expect(notice(page)).toHaveText('Offline. Reconnecting...', { timeout: 1500 });
+
+  await firstCard(page).fill('Menu, edited offline');
+  await firstCard(page).blur();
+  await expect(notice(page)).toHaveText('Offline. Your changes will sync when you reconnect.');
+
+  await context.setOffline(false);
+  await expect(notice(page)).toBeHidden({ timeout: 10_000 });
+  await expect.poll(async () => (await pullMap(id)).slices[0].stories[0][0].name).toBe('Menu, edited offline');
+});
