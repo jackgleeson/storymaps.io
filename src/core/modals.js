@@ -8,6 +8,8 @@ let inputEl = null;
 let btnRow = null;
 let okBtn = null;
 let cancelBtn = null;
+// A second choice beside OK, only in showChoice
+let altBtn = null;
 let resolve = null;
 let queue = [];
 let active = false;
@@ -36,11 +38,15 @@ const ensureDOM = () => {
     cancelBtn.className = 'dialog-btn dialog-btn-cancel';
     cancelBtn.textContent = 'Cancel';
 
+    altBtn = document.createElement('button');
+    altBtn.className = 'dialog-btn dialog-btn-cancel dialog-btn-alt';
+    altBtn.style.display = 'none';
+
     okBtn = document.createElement('button');
     okBtn.className = 'dialog-btn dialog-btn-ok';
     okBtn.textContent = 'OK';
 
-    btnRow.append(cancelBtn, okBtn);
+    btnRow.append(cancelBtn, altBtn, okBtn);
     modal.append(messageEl, inputEl, btnRow);
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
@@ -50,14 +56,15 @@ const ensureDOM = () => {
     });
     cancelBtn.addEventListener('click', () => dismiss(false));
     okBtn.addEventListener('click', () => dismiss(true));
+    altBtn.addEventListener('click', () => dismiss('alt'));
     overlay.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') { e.stopPropagation(); dismiss(false); }
         if (e.key === 'Enter' && document.activeElement !== cancelBtn) {
             e.preventDefault();
-            dismiss(true);
+            dismiss(document.activeElement === altBtn ? 'alt' : true);
         }
         if (e.key === 'Tab') {
-            const focusable = [inputEl, cancelBtn, okBtn].filter(
+            const focusable = [inputEl, cancelBtn, altBtn, okBtn].filter(
                 el => el.style.display !== 'none'
             );
             const i = focusable.indexOf(document.activeElement);
@@ -83,6 +90,8 @@ const dismiss = (ok) => {
         r(ok ? inputEl.value : null);
     } else if (inputEl._mode === 'confirm') {
         r(ok);
+    } else if (inputEl._mode === 'choice') {
+        r(ok === 'alt' ? 'alt' : ok ? 'ok' : null);
     } else {
         r(undefined);
     }
@@ -100,7 +109,7 @@ const dismiss = (ok) => {
     }
 };
 
-const show = (mode, message, defaultValue, placeholder) => {
+const show = (mode, message, defaultValue, placeholder, labels = {}) => {
     return new Promise((res) => {
         const run = () => {
             ensureDOM();
@@ -109,13 +118,18 @@ const show = (mode, message, defaultValue, placeholder) => {
             resolve = res;
             inputEl._mode = mode;
             messageEl.textContent = message;
+            okBtn.textContent = labels.ok || 'OK';
+            altBtn.textContent = labels.alt || '';
+            altBtn.style.display = mode === 'choice' ? '' : 'none';
+            // Three buttons need more room to sit on one line
+            modal.classList.toggle('dialog-modal-choice', mode === 'choice');
 
             if (mode === 'prompt') {
                 inputEl.style.display = '';
                 inputEl.value = defaultValue ?? '';
                 inputEl.placeholder = placeholder || '';
                 cancelBtn.style.display = '';
-            } else if (mode === 'confirm') {
+            } else if (mode === 'confirm' || mode === 'choice') {
                 inputEl.style.display = 'none';
                 cancelBtn.style.display = '';
             } else {
@@ -142,6 +156,8 @@ const show = (mode, message, defaultValue, placeholder) => {
 export const showAlert = (message) => show('alert', message);
 export const showConfirm = (message) => show('confirm', message);
 export const showPrompt = (message, defaultValue, placeholder) => show('prompt', message, defaultValue, placeholder);
+// Cancel and two choices: resolves 'ok' for the main button, 'alt' for the other, null for Cancel
+export const showChoice = (message, { ok, alt }) => show('choice', message, undefined, undefined, { ok, alt });
 
 // Toast notification (non-modal, auto-dismissing)
 let toastTimer;

@@ -2,8 +2,8 @@
 // UI component builders
 
 import { CARD_COLORS, DEFAULT_CARD_COLORS, STATUS_OPTIONS, TITLE_MAX_LENGTH, el, isValidUrl } from '/src/core/constants.js';
-import { partialMapEditState } from '/src/core/state.js';
-import { showAlert, showConfirm, showPrompt } from '/src/core/modals.js';
+import { createSlice, partialMapEditState } from '/src/core/state.js';
+import { showAlert, showChoice, showConfirm, showPrompt } from '/src/core/modals.js';
 import { quoted } from '/src/core/log.js';
 import { copySliceLink, createSliceInfo, openSliceDetails, setSliceNameText } from '/src/features/slice-links.js';
 import { toggleSliceMenu } from '/src/ui/navigation.js';
@@ -131,8 +131,8 @@ export const getSliceActions = (slice, anchor) => {
         actions.push({ key: 'reopen', label: 'Reopen', editOnly: true, separator: true, run: () => toggleSliceCollapsed(slice.id, false) });
     } else if (!isOnlySlice) {
         actions.push(
-            { key: 'complete', label: 'Mark Complete', editOnly: true, separator: true, run: () => toggleSliceCollapsed(slice.id, true, 'complete') },
-            { key: 'collapse', label: 'Collapse', editOnly: true, run: () => toggleSliceCollapsed(slice.id, true, 'closed') }
+            { key: 'complete', label: 'Mark Complete', editOnly: true, separator: true, run: () => markSliceComplete(slice) },
+            { key: 'close', label: 'Close', editOnly: true, run: () => toggleSliceCollapsed(slice.id, true, 'closed') }
         );
     }
     if (!isOnlySlice) {
@@ -180,6 +180,85 @@ const toggleSliceCollapsed = (sliceId, collapsed, reason) => {
 
     if (rerenderSlice(sliceId)) _saveToStorage();
     else _renderAndSave();
+};
+
+// Cards in a slice with a status other than Done, and the list each one sits in, so they can be
+// moved. Cards with no status are left alone, since some teams don't track status.
+const isUnfinished = (card) => !!STATUS_OPTIONS[card.status] && card.status !== 'done';
+
+const unfinishedSliceCards = (slice) => {
+    const found = [];
+    const seenPartials = new Set();
+    _state.columns.forEach(col => {
+        if (!col.partialMapId) {
+            (slice.stories[col.id] || []).filter(isUnfinished).forEach(card => found.push({ card, colId: col.id }));
+            return;
+        }
+        // A partial map can be placed more than once, but its cards are only stored once
+        if (seenPartials.has(col.partialMapId)) return;
+        seenPartials.add(col.partialMapId);
+        const pm = _state.partialMaps.find(p => p.id === col.partialMapId);
+        pm?.columns.forEach(pmCol => {
+            (pm.stories[slice.id]?.[pmCol.id] || []).filter(isUnfinished).forEach(card => found.push({ card, colId: pmCol.id, pm }));
+        });
+    });
+    return found;
+};
+
+// Move cards to the top of the same columns in another slice, keeping their order
+const moveCardsToSlice = (items, from, to) => {
+    const lists = new Map();
+    items.forEach(({ card, colId, pm }) => {
+        const key = `${pm?.id || ''}:${colId}`;
+        if (!lists.has(key)) lists.set(key, { colId, pm, cards: [] });
+        lists.get(key).cards.push(card);
+    });
+    lists.forEach(({ colId, pm, cards }) => {
+        const moving = new Set(cards);
+        if (pm) {
+            pm.stories[from.id][colId] = pm.stories[from.id][colId].filter(c => !moving.has(c));
+            pm.stories[to.id] ??= {};
+            pm.stories[to.id][colId] = [...cards, ...(pm.stories[to.id][colId] || [])];
+        } else {
+            from.stories[colId] = from.stories[colId].filter(c => !moving.has(c));
+            to.stories[colId] = [...cards, ...(to.stories[colId] || [])];
+        }
+    });
+};
+
+// Mark a slice complete. When some cards aren't done, offer to move them to the next open slice,
+// or to a new one after it, the way unfinished work usually carries into the next release.
+const markSliceComplete = async (slice) => {
+    const unfinished = unfinishedSliceCards(slice);
+    if (unfinished.length === 0) {
+        toggleSliceCollapsed(slice.id, true, 'complete');
+        return;
+    }
+    const index = _state.slices.indexOf(slice);
+    const target = _state.slices.slice(index + 1).find(s => !s.collapsed);
+    const name = slice.name ? `"${slice.name}"` : 'this slice';
+    const cards = unfinished.length === 1 ? '1 card' : `${unfinished.length} cards`;
+    const destination = !target ? 'a new slice after it'
+        : target.name ? `the top of "${target.name}"` : 'the top of the next slice';
+    const choice = await showChoice(
+        `${cards} in ${name} ${unfinished.length === 1 ? "isn't" : "aren't"} done. Move ${unfinished.length === 1 ? 'it' : 'them'} to ${destination}, then mark ${name} complete?`,
+        { ok: 'Move and complete', alt: 'Complete anyway' },
+    );
+    if (choice === 'alt') toggleSliceCollapsed(slice.id, true, 'complete');
+    if (choice !== 'ok') return;
+
+    _pushUndo();
+    let to = target;
+    if (!to) {
+        to = createSlice(slice.name ? `Carried over from ${slice.name}` : 'Carried over');
+        _state.slices.splice(index + 1, 0, to);
+    }
+    moveCardsToSlice(unfinished, slice, to);
+    slice.collapsed = true;
+    slice.closedReason = 'complete';
+    _peekedSlices.delete(slice.id);
+    _logEvent?.(`Marked slice${quoted(slice.name)} complete and moved ${cards} to${quoted(to.name) || ' a new slice'}`, [slice.id, to.id]);
+    _renderAndSave();
 };
 
 export const createExpandButton = (item, { readOnly = false } = {}) => {
@@ -1237,7 +1316,17 @@ const createClosedBannerRow = (slice, peeking) => {
     // The name truncates on one line; the status after it always shows
     if (slice.name) toggle.appendChild(el('span', 'slice-completed-name', { text: slice.name }));
     toggle.appendChild(el('span', 'slice-completed-text', { text: slice.name ? ` - ${statusText}` : statusText }));
-    toggle.appendChild(el('span', 'slice-card-count', { text: `${cards} ${cards === 1 ? 'card' : 'cards'}` }));
+    // A complete slice with cards that aren't done says so, in amber
+    const unfinished = isClosed ? 0 : unfinishedSliceCards(slice).length;
+    if (unfinished > 0) {
+        const { done, total } = getSliceProgress(slice);
+        toggle.appendChild(el('span', 'slice-card-count slice-card-count-unfinished', {
+            text: `${done} of ${total} done`,
+            title: `${unfinished} ${unfinished === 1 ? "card isn't" : "cards aren't"} done`,
+        }));
+    } else {
+        toggle.appendChild(el('span', 'slice-card-count', { text: `${cards} ${cards === 1 ? 'card' : 'cards'}` }));
+    }
     if (peeking) {
         const readOnly = el('span', 'slice-peek-readonly');
         readOnly.append(
@@ -1507,13 +1596,15 @@ const renderSliceProgress = () => {
 
         const closed = slice.collapsed ? (slice.closedReason === 'closed' ? 'Closed' : 'Complete') : null;
         if (closed) row.classList.add('map-stats-slice-closed');
+        // A complete slice with cards that aren't done says how many
+        const notDone = closed === 'Complete' ? unfinishedSliceCards(slice).length : 0;
         if (total === 0) {
             row.appendChild(el('span', `map-stats-slice-count${closed ? ` map-stats-${closed.toLowerCase()}` : ''}`, { text: closed ? `${closed === 'Complete' ? '✓ ' : ''}${closed}` : 'No tasks' }));
             row.title = name;
         } else {
             // A complete or closed slice keeps its bar, faded, with its state in place of the count
-            row.appendChild(el('span', `map-stats-slice-count${closed ? ` map-stats-${closed.toLowerCase()}` : ''}`, {
-                text: closed ? `${closed === 'Complete' ? '✓ ' : ''}${closed}` : `${done}/${total}`,
+            row.appendChild(el('span', `map-stats-slice-count${closed ? ` map-stats-${notDone ? 'unfinished' : closed.toLowerCase()}` : ''}`, {
+                text: notDone ? `Complete, ${notDone} not done` : closed ? `${closed === 'Complete' ? '✓ ' : ''}${closed}` : `${done}/${total}`,
             }));
             const counts = {};
             Object.values(slice.stories || {}).flat().filter(countsTowardsProgress).forEach(card => {

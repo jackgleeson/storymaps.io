@@ -1153,6 +1153,12 @@ body.welcome-visible .gh-star {
     font-weight: 600;
 }
 
+/* Complete, with cards that aren't done */
+.map-stats-slice-count.map-stats-unfinished {
+    color: #b45309;
+    font-weight: 600;
+}
+
 .map-stats-slice-closed .map-stats-slice-name {
     color: var(--color-text-secondary);
 }
@@ -1167,6 +1173,10 @@ html.dark-mode .map-stats-slice-count.map-stats-complete {
 
 html.dark-mode .map-stats-slice-count.map-stats-closed {
     color: #93c5fd;
+}
+
+html.dark-mode .map-stats-slice-count.map-stats-unfinished {
+    color: #fbbf24;
 }
 
 .map-stats-more {
@@ -2977,6 +2987,11 @@ body.main-menu-open .step:hover {
 
 .slice-closed-banner .slice-card-count {
     background: #1d4ed8;
+}
+
+/* A complete slice with cards that aren't done */
+.slice-card-count.slice-card-count-unfinished {
+    background: #b45309;
 }
 
 /* While the cards show: a lock and "Read-only", divided from "Hide cards" by a thin line */
@@ -4835,6 +4850,9 @@ html.dark-mode mark.highlight::after {
     padding: 24px;
     border-radius: 12px;
 }
+.dialog-modal.dialog-modal-choice {
+    max-width: 500px;
+}
 .dialog-message {
     font-size: 15px;
     color: var(--color-text-primary);
@@ -4855,6 +4873,7 @@ html.dark-mode mark.highlight::after {
 .dialog-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15); }
 .dialog-buttons {
     display: flex;
+    flex-wrap: wrap;
     justify-content: flex-end;
     gap: 8px;
 }
@@ -7389,6 +7408,9 @@ body.read-only-mode .empty-backbone-column {
 
     .dialog-modal { width: 94vw; padding: 18px; }
     .dialog-btn { padding: 10px 18px; }
+    /* Three buttons stack, full width, with the main one on top */
+    .dialog-modal-choice .dialog-buttons { flex-direction: column-reverse; }
+    .dialog-modal-choice .dialog-btn { width: 100%; }
 }
 
 /* Print: hide lock UI */
