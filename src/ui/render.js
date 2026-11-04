@@ -160,6 +160,8 @@ export const render = () => {
                         if (i === 0) {
                             const bar = el('div', 'partial-expanded-bar');
                             bar.style.setProperty('--steps', pm.columns.length);
+                            const icon = createPartialMapRef(col, pm).querySelector('.partial-map-ref-icon');
+                            if (icon) bar.appendChild(icon);
                             bar.appendChild(el('span', 'partial-expanded-name', { text: pm.name || 'Untitled partial', title: `${pm.name || 'Untitled partial'}, a partial` }));
                             const collapse = el('button', 'partial-collapse-btn', {
                                 type: 'button',
@@ -179,6 +181,7 @@ export const render = () => {
                             });
                             bar.appendChild(collapse);
                             card.appendChild(bar);
+                            stepsRow.classList.add('has-partial-header');
                         }
                         stepsRow.appendChild(card);
                     });

@@ -1903,26 +1903,43 @@ html.dark-mode .partial-cards-toggle:hover {
     background: rgba(45, 212, 191, 0.16);
 }
 
-/* Across the top of an expanded partial's steps: its name, and a button that folds it back into
-   one. It hangs off the first step and spans the rest. The preview ignores clicks, so the strip
-   takes them itself. */
+/* Above an expanded partial's steps: a header with its name and a button that folds it back into
+   one. The steps row makes room for it, so it never covers a card. It hangs off the first step and
+   spans the rest. The preview ignores clicks, so the header takes them itself. */
+.steps-row.has-partial-header {
+    padding-top: 34px;
+}
+
 .partial-expanded-bar {
     position: absolute;
-    top: 0;
-    left: 0;
+    top: -34px;
+    left: -3px;
     z-index: 1;
-    width: calc(var(--card-width) * var(--steps) + 10px * (var(--steps) - 1));
-    height: 24px;
+    width: calc(var(--card-width) * var(--steps) + 10px * (var(--steps) - 1) + 6px);
+    height: 26px;
     box-sizing: border-box;
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 0 4px 0 10px;
-    background: #2563eb;
-    color: #fff;
+    gap: 6px;
+    padding: 0 3px 0 8px;
+    border: 1px solid #93c5fd;
+    border-radius: 6px;
+    background: #eff6ff;
+    color: #1e40af;
     font-size: 11px;
     font-weight: 600;
     pointer-events: auto;
+}
+
+.partial-expanded-bar .partial-map-ref-icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    margin: 0;
+}
+
+.partial-expanded-bar .partial-map-ref-icon svg {
+    width: 14px;
+    height: 14px;
 }
 
 .partial-expanded-name {
@@ -1938,22 +1955,22 @@ html.dark-mode .partial-cards-toggle:hover {
     display: inline-flex;
     align-items: center;
     gap: 3px;
-    padding: 2px 6px;
-    border: 0;
+    padding: 2px 8px;
+    border: 1px solid #93c5fd;
     border-radius: 4px;
-    background: rgba(255, 255, 255, 0.2);
+    background: #fff;
     font: inherit;
-    color: #fff;
+    color: #1d4ed8;
     cursor: pointer;
     transition: background-color 0.15s ease;
 }
 
 .partial-collapse-btn:hover {
-    background: rgba(255, 255, 255, 0.35);
+    background: #dbeafe;
 }
 
 .partial-collapse-btn:focus-visible {
-    outline: 2px solid #fff;
+    outline: 2px solid #3b82f6;
     outline-offset: 1px;
 }
 
@@ -1962,7 +1979,19 @@ html.dark-mode .partial-cards-toggle:hover {
 }
 
 html.dark-mode .partial-expanded-bar {
-    background: #0f766e;
+    border-color: rgba(45, 212, 191, 0.5);
+    background: rgba(45, 212, 191, 0.1);
+    color: #5eead4;
+}
+
+html.dark-mode .partial-collapse-btn {
+    border-color: rgba(45, 212, 191, 0.5);
+    background: transparent;
+    color: #5eead4;
+}
+
+html.dark-mode .partial-collapse-btn:hover {
+    background: rgba(45, 212, 191, 0.16);
 }
 
 /* Links and the tag list still open from read-only previews, including peeked slices */
