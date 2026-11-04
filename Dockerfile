@@ -15,7 +15,9 @@ COPY server.js ./
 COPY server/ ./server/
 COPY public/ ./public/
 COPY src/ ./src/
-RUN mkdir -p data && chown -R node:node /app
+# Only data/ is written at runtime, so only it belongs to the node user. Changing the owner of
+# everything with chown -R would store a second copy of node_modules and public/ in the image.
+RUN mkdir -p data && chown node:node data
 USER node
 EXPOSE 8080
 ENV PORT=8080
