@@ -266,6 +266,9 @@ const highlightChangedElements = (changes) => {
     }, 1600);
 };
 
+// The text cards start with on a new map, or as a new step, which is there to be typed over
+export const STARTER_NAMES = new Set(['User Type', 'New Activity', 'New Step', 'New Task or Detail']);
+
 export const initState = () => {
     const column = createColumn('New Step', CARD_COLORS.green, null, false);
     state.name = '';

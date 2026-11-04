@@ -25,6 +25,7 @@ import * as partials from '/src/features/partials.js';
 import * as build from '/src/features/build.js';
 import * as sliceLinks from '/src/features/slice-links.js';
 import * as freezeRows from '/src/features/freeze-rows.js';
+import * as starterText from '/src/features/starter-text.js';
 import * as projects from '/src/features/projects.js';
 import * as recentMaps from '/src/features/recent-maps.js';
 import * as bookmarkNudge from '/src/features/bookmark-nudge.js';
@@ -1549,6 +1550,7 @@ const initEventListeners = () => {
 
     // Freeze the top rows while scrolling down
     freezeRows.init();
+    starterText.init();
 
     // Lock feature event listeners
     initLockListeners();

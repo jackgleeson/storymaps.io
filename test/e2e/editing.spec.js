@@ -78,3 +78,19 @@ test('undo does nothing on a new map, even after editing another one', async ({ 
   expect(await stepNames(page)).toEqual(['New Step']);
   await expect(page.locator('#boardName')).toHaveValue('');
 });
+
+test('clicking into a card that still has its starter text selects it, so typing replaces it', async ({ page }) => {
+  await page.goto('/new');
+  const activity = page.locator('.activities-row .story-card textarea').first();
+  await expect(activity).toHaveValue('New Activity');
+  // Click by position, partway into the text, as a person would
+  const box = await activity.boundingBox();
+  await page.mouse.click(box.x + box.width * 0.6, box.y + box.height / 2);
+  await page.keyboard.type('Order Coffee');
+  await expect(activity).toHaveValue('Order Coffee');
+  // Once renamed, a click places the cursor as usual
+  await page.keyboard.press('Tab');
+  await page.mouse.click(box.x + 4, box.y + box.height / 2);
+  await page.keyboard.type('!');
+  await expect(activity).not.toHaveValue('!');
+});
