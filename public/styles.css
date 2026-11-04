@@ -1153,10 +1153,11 @@ body.welcome-visible .gh-star {
     font-weight: 600;
 }
 
-/* Complete, with cards that aren't done */
-.map-stats-slice-count.map-stats-unfinished {
+/* Complete, with cards that aren't done noted after the tick */
+.map-stats-not-done {
+    margin-left: 6px;
     color: #b45309;
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .map-stats-slice-closed .map-stats-slice-name {
@@ -1175,7 +1176,7 @@ html.dark-mode .map-stats-slice-count.map-stats-closed {
     color: #93c5fd;
 }
 
-html.dark-mode .map-stats-slice-count.map-stats-unfinished {
+html.dark-mode .map-stats-not-done {
     color: #fbbf24;
 }
 
@@ -2989,9 +2990,14 @@ body.main-menu-open .step:hover {
     background: #1d4ed8;
 }
 
-/* A complete slice with cards that aren't done */
-.slice-card-count.slice-card-count-unfinished {
-    background: #b45309;
+/* A complete slice with cards that aren't done: a note in amber after the count */
+.slice-not-done {
+    flex-shrink: 0;
+    margin-left: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #b45309;
+    white-space: nowrap;
 }
 
 /* While the cards show: a lock and "Read-only", divided from "Hide cards" by a thin line */

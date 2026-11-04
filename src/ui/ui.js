@@ -1316,17 +1316,10 @@ const createClosedBannerRow = (slice, peeking) => {
     // The name truncates on one line; the status after it always shows
     if (slice.name) toggle.appendChild(el('span', 'slice-completed-name', { text: slice.name }));
     toggle.appendChild(el('span', 'slice-completed-text', { text: slice.name ? ` - ${statusText}` : statusText }));
-    // A complete slice with cards that aren't done says so, in amber
+    toggle.appendChild(el('span', 'slice-card-count', { text: `${cards} ${cards === 1 ? 'card' : 'cards'}` }));
+    // A complete slice with cards that aren't done notes how many, in amber, beside the count
     const unfinished = isClosed ? 0 : unfinishedSliceCards(slice).length;
-    if (unfinished > 0) {
-        const { done, total } = getSliceProgress(slice);
-        toggle.appendChild(el('span', 'slice-card-count slice-card-count-unfinished', {
-            text: `${done} of ${total} done`,
-            title: `${unfinished} ${unfinished === 1 ? "card isn't" : "cards aren't"} done`,
-        }));
-    } else {
-        toggle.appendChild(el('span', 'slice-card-count', { text: `${cards} ${cards === 1 ? 'card' : 'cards'}` }));
-    }
+    if (unfinished > 0) toggle.appendChild(el('span', 'slice-not-done', { text: `${unfinished} not done` }));
     if (peeking) {
         const readOnly = el('span', 'slice-peek-readonly');
         readOnly.append(
@@ -1603,9 +1596,12 @@ const renderSliceProgress = () => {
             row.title = name;
         } else {
             // A complete or closed slice keeps its bar, faded, with its state in place of the count
-            row.appendChild(el('span', `map-stats-slice-count${closed ? ` map-stats-${notDone ? 'unfinished' : closed.toLowerCase()}` : ''}`, {
-                text: notDone ? `Complete, ${notDone} not done` : closed ? `${closed === 'Complete' ? '✓ ' : ''}${closed}` : `${done}/${total}`,
-            }));
+            const count = el('span', `map-stats-slice-count${closed ? ` map-stats-${closed.toLowerCase()}` : ''}`, {
+                text: closed ? `${closed === 'Complete' ? '✓ ' : ''}${closed}` : `${done}/${total}`,
+            });
+            // Still a green tick, with the cards that aren't done noted in amber after it
+            if (notDone) count.appendChild(el('span', 'map-stats-not-done', { text: `${notDone} not done` }));
+            row.appendChild(count);
             const counts = {};
             Object.values(slice.stories || {}).flat().filter(countsTowardsProgress).forEach(card => {
                 const key = card.status && STATUS_OPTIONS[card.status] ? card.status : 'none';

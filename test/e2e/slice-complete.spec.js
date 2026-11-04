@@ -56,12 +56,14 @@ test('completing anyway shows how many cards are done on the banner and in the O
   await openMap(page, await createMap(MAP), 2);
   await markComplete(page);
   await page.getByRole('button', { name: 'Complete anyway' }).click();
-  await expect(slice(page, 0).locator('.slice-card-count')).toHaveText('1 of 3 done');
-  await expect(slice(page, 0).locator('.slice-card-count')).toHaveClass(/slice-card-count-unfinished/);
+  await expect(slice(page, 0).locator('.slice-card-count')).toHaveText('3 cards');
+  await expect(slice(page, 0).locator('.slice-not-done')).toHaveText('2 not done');
 
   const panel = page.locator('#legendPanel');
   if (!(await panel.isVisible())) await page.locator('#legendToggle').click();
-  await expect(panel.locator('.map-stats-slice').first().locator('.map-stats-slice-count')).toHaveText('Complete, 2 not done');
+  const count = panel.locator('.map-stats-slice').first().locator('.map-stats-slice-count');
+  await expect(count).toHaveClass(/map-stats-complete/);
+  await expect(count).toHaveText('✓ Complete2 not done');
 });
 
 test('cancelling leaves the slice open', async ({ page, createMap }) => {
