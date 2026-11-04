@@ -1903,7 +1903,7 @@ html.dark-mode .partial-cards-toggle:hover {
     background: rgba(45, 212, 191, 0.16);
 }
 
-/* Above an expanded partial's steps: a header with its name and a button that folds it back into
+/* Above an expanded partial's steps: a header with its name and Hide cards, which folds it back into
    one. The steps row makes room for it, so it never covers a card. It hangs off the first step and
    spans the rest. The preview ignores clicks, so the header takes them itself. */
 .steps-row.has-partial-header {

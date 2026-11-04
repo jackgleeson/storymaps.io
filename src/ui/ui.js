@@ -1332,7 +1332,7 @@ const togglePeek = (sliceId) => {
 
 // The cell under a collapsed partial in a slice that has cards inside it. It says how many, and
 // showing them brings the partial's steps back in this browser, so the cards sit in their own
-// columns. The Collapse tag on the partial's first step folds it away again.
+// columns. Hide cards, in the header above the partial's steps, folds it away again.
 const createPartialSliceCell = (col, slice) => {
     const cell = createPartialMapRefCell(col);
     const pm = _state.partialMaps.find(p => p.id === col.partialMapId);

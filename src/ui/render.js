@@ -165,10 +165,10 @@ export const render = () => {
                             bar.appendChild(el('span', 'partial-expanded-name', { text: pm.name || 'Untitled partial', title: `${pm.name || 'Untitled partial'}, a partial` }));
                             const collapse = el('button', 'partial-collapse-btn', {
                                 type: 'button',
-                                title: `Fold the steps of ${pm.name || 'this partial'} back into one`,
+                                title: `Hide the cards, folding the steps of ${pm.name || 'this partial'} back into one`,
                             });
                             collapse.append(
-                                el('span', null, { text: 'Collapse' }),
+                                el('span', null, { text: 'Hide cards' }),
                                 el('span', 'partial-collapse-chevron', {
                                     ariaHidden: 'true',
                                     html: '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg>',
