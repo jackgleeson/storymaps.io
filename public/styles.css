@@ -220,6 +220,8 @@ body.welcome-visible .header {
 
 .board-name {
     flex: 1;
+    /* An input keeps a minimum width from its size, so let it shrink with the header */
+    min-width: 0;
     max-width: 600px;
     margin: 0 auto;
     padding: 8px 12px;
@@ -4873,6 +4875,14 @@ html.dark-mode mark.highlight::after {
 
 @media (max-width: 400px) {
     .logo-text {
+        display: none;
+    }
+}
+
+/* Between a phone and a laptop the map view's header needs the room for the map name and the
+   buttons, so the logo goes without its name. The home page has no map name and keeps it. */
+@media (min-width: 601px) and (max-width: 900px) {
+    body:not(.welcome-visible) .logo-text {
         display: none;
     }
 }

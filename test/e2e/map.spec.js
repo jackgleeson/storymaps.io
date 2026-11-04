@@ -24,3 +24,14 @@ test('the welcome page opens and a new map can be started from it', async ({ pag
   await expect(page).toHaveURL(/\/[0-9a-z]{8}$/);
   await expect(page.locator('.step')).not.toHaveCount(0);
 });
+
+test('the map header fits between a phone and a laptop, with the menu button in view', async ({ page, createMap }) => {
+  const id = await createMap();
+  for (const width of [620, 760, 880]) {
+    await page.setViewportSize({ width, height: 700 });
+    await openMap(page, id);
+    const right = await page.locator('#menuBtn').evaluate(b => b.getBoundingClientRect().right);
+    expect(right).toBeLessThanOrEqual(width);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBe(0);
+  }
+});
