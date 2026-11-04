@@ -1,0 +1,70 @@
+import { test, expect, openMap } from './fixtures.js';
+
+const MAP = `name: Coffee app
+steps:
+  - Browse
+  - Order
+  - Pay
+slices:
+  - name: MVP
+    stories:
+      Browse:
+        - name: Menu
+`;
+
+// Let the map connect, and return a function that drops the connection and refuses reconnects
+const openWithDroppableConnection = async (page, createMap) => {
+  const id = await createMap(MAP);
+  let socket;
+  await page.routeWebSocket(/.*/, ws => { socket = ws; ws.connectToServer(); });
+  await openMap(page, id);
+  await expect.poll(() => !!socket).toBe(true);
+  return {
+    id,
+    drop: async () => {
+      await page.routeWebSocket(/.*/, ws => ws.close());
+      await socket.close();
+    },
+    reconnect: () => page.routeWebSocket(/.*/, ws => { ws.connectToServer(); }),
+  };
+};
+
+const notice = (page) => page.locator('#connectionNotice');
+const firstCard = (page) => page.locator('.story-card textarea').first();
+
+test('a dropped connection shows a notice, and changes made offline sync when it comes back', async ({ page, createMap, pullMap }) => {
+  const { id, drop, reconnect } = await openWithDroppableConnection(page, createMap);
+  await drop();
+  await expect(notice(page)).toHaveText('Offline. Reconnecting...');
+
+  await firstCard(page).fill('Menu, edited offline');
+  await firstCard(page).blur();
+  await expect(notice(page)).toHaveText('Offline. Your changes will sync when you reconnect.');
+
+  await reconnect();
+  await expect(notice(page)).toBeHidden({ timeout: 10_000 });
+  await expect.poll(async () => (await pullMap(id)).slices[0].stories[0][0].name).toBe('Menu, edited offline');
+});
+
+test('closing the tab with changes that have not synced asks first', async ({ page, createMap }) => {
+  const { drop } = await openWithDroppableConnection(page, createMap);
+  await drop();
+  await firstCard(page).fill('Menu, edited offline');
+  await firstCard(page).blur();
+  await expect(notice(page)).toContainText('Your changes will sync');
+
+  const dialog = page.waitForEvent('dialog');
+  page.close({ runBeforeUnload: true });
+  expect((await dialog).type()).toBe('beforeunload');
+  await (await dialog).accept();
+});
+
+test('closing the tab while connected does not ask', async ({ page, createMap }) => {
+  await openMap(page, await createMap(MAP));
+  await firstCard(page).fill('Menu, edited online');
+  await firstCard(page).blur();
+  let asked = false;
+  page.on('dialog', d => { asked = true; d.accept(); });
+  await page.close({ runBeforeUnload: true });
+  expect(asked).toBe(false);
+});

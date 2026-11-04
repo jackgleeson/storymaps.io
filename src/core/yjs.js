@@ -6,6 +6,7 @@ import { CARD_COLORS, copySliceDetails } from '/src/core/constants.js';
 let _state = null;
 let _notepad = null;
 let _log = null;
+let _connectionStatus = null;
 let _dom = null;
 let _isMapEditable = null;
 let _render = null;
@@ -68,10 +69,11 @@ export const ensureSortable = () => {
 
 export const getIsSafari = () => isSafari;
 
-export const init = ({ state, notepad, log, isMapEditable, render, setPreserveToolbar }) => {
+export const init = ({ state, notepad, log, connectionStatus, isMapEditable, render, setPreserveToolbar }) => {
     _state = state;
     _notepad = notepad;
     _log = log;
+    _connectionStatus = connectionStatus;
     _dom = { boardName: document.getElementById('boardName') };
     _isMapEditable = isMapEditable;
     _render = render;
@@ -648,6 +650,7 @@ export const createYjsDoc = async (mapId) => {
         }
         _notepad.bindYjs(ydoc, ytext, provider);
         _log.bindYjs(ydoc, provider, mapId);
+        _connectionStatus?.bind(provider, ydoc);
     }
 
     return ydoc;
@@ -659,6 +662,7 @@ export const destroyYjs = () => {
         _remoteRenderTimer = null;
     }
     _hasNewRemoteEvents = false;
+    _connectionStatus?.unbind();
     if (provider) {
         provider.destroy();
         provider = null;

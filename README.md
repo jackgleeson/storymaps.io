@@ -76,6 +76,7 @@ A larger product can span several maps, one per journey or area, grouped as a **
 
 ### Collaboration
 - **Real-time sync** - multiple users editing simultaneously (Yjs CRDTs)
+- **Dropped connections** - if the connection to the server drops, you can keep editing; a notice says you're offline and whether you have changes waiting, they sync when the connection comes back, and closing the tab before then asks first. Nothing is stored in the browser, so a story map can't be opened offline
 - **Display names** - prompted on first visit; shown on cursor labels, the viewer badge, and in the activity log; click your name to change it anytime; supports emojis
 - **Live cursors** - see other users' cursor positions, names, and drag operations in real-time
 - **Viewer badge** - shows your name and a live count of connected users; hover the count to see everyone on the map

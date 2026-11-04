@@ -2,6 +2,7 @@
 // Orchestrator — imports all modules, wires init(), owns dom + persistence + event listeners
 
 import * as notepad from '/src/features/notepad.js';
+import * as connectionStatus from '/src/features/connection-status.js';
 import * as log from '/src/core/log.js';
 import { generateId, el, CARD_COLORS } from '/src/core/constants.js';
 import { state, init as stateInit, initState, hasContent, pushUndo, undo, redo, updateUndoRedoButtons, clearUndoHistory, createStory, createSlice, selection, clearSelection } from '/src/core/state.js';
@@ -1626,6 +1627,7 @@ yjs.init({
     state,
     notepad,
     log,
+    connectionStatus,
     isMapEditable,
     render,
     setPreserveToolbar,
