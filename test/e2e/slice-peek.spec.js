@@ -211,18 +211,17 @@ const PARTIAL_MAP = {
 };
 const createPartialMap = async (request) => (await (await request.post('/api/maps', { data: PARTIAL_MAP })).json()).id;
 
-test('a peeked slice shows the cards inside a collapsed partial, under the name of their step', async ({ page, request }) => {
+test('showing the cards of a closed slice brings back the steps of a partial holding some of them', async ({ page, request }) => {
   await openMap(page, await createPartialMap(request), 3);
   await peekToggle(page).click();
-  // The partial stays collapsed for the rest of the map
-  await expect(page.locator('.step')).toHaveCount(3);
+  await expect(page.locator('.step')).toHaveCount(4);
   await expect(firstSliceCards(page)).toHaveText(['Menu', 'Edit basket', 'Promo code', 'Postcode lookup', 'Card']);
-  await expect(firstSlice(page).locator('.partial-slice-step')).toHaveText(['Basket', 'Address']);
   await peekToggle(page).click();
+  await expect(page.locator('.step')).toHaveCount(3);
   await expect(firstSliceCards(page)).toHaveCount(0);
 });
 
-test('each open slice can show or hide its cards inside a collapsed partial', async ({ page, request }) => {
+test('a slice with cards in a collapsed partial says how many, and showing them brings back its steps', async ({ page, request }) => {
   const map = structuredClone(PARTIAL_MAP);
   map.slices[0] = { name: 'Phase 1', stories: [[{ name: 'Menu' }], [], [{ name: 'Card' }]] };
   map.partialMaps[0].stories[1] = [[{ name: 'Gift wrap' }], []];
@@ -233,15 +232,14 @@ test('each open slice can show or hide its cards inside a collapsed partial', as
   await expect(toggle(0)).toHaveText('Show 3 cards');
   await expect(toggle(1)).toHaveText('Show 1 card');
   await toggle(0).click();
-  await expect(toggle(0)).toHaveText('Hide 3 cards');
-  await expect(toggle(0)).toHaveAttribute('aria-expanded', 'true');
-  const shown = page.locator('.slice-container').first().locator('.partial-slice-cards .story-card');
-  await expect(shown).toHaveText(['Edit basket', 'Promo code', 'Postcode lookup']);
-  // Read-only, and only this slice opens
-  await expect(page.locator('.partial-slice-cards textarea')).toHaveCount(0);
-  await expect(page.locator('.slice-container').nth(1).locator('.partial-slice-cards')).toHaveCount(0);
-  await toggle(0).click();
-  await expect(shown).toHaveCount(0);
+  await expect(page.locator('.step')).toHaveCount(4);
+  await expect(page.locator('.partial-cards-toggle')).toHaveCount(0);
+  await expect(page.locator('.slice-container').nth(1).locator('.story-card')).toHaveText(['Gift wrap']);
+
+  // The tag on the first step of the partial folds it away again
+  await page.locator('.partial-collapse-tag').click();
+  await expect(page.locator('.step')).toHaveCount(3);
+  await expect(toggle(0)).toHaveText('Show 3 cards');
 });
 
 test('the Overview counts the cards and steps inside partials', async ({ page, request }) => {

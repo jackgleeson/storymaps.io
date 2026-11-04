@@ -152,9 +152,23 @@ export const render = () => {
             const pm = _state.partialMaps.find(p => p.id === col.partialMapId);
             if (pm) {
                 if (hasAnyExpanded && expandedIds.has(col.partialMapId)) {
-                    pm.columns.forEach(pmCol => {
+                    pm.columns.forEach((pmCol, i) => {
                         const card = createColumnCard(pmCol);
                         card.classList.add('partial-map-preview-col');
+                        // The first step folds the partial back into one, in the frozen rows so it stays in reach
+                        if (i === 0) {
+                            const collapse = el('button', 'partial-collapse-tag', {
+                                type: 'button',
+                                text: 'Collapse',
+                                title: `Fold the steps of ${pm.name || 'this partial'} back into one`,
+                            });
+                            collapse.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                expandedIds.delete(pm.id);
+                                _renderAndSave();
+                            });
+                            card.appendChild(collapse);
+                        }
                         stepsRow.appendChild(card);
                     });
                 } else {

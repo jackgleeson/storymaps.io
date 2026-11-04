@@ -1860,8 +1860,8 @@ html.dark-mode .map-stats-slice-count.map-stats-closed {
     opacity: 1;
 }
 
-/* Under a collapsed partial, each slice says how many of its cards are inside, and can show
-   them read-only, stacked under the name of each step (createPartialSliceCell in ui.js) */
+/* Under a collapsed partial, each slice says how many of its cards are inside. Showing them
+   brings the partial's steps back (createPartialSliceCell in ui.js). */
 .partial-cards-toggle {
     display: flex;
     align-items: center;
@@ -1891,27 +1891,6 @@ html.dark-mode .map-stats-slice-count.map-stats-closed {
 
 .partial-cards-chevron {
     display: inline-flex;
-    transition: transform 0.15s ease;
-}
-
-.partial-cards-toggle[aria-expanded="true"] .partial-cards-chevron {
-    transform: rotate(180deg);
-}
-
-.partial-slice-cards {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.partial-slice-step {
-    margin: 2px 0 -4px;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--color-text-muted);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
 html.dark-mode .partial-cards-toggle {
@@ -1924,10 +1903,40 @@ html.dark-mode .partial-cards-toggle:hover {
     background: rgba(45, 212, 191, 0.16);
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .partial-cards-chevron {
-        transition: none;
-    }
+/* On the first step of an expanded partial: folds it back into one. The preview ignores clicks,
+   so the tag takes them itself. */
+.partial-collapse-tag {
+    position: absolute;
+    top: -8px;
+    left: 6px;
+    z-index: 1;
+    padding: 2px 7px;
+    border: 0;
+    border-radius: 6px;
+    background: #2563eb;
+    font: inherit;
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.partial-collapse-tag:hover {
+    background: #1d4ed8;
+}
+
+.partial-collapse-tag:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+html.dark-mode .partial-collapse-tag {
+    background: #0d9488;
+}
+
+html.dark-mode .partial-collapse-tag:hover {
+    background: #0f766e;
 }
 
 /* Links and the tag list still open from read-only previews, including peeked slices */
