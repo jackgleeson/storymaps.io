@@ -188,8 +188,9 @@ test('links on cards open from a peeked slice and from a locked map', async ({ p
   await peekToggle(page).click();
   const link = firstSlice(page).locator('.url-indicator');
   await expect(link).toHaveAttribute('href', 'https://example.com/ticket');
-  // A click reaches the link rather than the column under it
-  expect(await link.evaluate(a => {
+  // A click reaches the link rather than the column under it. Polled, as the map can still be
+  // settling into its locked state on a busy machine.
+  await expect.poll(() => link.evaluate(a => {
     const r = a.getBoundingClientRect();
     return document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2) === a;
   })).toBe(true);
