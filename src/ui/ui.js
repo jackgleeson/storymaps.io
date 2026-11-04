@@ -6,6 +6,7 @@ import { createSlice, partialMapEditState } from '/src/core/state.js';
 import { showAlert, showChoice, showConfirm, showPrompt } from '/src/core/modals.js';
 import { quoted } from '/src/core/log.js';
 import { copySliceLink, createSliceInfo, openSliceDetails, setSliceNameText } from '/src/features/slice-links.js';
+import { frozenRowsHeight } from '/src/features/freeze-rows.js';
 import { toggleSliceMenu } from '/src/ui/navigation.js';
 
 let _state = null;
@@ -182,8 +183,7 @@ const keepSliceInPlace = (sliceId, change) => {
     if (!wrapper || before == null || after == null) return;
     wrapper.scrollTop += after - before;
     if (container().classList.contains('slice-collapsed')) {
-        // The frozen rows set scroll-padding-top to their height
-        const visibleTop = wrapper.getBoundingClientRect().top + (parseFloat(getComputedStyle(wrapper).scrollPaddingTop) || 0);
+        const visibleTop = wrapper.getBoundingClientRect().top + frozenRowsHeight();
         const top = container().getBoundingClientRect().top;
         if (top < visibleTop) wrapper.scrollTop -= visibleTop - top;
     }

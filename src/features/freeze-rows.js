@@ -18,8 +18,6 @@ let stickAt = null;
 // The height of the rows above the frozen ones, which go out of view, in screen pixels
 let hiddenAbove = 0;
 let lastZoom = null;
-// Something in the frozen rows has focus
-let focusInRows = false;
 
 const readMode = () => {
     try { return normalizeFreezeMode(localStorage.getItem(STORAGE_KEY)); } catch { return normalizeFreezeMode(null); }
@@ -53,7 +51,6 @@ const update = () => {
         hiddenAbove = 0;
         wrapper.classList.remove('rows-stuck');
         wrapper.style.removeProperty('--freeze-top');
-        setScrollPadding();
         return;
     }
 
@@ -63,21 +60,11 @@ const update = () => {
     wrapper.style.setProperty('--freeze-top', `${-hiddenAbove}px`);
     // The top part is the first thing in the map
     stickAt = map.offsetTop + hiddenAbove;
-    // Scrolling something into view stops below the frozen rows, not under them
-    setScrollPadding();
 
     // Zooming keeps the middle of the view still, which scrolls the map. If the rows were in their
     // own place before the zoom, keep them there, rather than let them stick over the cards below.
     if (zoomed && !wasStuck && wrapper.scrollTop > stickAt) wrapper.scrollTop = Math.floor(stickAt);
     onScroll();
-};
-
-// Scrolling something into view stops below the frozen rows, not under them, except while
-// something in the frozen rows has focus
-const setScrollPadding = () => {
-    const wrapper = dom.storyMapWrapper;
-    if (!wrapper) return;
-    wrapper.style.scrollPaddingTop = stickAt === null ? '' : focusInRows ? '0px' : `${frozenRowsHeight()}px`;
 };
 
 // How much of the top of the map area the frozen rows cover once they stick, in screen pixels,
@@ -135,16 +122,15 @@ export const init = () => {
     resize.observe(map);
     resize.observe(wrapper);
     wrapper.addEventListener('scroll', onScroll, { passive: true });
-    // While something in the frozen rows has focus, such as a user card being typed in, the scroll
-    // padding is off: the browser keeps a focused card and its text cursor clear of the padding,
-    // and these sit inside it, so typing would scroll the map down by the rows' height.
+    // A card that gets focus under the stuck rows, by Tab or as a new card, comes down below them.
+    // This isn't left to the browser with scroll-padding-top: the browser applies it to everything,
+    // the frozen rows included, so clicking, adding or typing in a user, activity or step card, or
+    // anything near the top while the rows aren't stuck, scrolled the map by the rows' height.
     wrapper.addEventListener('focusin', (e) => {
-        focusInRows = !!mapTop(map)?.contains(e.target);
-        setScrollPadding();
-    });
-    wrapper.addEventListener('focusout', () => {
-        focusInRows = false;
-        setScrollPadding();
+        if (stickAt === null || wrapper.scrollTop <= stickAt || mapTop(map)?.contains(e.target)) return;
+        const covered = wrapper.getBoundingClientRect().top + frozenRowsHeight();
+        const top = (e.target.closest('.story-card') || e.target).getBoundingClientRect().top;
+        if (top < covered) wrapper.scrollTop -= covered - top + 8;
     });
 
     dom.toggleFreezeBtn.addEventListener('click', () => {

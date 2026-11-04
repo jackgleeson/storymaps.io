@@ -146,20 +146,45 @@ test('a cursor over the frozen rows shows over the same rows on the other screen
   await expect.poll(() => cursorInside(page, '.step:nth-child(2)')).toBe(true);
 });
 
-test('typing in a card in the frozen rows leaves the map where it is', async ({ page, createMap }) => {
-  await openMap(page, await createMap(LONG_MAP));
-  const wrapper = page.locator('#storyMapWrapper');
-  const scrollTop = () => wrapper.evaluate(w => w.scrollTop);
-  const before = await scrollTop();
-  // Click by position: a locator click would scroll the card into view first
-  const box = await page.locator('.users-row .story-card textarea').first().boundingBox();
+// Click by position: a locator click scrolls its target into view first, which hides the bug
+const clickAt = async (page, locator) => {
+  const box = await locator.boundingBox();
   await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
-  await page.keyboard.press('ControlOrMeta+A');
-  await page.keyboard.type('Regular customer', { delay: 20 });
-  expect(await scrollTop()).toBe(before);
-  // Once focus leaves the frozen rows, scrolling into view stops below them again
-  await page.keyboard.press('Escape');
-  await page.locator('#storyMapWrapper').evaluate(w => w.focus?.());
-  await page.locator('body').click({ position: { x: 5, y: 5 } });
-  await expect.poll(() => wrapper.evaluate(w => w.style.scrollPaddingTop)).not.toBe('0px');
+};
+
+for (const stuck of [false, true]) {
+  test(`clicking, adding and typing in cards in the frozen rows leaves the map where it is${stuck ? ', with the rows stuck' : ''}`, async ({ page, createMap }) => {
+    await openMap(page, await createMap(LONG_MAP));
+    const wrapper = page.locator('#storyMapWrapper');
+    if (stuck) await scrollDown(page, 700);
+    const scrollTop = () => wrapper.evaluate(w => w.scrollTop);
+    const before = await scrollTop();
+
+    await clickAt(page, page.locator('.users-row .story-card textarea').first());
+    await page.keyboard.press('ControlOrMeta+A');
+    await page.keyboard.type('Regular customer', { delay: 20 });
+    expect(await scrollTop()).toBe(before);
+
+    // A new user card, made with the + button and typed in
+    await page.locator('.users-row .story-card').first().hover();
+    await clickAt(page, page.locator('.users-row .btn-add-story').first());
+    await expect(page.locator('.users-row .story-card')).toHaveCount(2);
+    await page.keyboard.type('Barista', { delay: 20 });
+    expect(await scrollTop()).toBe(before);
+
+    // Tab from card to card along the rows
+    await clickAt(page, page.locator('.activities-row .story-card textarea').first());
+    for (let i = 0; i < 4; i++) await page.keyboard.press('Tab');
+    expect(await scrollTop()).toBe(before);
+  });
+}
+
+test('a card that gets focus under the stuck rows comes down below them', async ({ page, createMap }) => {
+  await openMap(page, await createMap(LONG_MAP));
+  await scrollDown(page, 900);
+  const card = page.locator('.slice-container .story-card').nth(2);
+  const rowsBottom = () => page.locator('#storyMap .steps-row').evaluate(r => r.getBoundingClientRect().bottom);
+  expect((await card.boundingBox()).y).toBeLessThan(await rowsBottom());
+  await card.locator('textarea').focus();
+  expect((await card.boundingBox()).y).toBeGreaterThanOrEqual(await rowsBottom());
 });
