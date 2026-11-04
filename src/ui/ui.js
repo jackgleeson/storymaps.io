@@ -198,8 +198,6 @@ const toggleSliceCollapsed = (sliceId, collapsed, reason) => {
     if (collapsed && reason) slice.closedReason = reason;
     else delete slice.closedReason;
     _peekedSlices.delete(sliceId);
-    // Partials a peek expanded stay expanded, so the cards in them stay in view
-    _peekExpandedPartials.delete(sliceId);
 
     keepSliceInPlace(sliceId, () => {
         if (rerenderSlice(sliceId)) _saveToStorage();
@@ -211,25 +209,29 @@ const toggleSliceCollapsed = (sliceId, collapsed, reason) => {
 // moved. Cards with no status are left alone, since some teams don't track status.
 const isUnfinished = (card) => !!STATUS_OPTIONS[card.status] && card.status !== 'done';
 
-// Every list of cards in a slice, once each: its own columns, then the columns of each partial map
-// placed in it. A partial can be placed more than once but stores its cards once, and while one is
-// being edited its columns sit in the map itself, so its placements are skipped.
-const sliceCardLists = (slice) => {
-    const lists = [];
-    const seenPartials = new Set();
-    _state.columns.forEach(col => {
-        if (col._editingHidden) return;
-        if (!col.partialMapId) {
-            lists.push({ cards: slice.stories[col.id] || [], colId: col.id });
-            return;
-        }
-        if (seenPartials.has(col.partialMapId) || col.partialMapId === partialMapEditState.activeId) return;
-        seenPartials.add(col.partialMapId);
+// The partial maps placed in the map, once each. A partial can be placed more than once but
+// stores its cards once, and while one is being edited its columns sit in the map itself, so it's
+// left out.
+const placedPartials = () => {
+    const seen = new Set();
+    return _state.columns.flatMap(col => {
+        if (!col.partialMapId || col._editingHidden || seen.has(col.partialMapId)) return [];
+        if (col.partialMapId === partialMapEditState.activeId) return [];
+        seen.add(col.partialMapId);
         const pm = _state.partialMaps.find(p => p.id === col.partialMapId);
-        pm?.columns.forEach(pmCol => lists.push({ cards: pm.stories[slice.id]?.[pmCol.id] || [], colId: pmCol.id, pm }));
+        return pm ? [pm] : [];
     });
-    return lists;
 };
+
+// Every list of cards in a slice, once each: its own columns, then the columns of each partial
+const sliceCardLists = (slice) => [
+    ..._state.columns
+        .filter(col => !col.partialMapId && !col._editingHidden)
+        .map(col => ({ cards: slice.stories[col.id] || [], colId: col.id })),
+    ...placedPartials().flatMap(pm => pm.columns.map(pmCol => ({ cards: pm.stories[slice.id]?.[pmCol.id] || [], colId: pmCol.id, pm }))),
+];
+
+const cardsInSlice = (slice) => sliceCardLists(slice).flatMap(l => l.cards);
 
 const unfinishedSliceCards = (slice) => sliceCardLists(slice).flatMap(({ cards, colId, pm }) =>
     cards.filter(isUnfinished).map(card => ({ card, colId, pm })));
@@ -1253,13 +1255,11 @@ const countsTowardsProgress = (card) =>
 const getSliceProgress = (slice) => {
     let total = 0;
     let done = 0;
-    Object.values(slice.stories || {}).forEach(stories => {
-        stories.forEach(story => {
-            if (countsTowardsProgress(story)) {
-                total++;
-                if (story.status === 'done') done++;
-            }
-        });
+    cardsInSlice(slice).forEach(story => {
+        if (countsTowardsProgress(story)) {
+            total++;
+            if (story.status === 'done') done++;
+        }
     });
     return { total, done, percent: total > 0 ? Math.round((done / total) * 100) : 0 };
 };
@@ -1292,44 +1292,70 @@ const createSliceName = (slice) => {
 // Slices someone is peeking into: a closed slice shown open in this browser only, never saved
 const _peekedSlices = new Set();
 
-// Partials a peek expanded, so it can show cards that sit in them, by slice. Hiding the cards
-// collapses them again, unless another peek still needs them. Like the peek, this is never saved.
-const _peekExpandedPartials = new Map();
-
 const togglePeek = (sliceId) => {
-    const slice = _state.slices.find(s => s.id === sliceId);
-    if (!slice) return;
-    let partialsChanged = false;
-    if (_peekedSlices.has(sliceId)) {
-        _peekedSlices.delete(sliceId);
-        const expanded = _peekExpandedPartials.get(sliceId) || [];
-        _peekExpandedPartials.delete(sliceId);
-        const stillNeeded = new Set([..._peekExpandedPartials.values()].flat());
-        expanded.filter(id => !stillNeeded.has(id)).forEach(id => {
-            partialMapEditState.expandedIds.delete(id);
-            partialsChanged = true;
-        });
-    } else {
-        _peekedSlices.add(sliceId);
-        // Expand collapsed partials holding cards of this slice, unless a partial is being edited
-        if (!partialMapEditState.activeId) {
-            const toExpand = [...new Set(sliceCardLists(slice).filter(l => l.pm && l.cards.length).map(l => l.pm.id))]
-                .filter(id => !partialMapEditState.expandedIds.has(id));
-            toExpand.forEach(id => partialMapEditState.expandedIds.add(id));
-            if (toExpand.length) {
-                _peekExpandedPartials.set(sliceId, toExpand);
-                partialsChanged = true;
-            }
-        }
-    }
-    // Expanding or collapsing a partial changes every row, so the whole map renders
+    if (_peekedSlices.has(sliceId)) _peekedSlices.delete(sliceId);
+    else _peekedSlices.add(sliceId);
     keepSliceInPlace(sliceId, () => {
-        if (partialsChanged || !rerenderSlice(sliceId)) _renderAndSave();
+        if (!rerenderSlice(sliceId)) _renderAndSave();
     });
 };
 
+// Cells under a collapsed partial whose cards someone opened, by slice and placement. Like a
+// peek, this is local and never saved.
+const _openPartialCells = new Set();
+
+// The cards of one slice inside a collapsed partial. The cell under the partial says how many
+// there are, and shows or hides them read-only, stacked in its one column under the name of each
+// step they belong to. A peeked closed slice shows them straight away.
+const createPartialSliceCell = (col, slice, { peek = false } = {}) => {
+    const cell = createPartialMapRefCell(col);
+    const pm = _state.partialMaps.find(p => p.id === col.partialMapId);
+    const groups = (pm?.columns || [])
+        .map(pmCol => ({ pmCol, cards: pm.stories[slice.id]?.[pmCol.id] || [] }))
+        .filter(g => g.cards.length);
+    const total = groups.reduce((n, g) => n + g.cards.length, 0);
+    if (!total) return cell;
+
+    cell.classList.add('partial-slice-cell');
+    const key = `${slice.id}:${col.id}`;
+    const open = peek || _openPartialCells.has(key);
+    const cards = `${total} ${total === 1 ? 'card' : 'cards'}`;
+    if (!peek) {
+        const toggle = el('button', 'partial-cards-toggle', {
+            type: 'button',
+            ariaExpanded: String(open),
+            title: open ? 'Hide the cards' : `Show the cards in ${pm.name || 'this partial'} for this slice, read-only`,
+        });
+        toggle.append(
+            el('span', null, { text: `${open ? 'Hide' : 'Show'} ${cards}` }),
+            el('span', 'partial-cards-chevron', {
+                ariaHidden: 'true',
+                html: '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
+            }),
+        );
+        toggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (open) _openPartialCells.delete(key);
+            else _openPartialCells.add(key);
+            keepSliceInPlace(slice.id, () => {
+                if (!rerenderSlice(slice.id)) _renderAndSave();
+            });
+        });
+        cell.appendChild(toggle);
+    }
+    if (open) {
+        const list = el('div', `partial-slice-cards partial-map-preview-col${peek ? ' slice-peek-col' : ''}`);
+        groups.forEach(({ pmCol, cards: stepCards }) => {
+            if (pm.columns.length > 1) list.appendChild(el('div', 'partial-slice-step', { text: pmCol.name || 'Untitled step' }));
+            list.append(...createPreviewStoryColumn(pmCol, stepCards, slice.id).children);
+        });
+        cell.appendChild(list);
+    }
+    return cell;
+};
+
 // Every card in a slice, including those in partial map columns
-const countSliceCards = (slice) => sliceCardLists(slice).reduce((sum, { cards }) => sum + cards.length, 0);
+const countSliceCards = (slice) => cardsInSlice(slice).length;
 
 // The banner of a complete or closed slice. Clicking it shows or hides the cards for this
 // browser only, so the slice stays closed for everyone else.
@@ -1418,7 +1444,7 @@ const createPeekRow = (slice) => {
         const pm = hasAnyExpanded && expandedIds.has(col.partialMapId)
             ? _state.partialMaps.find(p => p.id === col.partialMapId) : null;
         if (pm) pm.columns.forEach(pmCol => row.appendChild(peekColumn(pmCol, pm.stories[slice.id]?.[pmCol.id])));
-        else row.appendChild(createPartialMapRefCell(col));
+        else row.appendChild(createPartialSliceCell(col, slice, { peek: true }));
     });
     for (let i = 0; i < PHANTOM_BUFFER; i++) {
         row.appendChild(el('div', 'story-column collapsed-column-placeholder'));
@@ -1522,7 +1548,7 @@ export const createSliceContainer = (slice, index) => {
                     storiesRow.appendChild(createPartialMapRefCell(col));
                 }
             } else {
-                storiesRow.appendChild(createPartialMapRefCell(col));
+                storiesRow.appendChild(createPartialSliceCell(col, slice));
             }
         } else {
             const colEl = createStoryColumn(col, slice, null);
@@ -1644,7 +1670,7 @@ const renderSliceProgress = () => {
                 text: closed ? `${closed === 'Complete' ? '✓ ' : ''}${closed}` : `${done}/${total}`,
             }));
             const counts = {};
-            Object.values(slice.stories || {}).flat().filter(countsTowardsProgress).forEach(card => {
+            cardsInSlice(slice).filter(countsTowardsProgress).forEach(card => {
                 const key = card.status && STATUS_OPTIONS[card.status] ? card.status : 'none';
                 counts[key] = (counts[key] || 0) + 1;
             });
@@ -1682,14 +1708,16 @@ export const renderMapStats = () => {
     const container = document.getElementById('mapStats');
     if (!container) return;
 
+    // Cards, steps, users and activities inside partials count too, whether a partial is collapsed or not
     const flatten = (byColumn) => Object.values(byColumn || {}).flat();
-    const sliceCards = _state.slices.flatMap(slice => flatten(slice.stories));
+    const partials = placedPartials();
+    const sliceCards = _state.slices.flatMap(cardsInSlice);
     const counts = [
         [sliceCards.length, 'card', 'cards'],
-        [_state.columns.filter(c => !c.hidden && !c.partialMapId).length, 'step', 'steps'],
+        [_state.columns.filter(c => !c.hidden && !c.partialMapId).length + partials.reduce((n, pm) => n + pm.columns.length, 0), 'step', 'steps'],
         [_state.slices.length, 'slice', 'slices'],
-        [flatten(_state.users).length, 'user', 'users'],
-        [flatten(_state.activities).length, 'activity', 'activities'],
+        [flatten(_state.users).length + partials.reduce((n, pm) => n + flatten(pm.users).length, 0), 'user', 'users'],
+        [flatten(_state.activities).length + partials.reduce((n, pm) => n + flatten(pm.activities).length, 0), 'activity', 'activities'],
         [(_state.partialMaps || []).length, 'partial', 'partials'],
     ];
 

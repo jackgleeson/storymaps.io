@@ -211,14 +211,50 @@ const PARTIAL_MAP = {
 };
 const createPartialMap = async (request) => (await (await request.post('/api/maps', { data: PARTIAL_MAP })).json()).id;
 
-test('showing the cards expands a partial that holds some of them, and hiding them collapses it again', async ({ page, request }) => {
+test('a peeked slice shows the cards inside a collapsed partial, under the name of their step', async ({ page, request }) => {
   await openMap(page, await createPartialMap(request), 3);
   await peekToggle(page).click();
-  await expect(page.locator('.step')).toHaveCount(4);
-  await expect(firstSliceCards(page)).toHaveText(['Menu', 'Edit basket', 'Promo code', 'Postcode lookup', 'Card']);
-  await peekToggle(page).click();
+  // The partial stays collapsed for the rest of the map
   await expect(page.locator('.step')).toHaveCount(3);
+  await expect(firstSliceCards(page)).toHaveText(['Menu', 'Edit basket', 'Promo code', 'Postcode lookup', 'Card']);
+  await expect(firstSlice(page).locator('.partial-slice-step')).toHaveText(['Basket', 'Address']);
+  await peekToggle(page).click();
   await expect(firstSliceCards(page)).toHaveCount(0);
+});
+
+test('each open slice can show or hide its cards inside a collapsed partial', async ({ page, request }) => {
+  const map = structuredClone(PARTIAL_MAP);
+  map.slices[0] = { name: 'Phase 1', stories: [[{ name: 'Menu' }], [], [{ name: 'Card' }]] };
+  map.partialMaps[0].stories[1] = [[{ name: 'Gift wrap' }], []];
+  const id = (await (await request.post('/api/maps', { data: map })).json()).id;
+  await openMap(page, id, 3);
+
+  const toggle = (i) => page.locator('.slice-container').nth(i).locator('.partial-cards-toggle');
+  await expect(toggle(0)).toHaveText('Show 3 cards');
+  await expect(toggle(1)).toHaveText('Show 1 card');
+  await toggle(0).click();
+  await expect(toggle(0)).toHaveText('Hide 3 cards');
+  await expect(toggle(0)).toHaveAttribute('aria-expanded', 'true');
+  const shown = page.locator('.slice-container').first().locator('.partial-slice-cards .story-card');
+  await expect(shown).toHaveText(['Edit basket', 'Promo code', 'Postcode lookup']);
+  // Read-only, and only this slice opens
+  await expect(page.locator('.partial-slice-cards textarea')).toHaveCount(0);
+  await expect(page.locator('.slice-container').nth(1).locator('.partial-slice-cards')).toHaveCount(0);
+  await toggle(0).click();
+  await expect(shown).toHaveCount(0);
+});
+
+test('the Overview counts the cards and steps inside partials', async ({ page, request }) => {
+  const map = structuredClone(PARTIAL_MAP);
+  map.slices[0] = { name: 'Phase 1', stories: [[{ name: 'Menu', status: 'done' }], [], [{ name: 'Card' }]] };
+  map.partialMaps[0].stories[0][0][0].status = 'done';
+  const id = (await (await request.post('/api/maps', { data: map })).json()).id;
+  await openMap(page, id, 3);
+  const panel = page.locator('#legendPanel');
+  if (!(await panel.isVisible())) await page.locator('#legendToggle').click();
+  await expect(panel.locator('.map-stats-tile').nth(0)).toHaveText('5cards');
+  await expect(panel.locator('.map-stats-tile').nth(1)).toHaveText('4steps');
+  await expect(panel.locator('.map-stats-slice').first().locator('.map-stats-slice-count')).toHaveText('2/5');
 });
 
 test('the card count of a closed slice counts partial cards once, even while the partial is edited', async ({ page, request }) => {

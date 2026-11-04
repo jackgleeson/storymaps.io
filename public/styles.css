@@ -1860,6 +1860,76 @@ html.dark-mode .map-stats-slice-count.map-stats-closed {
     opacity: 1;
 }
 
+/* Under a collapsed partial, each slice says how many of its cards are inside, and can show
+   them read-only, stacked under the name of each step (createPartialSliceCell in ui.js) */
+.partial-cards-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 40px;
+    padding: 8px;
+    border: 2px dashed rgba(59, 130, 246, 0.45);
+    border-radius: 2px;
+    background: rgba(239, 246, 255, 0.8);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1d4ed8;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.partial-cards-toggle:hover {
+    background: #dbeafe;
+}
+
+.partial-cards-toggle:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+.partial-cards-chevron {
+    display: inline-flex;
+    transition: transform 0.15s ease;
+}
+
+.partial-cards-toggle[aria-expanded="true"] .partial-cards-chevron {
+    transform: rotate(180deg);
+}
+
+.partial-slice-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.partial-slice-step {
+    margin: 2px 0 -4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+html.dark-mode .partial-cards-toggle {
+    border-color: rgba(45, 212, 191, 0.5);
+    background: rgba(45, 212, 191, 0.08);
+    color: #5eead4;
+}
+
+html.dark-mode .partial-cards-toggle:hover {
+    background: rgba(45, 212, 191, 0.16);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .partial-cards-chevron {
+        transition: none;
+    }
+}
+
 /* Links and the tag list still open from read-only previews, including peeked slices */
 .partial-map-preview-col .url-indicator,
 .partial-map-preview-col .card-tag-overflow {
