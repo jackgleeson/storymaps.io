@@ -1153,13 +1153,6 @@ body.welcome-visible .gh-star {
     font-weight: 600;
 }
 
-/* Complete, with cards that aren't done noted after the tick */
-.map-stats-not-done {
-    margin-left: 6px;
-    color: #b45309;
-    font-weight: 500;
-}
-
 .map-stats-slice-closed .map-stats-slice-name {
     color: var(--color-text-secondary);
 }
@@ -1174,10 +1167,6 @@ html.dark-mode .map-stats-slice-count.map-stats-complete {
 
 html.dark-mode .map-stats-slice-count.map-stats-closed {
     color: #93c5fd;
-}
-
-html.dark-mode .map-stats-not-done {
-    color: #fbbf24;
 }
 
 .map-stats-more {

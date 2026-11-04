@@ -168,6 +168,27 @@ const rerenderSlice = (sliceId) => {
     return true;
 };
 
+// Run a change that re-renders a slice, keeping the top of the slice where it was on screen.
+// Otherwise the browser can keep a slice further down in place instead, which scrolls the
+// changed slice up under the frozen rows. A slice that folds into a banner also comes down into
+// view, in case its top was above the screen or under the frozen rows. Only the map area scrolls,
+// and only up and down: scrollIntoView would also move the page sideways on phones.
+const keepSliceInPlace = (sliceId, change) => {
+    const container = () => _dom.storyMap.querySelector(`.slice-container[data-slice-id="${CSS.escape(sliceId)}"]`);
+    const wrapper = _dom.storyMap.closest('.story-map-wrapper');
+    const before = container()?.getBoundingClientRect().top;
+    change();
+    const after = container()?.getBoundingClientRect().top;
+    if (!wrapper || before == null || after == null) return;
+    wrapper.scrollTop += after - before;
+    if (container().classList.contains('slice-collapsed')) {
+        // The frozen rows set scroll-padding-top to their height
+        const visibleTop = wrapper.getBoundingClientRect().top + (parseFloat(getComputedStyle(wrapper).scrollPaddingTop) || 0);
+        const top = container().getBoundingClientRect().top;
+        if (top < visibleTop) wrapper.scrollTop -= visibleTop - top;
+    }
+};
+
 // Toggle slice collapsed state
 const toggleSliceCollapsed = (sliceId, collapsed, reason) => {
     const slice = _state.slices.find(s => s.id === sliceId);
@@ -178,8 +199,10 @@ const toggleSliceCollapsed = (sliceId, collapsed, reason) => {
     else delete slice.closedReason;
     _peekedSlices.delete(sliceId);
 
-    if (rerenderSlice(sliceId)) _saveToStorage();
-    else _renderAndSave();
+    keepSliceInPlace(sliceId, () => {
+        if (rerenderSlice(sliceId)) _saveToStorage();
+        else _renderAndSave();
+    });
 };
 
 // Cards in a slice with a status other than Done, and the list each one sits in, so they can be
@@ -258,7 +281,7 @@ const markSliceComplete = async (slice) => {
     slice.closedReason = 'complete';
     _peekedSlices.delete(slice.id);
     _logEvent?.(`Marked slice${quoted(slice.name)} complete and moved ${cards} to${quoted(to.name) || ' a new slice'}`, [slice.id, to.id]);
-    _renderAndSave();
+    keepSliceInPlace(slice.id, () => _renderAndSave());
 };
 
 export const createExpandButton = (item, { readOnly = false } = {}) => {
@@ -1263,19 +1286,12 @@ const createSliceName = (slice) => {
 // Slices someone is peeking into: a closed slice shown open in this browser only, never saved
 const _peekedSlices = new Set();
 
-// The banner stays where it was. Otherwise the browser can keep a slice further down in place
-// instead, which scrolls the new cards up under the frozen rows.
 const togglePeek = (sliceId) => {
-    const bannerTop = () => _dom.storyMap
-        .querySelector(`.slice-container[data-slice-id="${CSS.escape(sliceId)}"] .slice-completed-banner`)
-        ?.getBoundingClientRect().top;
-    const before = bannerTop();
     if (_peekedSlices.has(sliceId)) _peekedSlices.delete(sliceId);
     else _peekedSlices.add(sliceId);
-    if (!rerenderSlice(sliceId)) _renderAndSave();
-    const after = bannerTop();
-    const wrapper = _dom.storyMap.closest('.story-map-wrapper');
-    if (before != null && after != null && wrapper) wrapper.scrollTop += after - before;
+    keepSliceInPlace(sliceId, () => {
+        if (!rerenderSlice(sliceId)) _renderAndSave();
+    });
 };
 
 // Every card in a slice, including those in partial map columns
@@ -1589,19 +1605,14 @@ const renderSliceProgress = () => {
 
         const closed = slice.collapsed ? (slice.closedReason === 'closed' ? 'Closed' : 'Complete') : null;
         if (closed) row.classList.add('map-stats-slice-closed');
-        // A complete slice with cards that aren't done says how many
-        const notDone = closed === 'Complete' ? unfinishedSliceCards(slice).length : 0;
         if (total === 0) {
             row.appendChild(el('span', `map-stats-slice-count${closed ? ` map-stats-${closed.toLowerCase()}` : ''}`, { text: closed ? `${closed === 'Complete' ? '✓ ' : ''}${closed}` : 'No tasks' }));
             row.title = name;
         } else {
             // A complete or closed slice keeps its bar, faded, with its state in place of the count
-            const count = el('span', `map-stats-slice-count${closed ? ` map-stats-${closed.toLowerCase()}` : ''}`, {
+            row.appendChild(el('span', `map-stats-slice-count${closed ? ` map-stats-${closed.toLowerCase()}` : ''}`, {
                 text: closed ? `${closed === 'Complete' ? '✓ ' : ''}${closed}` : `${done}/${total}`,
-            });
-            // Still a green tick, with the cards that aren't done noted in amber after it
-            if (notDone) count.appendChild(el('span', 'map-stats-not-done', { text: `${notDone} not done` }));
-            row.appendChild(count);
+            }));
             const counts = {};
             Object.values(slice.stories || {}).flat().filter(countsTowardsProgress).forEach(card => {
                 const key = card.status && STATUS_OPTIONS[card.status] ? card.status : 'none';

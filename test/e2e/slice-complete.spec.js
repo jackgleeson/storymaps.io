@@ -52,7 +52,7 @@ test('marking a slice complete offers to move the cards that are not done to the
   await expect.poll(() => cardNames(page, 0)).toEqual(['Drinks by category', 'Search by name', 'Pick size']);
 });
 
-test('completing anyway shows how many cards are done on the banner and in the Overview', async ({ page, createMap }) => {
+test('completing anyway notes the cards that are not done on the banner, and keeps the tick in the Overview', async ({ page, createMap }) => {
   await openMap(page, await createMap(MAP), 2);
   await markComplete(page);
   await page.getByRole('button', { name: 'Complete anyway' }).click();
@@ -63,7 +63,7 @@ test('completing anyway shows how many cards are done on the banner and in the O
   if (!(await panel.isVisible())) await page.locator('#legendToggle').click();
   const count = panel.locator('.map-stats-slice').first().locator('.map-stats-slice-count');
   await expect(count).toHaveClass(/map-stats-complete/);
-  await expect(count).toHaveText('✓ Complete2 not done');
+  await expect(count).toHaveText('✓ Complete');
 });
 
 test('cancelling leaves the slice open', async ({ page, createMap }) => {

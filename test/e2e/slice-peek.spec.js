@@ -96,8 +96,8 @@ test('reopening a peeked slice makes its cards editable', async ({ page, createM
   await expect(firstSlice(page).locator('.story-card textarea')).toHaveCount(3);
 });
 
-test('the banner stays in place under the frozen rows when the cards show', async ({ page, createMap }) => {
-  // Cards above and below the closed slice, so the map scrolls both ways
+// Cards above and below a closed slice, so the map scrolls both ways
+const openLongMap = async (page, createMap) => {
   const cards = (label) => Array.from({ length: 10 }, (_, i) => `        - name: ${label} ${i + 1}`).join('\n');
   const id = await createMap(`name: Long map
 users:
@@ -124,16 +124,59 @@ ${cards('Done')}
 ${cards('Later')}
 `);
   await openMap(page, id, 2);
-  const gap = () => page.evaluate(() =>
-    document.querySelector('.slice-completed-banner').getBoundingClientRect().top
-    - document.querySelector('.map-top').getBoundingClientRect().bottom);
   // Scroll until the banner sits right under the frozen rows
   await page.locator('#storyMapWrapper').evaluate((w) => {
     w.scrollTop += document.querySelector('.slice-completed-banner').getBoundingClientRect().top
       - document.querySelector('.map-top').getBoundingClientRect().bottom - 5;
   });
-  const before = await gap();
+  // The browser only picks what to keep in place on scroll at its next frames
+  await page.waitForTimeout(300);
+};
+const sliceTop = (page, i) => page.locator('.slice-container').nth(i).evaluate(el => el.getBoundingClientRect().top);
+
+test('the banner stays in place under the frozen rows when the cards show', async ({ page, createMap }) => {
+  await openLongMap(page, createMap);
+  const before = await sliceTop(page, 1);
   await page.locator('.slice-peek-toggle').click();
   await expect(page.locator('.slice-peeking .story-card')).toHaveCount(10);
-  expect(Math.abs((await gap()) - before)).toBeLessThan(2);
+  expect(Math.abs((await sliceTop(page, 1)) - before)).toBeLessThan(2);
+});
+
+test('reopening a slice under the frozen rows keeps it in place', async ({ page, createMap }) => {
+  await openLongMap(page, createMap);
+  const before = await sliceTop(page, 1);
+  await page.locator('.slice-collapsed .btn-slice-menu').click();
+  await page.getByRole('button', { name: 'Reopen' }).click();
+  await expect(page.locator('.slice-container').nth(1).locator('.story-card textarea')).toHaveCount(10);
+  expect(Math.abs((await sliceTop(page, 1)) - before)).toBeLessThan(2);
+});
+
+test('showing and hiding the cards keeps the story map where it was', async ({ page, createMap }) => {
+  // Wider than the window, so the browser could scroll it sideways
+  const steps = Array.from({ length: 12 }, (_, i) => `Step ${i + 1}`);
+  await openMap(page, await createMap(`name: Wide map
+steps:
+${steps.map(s => `  - ${s}`).join('\n')}
+slices:
+  - name: Phase 1
+    collapsed: true
+    closedReason: complete
+    stories:
+      Step 1:
+        - name: Drinks by category
+        - name: Search by name
+      Step 12:
+        - name: Card payment
+  - name: Phase 2
+    stories:
+      Step 2:
+        - name: Pick size
+`), 12);
+  const position = () => page.locator('#storyMapWrapper').evaluate(w => [w.scrollLeft, w.scrollTop]);
+  const before = await position();
+  await peekToggle(page).click();
+  await expect(firstSliceCards(page)).toHaveCount(3);
+  await peekToggle(page).click();
+  await expect(firstSliceCards(page)).toHaveCount(0);
+  expect(await position()).toEqual(before);
 });
