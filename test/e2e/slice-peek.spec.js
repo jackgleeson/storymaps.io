@@ -195,22 +195,34 @@ test('links on cards open from a peeked slice and from a locked map', async ({ p
   })).toBe(true);
 });
 
+// Phase 1 is closed, and three of its five cards sit in the Checkout partial
+const PARTIAL_MAP = {
+  name: 'Partial map',
+  steps: [{ name: 'Browse' }, { partialMapId: 'pm000001', partialMapOrigin: true }, { name: 'Pay' }],
+  slices: [
+    { name: 'Phase 1', collapsed: true, closedReason: 'complete', stories: [[{ name: 'Menu' }], [], [{ name: 'Card' }]] },
+    { name: 'Phase 2', stories: [[], [], []] },
+  ],
+  partialMaps: [{
+    id: 'pm000001', name: 'Checkout', users: [[], []], activities: [[], []],
+    steps: [{ name: 'Basket' }, { name: 'Address' }],
+    stories: [[[{ name: 'Edit basket' }, { name: 'Promo code' }], [{ name: 'Postcode lookup' }]], [[], []]],
+  }],
+};
+const createPartialMap = async (request) => (await (await request.post('/api/maps', { data: PARTIAL_MAP })).json()).id;
+
+test('showing the cards expands a partial that holds some of them, and hiding them collapses it again', async ({ page, request }) => {
+  await openMap(page, await createPartialMap(request), 3);
+  await peekToggle(page).click();
+  await expect(page.locator('.step')).toHaveCount(4);
+  await expect(firstSliceCards(page)).toHaveText(['Menu', 'Edit basket', 'Promo code', 'Postcode lookup', 'Card']);
+  await peekToggle(page).click();
+  await expect(page.locator('.step')).toHaveCount(3);
+  await expect(firstSliceCards(page)).toHaveCount(0);
+});
+
 test('the card count of a closed slice counts partial cards once, even while the partial is edited', async ({ page, request }) => {
-  const res = await request.post('/api/maps', { data: {
-    name: 'Partial map',
-    steps: [{ name: 'Browse' }, { partialMapId: 'pm000001', partialMapOrigin: true }, { name: 'Pay' }],
-    slices: [
-      { name: 'Phase 1', collapsed: true, closedReason: 'complete', stories: [[{ name: 'Menu' }], [], [{ name: 'Card' }]] },
-      { name: 'Phase 2', stories: [[], [], []] },
-    ],
-    partialMaps: [{
-      id: 'pm000001', name: 'Checkout', users: [[], []], activities: [[], []],
-      steps: [{ name: 'Basket' }, { name: 'Address' }],
-      stories: [[[{ name: 'Edit basket' }, { name: 'Promo code' }], [{ name: 'Postcode lookup' }]], [[], []]],
-    }],
-  } });
-  const id = (await res.json()).id;
-  await openMap(page, id, 3);
+  await openMap(page, await createPartialMap(request), 3);
   await expect(banner(page)).toContainText('5 cards');
 
   const panel = page.locator('#legendPanel');

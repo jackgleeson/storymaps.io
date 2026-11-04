@@ -198,6 +198,8 @@ const toggleSliceCollapsed = (sliceId, collapsed, reason) => {
     if (collapsed && reason) slice.closedReason = reason;
     else delete slice.closedReason;
     _peekedSlices.delete(sliceId);
+    // Partials a peek expanded stay expanded, so the cards in them stay in view
+    _peekExpandedPartials.delete(sliceId);
 
     keepSliceInPlace(sliceId, () => {
         if (rerenderSlice(sliceId)) _saveToStorage();
@@ -1290,11 +1292,39 @@ const createSliceName = (slice) => {
 // Slices someone is peeking into: a closed slice shown open in this browser only, never saved
 const _peekedSlices = new Set();
 
+// Partials a peek expanded, so it can show cards that sit in them, by slice. Hiding the cards
+// collapses them again, unless another peek still needs them. Like the peek, this is never saved.
+const _peekExpandedPartials = new Map();
+
 const togglePeek = (sliceId) => {
-    if (_peekedSlices.has(sliceId)) _peekedSlices.delete(sliceId);
-    else _peekedSlices.add(sliceId);
+    const slice = _state.slices.find(s => s.id === sliceId);
+    if (!slice) return;
+    let partialsChanged = false;
+    if (_peekedSlices.has(sliceId)) {
+        _peekedSlices.delete(sliceId);
+        const expanded = _peekExpandedPartials.get(sliceId) || [];
+        _peekExpandedPartials.delete(sliceId);
+        const stillNeeded = new Set([..._peekExpandedPartials.values()].flat());
+        expanded.filter(id => !stillNeeded.has(id)).forEach(id => {
+            partialMapEditState.expandedIds.delete(id);
+            partialsChanged = true;
+        });
+    } else {
+        _peekedSlices.add(sliceId);
+        // Expand collapsed partials holding cards of this slice, unless a partial is being edited
+        if (!partialMapEditState.activeId) {
+            const toExpand = [...new Set(sliceCardLists(slice).filter(l => l.pm && l.cards.length).map(l => l.pm.id))]
+                .filter(id => !partialMapEditState.expandedIds.has(id));
+            toExpand.forEach(id => partialMapEditState.expandedIds.add(id));
+            if (toExpand.length) {
+                _peekExpandedPartials.set(sliceId, toExpand);
+                partialsChanged = true;
+            }
+        }
+    }
+    // Expanding or collapsing a partial changes every row, so the whole map renders
     keepSliceInPlace(sliceId, () => {
-        if (!rerenderSlice(sliceId)) _renderAndSave();
+        if (partialsChanged || !rerenderSlice(sliceId)) _renderAndSave();
     });
 };
 
