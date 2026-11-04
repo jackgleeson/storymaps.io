@@ -32,11 +32,13 @@ test('a closed slice shows its card count, and its banner shows the cards to thi
   await openMap(page, id);
   await expect(banner(page)).toContainText('3 cards');
   await expect(peekToggle(page)).toHaveAttribute('aria-expanded', 'false');
+  await expect(peekToggle(page)).toContainText('Show cards');
   await expect(firstSliceCards(page)).toHaveCount(0);
 
   await peekToggle(page).click();
   await expect(page.locator('.slice-container').first()).toHaveClass(/slice-peeking/);
   await expect(peekToggle(page)).toHaveAttribute('aria-expanded', 'true');
+  await expect(peekToggle(page)).toContainText('Hide cards');
   await expect(firstSliceCards(page)).toHaveCount(3);
   await expect(banner(page)).toContainText('Read-only');
 

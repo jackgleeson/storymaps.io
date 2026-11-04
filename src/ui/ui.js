@@ -1234,12 +1234,21 @@ const createClosedBannerRow = (slice, peeking) => {
             ? 'Hide the cards. Reopen the slice from its ☰ menu to edit them.'
             : 'Show the cards, read-only. The slice stays closed for everyone else.',
     });
-    toggle.appendChild(el('span', 'slice-peek-chevron', { ariaHidden: 'true', text: '›' }));
     // The name truncates on one line; the status after it always shows
     if (slice.name) toggle.appendChild(el('span', 'slice-completed-name', { text: slice.name }));
     toggle.appendChild(el('span', 'slice-completed-text', { text: slice.name ? ` - ${statusText}` : statusText }));
     toggle.appendChild(el('span', 'slice-card-count', { text: `${cards} ${cards === 1 ? 'card' : 'cards'}` }));
     if (peeking) toggle.appendChild(el('span', 'slice-peek-readonly', { text: 'Read-only' }));
+    // Says what a click does, so the banner reads as a control
+    const action = el('span', 'slice-peek-action');
+    action.append(
+        el('span', 'slice-peek-action-text', { text: peeking ? 'Hide cards' : 'Show cards' }),
+        el('span', 'slice-peek-chevron', {
+            ariaHidden: 'true',
+            html: '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
+        }),
+    );
+    toggle.appendChild(action);
     toggle.addEventListener('click', (e) => {
         e.stopPropagation();
         togglePeek(slice.id);

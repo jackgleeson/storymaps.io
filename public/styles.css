@@ -2756,7 +2756,7 @@ body.main-menu-open .step:hover {
 /* Slice drag handle */
 .slice-drag-handle {
     cursor: grab;
-    color: var(--color-text-disabled);
+    color: var(--color-text-muted);
     font-size: 14px;
     padding: 2px 4px;
     border-radius: 2px;
@@ -2765,7 +2765,7 @@ body.main-menu-open .step:hover {
 }
 
 .slice-drag-handle:hover {
-    color: var(--color-text-muted);
+    color: var(--color-text-secondary);
     background-color: rgba(0, 0, 0, 0.05);
 }
 
@@ -2929,18 +2929,33 @@ body.main-menu-open .step:hover {
     border-radius: 2px;
 }
 
-.slice-peek-chevron {
+/* "Show cards" or "Hide cards" with a chevron, at the end of the banner */
+.slice-peek-action {
     flex-shrink: 0;
-    width: 10px;
-    margin-right: 6px;
-    font-size: 14px;
-    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    margin-left: 14px;
+    padding: 2px 4px 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
     color: #065f46;
+    white-space: nowrap;
+    transition: background-color 0.15s ease;
+}
+
+.slice-peek-toggle:hover .slice-peek-action {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.slice-peek-chevron {
+    display: inline-flex;
     transition: transform 0.15s ease;
 }
 
 .peeking .slice-peek-chevron {
-    transform: rotate(90deg);
+    transform: rotate(180deg);
 }
 
 .slice-card-count {
@@ -2956,7 +2971,7 @@ body.main-menu-open .step:hover {
     white-space: nowrap;
 }
 
-.slice-closed-banner .slice-peek-chevron {
+.slice-closed-banner .slice-peek-action {
     color: #1e40af;
 }
 
@@ -3012,7 +3027,8 @@ body.main-menu-open .step:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .slice-peek-chevron {
+    .slice-peek-chevron,
+    .slice-peek-action {
         transition: none;
     }
 }
@@ -9323,7 +9339,7 @@ html.dark-mode .btn-expand:hover {
 
 /* Slice drag handle */
 html.dark-mode .slice-drag-handle {
-    color: #64748b;
+    color: #94a3b8;
 }
 
 /* Slice collapsed label */
