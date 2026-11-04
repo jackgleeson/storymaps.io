@@ -1860,6 +1860,12 @@ html.dark-mode .map-stats-slice-count.map-stats-closed {
     opacity: 1;
 }
 
+/* Links and the tag list still open from read-only previews, including peeked slices */
+.partial-map-preview-col .url-indicator,
+.partial-map-preview-col .card-tag-overflow {
+    pointer-events: auto;
+}
+
 .story-text-preview {
     width: 100%;
     font-family: inherit;

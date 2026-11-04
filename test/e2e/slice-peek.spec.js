@@ -180,3 +180,17 @@ slices:
   await expect(firstSliceCards(page)).toHaveCount(0);
   expect(await position()).toEqual(before);
 });
+
+test('links on cards open from a peeked slice and from a locked map', async ({ page, createMap, request }) => {
+  const id = await createMap(MAP.replace('        - name: Card payment', '        - name: Card payment\n          url: https://example.com/ticket'));
+  await request.post(`/api/lock/${id}`, { data: { passwordHash: createHash('sha256').update('elsewhere').digest('hex') } });
+  await openMap(page, id);
+  await peekToggle(page).click();
+  const link = firstSlice(page).locator('.url-indicator');
+  await expect(link).toHaveAttribute('href', 'https://example.com/ticket');
+  // A click reaches the link rather than the column under it
+  expect(await link.evaluate(a => {
+    const r = a.getBoundingClientRect();
+    return document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2) === a;
+  })).toBe(true);
+});
