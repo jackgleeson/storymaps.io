@@ -2971,11 +2971,10 @@ body.main-menu-open .step:hover {
     color: #1e40af;
 }
 
-/* Peeking: the cards of a closed slice show read-only and faded under its banner. They use the
-   partial map preview columns, without the blue outline. */
+/* Peeking: the cards of a closed slice show read-only under its banner. They use the partial map
+   preview columns, without the blue outline. */
 .slice-peek-col.partial-map-preview-col .story-card {
     box-shadow: var(--shadow-card);
-    opacity: 0.65;
     cursor: default;
 }
 
