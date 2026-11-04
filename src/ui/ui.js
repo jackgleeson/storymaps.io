@@ -176,6 +176,7 @@ const toggleSliceCollapsed = (sliceId, collapsed, reason) => {
     slice.collapsed = collapsed;
     if (collapsed && reason) slice.closedReason = reason;
     else delete slice.closedReason;
+    _peekedSlices.delete(sliceId);
 
     if (rerenderSlice(sliceId)) _saveToStorage();
     else _renderAndSave();
@@ -1180,12 +1181,72 @@ const createSliceName = (slice) => {
     return name;
 };
 
+// Slices someone is peeking into: a closed slice shown open in this browser only, never saved
+const _peekedSlices = new Set();
+
+const togglePeek = (sliceId) => {
+    if (_peekedSlices.has(sliceId)) _peekedSlices.delete(sliceId);
+    else _peekedSlices.add(sliceId);
+    if (!rerenderSlice(sliceId)) _renderAndSave();
+};
+
+// Every card in a slice, including those in partial map columns
+const countSliceCards = (slice) => _state.columns.reduce((sum, col) => {
+    if (!col.partialMapId) return sum + (slice.stories[col.id]?.length || 0);
+    const pm = _state.partialMaps.find(p => p.id === col.partialMapId);
+    return sum + (pm ? pm.columns.reduce((n, pmCol) => n + (pm.stories[slice.id]?.[pmCol.id]?.length || 0), 0) : 0);
+}, 0);
+
+// The banner of a complete or closed slice. Clicking it shows or hides the cards for this
+// browser only, so the slice stays closed for everyone else.
+const createClosedBannerRow = (slice, peeking) => {
+    const row = el('div', 'stories-row slice-completed-row');
+    const expandedIds = partialMapEditState.expandedIds;
+    const hasAnyExpanded = expandedIds.size > 0 && !partialMapEditState.activeId;
+    _state.columns.forEach(col => {
+        if (col._editingHidden) return;
+        const pm = col.partialMapId && hasAnyExpanded && expandedIds.has(col.partialMapId)
+            ? _state.partialMaps.find(p => p.id === col.partialMapId) : null;
+        const count = pm ? pm.columns.length : 1;
+        for (let i = 0; i < count; i++) row.appendChild(el('div', 'story-column collapsed-column-placeholder'));
+    });
+    for (let i = 0; i < PHANTOM_BUFFER; i++) {
+        row.appendChild(el('div', 'story-column collapsed-column-placeholder'));
+    }
+
+    const isClosed = slice.closedReason === 'closed';
+    const banner = el('div', `slice-completed-banner${isClosed ? ' slice-closed-banner' : ''}${peeking ? ' peeking' : ''}`);
+    const statusText = isClosed ? 'Closed' : 'Complete';
+    const cards = countSliceCards(slice);
+    const toggle = el('button', 'slice-peek-toggle', {
+        type: 'button',
+        ariaExpanded: String(peeking),
+        title: peeking ? 'Hide the cards' : 'Show the cards. The slice stays closed for everyone else.',
+    });
+    toggle.appendChild(el('span', 'slice-peek-chevron', { ariaHidden: 'true', text: '›' }));
+    // The name truncates on one line; the status after it always shows
+    if (slice.name) toggle.appendChild(el('span', 'slice-completed-name', { text: slice.name }));
+    toggle.appendChild(el('span', 'slice-completed-text', { text: slice.name ? ` - ${statusText}` : statusText }));
+    toggle.appendChild(el('span', 'slice-card-count', { text: `${cards} ${cards === 1 ? 'card' : 'cards'}` }));
+    toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        togglePeek(slice.id);
+    });
+    banner.appendChild(toggle);
+    const bannerInfo = createSliceInfo(slice, 'slice-info-banner');
+    if (bannerInfo) banner.appendChild(bannerInfo);
+    row.appendChild(banner);
+    return row;
+};
+
 export const createSliceContainer = (slice, index) => {
-    const collapsed = slice.collapsed;
+    const peeking = slice.collapsed && _peekedSlices.has(slice.id);
+    const collapsed = slice.collapsed && !peeking;
     let containerClass = 'slice-container';
     if (collapsed) {
         containerClass += ' slice-collapsed';
     }
+    if (peeking) containerClass += ' slice-peeking';
     const container = el('div', containerClass, { dataSliceId: slice.id });
 
     const labelContainer = el('div', 'slice-label-container', { dataSliceId: slice.id });
@@ -1202,43 +1263,7 @@ export const createSliceContainer = (slice, index) => {
         container.appendChild(labelContainer);
 
         const storiesArea = el('div', 'slice-stories-area');
-        const storiesRow = el('div', 'stories-row slice-completed-row');
-
-        const expandedIdsCollapsed = partialMapEditState.expandedIds;
-        const hasAnyExpandedCollapsed = expandedIdsCollapsed.size > 0 && !partialMapEditState.activeId;
-        _state.columns.forEach(col => {
-            if (col._editingHidden) return;
-            if (col.partialMapId && hasAnyExpandedCollapsed && expandedIdsCollapsed.has(col.partialMapId)) {
-                const pm = _state.partialMaps.find(p => p.id === col.partialMapId);
-                if (pm) {
-                    pm.columns.forEach(() => {
-                        const placeholder = el('div', 'story-column collapsed-column-placeholder');
-                        storiesRow.appendChild(placeholder);
-                    });
-                    return;
-                }
-            }
-            const placeholder = el('div', 'story-column collapsed-column-placeholder');
-            storiesRow.appendChild(placeholder);
-        });
-
-        for (let i = 0; i < PHANTOM_BUFFER; i++) {
-            const placeholder = el('div', 'story-column collapsed-column-placeholder');
-            storiesRow.appendChild(placeholder);
-        }
-
-        const isClosed = slice.closedReason === 'closed';
-        const completedBanner = el('div', `slice-completed-banner${isClosed ? ' slice-closed-banner' : ''}`);
-        const statusText = isClosed ? 'Closed' : 'Complete';
-        completedBanner.title = slice.name ? `${slice.name} - ${statusText}` : statusText;
-        // The name truncates on one line; the status after it always shows
-        if (slice.name) completedBanner.appendChild(el('span', 'slice-completed-name', { text: slice.name }));
-        completedBanner.appendChild(el('span', 'slice-completed-text', { text: slice.name ? ` - ${statusText}` : statusText }));
-        const bannerInfo = createSliceInfo(slice, 'slice-info-banner');
-        if (bannerInfo) completedBanner.appendChild(bannerInfo);
-        storiesRow.appendChild(completedBanner);
-
-        storiesArea.appendChild(storiesRow);
+        storiesArea.appendChild(createClosedBannerRow(slice, false));
         container.appendChild(storiesArea);
 
         return container;
@@ -1293,6 +1318,7 @@ export const createSliceContainer = (slice, index) => {
     container.appendChild(labelContainer);
 
     const storiesArea = el('div', 'slice-stories-area');
+    if (peeking) storiesArea.appendChild(createClosedBannerRow(slice, true));
     const storiesRow = el('div', 'stories-row');
 
     const editingColIds = _getEditingPartialColIds();
@@ -1424,12 +1450,16 @@ const renderSliceProgress = () => {
         const row = el('div', 'map-stats-slice');
         row.appendChild(el('span', 'map-stats-slice-name', { text: name }));
 
-        if (slice.collapsed || total === 0) {
-            const label = slice.collapsed ? (slice.closedReason === 'closed' ? 'Closed' : 'Complete') : 'No tasks';
-            row.appendChild(el('span', 'map-stats-slice-count', { text: label }));
+        const closed = slice.collapsed ? (slice.closedReason === 'closed' ? 'Closed' : 'Complete') : null;
+        if (closed) row.classList.add('map-stats-slice-closed');
+        if (total === 0) {
+            row.appendChild(el('span', `map-stats-slice-count${closed ? ` map-stats-${closed.toLowerCase()}` : ''}`, { text: closed ? `${closed === 'Complete' ? '✓ ' : ''}${closed}` : 'No tasks' }));
             row.title = name;
         } else {
-            row.appendChild(el('span', 'map-stats-slice-count', { text: `${done}/${total}` }));
+            // A complete or closed slice keeps its bar, faded, with its state in place of the count
+            row.appendChild(el('span', `map-stats-slice-count${closed ? ` map-stats-${closed.toLowerCase()}` : ''}`, {
+                text: closed ? `${closed === 'Complete' ? '✓ ' : ''}${closed}` : `${done}/${total}`,
+            }));
             const counts = {};
             Object.values(slice.stories || {}).flat().filter(countsTowardsProgress).forEach(card => {
                 const key = card.status && STATUS_OPTIONS[card.status] ? card.status : 'none';
@@ -1444,7 +1474,7 @@ const renderSliceProgress = () => {
                 bar.appendChild(part);
             });
             row.appendChild(bar);
-            row.title = `${name}: ${done} of ${total} tasks done`;
+            row.title = `${name}: ${closed ? `${closed.toLowerCase()}, ` : ''}${done} of ${total} tasks done`;
         }
         list.appendChild(row);
     });

@@ -1142,6 +1142,33 @@ body.welcome-visible .gh-star {
     border-radius: 3px;
 }
 
+/* Complete and closed slices: the state in colour, the bar faded behind it */
+.map-stats-slice-count.map-stats-complete {
+    color: #047857;
+    font-weight: 600;
+}
+
+.map-stats-slice-count.map-stats-closed {
+    color: #1d4ed8;
+    font-weight: 600;
+}
+
+.map-stats-slice-closed .map-stats-slice-name {
+    color: var(--color-text-secondary);
+}
+
+.map-stats-slice-closed .map-stats-bar {
+    opacity: 0.4;
+}
+
+html.dark-mode .map-stats-slice-count.map-stats-complete {
+    color: #6ee7b7;
+}
+
+html.dark-mode .map-stats-slice-count.map-stats-closed {
+    color: #93c5fd;
+}
+
 .map-stats-more {
     align-self: flex-start;
     padding: 0;
@@ -2880,6 +2907,68 @@ body.main-menu-open .step:hover {
 .slice-closed-banner .slice-completed-name,
 .slice-closed-banner .slice-completed-text {
     color: #1e40af;
+}
+
+/* The banner of a closed slice shows or hides its cards for this browser only */
+.slice-peek-toggle {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+}
+
+.slice-peek-toggle:focus-visible {
+    outline: 2px solid var(--color-teal);
+    outline-offset: 4px;
+    border-radius: 2px;
+}
+
+.slice-peek-chevron {
+    flex-shrink: 0;
+    width: 10px;
+    margin-right: 6px;
+    font-size: 14px;
+    line-height: 1;
+    color: #065f46;
+    transition: transform 0.15s ease;
+}
+
+.peeking .slice-peek-chevron {
+    transform: rotate(90deg);
+}
+
+.slice-card-count {
+    flex-shrink: 0;
+    margin-left: 10px;
+    font-size: 11px;
+    color: #047857;
+    white-space: nowrap;
+}
+
+.slice-closed-banner .slice-peek-chevron,
+.slice-closed-banner .slice-card-count {
+    color: #1e40af;
+}
+
+/* Peeking: the cards of a closed slice show faded under its banner */
+.slice-peeking .slice-stories-area > .stories-row:not(.slice-completed-row) .story-card {
+    opacity: 0.7;
+}
+
+.slice-peeking .slice-stories-area > .stories-row:not(.slice-completed-row) .story-card:hover,
+.slice-peeking .slice-stories-area > .stories-row:not(.slice-completed-row) .story-card:focus-within {
+    opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .slice-peek-chevron {
+        transition: none;
+    }
 }
 
 /* Slice goal and target date: an ⓘ under the name */
