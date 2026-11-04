@@ -209,24 +209,28 @@ const toggleSliceCollapsed = (sliceId, collapsed, reason) => {
 // moved. Cards with no status are left alone, since some teams don't track status.
 const isUnfinished = (card) => !!STATUS_OPTIONS[card.status] && card.status !== 'done';
 
-const unfinishedSliceCards = (slice) => {
-    const found = [];
+// Every list of cards in a slice, once each: its own columns, then the columns of each partial map
+// placed in it. A partial can be placed more than once but stores its cards once, and while one is
+// being edited its columns sit in the map itself, so its placements are skipped.
+const sliceCardLists = (slice) => {
+    const lists = [];
     const seenPartials = new Set();
     _state.columns.forEach(col => {
+        if (col._editingHidden) return;
         if (!col.partialMapId) {
-            (slice.stories[col.id] || []).filter(isUnfinished).forEach(card => found.push({ card, colId: col.id }));
+            lists.push({ cards: slice.stories[col.id] || [], colId: col.id });
             return;
         }
-        // A partial map can be placed more than once, but its cards are only stored once
-        if (seenPartials.has(col.partialMapId)) return;
+        if (seenPartials.has(col.partialMapId) || col.partialMapId === partialMapEditState.activeId) return;
         seenPartials.add(col.partialMapId);
         const pm = _state.partialMaps.find(p => p.id === col.partialMapId);
-        pm?.columns.forEach(pmCol => {
-            (pm.stories[slice.id]?.[pmCol.id] || []).filter(isUnfinished).forEach(card => found.push({ card, colId: pmCol.id, pm }));
-        });
+        pm?.columns.forEach(pmCol => lists.push({ cards: pm.stories[slice.id]?.[pmCol.id] || [], colId: pmCol.id, pm }));
     });
-    return found;
+    return lists;
 };
+
+const unfinishedSliceCards = (slice) => sliceCardLists(slice).flatMap(({ cards, colId, pm }) =>
+    cards.filter(isUnfinished).map(card => ({ card, colId, pm })));
 
 // Move cards to the top of the same columns in another slice, keeping their order
 const moveCardsToSlice = (items, from, to) => {
@@ -1295,11 +1299,7 @@ const togglePeek = (sliceId) => {
 };
 
 // Every card in a slice, including those in partial map columns
-const countSliceCards = (slice) => _state.columns.reduce((sum, col) => {
-    if (!col.partialMapId) return sum + (slice.stories[col.id]?.length || 0);
-    const pm = _state.partialMaps.find(p => p.id === col.partialMapId);
-    return sum + (pm ? pm.columns.reduce((n, pmCol) => n + (pm.stories[slice.id]?.[pmCol.id]?.length || 0), 0) : 0);
-}, 0);
+const countSliceCards = (slice) => sliceCardLists(slice).reduce((sum, { cards }) => sum + cards.length, 0);
 
 // The banner of a complete or closed slice. Clicking it shows or hides the cards for this
 // browser only, so the slice stays closed for everyone else.

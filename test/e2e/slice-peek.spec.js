@@ -194,3 +194,29 @@ test('links on cards open from a peeked slice and from a locked map', async ({ p
     return document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2) === a;
   })).toBe(true);
 });
+
+test('the card count of a closed slice counts partial cards once, even while the partial is edited', async ({ page, request }) => {
+  const res = await request.post('/api/maps', { data: {
+    name: 'Partial map',
+    steps: [{ name: 'Browse' }, { partialMapId: 'pm000001', partialMapOrigin: true }, { name: 'Pay' }],
+    slices: [
+      { name: 'Phase 1', collapsed: true, closedReason: 'complete', stories: [[{ name: 'Menu' }], [], [{ name: 'Card' }]] },
+      { name: 'Phase 2', stories: [[], [], []] },
+    ],
+    partialMaps: [{
+      id: 'pm000001', name: 'Checkout', users: [[], []], activities: [[], []],
+      steps: [{ name: 'Basket' }, { name: 'Address' }],
+      stories: [[[{ name: 'Edit basket' }, { name: 'Promo code' }], [{ name: 'Postcode lookup' }]], [[], []]],
+    }],
+  } });
+  const id = (await res.json()).id;
+  await openMap(page, id, 3);
+  await expect(banner(page)).toContainText('5 cards');
+
+  const panel = page.locator('#legendPanel');
+  if (!(await panel.isVisible())) await page.locator('#legendToggle').click();
+  await page.getByRole('button', { name: 'Partials' }).click();
+  await page.getByRole('button', { name: 'Edit', exact: true }).click();
+  await expect(page.locator('.step')).toHaveCount(4);
+  await expect(banner(page)).toContainText('5 cards');
+});
