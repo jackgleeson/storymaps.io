@@ -1903,39 +1903,65 @@ html.dark-mode .partial-cards-toggle:hover {
     background: rgba(45, 212, 191, 0.16);
 }
 
-/* On the first step of an expanded partial: folds it back into one. The preview ignores clicks,
-   so the tag takes them itself. */
-.partial-collapse-tag {
+/* Across the top of an expanded partial's steps: its name, and a button that folds it back into
+   one. It hangs off the first step and spans the rest. The preview ignores clicks, so the strip
+   takes them itself. */
+.partial-expanded-bar {
     position: absolute;
-    top: -8px;
-    left: 6px;
+    top: 0;
+    left: 0;
     z-index: 1;
-    padding: 2px 7px;
-    border: 0;
-    border-radius: 6px;
+    width: calc(var(--card-width) * var(--steps) + 10px * (var(--steps) - 1));
+    height: 24px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 4px 0 10px;
     background: #2563eb;
-    font: inherit;
-    font-size: 10px;
-    font-weight: 700;
     color: #fff;
-    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
     pointer-events: auto;
 }
 
-.partial-collapse-tag:hover {
-    background: #1d4ed8;
+.partial-expanded-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.partial-collapse-tag:focus-visible {
-    outline: 2px solid #3b82f6;
-    outline-offset: 2px;
+.partial-collapse-btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 6px;
+    border: 0;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    font: inherit;
+    color: #fff;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
 }
 
-html.dark-mode .partial-collapse-tag {
-    background: #0d9488;
+.partial-collapse-btn:hover {
+    background: rgba(255, 255, 255, 0.35);
 }
 
-html.dark-mode .partial-collapse-tag:hover {
+.partial-collapse-btn:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 1px;
+}
+
+.partial-collapse-chevron {
+    display: inline-flex;
+}
+
+html.dark-mode .partial-expanded-bar {
     background: #0f766e;
 }
 

@@ -236,8 +236,9 @@ test('a slice with cards in a collapsed partial says how many, and showing them 
   await expect(page.locator('.partial-cards-toggle')).toHaveCount(0);
   await expect(page.locator('.slice-container').nth(1).locator('.story-card')).toHaveText(['Gift wrap']);
 
-  // The tag on the first step of the partial folds it away again
-  await page.locator('.partial-collapse-tag').click();
+  // The strip across the partial's steps names it and folds it away again
+  await expect(page.locator('.partial-expanded-bar')).toContainText('Checkout');
+  await page.getByRole('button', { name: 'Collapse' }).click();
   await expect(page.locator('.step')).toHaveCount(3);
   await expect(toggle(0)).toHaveText('Show 3 cards');
 });

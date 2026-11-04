@@ -155,19 +155,30 @@ export const render = () => {
                     pm.columns.forEach((pmCol, i) => {
                         const card = createColumnCard(pmCol);
                         card.classList.add('partial-map-preview-col');
-                        // The first step folds the partial back into one, in the frozen rows so it stays in reach
+                        // A strip across the top of the partial's steps names it and folds it back into
+                        // one. It sits in the frozen rows, so it stays in reach while scrolling.
                         if (i === 0) {
-                            const collapse = el('button', 'partial-collapse-tag', {
+                            const bar = el('div', 'partial-expanded-bar');
+                            bar.style.setProperty('--steps', pm.columns.length);
+                            bar.appendChild(el('span', 'partial-expanded-name', { text: pm.name || 'Untitled partial', title: `${pm.name || 'Untitled partial'}, a partial` }));
+                            const collapse = el('button', 'partial-collapse-btn', {
                                 type: 'button',
-                                text: 'Collapse',
                                 title: `Fold the steps of ${pm.name || 'this partial'} back into one`,
                             });
+                            collapse.append(
+                                el('span', null, { text: 'Collapse' }),
+                                el('span', 'partial-collapse-chevron', {
+                                    ariaHidden: 'true',
+                                    html: '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 15 12 9 18 15"/></svg>',
+                                }),
+                            );
                             collapse.addEventListener('click', (e) => {
                                 e.stopPropagation();
                                 expandedIds.delete(pm.id);
                                 _renderAndSave();
                             });
-                            card.appendChild(collapse);
+                            bar.appendChild(collapse);
+                            card.appendChild(bar);
                         }
                         stepsRow.appendChild(card);
                     });
