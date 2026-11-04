@@ -45,14 +45,17 @@ const rows = () => logList.children.map(row => row.innerHTML.match(/<span class=
 
 describe('logging', () => {
   test('an event is added with the time, source, session, name and the cards it touched', () => {
+    const before = Date.now();
     log.logEvent('Added card "Pay"', ['card0001']);
+    const after = Date.now();
     const [entry] = entries();
     assert.equal(entry.text, 'Added card "Pay"');
     assert.equal(entry.src, 'web');
     assert.equal(entry.sid, getSessionId());
     assert.equal(entry.name, 'guest');
     assert.deepEqual(entry.ids, ['card0001']);
-    assert.ok(Math.abs(entry.ts - Date.now()) < 1000);
+    // Between the moments either side, not within a set time, so a slow machine can't fail it
+    assert.ok(entry.ts >= before && entry.ts <= after);
   });
 
   test('keeps only the latest 20 events', () => {
