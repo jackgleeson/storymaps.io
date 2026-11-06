@@ -47,3 +47,21 @@ test('dragging a card reorders it for both people', async ({ page, createMap, op
   await expect.poll(() => cardNames(page)).toEqual(['Three', 'One', 'Two']);
   await expect.poll(() => cardNames(other)).toEqual(['Three', 'One', 'Two']);
 });
+
+test('one person with several tabs open counts once', async ({ page, createMap, openSecondTab }) => {
+  const id = await createMap();
+  await openMap(page, id);
+  // More tabs in the same browser share its storage, so they are the same person
+  const sameBrowser = await page.context().newPage();
+  await openMap(sameBrowser, id);
+  const live = page.locator('#viewerLive');
+  await expect(page.locator('#viewerName')).toHaveText('Tester');
+  await expect(live).not.toHaveClass(/visible/);
+
+  // Someone else in another browser makes two
+  const other = await openSecondTab();
+  await openMap(other, id);
+  await expect(live).toHaveText('2');
+  await expect(other.locator('#viewerLive')).toHaveText('2');
+  await expect(other.locator('#viewerLive')).toHaveAttribute('data-tooltip', 'Tester (you)\nTester');
+});

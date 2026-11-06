@@ -46,6 +46,37 @@ export const getSessionId = () => {
     return sessionStorage.sessionId;
 };
 
+// A random ID shared by every tab in this browser, so one person with several tabs open counts once
+const getBrowserId = () => {
+    let id = localStorage.getItem('browserId');
+    if (!id) {
+        id = crypto.randomUUID?.() ?? getSessionId();
+        localStorage.setItem('browserId', id);
+    }
+    return id;
+};
+
+// What this tab tells other viewers about itself
+const localUser = () => {
+    const sessionId = getSessionId();
+    const color = getCursorColor(sessionId);
+    return {
+        sessionId, browserId: getBrowserId(), name: _presenceName || 'guest',
+        device: isTouchDevice ? 'mobile' : 'desktop', color, colorLight: color + '33', online: true,
+    };
+};
+
+// The people here, one entry per browser. Tabs from before browser IDs, and clients that never
+// said who they are, count by connection.
+export const peopleHere = (awareness) => {
+    const people = new Map();
+    for (const [clientId, state] of awareness.getStates()) {
+        const key = state.user?.browserId || `client:${clientId}`;
+        if (clientId === awareness.clientID || !people.has(key)) people.set(key, { clientId, state });
+    }
+    return people;
+};
+
 // Store cursor elements
 let cursorElements = new Map(); // clientId -> DOM element
 let dragGhostElements = new Map(); // clientId -> DOM element
@@ -79,7 +110,9 @@ export const init = ({ getProvider, getYdoc, getZoomLevel, getState }) => {
     _getState = getState;
 };
 
-const updateViewerCountUI = (count, awareness) => {
+const updateViewerCountUI = (awareness) => {
+    const people = peopleHere(awareness);
+    const count = people.size;
     viewerCount = count;
     const badge = document.getElementById('viewerCount');
     if (!badge) return;
@@ -99,7 +132,7 @@ const updateViewerCountUI = (count, awareness) => {
         if (awareness) {
             const others = [];
             const localId = awareness.clientID;
-            for (const [clientId, state] of awareness.getStates()) {
+            for (const { clientId, state } of people.values()) {
                 if (clientId === localId) continue;
                 const label = state.user?.device === 'mobile'
                     ? 'Mobile user'
@@ -133,17 +166,7 @@ const bindNameClick = () => {
         }
         // Update awareness
         const provider = _getProvider();
-        if (provider) {
-            const sessionId = getSessionId();
-            provider.awareness.setLocalStateField('user', {
-                sessionId,
-                name: _presenceName || 'guest',
-                device: 'desktop',
-                color: getCursorColor(sessionId),
-                colorLight: getCursorColor(sessionId) + '33',
-                online: true,
-            });
-        }
+        if (provider) provider.awareness.setLocalStateField('user', localUser());
         // Update badge text
         const el = document.getElementById('viewerName');
         if (el) el.textContent = _presenceName || 'guest';
@@ -155,7 +178,6 @@ export const trackPresence = async () => {
     if (!provider) return;
 
     const awareness = provider.awareness;
-    const sessionId = getSessionId();
 
     // Prompt for name if not stored (skip on touch devices and during tour)
     const isTourActive = document.body.classList.contains('tour-active');
@@ -171,15 +193,13 @@ export const trackPresence = async () => {
     }
 
     // Set our local awareness state
-    awareness.setLocalStateField('user', { sessionId, name: _presenceName || 'guest', device: isTouchDevice ? 'mobile' : 'desktop', color: getCursorColor(sessionId), colorLight: getCursorColor(sessionId) + '33', online: true });
+    awareness.setLocalStateField('user', localUser());
 
     // Listen for awareness changes to update viewer count
-    awareness.on('change', () => {
-        updateViewerCountUI(awareness.getStates().size, awareness);
-    });
+    awareness.on('change', () => updateViewerCountUI(awareness));
 
     // Set initial count
-    updateViewerCountUI(awareness.getStates().size, awareness);
+    updateViewerCountUI(awareness);
 
     // Bind click-to-edit on name (skip on touch — badge is hidden)
     if (!isTouchDevice) bindNameClick();

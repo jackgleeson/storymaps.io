@@ -1,7 +1,7 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Log — real-time feed of map edits synced via Yjs Y.Array
 
-import { getSessionId, getCursorColor, getPresenceName } from '/src/ui/presence.js';
+import { getSessionId, getCursorColor, getPresenceName, peopleHere } from '/src/ui/presence.js';
 
 const MAX_ENTRIES = 20;
 
@@ -126,7 +126,7 @@ const renderStats = () => {
     const editedTs = entries.length ? entries[entries.length - 1].ts : 0;
     if (editedTs) rows.push(['Last edited', formatAgo(editedTs), new Date(editedTs).toISOString()]);
 
-    const here = _awareness ? _awareness.getStates().size : 0;
+    const here = _awareness ? peopleHere(_awareness).size : 0;
     if (here) rows.push(['Here now', `${here} ${here === 1 ? 'person' : 'people'}`, null, 'log-stats-live']);
 
     const names = [];
