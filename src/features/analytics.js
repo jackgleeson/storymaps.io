@@ -15,6 +15,12 @@ export const CLICKS = [
     ['#tourMenuBtn, #welcomeTourBtn', 'tour-started'],
     ['.tour-btn-next', 'tour-finished', 'Finish'],
 
+    // Recent maps: opening the list, then picking a map from it
+    ['#recentMapsBtn', 'recent-maps-homepage'],
+    ['#recentSubmenuTrigger', 'recent-maps-menu'],
+    ['a.recent-row', 'recent-map-opened-homepage'],
+    ['a.recent-menu-item', 'recent-map-opened-menu'],
+
     // Sharing
     ['#shareCopyLink', 'map-link-shared'],
     ['#shareProjectLink', 'project-link-shared'],

@@ -32,6 +32,8 @@ test('a tracked button gives its event, and anything else gives nothing', () => 
   assert.equal(clickEvent(button('#importJiraBtn')), 'import-jira');
   assert.equal(clickEvent(button('#exportCsvDownloadBtn')), 'export-csv');
   assert.equal(clickEvent(button('#buildAiBtn')), 'build-with-ai');
+  assert.equal(clickEvent(button('#recentMapsBtn')), 'recent-maps-homepage');
+  assert.equal(clickEvent(button('a.recent-menu-item')), 'recent-map-opened-menu');
   assert.equal(clickEvent(button('#somethingElse')), null);
   assert.equal(clickEvent({}), null, 'a click on something with no closest');
 });
