@@ -100,7 +100,7 @@ const endSpotlight = (sliceEl) => {
 const easeInOutCubic = (t) => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
 // Ease the wrapper to a scroll position. Any wheel, touch, click or key from the viewer stops it.
-const animateScroll = (wrapper, top, left, onDone) => {
+export const animateScroll = (wrapper, top, left, onDone) => {
     _cancelScroll?.();
     top = Math.max(0, Math.min(top, wrapper.scrollHeight - wrapper.clientHeight));
     left = Math.max(0, Math.min(left, wrapper.scrollWidth - wrapper.clientWidth));
