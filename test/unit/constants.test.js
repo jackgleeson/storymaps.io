@@ -96,5 +96,11 @@ describe('shiftSliceDates', () => {
 describe('escHtml', () => {
   test('escapes the characters that matter in HTML text and attributes', () => {
     assert.equal(escHtml('<a href="x">Tom & Jerry</a>'), '&lt;a href=&quot;x&quot;&gt;Tom &amp; Jerry&lt;/a&gt;');
+    assert.equal(escHtml("it's"), 'it&#39;s');
+  });
+
+  test('turns anything that is not a string into text rather than failing', () => {
+    assert.equal(escHtml(42), '42');
+    assert.equal(escHtml({}), '[object Object]');
   });
 });

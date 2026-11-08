@@ -1,6 +1,7 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Log — real-time feed of map edits synced via Yjs Y.Array
 
+import { escHtml as escapeHtml } from '/src/core/constants.js';
 import { getSessionId, getCursorColor, getPresenceName, peopleHere } from '/src/ui/presence.js';
 
 const MAX_ENTRIES = 20;
@@ -304,5 +305,3 @@ const formatAgo = (ts) => {
     return formatDate(ts);
 };
 
-const escapeHtml = (str) =>
-    str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

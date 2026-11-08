@@ -1,7 +1,7 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Rendering and state mutations
 
-import { el, DEFAULT_CARD_COLORS, CARD_COLORS, STATUS_OPTIONS, generateId } from '/src/core/constants.js';
+import { el, escHtml, DEFAULT_CARD_COLORS, CARD_COLORS, STATUS_OPTIONS, generateId } from '/src/core/constants.js';
 import { createColumnCard, createStoryCard, createStoryColumn, createSliceContainer, createBackboneRow, createEmptyBackboneRow, createPhantomStep, PHANTOM_BUFFER, renderLegend as uiRenderLegend, getAllTagsInMap, createPartialMapRef, createPartialMapRefCell, renderPartialsList as uiRenderPartialsList, patchCard } from '/src/ui/ui.js';
 import { partialMapEditState } from '/src/core/state.js';
 import { showAlert, showConfirm, showPrompt } from '/src/core/modals.js';
@@ -774,7 +774,7 @@ export const updateSelectionUI = () => {
                     }},
                 ];
                 _state.partialMaps.forEach(pm => {
-                    modes.push({ label: `Replace with "${pm.name}"`, html: partialIcon + `Replace with "${pm.name}"`, action: () => {
+                    modes.push({ label: `Replace with "${pm.name}"`, html: partialIcon + `Replace with "${escHtml(pm.name)}"`, action: () => {
                         if (_replaceWithPartial) _replaceWithPartial(pm.id, nonRefIds);
                     }});
                 });

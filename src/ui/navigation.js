@@ -242,7 +242,9 @@ const dismissContextMenu = () => {
 const makeMenuItem = (label, icon, action, destructive = false) => {
     const btn = document.createElement('button');
     if (destructive) btn.className = 'destructive';
-    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${icon}</svg><span>${label}</span>`;
+    // The icon is fixed markup. The label can hold names from the map, so it goes in as text
+    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${icon}</svg><span></span>`;
+    btn.querySelector('span').textContent = label;
     btn.addEventListener('click', () => { action(); dismissContextMenu(); });
     return btn;
 };

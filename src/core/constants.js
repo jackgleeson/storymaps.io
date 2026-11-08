@@ -100,7 +100,7 @@ export const TITLE_MAX_LENGTH = 38;
 
 export const ZOOM_LEVELS = [1, 0.75, 0.5, 0.25, 0.1];
 
-export const escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+export const escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
 export const el = (tag, className, attrs = {}) => {
     const element = document.createElement(tag);
