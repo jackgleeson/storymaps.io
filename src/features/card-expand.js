@@ -257,7 +257,8 @@ const renderFooter = (item, editable) => {
     collapse();
 };
 
-export const openExpandModal = (item, { readOnly = false } = {}) => {
+// focus: false leaves the title unfocused, so a card opened from a link doesn't bring up a phone keyboard
+export const openExpandModal = (item, { readOnly = false, focus = true } = {}) => {
     // If a previous close is still waiting for its popstate, absorb it now
     if (_poppingExpandState) {
         _poppingExpandState = false;
@@ -278,7 +279,7 @@ export const openExpandModal = (item, { readOnly = false } = {}) => {
         autoResizeExpandBody();
     });
     if (editable) {
-        dom.cardExpandName.focus();
+        if (focus) dom.cardExpandName.focus();
         pushUndo();
     }
     history.pushState({ cardExpand: true }, '');

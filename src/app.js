@@ -24,6 +24,8 @@ import * as welcome from '/src/features/welcome.js';
 import * as partials from '/src/features/partials.js';
 import * as build from '/src/features/build.js';
 import * as sliceLinks from '/src/features/slice-links.js';
+import * as cardLinks from '/src/features/card-links.js';
+import { isCardHash } from '/src/core/slice-hash.js';
 import * as freezeRows from '/src/features/freeze-rows.js';
 import * as starterText from '/src/features/starter-text.js';
 import * as projects from '/src/features/projects.js';
@@ -283,13 +285,17 @@ const initEventListeners = () => {
     });
 
     window.addEventListener('hashchange', () => {
-        if (getYdoc() && !dom.welcomeScreen.classList.contains('visible')) sliceLinks.revealSliceFromHash();
+        if (getYdoc() && !dom.welcomeScreen.classList.contains('visible')) {
+            sliceLinks.revealSliceFromHash();
+            cardLinks.openCardFromHash();
+        }
     });
 
     window.addEventListener('popstate', async (e) => {
         // Ignore popstate from our own history.back() after closing expand modal
         if (cardExpand.isPoppingExpandState()) {
             cardExpand.clearPoppingExpandState();
+            cardLinks.clearCardHash();
             return;
         }
         // Back closes the recent maps list, on the home page
@@ -297,6 +303,7 @@ const initEventListeners = () => {
         // Back button closes expand modal instead of navigating
         if (cardExpand.getExpandedItem()) {
             cardExpand.closeExpandViaBack();
+            cardLinks.clearCardHash();
             return;
         }
         const { mapId, projectId } = parseLocation(window.location.pathname);
@@ -357,6 +364,7 @@ const initEventListeners = () => {
     });
     backups.initListeners();
     cardExpand.initListeners();
+    cardLinks.initListeners();
 
     dom.toggleCursorsBtn?.addEventListener('click', () => {
         toggleCursorsVisibility();
@@ -1594,7 +1602,7 @@ const switchPanelTab = (sectionKey) => {
 stateInit({ serialize, deserialize, renderAndSave, logEvent: (text, ids) => log.logEvent(text, ids) });
 
 // Wire navigation module
-navigation.init({ state, updateSelectionUI, selection, clearSelection, isMapEditable, addColumnAt, deleteColumn, duplicateColumns, duplicateCards, deleteSelectedColumns, deleteSelectedCards, insertPartialMapRef: (...args) => insertPartialMapRef(...args), getSliceActions: (...args) => ui.getSliceActions(...args) });
+navigation.init({ state, updateSelectionUI, selection, clearSelection, isMapEditable, addColumnAt, deleteColumn, duplicateColumns, duplicateCards, deleteSelectedColumns, deleteSelectedCards, insertPartialMapRef: (...args) => insertPartialMapRef(...args), getSliceActions: (...args) => ui.getSliceActions(...args), copyCardLink: (cardId) => cardLinks.copyCardLinkById(cardId) });
 
 // Wire presence module
 presence.init({
@@ -1787,7 +1795,10 @@ const openMapInPage = async (mapId) => {
     zoomToFit();
     board.classList.remove('map-switching');
     board._fadeTimer = setTimeout(() => board.classList.remove('map-fading'), 200);
-    requestAnimationFrame(() => sliceLinks.revealSliceFromHash(350));
+    requestAnimationFrame(() => {
+        sliceLinks.revealSliceFromHash(350);
+        cardLinks.openCardFromHash();
+    });
 };
 
 const loadMapById = async (mapId) => {
@@ -1929,8 +1940,10 @@ const init = async () => {
             requestAnimationFrame(() => {
                 zoomToFit();
                 sliceLinks.revealSliceFromHash(350);
+                cardLinks.openCardFromHash();
             });
-            setTimeout(showTutorialToast, 800);
+            // A card link opens the card, so the tip about moving around the map would only get in the way
+            if (!isCardHash(window.location.hash)) setTimeout(showTutorialToast, 800);
         } else {
             // The map is gone, so it leaves the recent list too
             recentMaps.forgetMap(mapId);

@@ -13,23 +13,56 @@ let _deps = {};
 
 export const init = (deps) => { _deps = deps; };
 
-// A map open in a project links to the slice at the project link, so the tabs come with it
-export const sliceLinkUrl = (slice) => {
+// A link to the open map with a hash for a slice or card. A map open in a project links to it at
+// the project link, so the tabs come with it.
+export const mapLinkUrl = (hash) => {
     const mapId = _deps.state.mapId;
     const { projectId, mapId: shownMap } = parseLocation(window.location.pathname);
     const path = projectId && shownMap === mapId ? projectPath(projectId, mapId) : `/${encodeURIComponent(mapId)}`;
-    return `${window.location.origin}${path}${sliceHash(slice)}`;
+    return `${window.location.origin}${path}${hash}`;
 };
 
-export const copySliceLink = async (slice) => {
-    const url = sliceLinkUrl(slice);
+// The clipboard API only works over https and on localhost, so elsewhere, such as a server on
+// the local network, copy from a hidden field instead. Focus goes back to where it was.
+const copyWithField = (text) => {
+    const active = document.activeElement;
+    const field = el('textarea', null, { value: text, readOnly: true });
+    field.style.cssText = 'position: fixed; top: 0; left: -9999px; opacity: 0;';
+    document.body.appendChild(field);
+    field.select();
+    field.setSelectionRange(0, text.length);
+    let copied = false;
+    try {
+        copied = document.execCommand('copy');
+    } catch {
+        copied = false;
+    }
+    field.remove();
+    active?.focus?.({ preventScroll: true });
+    return copied;
+};
+
+// Copy a link and say so. Only where nothing can copy is the link shown to copy by hand.
+export const copyLink = async (url, prompt) => {
+    let copied = false;
     try {
         await navigator.clipboard.writeText(url);
-        showToast('Link copied');
+        copied = true;
     } catch {
-        await showPrompt('Copy this link to the slice:', url);
+        copied = copyWithField(url);
+    }
+    // Android 13 and later say "Copied" themselves. Chrome reports every Android as version 10,
+    // so older ones can't be told apart, and Android goes without the toast.
+    if (copied) {
+        if (!/Android/i.test(navigator.userAgent)) showToast('Link copied to clipboard');
+    } else {
+        await showPrompt(prompt, url);
     }
 };
+
+export const sliceLinkUrl = (slice) => mapLinkUrl(sliceHash(slice));
+
+export const copySliceLink = (slice) => copyLink(sliceLinkUrl(slice), 'Copy this link to the slice:');
 
 // =============================================================================
 // Opening a link

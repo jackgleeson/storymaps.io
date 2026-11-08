@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { sliceSlug, sliceHash, sliceFromHash } from '../../src/core/slice-hash.js';
+import { sliceSlug, sliceHash, sliceFromHash, cardHash, cardFromHash, isCardHash } from '../../src/core/slice-hash.js';
 
 test('the name part is lower case, hyphenated and at most 20 characters, cut at a whole word', () => {
   assert.equal(sliceSlug('MVP'), 'mvp');
@@ -45,4 +45,21 @@ test('other hashes are not slice links, and a missing slice is null', () => {
   assert.equal(sliceFromHash('#notes', slices), undefined);
   assert.equal(sliceFromHash('#slice-mvp-zzzzzzzz', slices), null);
   assert.equal(sliceFromHash('#slice-', slices), undefined);
+});
+
+test('a card link is the card ID, whatever the card is called', () => {
+  assert.equal(cardHash({ id: 'k3m9qz1a', name: 'Checkout as a guest' }), '#card-k3m9qz1a');
+  assert.equal(cardHash({ id: 'k3m9qz1a', name: '' }), '#card-k3m9qz1a');
+  assert.equal(isCardHash('#card-k3m9qz1a'), true);
+  assert.equal(isCardHash('#slice-mvp-k3m9qz1a'), false);
+  assert.equal(isCardHash(''), false);
+});
+
+test('a card link finds the card by its ID, and a slice link never finds a card', () => {
+  const cards = [{ id: 'k3m9qz1a', name: 'Checkout' }, { id: 'ab12cd34', name: 'Search' }];
+  assert.equal(cardFromHash('#card-k3m9qz1a', cards).id, 'k3m9qz1a');
+  assert.equal(cardFromHash('#card-ab12cd34', cards).id, 'ab12cd34');
+  assert.equal(cardFromHash('#card-gone-zzzzzzzz', cards), null);
+  assert.equal(cardFromHash('#slice-checkout-k3m9qz1a', cards), undefined);
+  assert.equal(sliceFromHash('#card-checkout-k3m9qz1a', cards), undefined);
 });

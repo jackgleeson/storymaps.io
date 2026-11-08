@@ -18,6 +18,7 @@ let _deleteSelectedColumns = null;
 let _deleteSelectedCards = null;
 let _insertPartialMapRef = null;
 let _getSliceActions = null;
+let _copyCardLink = null;
 
 // Marquee state
 let isMarquee = false;
@@ -43,7 +44,7 @@ let panStartY = 0;
 let panScrollLeft = 0;
 let panScrollTop = 0;
 
-export const init = ({ state, updateSelectionUI, selection, clearSelection, isMapEditable, addColumnAt, deleteColumn, duplicateColumns, duplicateCards, deleteSelectedColumns, deleteSelectedCards, insertPartialMapRef, getSliceActions }) => {
+export const init = ({ state, updateSelectionUI, selection, clearSelection, isMapEditable, addColumnAt, deleteColumn, duplicateColumns, duplicateCards, deleteSelectedColumns, deleteSelectedCards, insertPartialMapRef, getSliceActions, copyCardLink }) => {
     _dom = {
         storyMap: document.getElementById('storyMap'),
         storyMapWrapper: document.getElementById('storyMapWrapper'),
@@ -69,6 +70,7 @@ export const init = ({ state, updateSelectionUI, selection, clearSelection, isMa
     _deleteSelectedCards = deleteSelectedCards;
     _insertPartialMapRef = insertPartialMapRef;
     _getSliceActions = getSliceActions;
+    _copyCardLink = copyCardLink;
 };
 
 const updatePanMode = () => {
@@ -287,14 +289,20 @@ const positionMenu = (menu, x, y) => {
     });
 };
 
-const showContextMenu = (x, y, columnId, columnIndex) => {
+const showContextMenu = (x, y, columnId, columnIndex, cardId = null) => {
     dismissContextMenu();
     const menu = document.createElement('div');
     menu.className = 'canvas-context-menu';
 
-    if (_selection.columnIds.length > 0) return;
+    // Copying a link to a card works in locked maps too, where it's the only item
+    if (cardId && _copyCardLink) menu.appendChild(makeMenuItem('Copy link to card', ICON_LINK, () => _copyCardLink(cardId)));
+    if (!_isMapEditable() || _selection.columnIds.length > 0) {
+        if (menu.childElementCount) positionMenu(menu, x, y);
+        return;
+    }
 
     if (columnIndex !== null) {
+        if (menu.childElementCount) addSep(menu);
         menu.appendChild(makeMenuItem('Add step before', ICON_ADD_STEP_BEFORE, () => {
             _addColumnAt(columnIndex);
         }));
@@ -449,11 +457,12 @@ export const initPan = () => {
 
         if (!panDidMove && e.button === 2 && !window.matchMedia('(pointer: coarse)').matches) {
             const sliceGutter = e.target.closest('.slice-label-container');
+            const card = e.target.closest('.story-card[data-story-id]');
             if (sliceGutter) {
                 showSliceMenu(sliceGutter.dataset.sliceId, e.clientX, e.clientY, sliceGutter);
-            } else if (_isMapEditable()) {
+            } else if (card || _isMapEditable()) {
                 const { columnId, columnIndex } = resolveColumn(e.target);
-                showContextMenu(e.clientX, e.clientY, columnId, columnIndex);
+                showContextMenu(e.clientX, e.clientY, columnId, columnIndex, card?.dataset.storyId);
             }
         }
     });

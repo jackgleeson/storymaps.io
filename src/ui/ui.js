@@ -6,6 +6,7 @@ import { createSlice, partialMapEditState } from '/src/core/state.js';
 import { showAlert, showChoice, showConfirm, showPrompt } from '/src/core/modals.js';
 import { quoted } from '/src/core/log.js';
 import { copySliceLink, createSliceInfo, openSliceDetails, setSliceNameText } from '/src/features/slice-links.js';
+import { copyCardLink } from '/src/features/card-links.js';
 import { frozenRowsHeight } from '/src/features/freeze-rows.js';
 import { toggleSliceMenu } from '/src/ui/navigation.js';
 
@@ -435,7 +436,7 @@ export const patchCardForItem = (item) => {
     patchSliceMetrics(card.dataset.sliceId);
 };
 
-export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColorChange, onUrlChange, onStatusChange = null, onHide = null, onDeleteColumn = null) => {
+export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColorChange, onUrlChange, onStatusChange = null, onHide = null, onDeleteColumn = null, onCopyLink = null) => {
     const container = el('div', 'card-options');
 
     const btn = el('button', 'btn-options', { text: '...', title: 'Options', ariaLabel: 'Options menu', ariaHasPopup: 'true', ariaExpanded: 'false' });
@@ -541,6 +542,17 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
         menu.classList.remove('visible');
     });
     menu.appendChild(urlOption);
+
+    // Copy link option (for cards, which open from a link; steps don't)
+    if (onCopyLink) {
+        const copyLinkOption = el('button', 'options-item', { text: 'Copy link to card' });
+        copyLinkOption.addEventListener('click', (e) => {
+            e.stopPropagation();
+            menu.classList.remove('visible');
+            onCopyLink();
+        });
+        menu.appendChild(copyLinkOption);
+    }
 
     // Hide header option (for steps only)
     if (onHide) {
@@ -1042,7 +1054,8 @@ export const createStoryCard = (story, columnId, sliceId, isBackboneRow = false,
             _saveToStorage();
         },
         null, // onHide - not used
-        isBackboneRow ? () => _deleteColumn(columnId) : null
+        isBackboneRow ? () => _deleteColumn(columnId) : null,
+        () => copyCardLink(story)
     );
 
     card.append(textarea, createExpandButton(story), optionsMenu, buildIndicators(story, card));

@@ -7012,6 +7012,30 @@ html.dark-mode .connection-notice.is-online::before {
     display: none;
 }
 
+.card-expand-modal .modal-header {
+    gap: 2px;
+}
+
+.card-expand-copy-link {
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 4px;
+    color: rgba(0, 0, 0, 0.35);
+    transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+/* Only where there's a pointer to hover with: a tap would leave the button grey */
+@media (hover: hover) {
+    .card-expand-copy-link:hover {
+        color: rgba(0, 0, 0, 0.5);
+        background: rgba(0, 0, 0, 0.08);
+    }
+}
+
 .card-expand-modal .modal-close {
     font-size: 15px;
     padding: 6px 8px;
@@ -7054,6 +7078,8 @@ html.dark-mode .connection-notice.is-online::before {
 }
 
 .card-expand-name {
+    /* Clear of the link and close buttons in the corner */
+    padding-right: 44px;
     font-size: 17px;
     font-weight: 600;
     line-height: 1.4;
