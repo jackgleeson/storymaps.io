@@ -123,7 +123,7 @@ A larger product can span several maps, one per journey or area, grouped as a **
 - **Full Screen Mode** - toggle from the view controls; double-Esc to exit (single Esc still closes modals, search, etc.); auto zoom-to-fit on enter and exit
 - **Focus Mode** - hide card metadata (status, points, tags, links) for a cleaner presentation view; toggle from the view controls; expand icons still appear on hover
 - **Copy map** - duplicate an existing map to a new URL
-- **Guided tour** - interactive walkthrough that teaches story mapping concepts using a Lego house example, with live demos of slices, legend cards, dark mode, the notepad, and the activity log
+- **Guided tour** - interactive walkthrough that teaches story mapping on the coffee app the docs use: users, activities, steps, tasks and release slices, with a live demo of adding a later release
 - **Build with AI** - turn the map into a prompt for app builders (Lovable, v0, Replit, Base44, Bolt), AI chat (ChatGPT, Claude, Gemini) or AI coding agents (Claude Code, Codex, Gemini CLI, Cursor, Windsurf, GitHub Copilot); pick a slice or the whole map, choose Prototype or Full App, add your own instructions, and copy the prompt. The prompt links to the map as YAML (`<map>.yaml`), or has the YAML in it for chat apps and when **Include map URL** is off. For Claude Code, Codex and Gemini CLI it is a terminal command that downloads the map with `npx storymaps pull` first
 - **Sample maps** - load examples to learn the methodology
 - **Map counter** - community stat showing total maps created, counted from the map index

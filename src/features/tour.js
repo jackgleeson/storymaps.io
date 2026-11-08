@@ -6,31 +6,24 @@ let _deleteSlice = null;
 let _getState = null;
 let _renderAndSave = null;
 let _createStory = null;
-let _zoomToFit = null;
 let _demoSliceId = null;
-let _demoLegendCards = null;
 let _ctxMenuCleanup = null;
-let _v1Snapshot = null;
+let _mvpSnapshot = null;
 
+// The tour runs on the coffee app the docs and courses use (public/samples/coffee-app.json):
+// Browse Menu, Customise Drink, Add To Cart, Pay, Confirm and Collect Order, with an MVP slice.
+// Partway through it adds a Later slice, then takes it away again.
 const ensureDemoSlice = () => {
     if (_demoSliceId || !_addSlice || !_getState || !_createStory) return;
-    const slice = _addSlice(1, { name: 'V2:\nTwo Story House', openDetails: false });
+    const slice = _addSlice(1, { name: 'Later', openDetails: false });
     if (!slice) return;
     _demoSliceId = slice.id;
-    const state = _getState();
-    const cols = state.columns;
-    // Populate V2 slice with demo task cards under relevant steps.
-    // cols[0] = "Look at picture on box", cols[2] = "Layout lego pieces",
-    // cols[3] = "Read instructions", cols[4] = "Build walls",
-    // cols[5] = "Add doors and windows", cols[6] = "Add roof"
+    const cols = _getState().columns;
     const demoCards = {
-        0: [_createStory('Update box art to show two-story house', '#fef08a')],
-        2: [_createStory('Add extra pieces for second floor', '#fef08a')],
-        3: [_createStory('Update instructions for second floor', '#fef08a')],
-        4: [_createStory('Build second-floor walls', '#fef08a'),
-            _createStory('Add staircase between floors', '#fef08a')],
-        5: [_createStory('Add upper-level windows', '#fef08a')],
-        6: [_createStory('Extend roof over second floor', '#fef08a')],
+        0: [_createStory('Recommend popular combos', '#fef08a')],
+        1: [_createStory('Save custom drinks', '#fef08a')],
+        2: [_createStory('Group ordering', '#fef08a')],
+        3: [_createStory('Gift cards', '#fef08a'), _createStory('Split payment', '#fef08a')],
     };
     for (const [i, cards] of Object.entries(demoCards)) {
         const col = cols[Number(i)];
@@ -52,217 +45,74 @@ const removeDemoSlice = () => {
     _demoSliceId = null;
 };
 
-const ensureDemoLegendCards = () => {
-    if (_demoLegendCards || !_createStory || !_getState || !_renderAndSave) return;
-    const state = _getState();
-    const slice = state.slices[0];
-    if (!slice) return;
-    const cols = state.columns;
-    // Add a Question, Note, and Edge Case card to different steps in V1
-    const cards = [
-        { colIdx: 1, story: _createStory('Can kids open this alone?', '#bef264') },
-        { colIdx: 4, story: _createStory('Walls must support second floor later', '#a5f3fc') },
-        { colIdx: 5, story: _createStory('Small pieces - choking hazard for under 3s', '#fecdd3') },
-    ];
-    _demoLegendCards = [];
-    for (const { colIdx, story } of cards) {
-        const col = cols[colIdx];
-        if (!col) continue;
-        slice.stories[col.id] = slice.stories[col.id] || [];
-        slice.stories[col.id].push(story);
-        _demoLegendCards.push({ colId: col.id, storyId: story.id });
-    }
-    _renderAndSave();
-};
-
-const removeDemoLegendCards = () => {
-    if (!_demoLegendCards || !_getState || !_renderAndSave) return;
-    const state = _getState();
-    const slice = state.slices[0];
-    if (!slice) return;
-    for (const { colId, storyId } of _demoLegendCards) {
-        const stories = slice.stories[colId];
-        if (!stories) continue;
-        const idx = stories.findIndex(s => s.id === storyId);
-        if (idx > -1) stories.splice(idx, 1);
-    }
-    _demoLegendCards = null;
-    _renderAndSave();
-};
-
-const DEMO_LOG_ENTRIES = [
-    { time: '10:42', color: '#f472b6', text: 'Sarah: Added step "Add roof"' },
-    { time: '10:40', color: '#60a5fa', text: 'Mike: Added card "Design ridge cap to seal roof"' },
-    { time: '10:38', color: '#60a5fa', text: 'Mike: Added card "Include angled roof pieces"' },
-    { time: '10:35', color: '#f472b6', text: 'Sarah: Edited notes' },
-    { time: '10:33', color: '#34d399', text: 'Jordan: Added card "Include window frame pieces"' },
-    { time: '10:31', color: '#f472b6', text: 'Sarah: Added step "Add doors and windows"' },
-    { time: '10:28', color: '#34d399', text: 'Jordan: Added card "Design interlocking wall sections"' },
-    { time: '10:25', color: '#60a5fa', text: 'Mike: Added step "Start: Build walls"' },
-    { time: '10:22', color: '#f472b6', text: 'Sarah: Added card "Package pieces in numbered bags"' },
-    { time: '10:18', color: '#34d399', text: 'Jordan: Created map' },
-];
-
-const injectDemoLogEntries = () => {
-    const container = document.getElementById('logList');
-    if (!container) return;
-    container.innerHTML = '';
-    for (const entry of DEMO_LOG_ENTRIES) {
-        const row = document.createElement('div');
-        row.className = 'log-entry tour-demo-log';
-        row.innerHTML =
-            `<span class="log-dot" style="background:${entry.color}"></span>` +
-            `<span class="log-time">${entry.time}</span>` +
-            `<span class="log-text">${entry.text}</span>`;
-        container.appendChild(row);
-    }
-};
-
-const clearDemoLogEntries = () => {
-    const container = document.getElementById('logList');
-    if (!container) return;
-    container.querySelectorAll('.tour-demo-log').forEach(el => el.remove());
-    if (container.children.length === 0) {
-        container.innerHTML = '<div class="log-empty">No activity yet</div>';
-    }
-};
-
-const openLegendPanel = () => {
-    const section = document.querySelector('.panel-section[data-section="legend"]');
-    const tab = document.querySelector('.panel-tab[data-section="legend"]');
-    if (!section || section.classList.contains('open')) return;
-    document.querySelectorAll('.panel-section').forEach(s => s.classList.remove('open'));
-    document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
-    section.classList.add('open');
-    tab?.classList.add('active');
-    document.getElementById('controlsRight')?.classList.add('panel-open');
-};
-
-const openNotepadPanel = () => {
-    const section = document.querySelector('.panel-section[data-section="notepad"]');
-    const tab = document.querySelector('.panel-tab[data-section="notepad"]');
-    if (!section || section.classList.contains('open')) return;
-    document.querySelectorAll('.panel-section').forEach(s => s.classList.remove('open'));
-    document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
-    section.classList.add('open');
-    tab?.classList.add('active');
-    document.getElementById('controlsRight')?.classList.add('panel-open');
-};
-
-const closeNotepadPanel = () => {
-    const section = document.querySelector('.panel-section[data-section="notepad"]');
-    if (!section || !section.classList.contains('open')) return;
-    section.classList.remove('open');
-    document.querySelector('.panel-tab[data-section="notepad"]')?.classList.remove('active');
-    document.getElementById('controlsRight')?.classList.remove('panel-open');
-};
-
-const openLogPanel = () => {
-    const section = document.querySelector('.panel-section[data-section="log"]');
-    const tab = document.querySelector('.panel-tab[data-section="log"]');
-    if (!section || section.classList.contains('open')) return;
-    document.querySelectorAll('.panel-section').forEach(s => s.classList.remove('open'));
-    document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
-    section.classList.add('open');
-    tab?.classList.add('active');
-    document.getElementById('controlsRight')?.classList.add('panel-open');
-};
-
-const closeLogPanel = () => {
-    const section = document.querySelector('.panel-section[data-section="log"]');
-    if (!section || !section.classList.contains('open')) return;
-    section.classList.remove('open');
-    document.querySelector('.panel-tab[data-section="log"]')?.classList.remove('active');
-    document.getElementById('controlsRight')?.classList.remove('panel-open');
-};
-
-const closeLegendPanel = () => {
-    const section = document.querySelector('.panel-section[data-section="legend"]');
-    if (!section || !section.classList.contains('open')) return;
-    section.classList.remove('open');
-    document.querySelector('.panel-tab[data-section="legend"]')?.classList.remove('active');
-    document.getElementById('controlsRight')?.classList.remove('panel-open');
-};
-
 const STEPS = [
     {
         target: null,
-        title: 'What is Storymaps.io?',
-        body: 'This short interactive tour takes you through the basics of storymaps.io, a free tool for planning and building digital products.<br><br>It\'s based on User Story Mapping, a technique where you map out the workflow your users will go through, and let that shape the features you build. Starting from the journey (rather than a backlog of ideas) keeps you focused on real user needs, trims waste, and makes it clear what\'s essential versus nice-to-have.<br><br>Having a visual map helps teams build a shared understanding of what the product does, who it serves, and how it delivers value. Your finished map then serves as a comprehension tool, showing the product vision and evolution in a single artefact. At a glance, you can see what has been built and what is coming next.<br><br>To see how it works, let\'s start with a basic example. Imagine you\'re the creator of Lego. You want to think about how your customers will build one of your sets, the steps they\'ll take, and what you need to do to make the experience great. Let\'s map that with a story map.',
+        title: 'What is a story map?',
+        body: 'This short tour shows how a user story map works, using the example of a coffee ordering app.<br><br>A story map lays out the journey people take through a product, from left to right, with the work that makes each step possible underneath. Then it cuts that work into releases, so the first one works from start to finish.<br><br>The whole team can see what the product does, who it’s for, and what comes next, in one place.',
         icon: '\u{1F4A1}',
     },
     {
         target: ['#boardName', '.users-row', '.activities-row', '.steps-row', '.slice-container'],
         clipRight: '.step:not(.phantom-step)',
         tooltipTarget: '.panel-tabs',
-        title: 'Our Example: A Lego House',
-        body: 'This is a story map. Take a moment to look it over. We will walk through each section next.',
-        icon: '\u{1F9F1}',
+        title: 'Our example: a coffee app',
+        body: 'This is the story map for an app that lets people order coffee ahead and pick it up. Take a moment to look it over. We’ll go through each part next.',
+        icon: '☕',
     },
     {
         target: '.users-row',
         title: 'Users',
-        body: 'The top row defines <strong>who</strong> the users are. Each user or persona spans a group of activities below.',
+        body: 'The top row says <strong>who</strong> the product is for. Here it’s the <strong>Customer</strong>.',
         icon: '\u{1F464}',
     },
     {
         target: '.activities-row',
         title: 'Activities',
-        body: 'Activities describe <strong>what</strong> each user is trying to achieve, high-level goals like \u201CBuild a Lego House\u201D.',
+        body: 'Activities say <strong>what</strong> each user is trying to do. The customer wants to <strong>Order Coffee</strong>.',
         icon: '\u{1F3AF}',
     },
     {
         target: '.steps-row > :nth-child(2)',
         title: 'Steps',
-        body: 'Steps capture the user\'s journey from start to finish. They describe how users will use your product. First up: <strong>look at the picture on the box</strong>.',
+        body: 'Steps are the journey, from left to right, in the order the customer takes them. First they <strong>Browse Menu</strong>…',
         icon: '\u{1F9ED}',
     },
     {
-        target: '.steps-row > :nth-child(3)',
+        target: '.steps-row',
+        clipRight: '.step:not(.phantom-step)',
         title: 'Steps',
-        body: 'Then <strong>open the box</strong>\u2026',
+        body: '…then customise the drink, add it to the cart, pay, confirm and collect the order. Read together, the steps tell the story of the product. They’re the <strong>backbone</strong> of the story map.',
         icon: '\u{1F9ED}',
     },
     {
-        target: '.steps-row > :nth-child(4)',
-        title: 'Steps',
-        body: '\u2026and <strong>layout the pieces</strong>\u2026',
-        icon: '\u{1F9ED}',
-    },
-    {
-        target: '.steps-row > :nth-child(5)',
-        title: 'Steps',
-        body: '\u2026then <strong>read the instructions</strong>. Each step is something the user does along the way. Together they form the <strong>backbone</strong> of your story map.',
-        icon: '\u{1F9ED}',
-    },
-    {
-        target: '.slice-container .story-column:nth-child(4) .story-card:first-child',
-        title: 'Task Cards',
-        body: 'Below each step are task cards that define the work needed to support it. e.g., providing the user with instructions means we first have to write the instructions, so we\u2019ll add a task for that: <strong>Write instructions</strong>, which facilitates the step <strong>Read instructions</strong>.',
+        target: '.slice-container .story-column:nth-child(1) .story-card:first-child',
+        title: 'Tasks',
+        body: 'Under each step are the tasks that make it possible. To browse the menu, the app needs <strong>Drinks by category</strong>.',
         icon: '\u{1F4CB}',
     },
     {
-        target: '.slice-container .story-column:nth-child(4) .story-card:nth-child(2)',
-        title: 'Task Cards',
-        body: '\u2026next, <strong>indicate the pieces required at each step</strong>. Task cards are arranged vertically in order of priority - you work on the most important work first. Next, you\u2019ll see how task cards are grouped into priority &amp; release slices to manage versions.',
+        target: '.slice-container .story-column:nth-child(1) .story-card:nth-child(2)',
+        title: 'Tasks',
+        body: 'The most important tasks go at the top, so <strong>Search by name</strong> sits below. Reading across the top of every column gives you the simplest version of the whole journey.',
         icon: '\u{1F4CB}',
     },
     {
         target: '.slice-label-container',
-        title: 'Release Slices',
-        body: 'Horizontal rows group tasks into releases. This map has one slice, <strong>V1</strong>, with the goal of a basic house. It represents version 1 of the product, the essentials you ship first.',
+        title: 'Release slices',
+        body: 'Slices group tasks into releases. This one is the <strong>MVP</strong>, the first release: order and pay ahead, then pick up.',
         icon: '\u{1F4E6}',
     },
     {
         target: '.slice-container',
-        title: 'Version 1: Done',
-        body: 'Once all the tasks in this slice are delivered, version 1 is done. You have your basic Lego house. Every task across every step has been completed, and your first release is shipped.<br><br><strong>Bonus:</strong> try moving some of the cards around, to get a sense of how cards are managed on the map.',
+        title: 'A first release',
+        body: 'The MVP runs across every step, so once it’s built, a customer can order a coffee from start to finish.<br><br><strong>Try it:</strong> drag a few cards around. They’ll go back when you move on.',
         icon: '\u{2705}',
         onEnter: () => {
             document.body.classList.add('tour-v1-done');
             const state = _getState?.();
             if (state?.slices?.[0]) {
-                _v1Snapshot = JSON.parse(JSON.stringify(state.slices[0].stories));
+                _mvpSnapshot = JSON.parse(JSON.stringify(state.slices[0].stories));
             }
             const block = e => { if (e.button === 2) e.stopPropagation(); };
             document.addEventListener('mouseup', block, true);
@@ -272,86 +122,33 @@ const STEPS = [
             document.body.classList.remove('tour-v1-done');
             _ctxMenuCleanup?.();
             const state = _getState?.();
-            if (_v1Snapshot && state?.slices?.[0]) {
-                state.slices[0].stories = _v1Snapshot;
-                _v1Snapshot = null;
+            if (_mvpSnapshot && state?.slices?.[0]) {
+                state.slices[0].stories = _mvpSnapshot;
+                _mvpSnapshot = null;
                 _renderAndSave?.();
             }
         },
     },
     {
         target: '.slice-label-container .btn-add-slice',
-        title: 'Add a Slice',
-        body: 'Let\u2019s add another release slice. Imagine you want to upgrade the Lego house set to include a two-story build. That additional work goes in a dedicated release slice called Version 2. This is how story maps group work into versions.',
+        title: 'Add a slice',
+        body: 'Everything that can wait goes in a later release. Let’s add a slice for it.',
         icon: '\u{2795}',
         onEnter: () => ensureDemoSlice(),
     },
     {
         target: '.slice-container + .slice-container',
-        title: 'Your Version 2 Slice',
-        body: 'Here\'s your Version 2 slice with the extra work needed for a two-story house. Same steps across the top, but a whole new set of tasks underneath. Each version builds on the last, and your map keeps everything in context.',
+        clipRight: '.step:not(.phantom-step)',
+        title: 'The next release',
+        body: 'Here’s <strong>Later</strong>, with gift cards, group orders and the rest. Same steps across the top, new tasks underneath. The story map keeps every release in view, so it’s clear what’s built and what’s next.',
+        icon: '\u{1F4E6}',
         onEnter: () => ensureDemoSlice(),
         onLeave: () => removeDemoSlice(),
     },
     {
         target: null,
-        title: 'Congratulations, you\'re a story mapper!',
-        body: 'We just covered the basics of user story mapping. <strong>Users</strong>, <strong>Activities</strong>, <strong>Steps</strong>, <strong>Tasks</strong> and <strong>Releases</strong>. It really is that simple. You know enough now to start testing out the technique in your own work.<br><br>Now, let\u2019s look at a few bonus features that Storymaps.io provides on top of the core story mapping technique.',
-        icon: '\u{1F389}',
-    },
-    {
-        target: '#controlsRight',
-        title: 'Storymaps.io Extras: Overview',
-        body: 'The Overview tab sums up your map: how many cards, steps and slices it has, and how far along it is. Below that is the legend, where you define colour-coded categories for your cards. Like the yellow Tasks you saw, you can also add cards for inline Notes, Questions, and Edge Cases. Giving each type its own colour makes it easy to tell them apart at a glance.',
-        icon: '\u{1F3A8}',
-        onEnter: () => { _zoomToFit?.(); openLegendPanel(); },
-    },
-    {
-        target: '.slice-container',
-        title: 'Storymaps.io Extras: Legend',
-        body: 'See how different card types stand out? The green Question, blue Note, and pink Edge Case are immediately recognisable alongside the yellow Tasks. This makes it easy to scan the map and spot extra context and questions.',
-        icon: '\u{1F3A8}',
-        onEnter: () => ensureDemoLegendCards(),
-        onLeave: () => {
-            removeDemoLegendCards();
-            closeLegendPanel();
-        },
-    },
-    {
-        target: '#notesPanel',
-        tooltipTarget: '#notesPanel',
-        title: 'Storymaps.io Extras: Notepad',
-        body: 'A shared document for meeting notes, decisions, or anything your team needs to capture alongside the map.',
-        icon: '\u{1F4DD}',
-        onEnter: () => { _zoomToFit?.(); document.getElementById('notesToggle')?.click(); },
-        onLeave: () => closeNotepadPanel(),
-    },
-    {
-        target: '#logPanel',
-        tooltipTarget: '#logPanel',
-        title: 'Storymaps.io Extras: Activity Log',
-        body: 'The activity log tracks changes made to the map, who made it, and when.',
-        icon: '\u{1F4DC}',
-        onEnter: () => { document.getElementById('logToggle')?.click(); injectDemoLogEntries(); },
-        onLeave: () => { clearDemoLogEntries(); closeLogPanel(); },
-    },
-    {
-        target: '#logToggle',
-        noDim: true,
-        title: 'Storymaps.io Extras: Dark Mode',
-        body: 'Easy on the eyes for late-night planning sessions. Dark mode is great for reducing eye strain and looks sharp on big screens during team presentations.',
-        icon: '\u{1F319}',
-        onEnter: function () {
-            document.getElementById('toggleDarkModeBtn')?.click();
-        },
-        onLeave: function () {
-            document.getElementById('toggleDarkModeBtn')?.click();
-        },
-    },
-    {
-        target: null,
-        title: 'Tour Complete!',
-        body: 'Feel free to edit this Lego house map. Every story map gets a unique URL, so this one is yours to play with or use as a template and turn it into a map of your own work. You can also share map URLs and collaborate live with colleagues on your story maps.<br><br>You could also try the other samples in the menu, or if you want to get up and running fast, import the story map hidden inside your existing backlog using the Import options in the menu.<br><br>Thanks for taking the Storymaps.io tour :)',
+        title: 'You’re a story mapper',
+        body: 'That’s the idea: <strong>users</strong>, <strong>activities</strong>, <strong>steps</strong>, <strong>tasks</strong> and <strong>releases</strong>.<br><br>This coffee app story map is yours now, at its own link. Change it, share the link to work on it together, or use it to start a story map of your own work. To start from a backlog you already have, use <strong>Import</strong> in the menu.',
         icon: '\u{1F389}',
     },
 ];
@@ -617,7 +414,7 @@ const next = () => {
     if (_step < STEPS.length - 1) {
         STEPS[_step].onLeave?.();
         _step++;
-        // Immediately clear stale highlight — Safari may not repaint in the rAF
+        // Immediately clear stale highlight, as Safari may not repaint in the rAF
         spotlight().style.display = 'none';
         document.querySelectorAll('.tour-spotlight-extra').forEach(el => el.remove());
         backdrop().style.clipPath = 'none';
@@ -631,7 +428,7 @@ const back = () => {
     if (_step > 0) {
         STEPS[_step].onLeave?.();
         _step--;
-        // Immediately clear stale highlight — Safari may not repaint in the rAF
+        // Immediately clear stale highlight, as Safari may not repaint in the rAF
         spotlight().style.display = 'none';
         document.querySelectorAll('.tour-spotlight-extra').forEach(el => el.remove());
         backdrop().style.clipPath = 'none';
@@ -732,7 +529,6 @@ export const init = (config = {}) => {
     _getState = config.getState || null;
     _renderAndSave = config.renderAndSave || null;
     _createStory = config.createStory || null;
-    _zoomToFit = config.zoomToFit || null;
 
     // Wire tooltip buttons
     const tt = tooltip();
