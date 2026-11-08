@@ -1,6 +1,7 @@
 // Storymaps.io - AGPL-3.0 - see LICENCE for details
 // Guided tour module - spotlight + tooltip walkthrough
 
+let _zoomToFit = null;
 let _addSlice = null;
 let _deleteSlice = null;
 let _getState = null;
@@ -10,7 +11,7 @@ let _demoSliceId = null;
 let _ctxMenuCleanup = null;
 let _mvpSnapshot = null;
 
-// The tour runs on the coffee app the docs and courses use (public/samples/coffee-app.json):
+// The tour runs on the coffee app the docs and courses use (public/samples/tour.json):
 // Browse Menu, Customise Drink, Add To Cart, Pay, Confirm and Collect Order, with an MVP slice.
 // Partway through it adds a Later slice, then takes it away again.
 const ensureDemoSlice = () => {
@@ -521,6 +522,10 @@ export const endTour = () => {
         _wasDarkOnStart = false;
         document.getElementById('toggleDarkModeBtn')?.click();
     }
+
+    // The steps scroll the story map to each part in turn. Fit it to the window again, which
+    // scrolls back to where it opened, so the tour ends on the whole story map.
+    _zoomToFit?.();
 };
 
 export const init = (config = {}) => {
@@ -529,6 +534,7 @@ export const init = (config = {}) => {
     _getState = config.getState || null;
     _renderAndSave = config.renderAndSave || null;
     _createStory = config.createStory || null;
+    _zoomToFit = config.zoomToFit || null;
 
     // Wire tooltip buttons
     const tt = tooltip();

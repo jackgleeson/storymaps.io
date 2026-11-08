@@ -12,6 +12,8 @@ test('the tour runs on the coffee app, adds a Later slice for a step, and leaves
   const slices = page.locator('.slice-container');
   await expect(slices).toHaveCount(1);
   const cards = await page.locator('.slice-container .story-card').count();
+  const wrapper = page.locator('#storyMapWrapper');
+  const opened = await wrapper.evaluate(w => [w.scrollTop, w.scrollLeft]);
 
   const seen = [];
   for (let i = 0; i < steps; i++) {
@@ -31,6 +33,8 @@ test('the tour runs on the coffee app, adds a Later slice for a step, and leaves
   await expect(tooltip(page)).not.toHaveClass(/visible/);
   await expect(slices).toHaveCount(1);
   await expect(page.locator('.slice-container .story-card')).toHaveCount(cards);
+  // It ends on the whole story map as it opened, not wherever the last step scrolled to
+  await expect.poll(() => wrapper.evaluate(w => [w.scrollTop, w.scrollLeft])).toEqual(opened);
   expect(await page.evaluate(() => localStorage.getItem('tourCompleted'))).toBe('true');
 });
 

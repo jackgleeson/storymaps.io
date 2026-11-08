@@ -1646,6 +1646,7 @@ tour.init({
     getState: () => state,
     renderAndSave,
     createStory,
+    zoomToFit,
 });
 
 // Wire card-expand module
@@ -1924,7 +1925,7 @@ const init = async () => {
         await startNewMap();
         if (where.projectId) await projects.joinNew(where.projectId);
     } else if (mapId === 'tour' && !where.projectId) {
-        await startWithSample('coffee-app', { showToast: false });
+        await startWithSample('tour', { showToast: false });
         dom.controlsRight?.classList.remove('panel-open');
         dom.panelBody?.querySelectorAll('.panel-section').forEach(s => s.classList.remove('open'));
         document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
