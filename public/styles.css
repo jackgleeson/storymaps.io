@@ -2532,6 +2532,17 @@ body.tour-active .log-stats {
     transition: box-shadow 0.15s ease;
 }
 
+.card-link-flash {
+    border-radius: 6px;
+    animation: card-link-flash 1.4s ease-in-out;
+}
+
+@keyframes card-link-flash {
+    /* The card keeps its own shadow under the ring */
+    0%, 50%, 100% { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0), var(--shadow-card); }
+    25%, 75% { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.7), var(--shadow-card); }
+}
+
 .log-locatable:hover {
     background: rgba(59, 130, 246, 0.08);
     cursor: pointer;

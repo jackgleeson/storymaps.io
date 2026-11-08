@@ -50,9 +50,12 @@ test('a card link copied from the right-click menu, the ... menu or the open car
   await page.locator('#cardExpandCopyLink').click();
   expect(await copiedLink(page)).toBe(link);
 
-  // Closing it takes the card off the URL, so a reload shows the map
+  // Closing it takes the card off the URL, so a reload shows the map, and flashes the card
   await page.locator('#cardExpandModalClose').click();
   await expect(page).toHaveURL(`${origin}/${id}`);
+  const cardId = link.match(/#card-([a-z0-9]+)$/)[1];
+  await expect(page.locator(`.story-card[data-story-id="${cardId}"]`)).toHaveClass(/card-link-flash/);
+  await expect(page.locator('.card-link-flash')).toHaveCount(0, { timeout: 3000 });
 
   // A card that's gone says so
   await page.goto('/');

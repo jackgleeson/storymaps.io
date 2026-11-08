@@ -1,5 +1,5 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
-// Card links (#card-<name>-<id>): copy a link to a card, and open the card a link points at
+// Card links (#card-<id>): copy a link to a card, and open the card a link points at
 
 import { dom } from '/src/ui/dom.js';
 import { state } from '/src/core/state.js';
@@ -49,9 +49,23 @@ export const openCardFromHash = () => {
     openExpandModal(card, { readOnly: cards.find(c => c.card === card).readOnly, focus: false });
 };
 
-// Closing a card that a link opened takes the card off the URL, so a reload shows the map
+// Ring the card twice in blue, like a hovered log entry, so it's clear which card the link meant
+const flashCard = (cardId) => {
+    const el = dom.storyMap.querySelector(`.story-card[data-story-id="${CSS.escape(cardId)}"]`);
+    if (!el) return;
+    el.classList.remove('card-link-flash');
+    void el.offsetWidth; // restart the animation if it's already running
+    el.classList.add('card-link-flash');
+    el.addEventListener('animationend', () => el.classList.remove('card-link-flash'), { once: true });
+};
+
+// Closing a card that a link opened takes the card off the URL, so a reload shows the map, and
+// flashes the card on the story map. Closing re-renders the map, so wait for that first.
 export const clearCardHash = () => {
-    if (isCardHash(window.location.hash)) history.replaceState(history.state, '', window.location.pathname + window.location.search);
+    if (!isCardHash(window.location.hash)) return;
+    const card = cardFromHash(window.location.hash, allCards().map(c => c.card));
+    history.replaceState(history.state, '', window.location.pathname + window.location.search);
+    if (card) requestAnimationFrame(() => flashCard(card.id));
 };
 
 export const initListeners = () => {
