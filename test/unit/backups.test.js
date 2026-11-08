@@ -38,7 +38,7 @@ beforeEach(() => {
   registerStats(ctx);
 });
 
-const call = async (method, path, { body = {}, limited = false, origin } = {}) => {
+const call = async (method, path, { body = {}, limited = false, origin, headers = {} } = {}) => {
   const [key, params] = Object.keys(handlers).map(k => {
     const [m, p] = k.split(' ');
     if (m !== method) return null;
@@ -47,11 +47,14 @@ const call = async (method, path, { body = {}, limited = false, origin } = {}) =
   }).find(Boolean) || [];
   assert.ok(key, `no route for ${method} ${path}`);
   const res = { status: null, body: null };
-  await handlers[key]({ headers: { host: 'localhost', ...(origin && { origin }) }, limited }, { writeHead: (s) => { res.status = s; }, end: (b) => { res.body = JSON.parse(b); } }, params, body);
+  await handlers[key]({ headers: { host: 'localhost', ...(origin && { origin }), ...headers }, limited }, { writeHead: (s) => { res.status = s; }, end: (b) => { res.body = JSON.parse(b); } }, params, body);
   return res;
 };
 
-const backup = (id, timestamp, extra = {}) => ({ id, timestamp, note: '', mapName: 'Old', cardCount: 1, data: JSON.stringify({ name: 'Old' }), ...extra });
+const backup = (id, timestamp, extra = {}) => ({ id, timestamp, note: '', mapName: 'Old', cardCount: 1, data: JSON.stringify({ name: `Old ${id}` }), ...extra });
+
+// Changes the map, so the next backup isn't a copy of the last one
+const rename = (name) => { maps.get('abc12345').name = name; };
 
 describe('backups', () => {
   test('a map starts with no backups', async () => {
@@ -73,6 +76,7 @@ describe('backups', () => {
 
   test('a backup from the CLI goes in the activity log, and one from the app is left to the app', async () => {
     await call('POST', '/api/backups/abc12345', { body: { note: 'cli test' } });
+    rename('Changed');
     await call('POST', '/api/backups/abc12345', { body: { note: 'From the app' }, origin: 'https://storymaps.io' });
     assert.deepEqual(logged, [['abc12345', 'Created backup']]);
   });
@@ -89,7 +93,10 @@ describe('backups', () => {
   });
 
   test('only the newest eight backups are kept', async () => {
-    for (let i = 1; i <= 9; i++) await call('POST', '/api/backups/abc12345', { body: { note: `Backup ${i}` } });
+    for (let i = 1; i <= 9; i++) {
+      rename(`Map ${i}`);
+      await call('POST', '/api/backups/abc12345', { body: { note: `Backup ${i}` } });
+    }
     const notes = (await call('GET', '/api/backups/abc12345')).body.map(b => b.note);
     assert.deepEqual(notes, ['Backup 2', 'Backup 3', 'Backup 4', 'Backup 5', 'Backup 6', 'Backup 7', 'Backup 8', 'Backup 9']);
   });
@@ -102,11 +109,29 @@ describe('backups', () => {
     assert.equal((await call('POST', '/api/backups/abc12345', { limited: true })).status, 429);
   });
 
-  test('a backup can be deleted, and deleting one that is gone is fine', async () => {
-    const { id } = (await call('POST', '/api/backups/abc12345')).body;
-    await call('DELETE', `/api/backups/abc12345/${id}`);
+  test('backing up a map that matches a kept backup adds nothing, and answers with that backup', async () => {
+    const first = (await call('POST', '/api/backups/abc12345', { body: { note: 'First' } })).body;
+    rename('Changed');
+    await call('POST', '/api/backups/abc12345', { body: { note: 'Second' } });
+    rename('Small');
+    const again = await call('POST', '/api/backups/abc12345', { body: { note: 'Again' } });
+    assert.equal(again.status, 200);
+    assert.equal(again.body.unchanged, true);
+    assert.equal(again.body.id, first.id);
+    assert.equal(again.body.note, 'First');
+    assert.deepEqual((await call('GET', '/api/backups/abc12345')).body.map(b => b.note), ['First', 'Second']);
+    assert.deepEqual(logged, [['abc12345', 'Created backup'], ['abc12345', 'Created backup']], 'the copy is not logged');
+  });
+
+  test('backups cannot be deleted', async () => {
+    assert.equal(Object.keys(handlers).some(k => k.startsWith('DELETE ')), false);
+  });
+
+  test('backing up a locked map needs its password', async () => {
+    files.set('locks.json', { abc12345: { isLocked: true, passwordHash: 'hash' } });
+    assert.equal((await call('POST', '/api/backups/abc12345')).status, 423);
     assert.deepEqual((await call('GET', '/api/backups/abc12345')).body, []);
-    assert.equal((await call('DELETE', `/api/backups/abc12345/${id}`)).status, 200);
+    assert.equal((await call('POST', '/api/backups/abc12345', { headers: { 'x-lock-password': 'hash' } })).status, 200);
   });
 
   test('fetching a backup that does not exist is a 404', async () => {
@@ -144,6 +169,14 @@ describe('importing backups', () => {
     await call('POST', '/api/backups/abc12345/import', { body: { backups: [backup('ffffffffffff', '2026-06-01T00:00:00Z')] } });
     const ids = (await call('GET', '/api/backups/abc12345')).body.map(b => b.id);
     assert.deepEqual(ids, ['000000000001', '000000000002', '000000000003', '000000000004', '000000000005', '000000000006', '000000000007', 'ffffffffffff']);
+  });
+
+  test('skips backups that match one already kept', async () => {
+    const { id } = (await call('POST', '/api/backups/abc12345')).body;
+    const { data } = (await call('GET', `/api/backups/abc12345/${id}`)).body;
+    const copies = [backup('aaaaaaaaaaaa', '2026-01-01T00:00:00Z', { data }), backup('bbbbbbbbbbbb', '2026-01-01T00:00:00Z'), backup('cccccccccccc', '2026-01-02T00:00:00Z', { data: JSON.stringify({ name: 'Old bbbbbbbbbbbb' }) })];
+    await call('POST', '/api/backups/abc12345/import', { body: { backups: copies } });
+    assert.deepEqual((await call('GET', '/api/backups/abc12345')).body.map(b => b.id).sort(), [id, 'bbbbbbbbbbbb'].sort());
   });
 
   test('ignores a body without a list of backups', async () => {

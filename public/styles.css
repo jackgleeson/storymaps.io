@@ -6931,19 +6931,6 @@ html.dark-mode .connection-notice.is-online::before {
     border-color: var(--color-teal);
 }
 
-.backup-actions .backup-delete-btn {
-    color: var(--color-text-disabled);
-    border-color: transparent;
-    background: transparent;
-    padding: 5px 8px;
-}
-
-.backup-actions .backup-delete-btn:hover {
-    color: #dc2626;
-    background: #fef2f2;
-    border-color: #fecaca;
-}
-
 /* Backup count badge in menu */
 .backup-count-badge {
     display: inline-flex;

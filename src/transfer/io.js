@@ -110,7 +110,7 @@ export const createAutoBackup = async (note) => {
     try {
         await fetch(`/api/backups/${state.mapId}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...lockHeaders() },
             body: JSON.stringify({ note }),
         });
     } catch { /* best-effort */ }

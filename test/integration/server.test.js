@@ -283,11 +283,13 @@ describe('HTTP API', () => {
     assert.equal((await api('GET', '/api/stats')).json.mapCount, before + 30);
   });
 
-  test('backups made at the same moment all land in a file that still reads', async () => {
+  test('backups of the same map made at the same moment keep one copy, in a file that still reads', async () => {
     const id = await createMap();
     const made = await Promise.all(Array.from({ length: 6 }, (_, i) => api('POST', `/api/backups/${id}`, { body: { note: `b${i}` }, headers: { origin: ORIGIN, ...newAddress() } })));
     assert.ok(made.every(r => r.status === 200));
-    assert.equal((await api('GET', `/api/backups/${id}`)).json.length, 6);
+    assert.equal(new Set(made.map(r => r.json.id)).size, 1, 'every request answers with the same backup');
+    assert.equal(made.filter(r => r.json.unchanged).length, 5);
+    assert.equal((await api('GET', `/api/backups/${id}`)).json.length, 1);
   });
 
   test('an imported backup keeps only the fields the app reads, and cannot claim to be from the future', async () => {
@@ -306,19 +308,20 @@ describe('HTTP API', () => {
     assert.equal((await api('POST', '/api/backups/nosuchmap1/import', { body: { backups }, headers: { origin: ORIGIN, ...newAddress() } })).status, 404);
   });
 
-  test('the backups of a locked map are only imported or deleted with its password', async () => {
+  test('backups of a locked map are only made or imported with its password, and never deleted', async () => {
     const id = await createMap();
     const made = (await api('POST', `/api/backups/${id}`, { body: { note: 'x' }, headers: { origin: ORIGIN, ...newAddress() } })).json;
     await lockPost(`/api/lock/${id}`, { passwordHash: h('owner') });
     const backups = [{ id: 'imported1', data: '{}' }];
     const headers = { origin: ORIGIN };
+    assert.equal((await api('POST', `/api/backups/${id}`, { body: { note: 'y' }, headers: { ...newAddress() } })).status, 423, 'not from the CLI');
+    assert.equal((await api('POST', `/api/backups/${id}`, { body: { note: 'y' }, headers: { ...headers, ...newAddress() } })).status, 423, 'not from the app');
     assert.equal((await api('POST', `/api/backups/${id}/import`, { body: { backups }, headers: { ...headers, ...newAddress() } })).status, 423);
-    assert.equal((await api('DELETE', `/api/backups/${id}/${made.id}`, { headers })).status, 423);
     assert.equal((await api('GET', `/api/backups/${id}`)).json.length, 1);
     const withPassword = { ...headers, 'x-lock-password': h('owner') };
     assert.equal((await api('POST', `/api/backups/${id}/import`, { body: { backups }, headers: { ...withPassword, ...newAddress() } })).status, 200);
-    assert.equal((await api('DELETE', `/api/backups/${id}/${made.id}`, { headers: withPassword })).status, 200);
-    assert.deepEqual((await api('GET', `/api/backups/${id}`)).json.map(b => b.id), ['imported1']);
+    assert.notEqual((await api('DELETE', `/api/backups/${id}/${made.id}`, { headers: withPassword })).status, 200);
+    assert.deepEqual((await api('GET', `/api/backups/${id}`)).json.map(b => b.id).sort(), [made.id, 'imported1'].sort());
   });
 
   test('writes from another site are refused, except the CLI routes', async () => {

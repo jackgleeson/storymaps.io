@@ -1,5 +1,5 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
-// Backup CRUD, modal UI, restore/delete, utility functions
+// Making, listing and restoring backups, and the backups modal
 
 import { dom } from '/src/ui/dom.js';
 import { state, pushUndo } from '/src/core/state.js';
@@ -98,7 +98,6 @@ const refreshBackupsList = async () => {
                 </div>
                 <div class="backup-actions">
                     ${editable ? `<button class="backup-restore-btn" data-id="${safeId}">Restore</button>` : ''}
-                    ${editable ? `<button class="backup-delete-btn" data-id="${safeId}" title="Delete">&times;</button>` : ''}
                 </div>
             </div>`;
         }).join('');
@@ -120,11 +119,18 @@ const createBackup = async () => {
     try {
         dom.createBackupBtn.disabled = true;
         setCreateBtnLabel('Creating...');
-        await fetch(`/api/backups/${state.mapId}`, {
+        const res = await fetch(`/api/backups/${state.mapId}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...lockHeaders() },
             body: JSON.stringify({ note }),
         });
+        if (!res.ok) throw new Error(`Backup failed: ${res.status}`);
+        const backup = await res.json();
+        // The server keeps no copy of a backup it already has, and sends that one back instead
+        if (backup.unchanged) {
+            showToast(`No changes since the backup from ${relativeTime(backup.timestamp).toLowerCase()}`);
+            return;
+        }
         log.logEvent('Created backup');
         await refreshBackupsList();
     } catch {
@@ -145,7 +151,7 @@ const restoreBackup = async (backupId) => {
         // Create safety backup
         await fetch(`/api/backups/${state.mapId}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...lockHeaders() },
             body: JSON.stringify({ note: 'Auto: before restore' }),
         });
         // Fetch backup data
@@ -165,17 +171,6 @@ const restoreBackup = async (backupId) => {
     }
 };
 
-const deleteBackup = async (backupId) => {
-    if (!await showConfirm('Delete this backup?')) return;
-    try {
-        await fetch(`/api/backups/${state.mapId}/${backupId}`, { method: 'DELETE', headers: lockHeaders() });
-        log.logEvent('Deleted backup');
-        await refreshBackupsList();
-    } catch {
-        await showAlert('Failed to delete backup');
-    }
-};
-
 export const initListeners = () => {
     dom.backupsBtn.addEventListener('click', () => {
         closeMainMenu();
@@ -191,6 +186,5 @@ export const initListeners = () => {
         if (!btn) return;
         const id = btn.dataset.id;
         if (btn.classList.contains('backup-restore-btn')) restoreBackup(id);
-        else if (btn.classList.contains('backup-delete-btn')) deleteBackup(id);
     });
 };
