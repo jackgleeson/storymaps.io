@@ -228,7 +228,7 @@ const {
 
 const { updateBackupBadge } = backups;
 
-const { showWelcomeScreen, hideWelcomeScreen, showLoading, hideLoading, startNewMap, startWithSample, showTutorialToast, newMap, copyMap, loadSample } = welcome;
+const { showWelcomeScreen, hideWelcomeScreen, showLoading, hideLoading, startNewMap, startWithSample, showTutorialToast, newMap, copyMap } = welcome;
 
 // =============================================================================
 // Event Listeners
@@ -1410,13 +1410,8 @@ const initEventListeners = () => {
     dom.mainMenu.addEventListener('click', async (e) => {
         const item = e.target.closest('.dropdown-item');
         if (item?.dataset.sample) {
-            if (lockState.isLocked && !lockState.sessionUnlocked) {
-                await showAlert('This map is read-only. Unlock it first to load a sample.');
-                closeMainMenu();
-                return;
-            }
-            loadSample(item.dataset.sample);
             closeMainMenu();
+            startWithSample(item.dataset.sample);
         }
     });
 

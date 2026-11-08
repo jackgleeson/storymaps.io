@@ -2,7 +2,7 @@
 // Welcome screen, counter, tutorial toast, new/copy/sample map creation
 
 import { dom } from '/src/ui/dom.js';
-import { state, initState, hasContent, pushUndo, confirmOverwrite } from '/src/core/state.js';
+import { state, initState, hasContent } from '/src/core/state.js';
 import { deserialize } from '/src/core/serialization.js';
 import { shiftSliceDates } from '/src/core/constants.js';
 import { closeMainMenu, zoomToFit } from '/src/ui/navigation.js';
@@ -170,14 +170,18 @@ const fetchSample = async (name) => {
     return shiftSliceDates(await response.json(), `${start.getFullYear()}-${pad(start.getMonth() + 1)}-${pad(start.getDate())}`);
 };
 
+// A sample always opens as a new map, so it can never replace a map someone is working on.
+// Opened from a map, it gets its own history entry, so Back returns to that map.
 export const startWithSample = async (sampleName, { showToast = true } = {}) => {
+    const fromMap = !!state.mapId;
+    if (fromMap) _deps.saveToStorage();
     hideWelcomeScreen();
     showLoading();
     destroyYjs();
     initState();
     const mapId = await _deps.newMapId();
     state.mapId = mapId;
-    history.replaceState({ mapId }, '', `/${mapId}`);
+    history[fromMap ? 'pushState' : 'replaceState']({ mapId }, '', `/${mapId}`);
 
     try {
         deserialize(await fetchSample(sampleName));
@@ -245,27 +249,6 @@ export const copyMap = async () => {
     _deps.subscribeToMap(mapId);
     if (joins) await projects.joinNew(project.id, original);
     _deps.saveToStorage();
-};
-
-export const loadSample = async (name) => {
-    if (!state.mapId) {
-        return startWithSample(name);
-    }
-
-    _deps.saveToStorage();
-    if (!await confirmOverwrite()) return;
-
-    showLoading();
-    try {
-        const data = await fetchSample(name);
-        pushUndo();
-        deserialize(data);
-        dom.boardName.value = state.name;
-        _deps.renderAndSave();
-    } catch {
-        await showAlert('Failed to load sample');
-    }
-    hideLoading();
 };
 
 export const initListeners = () => {
