@@ -26,6 +26,8 @@ beforeEach(() => {
       return result === undefined ? data : result;
     },
     getBackupFile: (mapId) => `backups/${mapId}.json`,
+    LOCK_FILE: 'locks.json',
+    stmtExists: { get: (mapId) => maps.has(mapId) },
     loadAndSerialize: async (mapId) => structuredClone(maps.get(mapId) ?? null),
     countCards,
     countMaps: () => mapCount,

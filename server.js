@@ -13,6 +13,8 @@ import Database from 'better-sqlite3';
 // (avoids dual-instance issues when mixing ESM import with CJS require)
 const _require = createRequire(import.meta.url);
 const Y = _require('yjs');
+const syncProtocol = _require('y-protocols/sync');
+const encoding = _require('lib0/encoding');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -98,12 +100,38 @@ const generateUniqueMapId = () => {
 
 const { route, matchRoute } = createRouter();
 
+// The locks, kept in memory so the WebSocket can check each live edit against them at once.
+// Every change to the lock file goes through ctx.updateJson, which keeps this copy in step.
+let locks = await readJson(LOCK_FILE, {});
+const updateJsonKeepingLocks = async (filePath, fallback, fn) => {
+  const saved = await updateJson(filePath, fallback, fn);
+  if (filePath === LOCK_FILE) {
+    const before = locks;
+    locks = saved;
+    // Edits made while a map was locked were dropped, so once anyone can edit it again, ask the
+    // open connections for what the server doesn't have
+    for (const mapId of Object.keys(before)) {
+      if (before[mapId]?.isLocked && !locks[mapId]?.isLocked) docs.get(mapId)?.conns.forEach((_, conn) => askForMissingEdits(docs.get(mapId), conn));
+    }
+  }
+  return saved;
+};
+
+// Send a sync step 1: the connection answers with every edit the server's copy doesn't have
+const askForMissingEdits = (doc, conn) => {
+  if (!doc || conn.readyState !== conn.OPEN) return;
+  const encoder = encoding.createEncoder();
+  encoding.writeVarUint(encoder, MESSAGE_SYNC);
+  syncProtocol.writeSyncStep1(encoder, doc);
+  conn.send(encoding.toUint8Array(encoder));
+};
+
 const ctx = {
   route,
   Y, docs, getPersistence,
   stmtInsert, stmtUpdate, stmtExists, stmtMeta, editCountSince, projects,
   getPendingEdits: (mapId) => pendingEdits.get(mapId) || 0,
-  readJson, updateJson, DATA_DIR, LOCK_FILE, getBackupFile,
+  readJson, updateJson: updateJsonKeepingLocks, DATA_DIR, LOCK_FILE, getBackupFile,
   countMaps: () => stmtCount.get().n,
   serializeDoc, contentEtag, appendLogEntry, diffPush, writeDocFromJson, countCards,
   isRateLimited, isProxyRateLimited, isCreateRateLimited,
@@ -193,6 +221,13 @@ const COMPRESSIBLE = new Set(['.html', '.css', '.js', '.json', '.svg', '.xml', '
 // In-memory static file cache: path -> { etag, raw, gzipped, contentType, cacheControl }
 const fileCache = new Map();
 
+// A file is only served at its plain path. Spellings like /a/./b or /a//b reach the same file,
+// and each would fill the cache with another copy of it.
+const isPlainPath = (path) => !path.slice(1).split('/').some(part => part === '' || part === '.' || part === '..');
+
+// A map ID, as randomId makes them
+const MAP_ID = /^[a-z0-9]{8}$/;
+
 // Cache strategy: short cache for code (CDN/browser + ETag revalidation), long cache for assets
 const cacheHeader = (ext) => {
   if (['.png', '.jpg', '.jpeg', '.gif', '.ico', '.woff', '.woff2'].includes(ext)) {
@@ -218,8 +253,11 @@ const server = createServer(async (req, res) => {
       return;
     }
 
-    // Check origin for write requests (skip for CLI API routes - rate-limited instead)
-    if (['POST', 'PUT', 'DELETE'].includes(req.method) && !isCliApi(reqPath, req.method) && !isOriginAllowed(req.headers.origin)) {
+    // Check origin for write requests. The CLI sends no Origin, so its routes take a request
+    // without one (they are rate limited instead). A browser always sends one, so a request from
+    // another site is refused on every route, and can't use its visitors to get round the limits.
+    const origin = req.headers.origin;
+    if (['POST', 'PUT', 'DELETE'].includes(req.method) && (origin ? !isOriginAllowed(origin) : !isCliApi(reqPath, req.method))) {
       res.writeHead(403, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Forbidden' }));
       return;
@@ -268,7 +306,7 @@ const server = createServer(async (req, res) => {
   if (!cached) {
     // Try to read from disk (resolve + startsWith guard against path traversal)
     let content;
-    for (const dir of STATIC_DIRS) {
+    for (const dir of isPlainPath(relPath) ? STATIC_DIRS : []) {
       // Strip leading / and matching dir prefix (e.g. /src/app.js -> app.js for SRC_DIR)
       let filePart = relPath.slice(1);
       const dirName = basename(dir);
@@ -288,7 +326,7 @@ const server = createServer(async (req, res) => {
     const projectFormat = reqPath.match(/^\/p\/[a-zA-Z0-9_-]+\/([a-zA-Z0-9_-]+)\.(?:json|yaml|csv)$/);
     if (!content && (!reqPath.includes('/', 1) || projectFormat) && (ext === '.json' || ext === '.yaml' || ext === '.csv')) {
       const mapId = projectFormat ? projectFormat[1] : reqPath.slice(1, -ext.length);
-      if (mapId) {
+      if (MAP_ID.test(mapId)) {
         const loaded = await ctx.loadAndSerialize(mapId, req.headers.host);
         if (loaded) {
           // The map as it is now, without its backups: AI tools fetch these links, and old copies of
@@ -425,7 +463,37 @@ const trackedDocs = new Set();
 // WebSocket Server
 // =============================================================================
 
-const wss = new WebSocketServer({ server });
+// The first sync message with the whole map can be large, so the limit is well above the 5 MB
+// allowed for a request body, and far below the 100 MiB that ws allows by default
+const wss = new WebSocketServer({ server, maxPayload: 32 * 1024 * 1024 });
+
+// y-websocket applies every update a connection sends. On a locked map only a connection that
+// has sent the password hash can edit: the app sends it as a text message once it has unlocked
+// the map, since every Yjs message is binary. Reading the map and presence always work.
+const MESSAGE_SYNC = 0;
+const SYNC_STEP_2 = 1;
+const SYNC_UPDATE = 2;
+const keepLockedMapsReadOnly = (ws, docName) => {
+  let passwordHash = null;
+  const on = ws.on.bind(ws);
+  ws.on = (event, listener) => on(event, event !== 'message' ? listener : (data, isBinary) => {
+    // y-websocket sets binaryType to 'arraybuffer', so read the bytes through a view
+    if (!isBinary) {
+      const text = Buffer.from(data).toString();
+      if (!text.startsWith('lock:')) return;
+      passwordHash = text.slice(5);
+      // Yjs applies a client's edits in order, so one dropped while the map was locked would
+      // hold back all that follow. Ask for them again now this connection can edit.
+      if (passwordHash === locks[docName]?.passwordHash) askForMissingEdits(docs.get(docName), ws);
+      return;
+    }
+    const lock = locks[docName];
+    const bytes = new Uint8Array(data);
+    const edits = bytes[0] === MESSAGE_SYNC && (bytes[1] === SYNC_STEP_2 || bytes[1] === SYNC_UPDATE);
+    if (edits && lock?.isLocked && passwordHash !== lock.passwordHash) return;
+    listener(data, isBinary);
+  });
+};
 
 wss.on('connection', (ws, req) => {
   // A connection that breaks the protocol (too many fragments, a message over the size limit)
@@ -435,10 +503,15 @@ wss.on('connection', (ws, req) => {
     ws.close(4403, 'Forbidden');
     return;
   }
-  setupWSConnection(ws, req);
+  const docName = (req.url || '').slice(1).split('?')[0];
+  if (!MAP_ID.test(docName)) {
+    ws.close(4400, 'Not a map');
+    return;
+  }
+  keepLockedMapsReadOnly(ws, docName);
+  setupWSConnection(ws, req, { docName });
 
   // Hook into the doc for SQLite tracking
-  const docName = (req.url || '').slice(1).split('?')[0];
   const doc = docs.get(docName);
   if (doc && !trackedDocs.has(docName)) {
     trackedDocs.add(docName);

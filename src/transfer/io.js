@@ -8,7 +8,7 @@ import { serialize, deserialize, appendImport } from '/src/core/serialization.js
 import { exportToYaml, importFromYaml } from '/src/transfer/yaml.js';
 import { exportToCsv, importFromCsv } from '/src/transfer/csv.js';
 import { showAlert } from '/src/core/modals.js';
-import { isMapEditable, lockState } from '/src/core/lock.js';
+import { isMapEditable, lockState, lockHeaders } from '/src/core/lock.js';
 import { closeMainMenu, zoomToFit } from '/src/ui/navigation.js';
 import * as yjs from '/src/core/yjs.js';
 import * as log from '/src/core/log.js';
@@ -98,7 +98,7 @@ export const importBackupsIfPresent = async (data) => {
         try {
             await fetch(`/api/backups/${state.mapId}/import`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...lockHeaders() },
                 body: JSON.stringify({ backups: [backup] }),
             });
         } catch { /* best-effort */ }

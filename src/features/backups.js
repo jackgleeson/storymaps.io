@@ -4,7 +4,7 @@
 import { dom } from '/src/ui/dom.js';
 import { state, pushUndo } from '/src/core/state.js';
 import { deserialize } from '/src/core/serialization.js';
-import { isMapEditable } from '/src/core/lock.js';
+import { isMapEditable, lockHeaders } from '/src/core/lock.js';
 import { escHtml } from '/src/core/constants.js';
 import { showAlert, showConfirm, showPrompt, showToast } from '/src/core/modals.js';
 import * as log from '/src/core/log.js';
@@ -94,7 +94,7 @@ const refreshBackupsList = async () => {
                 <div class="backup-info">
                     <div class="backup-time">${label(b, safeNote)}</div>
                     ${b.mapName ? `<div class="backup-meta">${b.imported ? '<span class="backup-imported-tag">Imported</span> &middot; ' : ''}${escHtml(b.mapName)}</div>` : (b.imported ? `<div class="backup-meta"><span class="backup-imported-tag">Imported</span></div>` : '')}
-                    <div class="backup-meta" title="${new Date(b.timestamp).toLocaleString()}">${relativeTime(b.timestamp)} &middot; ${formatSize(b.size)}${b.cardCount ? ` &middot; ${b.cardCount} cards` : ''}</div>
+                    <div class="backup-meta" title="${new Date(b.timestamp).toLocaleString()}">${relativeTime(b.timestamp)} &middot; ${formatSize(b.size)}${Number(b.cardCount) > 0 ? ` &middot; ${Number(b.cardCount)} cards` : ''}</div>
                 </div>
                 <div class="backup-actions">
                     ${editable ? `<button class="backup-restore-btn" data-id="${safeId}">Restore</button>` : ''}
@@ -168,7 +168,7 @@ const restoreBackup = async (backupId) => {
 const deleteBackup = async (backupId) => {
     if (!await showConfirm('Delete this backup?')) return;
     try {
-        await fetch(`/api/backups/${state.mapId}/${backupId}`, { method: 'DELETE' });
+        await fetch(`/api/backups/${state.mapId}/${backupId}`, { method: 'DELETE', headers: lockHeaders() });
         log.logEvent('Deleted backup');
         await refreshBackupsList();
     } catch {

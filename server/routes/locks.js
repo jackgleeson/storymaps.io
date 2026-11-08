@@ -1,3 +1,6 @@
+// The app and the CLI send a SHA-256 of the password, as hex
+const isHash = (value) => typeof value === 'string' && /^[0-9a-f]{64}$/.test(value);
+
 export default function register(ctx) {
   const { route } = ctx;
   route('GET', '/api/lock/:mapId', async (req, res, { mapId }) => {
@@ -6,10 +9,21 @@ export default function register(ctx) {
     res.end(JSON.stringify({ isLocked: !!locks[mapId]?.isLocked }));
   });
 
+  // Locking is rate limited like unlocking, since a wrong current password is refused here too
   route('POST', '/api/lock/:mapId', async (req, res, { mapId }, body) => {
-    if (!body.passwordHash) {
+    if (ctx.isProxyRateLimited(req)) {
+      res.writeHead(429, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Too many attempts' }));
+      return;
+    }
+    if (!isHash(body?.passwordHash) || (body.currentPasswordHash != null && !isHash(body.currentPasswordHash))) {
       res.writeHead(400, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Password hash required' }));
+      return;
+    }
+    if (!ctx.stmtExists.get(mapId)) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Map not found' }));
       return;
     }
     let taken = false;
@@ -49,7 +63,7 @@ export default function register(ctx) {
       res.end(JSON.stringify({ ok: true }));
       return;
     }
-    const ok = body.passwordHash === lock.passwordHash;
+    const ok = body?.passwordHash === lock.passwordHash;
     res.writeHead(ok ? 200 : 403, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok }));
   });
@@ -64,7 +78,7 @@ export default function register(ctx) {
     await ctx.updateJson(ctx.LOCK_FILE, {}, (locks) => {
       const lock = locks[mapId];
       if (!lock?.isLocked) return false;
-      if (body.passwordHash !== lock.passwordHash) {
+      if (body?.passwordHash !== lock.passwordHash) {
         wrongPassword = true;
         return false;
       }

@@ -93,8 +93,8 @@ export const loadAndSerialize = async (mapId, host, { Y, docs, getPersistence, r
     // Load from LevelDB persistence
     const persistence = getPersistence();
     if (!persistence) return null;
-    doc = new Y.Doc();
-    await persistence.bindState(mapId, doc);
+    // getYDoc only reads, where bindState would store an empty entry for a map that isn't there
+    doc = await persistence.provider.getYDoc(mapId);
     const ymap = doc.getMap('storymap');
     if (!ymap.get('columns')) { doc.destroy(); return null; }
     data = serializeDoc(doc);

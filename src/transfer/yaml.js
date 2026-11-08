@@ -198,9 +198,24 @@ export function jsonToYamlObj(data) {
 // Import: YAML string → JSON (compatible with deserializeV1)
 // ============================================================================
 
+// YAML aliases let a few hundred bytes stand for millions of values (an "alias bomb"), which
+// would run the server out of memory once read. Count the values, an alias each time it is
+// used, and stop well above the size of any real story map.
+const MAX_YAML_VALUES = 1_000_000;
+const checkYamlSize = (root) => {
+    let count = 0;
+    const stack = [root];
+    while (stack.length) {
+        const value = stack.pop();
+        if (++count > MAX_YAML_VALUES) throw new Error('YAML is too large');
+        if (value && typeof value === 'object') for (const child of Object.values(value)) stack.push(child);
+    }
+};
+
 export function importFromYaml(yamlString) {
     const obj = jsyaml.load(yamlString);
     if (!obj || typeof obj !== 'object') throw new Error('Invalid YAML');
+    checkYamlSize(obj);
     const validation = validateYaml(obj);
     if (!validation.valid) {
         const err = new Error(validation.errors.join('\n'));

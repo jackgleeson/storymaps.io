@@ -3,6 +3,7 @@ import { strict as assert } from 'node:assert';
 import { once } from 'node:events';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { request } from 'node:http';
+import { createHash } from 'node:crypto';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import * as Y from 'yjs';
@@ -88,6 +89,14 @@ describe('WebSocket sync', () => {
     const ws = new WebSocket(`${wsBase}/abc12345`, { origin: 'https://evil.example' });
     const [code] = await once(ws, 'close');
     assert.equal(code, 4403);
+  });
+
+  test('refuses a connection to anything but a map', async () => {
+    for (const room of ['api/maps', 'weird%20name', 'abc1234', 'abc123456', 'ABCD1234']) {
+      const ws = new WebSocket(`${wsBase}/${room}`, { origin: ORIGIN });
+      const [code] = await once(ws, 'close');
+      assert.equal(code, 4400, room);
+    }
   });
 
   test('refuses a connection with no origin', async () => {
@@ -177,43 +186,88 @@ describe('WebSocket sync', () => {
   });
 });
 
+// A SHA-256 of the password, as the app and the CLI send it
+const h = (password) => createHash('sha256').update(password).digest('hex');
+// Locking and unlocking allow 5 a minute from one address, so each request has its own
+const lockPost = (path, body, headers = {}) => api('POST', path, { body, headers: { ...newAddress(), ...headers } });
+
 describe('locks', () => {
   test('a map can be locked, and unlocked with the password', async () => {
     const id = await createMap();
-    await api('POST', `/api/lock/${id}`, { body: { passwordHash: 'owner-hash' } });
+    await lockPost(`/api/lock/${id}`, { passwordHash: h('owner-hash') });
     assert.equal((await api('GET', `/api/lock/${id}`)).json.isLocked, true);
-    assert.equal((await api('POST', `/api/lock/${id}/unlock`, { body: { passwordHash: 'wrong' } })).status, 403);
-    assert.equal((await api('POST', `/api/lock/${id}/unlock`, { body: { passwordHash: 'owner-hash' } })).status, 200);
+    assert.equal((await lockPost(`/api/lock/${id}/unlock`, { passwordHash: h('wrong') })).status, 403);
+    assert.equal((await lockPost(`/api/lock/${id}/unlock`, { passwordHash: h('owner-hash') })).status, 200);
   });
 
   test('the owner can lock again with the same password', async () => {
     const id = await createMap();
-    await api('POST', `/api/lock/${id}`, { body: { passwordHash: 'owner-hash' } });
-    assert.equal((await api('POST', `/api/lock/${id}`, { body: { passwordHash: 'owner-hash' } })).status, 200);
+    await lockPost(`/api/lock/${id}`, { passwordHash: h('owner-hash') });
+    assert.equal((await lockPost(`/api/lock/${id}`, { passwordHash: h('owner-hash') })).status, 200);
   });
 
   test('the password can be changed by sending the current one', async () => {
     const id = await createMap();
-    await api('POST', `/api/lock/${id}`, { body: { passwordHash: 'old-hash' } });
-    const change = await api('POST', `/api/lock/${id}`, { body: { passwordHash: 'new-hash', currentPasswordHash: 'old-hash' } });
+    await lockPost(`/api/lock/${id}`, { passwordHash: h('old-hash') });
+    const change = await lockPost(`/api/lock/${id}`, { passwordHash: h('new-hash'), currentPasswordHash: h('old-hash') });
     assert.equal(change.status, 200);
-    assert.equal((await api('POST', `/api/lock/${id}/unlock`, { body: { passwordHash: 'old-hash' } })).status, 403);
-    assert.equal((await api('POST', `/api/lock/${id}/unlock`, { body: { passwordHash: 'new-hash' } })).status, 200);
+    assert.equal((await lockPost(`/api/lock/${id}/unlock`, { passwordHash: h('old-hash') })).status, 403);
+    assert.equal((await lockPost(`/api/lock/${id}/unlock`, { passwordHash: h('new-hash') })).status, 200);
   });
 
   test('a wrong current password does not change the password', async () => {
     const id = await createMap();
-    await api('POST', `/api/lock/${id}`, { body: { passwordHash: 'owner-hash' } });
-    const change = await api('POST', `/api/lock/${id}`, { body: { passwordHash: 'new-hash', currentPasswordHash: 'guess' } });
+    await lockPost(`/api/lock/${id}`, { passwordHash: h('owner-hash') });
+    const change = await lockPost(`/api/lock/${id}`, { passwordHash: h('new-hash'), currentPasswordHash: h('guess') });
     assert.equal(change.status, 403);
   });
 
   test('locking a map that is already locked needs its password', async () => {
     const id = await createMap();
-    await api('POST', `/api/lock/${id}`, { body: { passwordHash: 'owner-hash' } });
-    const takeover = await api('POST', `/api/lock/${id}`, { body: { passwordHash: 'someone-else' } });
+    await lockPost(`/api/lock/${id}`, { passwordHash: h('owner-hash') });
+    const takeover = await lockPost(`/api/lock/${id}`, { passwordHash: h('someone-else') });
     assert.equal(takeover.status, 403);
-    assert.equal((await api('POST', `/api/lock/${id}/unlock`, { body: { passwordHash: 'owner-hash' } })).status, 200, 'the owner can still unlock');
+    assert.equal((await lockPost(`/api/lock/${id}/unlock`, { passwordHash: h('owner-hash') })).status, 200, 'the owner can still unlock');
+  });
+
+  test('a lock needs a SHA-256 password hash, and a map that exists', async () => {
+    const id = await createMap();
+    for (const passwordHash of ['short', 'x'.repeat(64), { a: 1 }, h('a').repeat(1000)]) {
+      assert.equal((await lockPost(`/api/lock/${id}`, { passwordHash })).status, 400, JSON.stringify(passwordHash).slice(0, 20));
+    }
+    assert.equal((await lockPost('/api/lock/nosuchmap1', { passwordHash: h('a') })).status, 404);
+    assert.equal((await api('GET', `/api/lock/${id}`)).json.isLocked, false);
+  });
+
+  test('guessing the password by locking again is rate limited', async () => {
+    const id = await createMap();
+    await lockPost(`/api/lock/${id}`, { passwordHash: h('owner') });
+    const from = { 'x-forwarded-for': '203.0.113.90' };
+    const tries = [];
+    for (let i = 0; i < 6; i++) tries.push((await lockPost(`/api/lock/${id}`, { passwordHash: h(`guess${i}`) }, from)).status);
+    assert.deepEqual(tries, [403, 403, 403, 403, 403, 429]);
+  });
+
+  test('a locked map takes no live edits from a connection without the password', async () => {
+    const id = await createMap();
+    await lockPost(`/api/lock/${id}`, { passwordHash: h('owner') });
+    const { ymap } = await connect(id);
+    ymap.set('name', 'Changed while locked');
+    await new Promise(resolve => setTimeout(resolve, 500));
+    assert.notEqual((await api('GET', `/api/maps/${id}`)).json.name, 'Changed while locked');
+  });
+
+  test('a connection that sends the password can edit a locked map', async () => {
+    const id = await createMap();
+    await lockPost(`/api/lock/${id}`, { passwordHash: h('owner') });
+    const { ymap, provider } = await connect(id);
+    provider.ws.send(`lock:${h('wrong')}`);
+    ymap.set('name', 'Wrong password');
+    await new Promise(resolve => setTimeout(resolve, 300));
+    assert.notEqual((await api('GET', `/api/maps/${id}`)).json.name, 'Wrong password');
+    provider.ws.send(`lock:${h('owner')}`);
+    ymap.set('name', 'Unlocked edit');
+    await waitFor(async () => (await api('GET', `/api/maps/${id}`)).json.name === 'Unlocked edit', 'the edit');
   });
 });
 
@@ -236,6 +290,37 @@ describe('HTTP API', () => {
     assert.equal((await api('GET', `/api/backups/${id}`)).json.length, 6);
   });
 
+  test('an imported backup keeps only the fields the app reads, and cannot claim to be from the future', async () => {
+    const id = await createMap();
+    const backups = [
+      { id: 'future', data: '{}', timestamp: '9999-01-01T00:00:00Z', cardCount: '<img src=x onerror=alert(1)>', extra: 'x' },
+      { id: 'notjson', data: '<script>' },
+      { id: '../escape', data: '{}' },
+    ];
+    assert.equal((await api('POST', `/api/backups/${id}/import`, { body: { backups }, headers: { origin: ORIGIN, ...newAddress() } })).status, 200);
+    const list = (await api('GET', `/api/backups/${id}`)).json;
+    assert.deepEqual(list.map(b => b.id), ['future']);
+    assert.equal(list[0].cardCount, 0);
+    assert.ok(Date.parse(list[0].timestamp) <= Date.now());
+    assert.equal((await api('GET', `/api/backups/${id}/future`)).json.extra, undefined);
+    assert.equal((await api('POST', '/api/backups/nosuchmap1/import', { body: { backups }, headers: { origin: ORIGIN, ...newAddress() } })).status, 404);
+  });
+
+  test('the backups of a locked map are only imported or deleted with its password', async () => {
+    const id = await createMap();
+    const made = (await api('POST', `/api/backups/${id}`, { body: { note: 'x' }, headers: { origin: ORIGIN, ...newAddress() } })).json;
+    await lockPost(`/api/lock/${id}`, { passwordHash: h('owner') });
+    const backups = [{ id: 'imported1', data: '{}' }];
+    const headers = { origin: ORIGIN };
+    assert.equal((await api('POST', `/api/backups/${id}/import`, { body: { backups }, headers: { ...headers, ...newAddress() } })).status, 423);
+    assert.equal((await api('DELETE', `/api/backups/${id}/${made.id}`, { headers })).status, 423);
+    assert.equal((await api('GET', `/api/backups/${id}`)).json.length, 1);
+    const withPassword = { ...headers, 'x-lock-password': h('owner') };
+    assert.equal((await api('POST', `/api/backups/${id}/import`, { body: { backups }, headers: { ...withPassword, ...newAddress() } })).status, 200);
+    assert.equal((await api('DELETE', `/api/backups/${id}/${made.id}`, { headers: withPassword })).status, 200);
+    assert.deepEqual((await api('GET', `/api/backups/${id}`)).json.map(b => b.id), ['imported1']);
+  });
+
   test('writes from another site are refused, except the CLI routes', async () => {
     const id = await createMap();
     const fromEvil = await api('POST', `/api/backups/${id}/import`, { body: { backups: [] }, headers: { origin: 'https://evil.example' } });
@@ -243,6 +328,8 @@ describe('HTTP API', () => {
     const noOrigin = await api('POST', `/api/backups/${id}/import`, { body: { backups: [] } });
     assert.equal(noOrigin.status, 403);
     assert.equal((await api('POST', '/api/maps', { body: smallMap() })).status, 201, 'the CLI can create maps without an origin');
+    const cliRouteFromEvil = await api('POST', '/api/maps', { body: smallMap(), headers: { origin: 'https://evil.example', ...newAddress() } });
+    assert.equal(cliRouteFromEvil.status, 403, 'another site cannot use the CLI routes either');
     const backup = await api('POST', `/api/backups/${id}`, { body: { note: 'x' }, headers: { 'x-forwarded-for': '203.0.113.78' } });
     assert.equal(backup.status, 200, 'the CLI can make a backup without an origin');
     const [entry] = (await api('GET', `/api/maps/${id}/log`)).json;
@@ -323,7 +410,7 @@ describe('pages and files', () => {
       assert.equal(res.status, 200, path);
       assert.ok(res.text.includes('<html'), `${path} got the app`);
     }
-    for (const path of ['/.env', '/%2eenv', '/.git/config', '/.git', '/wp-login.php', '/:3000', '/[id]', '/*',
+    for (const path of ['/src/./core/constants.js', '/src//core/constants.js', '/src/core/constants.js/', '/.env', '/%2eenv', '/.git/config', '/.git', '/wp-login.php', '/:3000', '/[id]', '/*',
       '/abc12345/', '/blog/wp-includes/js/json2.js', '/sample/x/y']) {
       assert.equal((await rawGet(path)).status, 404, path);
     }

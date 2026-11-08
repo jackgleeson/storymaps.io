@@ -5,10 +5,6 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
-import * as Y from 'yjs';
-import WebSocket from 'ws';
-import { WebsocketProvider } from 'y-websocket';
-import { writeDocFromJson } from '../../server/serialization.js';
 import { smallMap } from '../fixtures.js';
 import { ROOT, startServer, testEnv } from './server-process.js';
 
@@ -17,32 +13,24 @@ let dataDir;
 before(async () => { dataDir = await mkdtemp(join(tmpdir(), 'storymaps-delete-')); });
 after(() => rm(dataDir, { recursive: true, force: true }));
 
+// Each request from its own address, so the 5 a minute limit on backups and locks isn't reached
+let nextAddress = 0;
 const call = async (base, method, path, body) => {
   const res = await fetch(base + path, {
     method,
     // The backups route only accepts writes from the site itself
-    headers: { 'Content-Type': 'application/json', origin: 'http://localhost:3000' },
+    headers: { 'Content-Type': 'application/json', origin: 'http://localhost:3000', 'x-forwarded-for': `198.51.100.${++nextAddress}` },
     body: body && JSON.stringify(body),
   });
   return { status: res.status, json: await res.json().catch(() => null) };
 };
 
-// Make a map with a chosen ID, the way the browser does: open it over the WebSocket and fill it in
-class BrowserWebSocket extends WebSocket {
-  constructor(url, protocols) { super(url, protocols, { origin: 'http://localhost:3000' }); }
-}
+// Make a map with a chosen ID. The WebSocket only takes 8-character IDs, and a push takes any,
+// so this can make the IDs that start the same way as another
 const createMapWithId = async (server, id, name) => {
-  const doc = new Y.Doc();
-  const provider = new WebsocketProvider(server.wsBase, id, doc, { WebSocketPolyfill: BrowserWebSocket, disableBc: true });
-  await new Promise(resolve => provider.once('sync', resolve));
-  writeDocFromJson(doc, { ...smallMap(), name }, Y);
-  for (let i = 0; i < 100 && (await call(server.base, 'GET', `/api/maps/${id}`)).json?.name !== name; i++) {
-    await new Promise(resolve => setTimeout(resolve, 50));
-  }
+  assert.equal((await call(server.base, 'PUT', `/api/maps/${id}`, { ...smallMap(), name })).status, 200);
   await call(server.base, 'POST', `/api/backups/${id}`, { note: 'x' });
-  await call(server.base, 'POST', `/api/lock/${id}`, { passwordHash: 'h' });
-  provider.destroy();
-  doc.destroy();
+  await call(server.base, 'POST', `/api/lock/${id}`, { passwordHash: 'a'.repeat(64) });
 };
 
 // The script must run with the server stopped, as LevelDB allows one process at a time

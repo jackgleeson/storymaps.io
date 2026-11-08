@@ -169,11 +169,20 @@ export const curlPost = async (url, params, timeoutMs = 30_000) => {
       '-H', 'User-Agent: Storymaps.io/1.0 (https://storymaps.io; admin@storymaps.io)',
       '-H', 'Accept: application/json',
     ];
-    if (params instanceof URLSearchParams) {
-      args.push('-d', params.toString());
-    }
+    // The form, with the API token, goes in on stdin, so it never shows in the list of running
+    // processes or in the "Command failed" message, which names every argument
+    const form = params instanceof URLSearchParams ? params.toString() : null;
+    if (form !== null) args.push('-d', '@-');
     args.push(url);
-    const { stdout } = await execFileAsync('curl', args, { maxBuffer: 2 * 1024 * 1024 });
+    let stdout;
+    try {
+      const run = execFileAsync('curl', args, { maxBuffer: 2 * 1024 * 1024 });
+      run.child.stdin.end(form ?? '');
+      ({ stdout } = await run);
+    } catch (err) {
+      const reason = (err.stderr || '').trim().replace(/^curl: \(\d+\) /, '');
+      throw new Error(reason || `Could not reach ${new URL(url).hostname}`);
+    }
     const lastNewline = stdout.lastIndexOf('\n');
     const body = stdout.slice(0, lastNewline);
     const status = parseInt(stdout.slice(lastNewline + 1), 10);

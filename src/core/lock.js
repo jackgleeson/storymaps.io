@@ -152,11 +152,30 @@ const saveSessionUnlock = (mapId, hash) => {
     sessionStorage.setItem('unlockedMaps', JSON.stringify(unlockedMaps));
 };
 
+// For requests that change a locked map, such as deleting a backup
+export const lockHeaders = () => (lockState.passwordHash ? { 'X-Lock-Password': lockState.passwordHash } : {});
+
+// The server only takes edits to a locked map from a connection that has sent the password
+// hash, so send it now and each time the connection comes back
+const hookedProviders = new WeakSet();
+const sendUnlockToServer = () => {
+    const provider = _getProvider?.();
+    if (!provider) return;
+    if (!hookedProviders.has(provider)) {
+        hookedProviders.add(provider);
+        provider.on('status', ({ status }) => { if (status === 'connected') sendUnlockToServer(); });
+    }
+    if (lockState.passwordHash && provider.ws?.readyState === WebSocket.OPEN) {
+        provider.ws.send(`lock:${lockState.passwordHash}`);
+    }
+};
+
 // Restore this tab's unlock, and the password hash when it was saved (older entries are just true)
 export const restoreSessionUnlock = (mapId) => {
     const unlockedMaps = JSON.parse(sessionStorage.getItem('unlockedMaps') || '{}');
     lockState.sessionUnlocked = !!unlockedMaps[mapId];
     if (typeof unlockedMaps[mapId] === 'string') lockState.passwordHash = unlockedMaps[mapId];
+    sendUnlockToServer();
 };
 
 // Lock the map with a password
@@ -188,6 +207,7 @@ const lockMap = async (password) => {
         lockState.passwordHash = hash;
         lockState.sessionUnlocked = true;
         saveSessionUnlock(_state.mapId, hash);
+        sendUnlockToServer();
 
         // Broadcast lock state change via awareness so other clients update immediately
         const provider = _getProvider();
@@ -296,6 +316,7 @@ const unlockMap = async (password) => {
     lockState.passwordHash = inputHash;
     lockState.sessionUnlocked = true;
     saveSessionUnlock(_state.mapId, inputHash);
+    sendUnlockToServer();
     _logEvent?.('Unlocked map');
     updateLockUI();
     updateEditability();

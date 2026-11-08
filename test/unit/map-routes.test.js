@@ -23,6 +23,11 @@ const makeServer = () => {
   const persistence = {
     bindState: async (id, doc) => { if (stored.has(id)) Y.applyUpdate(doc, stored.get(id)); },
     provider: {
+      getYDoc: async (id) => {
+        const doc = new Y.Doc();
+        if (stored.has(id)) Y.applyUpdate(doc, stored.get(id));
+        return doc;
+      },
       storeUpdate: async (id, update) => {
         stored.set(id, stored.has(id) ? Y.mergeUpdates([stored.get(id), update]) : update);
       },

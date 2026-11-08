@@ -10,8 +10,20 @@ export const pickClientIp = (req, { trustProxy } = {}) => {
   return req.socket.remoteAddress;
 };
 
+// Whoever has one IPv6 address usually has the whole /64 block it is in, so the limits count the
+// block as one address. IPv4, and IPv4 written as IPv6 (::ffff:1.2.3.4), count as they are.
+export const limitKey = (ip) => {
+  if (typeof ip !== 'string' || !ip.includes(':') || ip.includes('.')) return ip;
+  const address = ip.split('%')[0].toLowerCase();
+  const [head, tail] = address.split('::');
+  const front = head ? head.split(':') : [];
+  const back = tail ? tail.split(':') : [];
+  const groups = tail === undefined ? front : [...front, ...Array(Math.max(0, 8 - front.length - back.length)).fill('0'), ...back];
+  return `${groups.slice(0, 4).map(g => (parseInt(g, 16) || 0).toString(16)).join(':')}::/64`;
+};
+
 const TRUST_PROXY = process.env.TRUST_PROXY === 'true';
-const getClientIp = (req) => pickClientIp(req, { trustProxy: TRUST_PROXY });
+const getClientIp = (req) => limitKey(pickClientIp(req, { trustProxy: TRUST_PROXY }));
 
 // A limiter allows `limit` requests per `windowMs` from each client IP
 const limiters = [];

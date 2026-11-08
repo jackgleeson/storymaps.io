@@ -116,8 +116,8 @@ export default function register(ctx) {
         res.end(JSON.stringify({ error: 'Persistence unavailable' }));
         return;
       }
-      doc = new ctx.Y.Doc();
-      await persistence.bindState(mapId, doc);
+      // Only reads, so asking for the log of a map that isn't there stores nothing
+      doc = await persistence.provider.getYDoc(mapId);
       created = true;
     }
     const ymap = doc.getMap('storymap');

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { test, expect, openMap, acceptDialog, openMenu } from './fixtures.js';
+import { test, expect, openMap, acceptDialog, openMenu, addCard } from './fixtures.js';
 
 const hash = (password) => createHash('sha256').update(password).digest('hex');
 
@@ -33,6 +33,44 @@ test('lock a map, then change and remove the lock after a reload', async ({ page
   await openMenu(page, 'removeLockBtn');
   await acceptDialog(page);
   await expect.poll(isLocked).toBe(false);
+});
+
+// The server takes live edits to a locked map only from a tab that has sent it the password
+test('edits to a locked map save from the tab that locked it, after a reload, and from a tab that unlocks it', async ({ page, createMap, request, openSecondTab }) => {
+  const id = await createMap();
+  const saved = async () => JSON.stringify(await (await request.get(`/api/maps/${id}`)).json());
+  await openMap(page, id);
+  await openMenu(page, 'lockMapBtn');
+  await enterPassword(page, 'pass');
+  await acceptDialog(page);
+  await addCard(page, 'Added by the locker');
+  await expect.poll(saved).toContain('Added by the locker');
+
+  await page.reload();
+  await expect(page.locator('.step')).toHaveCount(3);
+  await addCard(page, 'Added after a reload');
+  await expect.poll(saved).toContain('Added after a reload');
+
+  const other = await openSecondTab();
+  await openMap(other, id);
+  await expect(other.getByText('This map is read-only')).toBeVisible();
+  await openMenu(other, 'lockMapBtn');
+  await enterPassword(other, 'pass');
+  await expect(other.locator('#readOnlyBanner')).toBeHidden();
+  await addCard(other, 'Added after unlocking');
+  await expect.poll(saved).toContain('Added after unlocking');
+});
+
+test('a tab without the password cannot change a locked map, even round the read-only view', async ({ page, createMap, request }) => {
+  const id = await createMap();
+  await request.post(`/api/lock/${id}`, { data: { passwordHash: hash('pass') } });
+  await openMap(page, id);
+  await expect(page.getByText('This map is read-only')).toBeVisible();
+  // As someone could from the browser console: write to the shared map directly
+  await page.evaluate(async () => (await import('/src/core/yjs.js')).getYdoc().getMap('storymap').set('name', 'Changed'));
+  expect(await page.evaluate(async () => (await import('/src/core/yjs.js')).getYdoc().getMap('storymap').get('name'))).toBe('Changed');
+  await page.waitForTimeout(500);
+  expect((await (await request.get(`/api/maps/${id}`)).json()).name).not.toBe('Changed');
 });
 
 test('when someone else locks the map first, the app says so and goes read-only', async ({ page, createMap, request }) => {

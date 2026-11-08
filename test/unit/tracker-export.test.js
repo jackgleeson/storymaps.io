@@ -210,7 +210,8 @@ const fs = require('fs');
 const dir = process.env.FAKE_CURL_DIR;
 const args = process.argv.slice(2);
 const url = args[args.length - 1];
-const data = args.includes('-d') ? args[args.indexOf('-d') + 1] : '';
+let data = args.includes('-d') ? args[args.indexOf('-d') + 1] : '';
+if (data === '@-') data = fs.readFileSync(0, 'utf8');
 fs.appendFileSync(dir + '/calls.jsonl', JSON.stringify({ url, data, args }) + '\\n');
 const method = new URL(url).pathname.split('/').pop();
 const queue = JSON.parse(fs.readFileSync(dir + '/responses.json', 'utf8'))[method] || [];
@@ -251,6 +252,7 @@ process.stdout.write(JSON.stringify(reply) + '\\n200');
       conduit({ 'user.whoami': [{ result: { userName: 'jack' } }] });
       assert.deepEqual((await call('/api/export/phabricator/verify', creds)).json, { ok: true, userName: 'jack' });
       assert.equal(calls()[0].fields['api.token'], 'api-secret');
+      assert.ok(!calls()[0].args.join(' ').includes('api-secret'), 'the token is never on the command line');
     });
 
     test('curl connects to the address that was checked, over https only', async () => {
