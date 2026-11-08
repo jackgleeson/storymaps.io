@@ -7,6 +7,7 @@ import { showToast } from '/src/core/modals.js';
 import { cardHash, cardFromHash, isCardHash } from '/src/core/slice-hash.js';
 import { mapLinkUrl, copyLink } from '/src/features/slice-links.js';
 import { openExpandModal, getExpandedItem } from '/src/features/card-expand.js';
+import { scrollElementIntoView } from '/src/ui/navigation.js';
 
 // Every card in the map: the user and activity rows, the slices, and the partial maps. Cards in a
 // partial map are only edited from the partial map itself, so they open read-only.
@@ -41,8 +42,10 @@ export const openCardFromHash = () => {
         return;
     }
     if (getExpandedItem()) return;
-    // Bring the card into view behind the expanded view, so it's there when that closes
-    dom.storyMap.querySelector(`.story-card[data-story-id="${CSS.escape(card.id)}"]`)?.scrollIntoView({ block: 'center', inline: 'center' });
+    // Leave the story map where it opened, unless the card is off screen: then scroll only as far
+    // as it takes to show it, so it's there when the expanded view closes. Centring the card
+    // would scroll a card near an edge into the empty space around the story map.
+    scrollElementIntoView(dom.storyMap.querySelector(`.story-card[data-story-id="${CSS.escape(card.id)}"]`));
     openExpandModal(card, { readOnly: cards.find(c => c.card === card).readOnly, focus: false });
 };
 
