@@ -183,7 +183,7 @@ Projects are kept in SQLite next to the map index (`projects` and `project_maps`
 ### Client
 The client has no build step - ES modules are loaded directly from `src/`. Third-party libraries (Yjs, CodeMirror, html-to-image, js-yaml, html2canvas) are vendored as pre-built bundles in `public/vendor/`.
 
-Page views on storymaps.io are counted with [Umami Cloud](https://umami.is), open-source web analytics that uses no cookies. It's loaded by `src/features/analytics.js`, only on that hostname. It receives page addresses, including map links, but no map content or display names.
+Page views on storymaps.io are counted with [Umami Cloud](https://umami.is), open-source web analytics that uses no cookies. It's loaded by `src/features/analytics.js`, only on that hostname. It receives page addresses, including map links, and the names of a few actions such as creating a map or exporting, but no map content or display names.
 
 ## Self-Hosting
 
