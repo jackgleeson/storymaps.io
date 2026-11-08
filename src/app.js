@@ -1411,6 +1411,7 @@ const initEventListeners = () => {
         const item = e.target.closest('.dropdown-item');
         if (item?.dataset.sample) {
             closeMainMenu();
+            if (!await showConfirm(`Open the ${item.textContent.trim()} sample?\n\nIt opens as a new map. You can return to this map using the back button.`)) return;
             startWithSample(item.dataset.sample);
         }
     });

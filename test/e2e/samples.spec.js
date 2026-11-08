@@ -1,4 +1,4 @@
-import { test, expect, openMap } from './fixtures.js';
+import { test, expect, openMap, acceptDialog } from './fixtures.js';
 
 // How the app shows a date, worked out in the page so it matches the browser's locale
 const inTwoWeeks = (page) => page.evaluate(() => {
@@ -20,6 +20,7 @@ test('a sample from the menu opens as a new map, with each slice goal and the fi
   await page.locator('#menuBtn').click();
   await page.locator('#samplesSubmenuTrigger').click();
   await page.locator('[data-sample="coffee-ordering"]').first().click();
+  expect(await acceptDialog(page)).toBe('Open the Coffee Ordering App sample?\n\nIt opens as a new map. You can return to this map using the back button.');
   await expect(page.locator('#boardName')).toHaveValue('Coffee Ordering App');
   await expect(page).not.toHaveURL(new RegExp(id));
 
@@ -44,7 +45,16 @@ test('a sample from the menu of a project map leaves the project map as it was',
   await expect(page.locator('#boardName')).toHaveValue('Coffee app');
   await page.locator('#menuBtn').click();
   await page.locator('#samplesSubmenuTrigger').click();
+  // Cancel leaves the map open
   await page.locator('[data-sample="holiday-rentals"]').first().click();
+  await page.locator('.dialog-modal').getByRole('button', { name: 'Cancel' }).click();
+  await expect(page).toHaveURL(`/p/${projectId}/${id}`);
+  await expect(page.locator('#boardName')).toHaveValue('Coffee app');
+
+  await page.locator('#menuBtn').click();
+  await page.locator('#samplesSubmenuTrigger').click();
+  await page.locator('[data-sample="holiday-rentals"]').first().click();
+  await acceptDialog(page);
   await expect(page.locator('#boardName')).toHaveValue('Holiday Rentals App');
 
   await page.goBack();
