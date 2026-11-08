@@ -25,6 +25,7 @@ import * as partials from '/src/features/partials.js';
 import * as build from '/src/features/build.js';
 import * as sliceLinks from '/src/features/slice-links.js';
 import * as cardLinks from '/src/features/card-links.js';
+import { loadAnalytics } from '/src/features/analytics.js';
 import { isCardHash } from '/src/core/slice-hash.js';
 import * as freezeRows from '/src/features/freeze-rows.js';
 import * as starterText from '/src/features/starter-text.js';
@@ -1955,4 +1956,5 @@ const init = async () => {
     if (notice) await showAlert(notice);
 };
 
+loadAnalytics();
 init();

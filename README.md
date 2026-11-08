@@ -183,9 +183,13 @@ Projects are kept in SQLite next to the map index (`projects` and `project_maps`
 ### Client
 The client has no build step - ES modules are loaded directly from `src/`. Third-party libraries (Yjs, CodeMirror, html-to-image, js-yaml, html2canvas) are vendored as pre-built bundles in `public/vendor/`.
 
+Page views on storymaps.io are counted with [Umami Cloud](https://umami.is), open-source web analytics that uses no cookies. It's loaded by `src/features/analytics.js`, only on that hostname. It receives page addresses, including map links, but no map content or display names.
+
 ## Self-Hosting
 
 Storymaps is a single Docker container behind a Caddy reverse proxy. It runs on any Linux server and gives your team a private instance at e.g. `storymaps.yourcompany.com` with automatic HTTPS.
+
+A self-hosted instance sends no analytics. The Umami script only loads on storymaps.io.
 
 ### Prerequisites
 - A Linux server (VM, VPS, or container platform) - 512 MB RAM / 1 vCPU is sufficient
