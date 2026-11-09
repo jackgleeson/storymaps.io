@@ -89,7 +89,7 @@ const STEPS = [
     {
         target: '.slice-container .story-column:nth-child(1) .story-card:first-child',
         title: 'Tasks',
-        body: 'Under each step are the tasks that make it possible. To browse the menu, the app needs <strong>Drinks by category</strong>.',
+        body: 'Under each step are the tasks: the work needed to let a user complete that step. One way to let a customer browse the menu is <strong>Drinks by category</strong>.',
         icon: '\u{1F4CB}',
     },
     {
@@ -109,6 +109,7 @@ const STEPS = [
         title: 'A first release',
         body: 'The MVP runs across every step, so once it’s built, a customer can order a coffee from start to finish.<br><br><strong>Try it:</strong> drag a few cards around. They’ll go back when you move on.',
         icon: '\u{2705}',
+        holdScroll: true,
         onEnter: () => {
             document.body.classList.add('tour-v1-done');
             const state = _getState?.();
@@ -157,6 +158,7 @@ const STEPS = [
 let _active = false;
 let _step = 0;
 let _wasDarkOnStart = false;
+let _heldScroll = null; // where the story map stays during a step that lets people drag cards
 const $ = (id) => document.getElementById(id);
 
 const backdrop = () => $('tourBackdrop');
@@ -173,9 +175,28 @@ const TOOLTIP_GAP = 14;
 const PAD = 6;
 const RADIUS = 8;
 
-const positionSpotlight = (rects) => {
+// Where two highlights overlap, the cut-outs cancel and leave a dark strip, as happens when the rows
+// sit close together on a phone. Highlights that would touch become one.
+const joinTouching = (rects) => {
+    const joined = rects.map(r => ({ left: r.left, top: r.top, right: r.left + r.width, bottom: r.top + r.height }));
+    for (let i = 0; i < joined.length; i++) {
+        for (let j = joined.length - 1; j > i; j--) {
+            const a = joined[i];
+            const b = joined[j];
+            if (a.left - PAD * 2 > b.right || b.left - PAD * 2 > a.right || a.top - PAD * 2 > b.bottom || b.top - PAD * 2 > a.bottom) continue;
+            joined[i] = { left: Math.min(a.left, b.left), top: Math.min(a.top, b.top), right: Math.max(a.right, b.right), bottom: Math.max(a.bottom, b.bottom) };
+            joined.splice(j, 1);
+            // The bigger highlight may now touch one already passed over
+            j = joined.length;
+        }
+    }
+    return joined.map(r => ({ left: r.left, top: r.top, width: r.right - r.left, height: r.bottom - r.top }));
+};
+
+const positionSpotlight = (targets) => {
     const bd = backdrop();
     const sl = spotlight();
+    const rects = targets && joinTouching(targets);
 
     // Remove extra spotlights from previous step
     document.querySelectorAll('.tour-spotlight-extra').forEach(el => el.remove());
@@ -322,7 +343,7 @@ const positionCurrentStep = () => {
             rects = rects.map(r => {
                 const clippedWidth = maxRight - r.left;
                 return clippedWidth < r.width
-                    ? { top: r.top, left: r.left, width: clippedWidth, height: r.height }
+                    ? { top: r.top, left: r.left, right: maxRight, bottom: r.bottom, width: clippedWidth, height: r.height }
                     : r;
             });
         }
@@ -340,11 +361,16 @@ const positionCurrentStep = () => {
         positionSpotlight(rects);
     }
 
-    // Tooltip can anchor to a different element via tooltipTarget
-    const tooltipAnchor = step.tooltipTarget
-        ? document.querySelector(step.tooltipTarget)?.getBoundingClientRect()
+    // Tooltip can anchor to a different element via tooltipTarget, unless that's hidden, as the map
+    // controls are on a phone
+    const anchor = step.tooltipTarget && document.querySelector(step.tooltipTarget);
+    const tooltipAnchor = anchor && getComputedStyle(anchor).visibility !== 'hidden'
+        ? anchor.getBoundingClientRect()
         : (rects ? unionRect(rects) : null);
     positionTooltip(tooltipAnchor);
+
+    const wrapper = $('storyMapWrapper');
+    _heldScroll = step.holdScroll && wrapper ? { left: wrapper.scrollLeft, top: wrapper.scrollTop } : null;
 };
 
 const renderStep = () => {
@@ -393,7 +419,10 @@ const resolveTargetRects = (target) => {
     // Scroll the first element into view
     const wrapper = document.getElementById('storyMapWrapper');
     if (wrapper && wrapper.contains(elements[0])) {
+        const scrollLeft = wrapper.scrollLeft;
         elements[0].scrollIntoView({ behavior: 'auto', block: 'nearest', inline: 'nearest' });
+        // A row wider than the screen can't fit anyway, and lining it up would hide the row labels
+        if (elements[0].getBoundingClientRect().width >= wrapper.clientWidth) wrapper.scrollLeft = scrollLeft;
     }
 
     return elements.map(el => el.getBoundingClientRect());
@@ -468,9 +497,26 @@ const onWheel = (e) => {
     e.preventDefault();
 };
 
+// One finger would scroll the story map out from under the highlight and two would zoom it, so it
+// holds still, as it does for the wheel. Cards can still be dragged, so only a pinch is stopped here.
+const onTouchMove = (e) => {
+    if (!_active || tooltip().contains(e.target)) return;
+    e.preventDefault();
+    if (e.touches.length > 1) e.stopPropagation();
+};
+
+// Dragging a card near the edge scrolls the story map, away from the highlight and with no way back
+const onMapScroll = (e) => {
+    if (!_heldScroll) return;
+    e.target.scrollLeft = _heldScroll.left;
+    e.target.scrollTop = _heldScroll.top;
+};
+
+// Only moves things: entering the step again would save any cards dragged so far as their places.
+// On a phone the address bar sliding away counts as a resize.
 const onResize = () => {
     if (!_active) return;
-    renderStep();
+    positionCurrentStep();
 };
 
 // ---------------------------------------------------------------------------
@@ -495,6 +541,8 @@ export const startTour = () => {
     document.addEventListener('keydown', onKeyDown, true);
     document.addEventListener('click', onSliceControlClick, true);
     window.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('touchmove', onTouchMove, { passive: false, capture: true });
+    $('storyMapWrapper')?.addEventListener('scroll', onMapScroll);
     window.addEventListener('resize', onResize);
 
     buildProgressDots();
@@ -516,6 +564,9 @@ export const endTour = () => {
     document.removeEventListener('keydown', onKeyDown, true);
     document.removeEventListener('click', onSliceControlClick, true);
     window.removeEventListener('wheel', onWheel);
+    window.removeEventListener('touchmove', onTouchMove, { capture: true });
+    $('storyMapWrapper')?.removeEventListener('scroll', onMapScroll);
+    _heldScroll = null;
     window.removeEventListener('resize', onResize);
 
     if (_wasDarkOnStart) {

@@ -10779,7 +10779,7 @@ html.dark-mode .import-status-badge.done {
 
 /* Wider tooltip for centered (no-target) steps */
 .tour-backdrop-dim + .tour-spotlight + .tour-tooltip {
-    max-width: 560px;
+    max-width: min(560px, calc(100vw - 24px));
 }
 
 @keyframes tourCardIn {
@@ -11058,9 +11058,15 @@ body.tour-active .btn-slice-menu {
     }
 }
 
-/* Hide tour options on touch devices (tour requires desktop) */
+/* The map controls sit above the tour, and a phone has no room to keep them clear of its buttons */
+@media (max-width: 600px), (pointer: coarse) {
+    body.tour-active #controlsRight {
+        visibility: hidden;
+    }
+}
+
+/* On a touch device, the home page leads with Start Mapping, and its menu leaves out what needs a map */
 @media (pointer: coarse) {
-    #tourMenuBtn,
     #welcomeTourBtn {
         display: none !important;
     }

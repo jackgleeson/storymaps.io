@@ -38,6 +38,30 @@ test('the tour runs on the coffee app, adds a Later slice for a step, and leaves
   expect(await page.evaluate(() => localStorage.getItem('tourCompleted'))).toBe('true');
 });
 
+test('cards dragged during the tour go back, even if the window resizes first', async ({ page }) => {
+  await page.goto('/tour');
+  await expect(title(page)).toHaveText('What is a story map?');
+  while (await title(page).textContent() !== 'A first release') {
+    const was = await page.locator('#tourProgress .tour-progress-dot.active').evaluate(d => [...d.parentNode.children].indexOf(d));
+    await next(page).click();
+    await expect(page.locator('#tourProgress .tour-progress-dot').nth(was + 1)).toHaveClass(/active/);
+  }
+  const cards = page.locator('.slice-container').first().locator('.story-column:nth-child(1) .story-card');
+  const order = () => cards.evaluateAll(all => all.map(c => c.dataset.storyId));
+  const before = await order();
+  const [first, second] = [await cards.nth(0).boundingBox(), await cards.nth(1).boundingBox()];
+  await page.mouse.move(first.x + first.width / 2, first.y + first.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(second.x + second.width / 2, second.y + second.height * 0.8, { steps: 12 });
+  await page.mouse.up();
+  await expect.poll(order).not.toEqual(before);
+  // A phone's address bar sliding away counts as a resize
+  await page.evaluate(() => window.dispatchEvent(new Event('resize')));
+  await next(page).click();
+  await expect(title(page)).toHaveText('Add a slice');
+  await expect.poll(order).toEqual(before);
+});
+
 test('the Lego house is still a sample in the main menu', async ({ page }) => {
   await page.goto('/sample/lego-house');
   await expect(page.locator('#boardName')).toHaveValue('Build a Lego House');
