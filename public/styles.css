@@ -2682,6 +2682,10 @@ body.main-menu-open .step:hover {
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 
+.story-card.multi-drag-landing {
+    pointer-events: none;
+}
+
 .story-card.multi-drag-following {
     position: relative;
     z-index: 1000;

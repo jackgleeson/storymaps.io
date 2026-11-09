@@ -300,23 +300,97 @@ const releaseDragColumn = () => {
 // allows for the map scrolling and for rows changing height under them.
 let dragFollowers = [];
 let dragGhostStart = null;
+let dragItem = null;      // the card being dragged, which Sortable moves to show where it will land
 
 const startDragFollowers = (ids, dragged) => {
     const draggedBox = dragged.getBoundingClientRect();
+    const from = findStoryLocation(dragged.dataset.storyId);
     dragGhostStart = { left: draggedBox.left, top: draggedBox.top };
+    dragItem = dragged;
     dragFollowers = ids.filter(id => id !== dragged.dataset.storyId)
         .map(id => _dom.storyMap.querySelector(`.story-card[data-story-id="${id}"]`))
         .filter(Boolean)
         .map((card) => {
             const box = card.getBoundingClientRect();
+            const at = findStoryLocation(card.dataset.storyId);
             card.classList.add('multi-drag-following');
-            return { card, left: box.left, top: box.top, x: 0, y: 0 };
+            return {
+                card, left: box.left, top: box.top, x: 0, y: 0, target: null,
+                columnId: at?.columnId,
+                offset: at && from && at.sliceId === from.sliceId ? at.index - from.index : 0,
+            };
         });
+};
+
+const makeLandingCard = (card) => {
+    const pale = card.cloneNode(true);
+    pale.removeAttribute('data-story-id');
+    pale.className = 'story-card sortable-ghost multi-drag-landing';
+    pale.style.cssText = '';
+    return pale;
+};
+
+// When cards keep their columns, show a pale card in each column where that card will land,
+// as Sortable does for the dragged one
+const showLandingCards = () => {
+    const home = dragItem?.parentElement;
+    const sliceId = home?.dataset.sliceId;
+    if (lockedDragX === null || !sliceId) return;
+    const moving = new Set(dragFollowers.map(f => f.card.dataset.storyId));
+    // The drag clone sits in the column it started from, so it isn't one of the cards there
+    const staying = (column) => [...column.querySelectorAll(':scope > .story-card[data-story-id]:not(.sortable-drag)')].filter(c => !moving.has(c.dataset.storyId));
+    const homeCards = staying(home);
+    const level = homeCards.indexOf(dragItem);
+    // With nothing below it the dragged card can't show a lower level, so the others go by where
+    // they are on screen
+    const atBottom = level === homeCards.length - 1;
+    const middle = (card) => { const box = card.getBoundingClientRect(); return box.top + box.height / 2; };
+    for (const f of dragFollowers) {
+        if (f.columnId === home.dataset.columnId) continue;
+        const column = _dom.storyMap.querySelector(`.story-column[data-column-id="${f.columnId}"][data-slice-id="${sliceId}"]`);
+        if (!column) continue;
+        const cards = staying(column);
+        const reached = middle(f.card);
+        // The pale card pushes down the cards after it, so measure them as if it weren't there
+        const pale = f.target?.parentElement === column ? f.target : null;
+        const paleBox = pale?.getBoundingClientRect();
+        const scale = column.offsetWidth ? column.getBoundingClientRect().width / column.offsetWidth : 1;
+        const paleSpace = paleBox ? paleBox.height + (parseFloat(getComputedStyle(column).rowGap) || 0) * scale : 0;
+        const settled = (card) => middle(card) - (pale && (pale.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING) ? paleSpace : 0);
+        const before = (atBottom ? cards.find(card => settled(card) > reached) : cards[Math.max(0, level + f.offset)])
+            ?? column.querySelector(':scope > .btn-add-story');
+        f.target ??= makeLandingCard(f.card);
+        if (f.target.parentElement !== column || f.before !== before) {
+            f.before = before;
+            column.insertBefore(f.target, before);
+        }
+    }
+};
+
+// Where the pale cards show each card landing: the card it goes above, or null at the bottom. Also
+// says whether any of them is going somewhere new, as the dragged card itself may not have moved.
+const readLandings = () => {
+    const moving = new Set(dragFollowers.map(f => f.card.dataset.storyId));
+    const nextStaying = (card) => {
+        let next = card.nextElementSibling;
+        while (next && (!next.dataset.storyId || moving.has(next.dataset.storyId))) next = next.nextElementSibling;
+        return next;
+    };
+    const landings = {};
+    let changed = false;
+    for (const f of dragFollowers) {
+        if (!f.target?.parentElement) continue;
+        const next = nextStaying(f.target);
+        landings[f.card.dataset.storyId] = next?.dataset.storyId ?? null;
+        if (f.target.parentElement !== f.card.parentElement || next !== nextStaying(f.card)) changed = true;
+    }
+    return { landings, changed };
 };
 
 const moveDragFollowers = () => {
     const ghost = _SortableLib?.ghost;
     if (!ghost || !dragGhostStart || !dragFollowers.length) return;
+    showLandingCards();
     const now = ghost.getBoundingClientRect();
     const scale = ghost.offsetWidth ? now.width / ghost.offsetWidth : 1;
     for (const f of dragFollowers) {
@@ -328,12 +402,14 @@ const moveDragFollowers = () => {
 };
 
 const stopDragFollowers = () => {
-    for (const { card } of dragFollowers) {
+    for (const { card, target } of dragFollowers) {
         card.classList.remove('multi-drag-following');
         card.style.transform = '';
+        target?.remove();
     }
     dragFollowers = [];
     dragGhostStart = null;
+    dragItem = null;
 };
 
 const trackDragPointer = (e) => {
@@ -463,6 +539,7 @@ export const initSortable = async () => {
             onEnd: (evt) => {
                 stopDragAutoScroll();
                 if (_broadcastDragEnd) _broadcastDragEnd();
+                const { landings, changed: followersMoved } = readLandings();
                 stopDragFollowers();
                 // If a pinch gesture is active, revert the card to its original position
                 if (_getIsPinching && _getIsPinching()) {
@@ -479,9 +556,9 @@ export const initSortable = async () => {
                 const toRowType = evt.to.dataset.rowType || null;
                 const toIndex = evt.newIndex;
 
-                if (fromColumnId !== toColumnId || fromSliceId !== toSliceId || fromRowType !== toRowType || evt.oldIndex !== evt.newIndex) {
+                if (followersMoved || fromColumnId !== toColumnId || fromSliceId !== toSliceId || fromRowType !== toRowType || evt.oldIndex !== evt.newIndex) {
                     const multiIds = getMultiDragIds(storyId);
-                    if (multiIds && moveSelectedStories(multiIds, evt.item, toColumnId, toSliceId, toRowType)) {
+                    if (multiIds && moveSelectedStories(multiIds, evt.item, toColumnId, toSliceId, toRowType, landings)) {
                         // The browser can still fire a click on the dropped card, which would reset the selection
                         const swallowClick = (e) => { e.preventDefault(); e.stopPropagation(); };
                         document.addEventListener('click', swallowClick, true);
@@ -1671,9 +1748,9 @@ const keepsColumns = (locations) => locations.every(l => l.sliceId) && new Set(l
 // Move all selected cards to where the dragged card was dropped, stacked in map reading order
 // (users, activities, then slices top to bottom; left to right within a row; top to bottom within a cell).
 // Cards from several columns keep their columns instead, since a column is the step a card belongs to.
-// In the dragged card's column they land at the drop point, and in the others at the same level,
-// keeping any rows they were apart when they started from the same slice.
-export const moveSelectedStories = (storyIds, droppedEl, toColumnId, toSliceId, toRowType = null) => {
+// In the dragged card's column they land at the drop point. In the others, landings gives the card
+// each one goes above, as shown by the pale cards during the drag, and without one it goes to the bottom.
+export const moveSelectedStories = (storyIds, droppedEl, toColumnId, toSliceId, toRowType = null, landings = {}) => {
     const locations = storyIds.map(findStoryLocation).filter(Boolean);
     if (locations.length < 2) return false;
     const toStories = ensureStoriesArray(toColumnId, toSliceId, toRowType);
@@ -1699,12 +1776,10 @@ export const moveSelectedStories = (storyIds, droppedEl, toColumnId, toSliceId, 
     for (const l of [...landing, ...following]) l.list.splice(l.list.indexOf(l.story), 1);
     const beforeIndex = beforeId ? toStories.findIndex(s => s.id === beforeId) : -1;
     toStories.splice(beforeIndex === -1 ? toStories.length : beforeIndex, 0, ...landing.map(l => l.story));
-    const dragged = landing.find(l => l.story.id === droppedEl.dataset?.storyId) ?? landing[0];
-    const level = dragged ? toStories.indexOf(dragged.story) : 0;
     for (const l of following) {
         const column = ensureStoriesArray(l.columnId, toSliceId, null);
-        const offset = dragged && l.sliceId === dragged.sliceId ? l.index - dragged.index : 0;
-        column.splice(Math.max(0, Math.min(column.length, level + offset)), 0, l.story);
+        const above = column.findIndex(s => s.id === landings[l.story.id]);
+        column.splice(above === -1 ? column.length : above, 0, l.story);
     }
 
     // Keep the moved cards selected in their new position
