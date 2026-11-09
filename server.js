@@ -388,8 +388,12 @@ const server = createServer(async (req, res) => {
   }
 
   if (cached) {
+    // Story maps and projects are people's own work, reached by their link, so they stay out of
+    // search results. The home page and the tour are the app pages meant to be found.
+    const robots = cacheKey === '/index.html' && reqPath !== '/' && reqPath !== '/tour' ? { 'X-Robots-Tag': 'noindex' } : {};
+
     if (req.headers['if-none-match'] === cached.etag) {
-      res.writeHead(304, { 'Cache-Control': cached.cacheControl });
+      res.writeHead(304, { 'Cache-Control': cached.cacheControl, ...robots });
       res.end();
       return;
     }
@@ -398,6 +402,7 @@ const server = createServer(async (req, res) => {
       'Content-Type': cached.contentType,
       'Cache-Control': cached.cacheControl,
       'ETag': cached.etag,
+      ...robots,
     };
 
     const acceptGzip = (req.headers['accept-encoding'] || '').includes('gzip');

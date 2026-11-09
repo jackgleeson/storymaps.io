@@ -407,6 +407,15 @@ describe('pages and files', () => {
     }
   });
 
+  test('keeps story maps and projects out of search results, and leaves the pages to find alone', async () => {
+    for (const path of ['/abc12345', '/new', '/sample/recipe-app', '/p/abc12345', '/p/abc12345/def67890']) {
+      assert.equal((await fetch(`${base}${path}`)).headers.get('x-robots-tag'), 'noindex', path);
+    }
+    for (const path of ['/', '/tour', '/privacy.html']) {
+      assert.equal((await fetch(`${base}${path}`)).headers.get('x-robots-tag'), null, path);
+    }
+  });
+
   test('map, project and sample links get the app, and paths scanners probe are a 404', async () => {
     for (const path of ['/abc12345', '/new', '/tour', '/sample/recipe-app', '/p/abc12345', '/p/abc12345/def67890', '/p/abc12345/']) {
       const res = await rawGet(path);
