@@ -62,9 +62,9 @@ test('cards dragged during the tour go back, even if the window resizes first', 
   await expect.poll(order).toEqual(before);
 });
 
-test('the Lego house is still a sample in the main menu', async ({ page }) => {
+test('the old Lego house tour is no longer in the menu, and its link still opens', async ({ page }) => {
   await page.goto('/sample/lego-house');
   await expect(page.locator('#boardName')).toHaveValue('Build a Lego House');
   await page.locator('#menuBtn').click();
-  await expect(page.locator('.dropdown-item[data-sample="lego-house"]')).toHaveCount(1);
+  await expect(page.locator('.dropdown-item[data-sample="lego-house"]')).toHaveCount(0);
 });
