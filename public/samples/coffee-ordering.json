@@ -84,7 +84,7 @@
       "stories": [
         [
           {
-            "name": "Drinks by category",
+            "name": "Drink list with prices",
             "url": "https://jira.com/test-company/COF-55",
             "status": "done",
             "points": 3,
@@ -157,7 +157,7 @@
       "stories": [
         [
           {
-            "name": "Photo and price on cards",
+            "name": "Photo on each drink",
             "status": "done",
             "points": 2,
             "tags": ["frontend", "design"]

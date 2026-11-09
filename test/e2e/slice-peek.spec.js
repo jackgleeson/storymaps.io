@@ -12,7 +12,7 @@ slices:
     closedReason: complete
     stories:
       Browse:
-        - name: Drinks by category
+        - name: Drink list with prices
         - name: Search by name
       Pay:
         - name: Card payment
@@ -44,7 +44,7 @@ test('a closed slice shows its card count, and its banner shows the cards to thi
 
   // The cards can't be edited, added to or dragged until the slice is reopened
   await expect(firstSlice(page).locator('textarea, .btn-add-story, .btn-options')).toHaveCount(0);
-  await expect(firstSliceCards(page).first()).toHaveText('Drinks by category');
+  await expect(firstSliceCards(page).first()).toHaveText('Drink list with prices');
 
   // The slice stays closed on the server and for everyone else
   expect((await pullMap(id)).slices[0].collapsed).toBe(true);
@@ -163,7 +163,7 @@ slices:
     closedReason: complete
     stories:
       Step 1:
-        - name: Drinks by category
+        - name: Drink list with prices
         - name: Search by name
       Step 12:
         - name: Card payment

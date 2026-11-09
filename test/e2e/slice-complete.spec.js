@@ -9,7 +9,7 @@ slices:
   - name: Phase 1
     stories:
       Browse:
-        - name: Drinks by category
+        - name: Drink list with prices
           status: done
         - name: Search by name
           status: in-progress
@@ -49,7 +49,7 @@ test('marking a slice complete offers to move the cards that are not done to the
   // One undo puts everything back
   await page.locator('#undoBtn').click();
   await expect(slice(page, 0)).not.toHaveClass(/slice-collapsed/);
-  await expect.poll(() => cardNames(page, 0)).toEqual(['Drinks by category', 'Search by name', 'Pick size']);
+  await expect.poll(() => cardNames(page, 0)).toEqual(['Drink list with prices', 'Search by name', 'Pick size']);
 });
 
 test('completing anyway notes the cards that are not done on the banner, and keeps the tick in the Overview', async ({ page, createMap }) => {

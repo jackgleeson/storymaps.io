@@ -89,7 +89,7 @@ const STEPS = [
     {
         target: '.slice-container .story-column:nth-child(1) .story-card:first-child',
         title: 'Tasks',
-        body: 'Under each step are the tasks: the work needed to let a user complete that step. One way to let a customer browse the menu is <strong>Drinks by category</strong>.',
+        body: 'Under each step are the tasks: the work needed to let a user complete that step. To browse the menu, a customer needs a <strong>Drink list with prices</strong>.',
         icon: '\u{1F4CB}',
     },
     {

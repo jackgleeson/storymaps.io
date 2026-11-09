@@ -61,13 +61,13 @@
       "stories": [
         [
           {
-            "name": "Drinks by category"
+            "name": "Drink list with prices"
           },
           {
             "name": "Search by name"
           },
           {
-            "name": "Photo and price on cards"
+            "name": "Photo on each drink"
           }
         ],
         [
