@@ -38,6 +38,18 @@ const cliCommands = {
     'gemini-cli': 'gemini',
 };
 
+// These work where the code is, so they're the ones that can add to an app that already exists
+const codingAgents = new Set([...Object.keys(cliCommands), 'cursor', 'windsurf', 'github-copilot']);
+
+// Add to Existing App is only offered to coding agents. Removing the option while it's picked
+// puts the list back on Prototype.
+const syncBuildModes = (isAgent) => {
+    const modes = dom.buildAiModeSelect;
+    const existing = modes.querySelector('option[value="existing"]');
+    if (isAgent && !existing) modes.add(new Option('Add to Existing App', 'existing'));
+    if (!isAgent && existing) existing.remove();
+};
+
 const allTargetGrids = () => [dom.buildAiTargets, dom.buildAiTargets2, dom.buildAiTargets3];
 
 const getSelectedTarget = () => {
@@ -78,8 +90,13 @@ function updateBuildPrompt() {
     if (isCli) dom.buildAiFetchToggle.checked = true;
     const useCli = isCli && dom.buildAiCliToggle.checked;
     const useFetch = dom.buildAiFetchToggle.checked;
-    const isPrototype = (dom.buildAiModeSelect?.value || 'prototype') === 'prototype';
+    syncBuildModes(codingAgents.has(targetId));
+    const mode = dom.buildAiModeSelect.value;
+    const isPrototype = mode === 'prototype';
     const qualifier = isPrototype ? 'functional prototype' : 'full app';
+    const task = (where) => mode === 'existing'
+        ? `add the features listed in ${where} to the existing app in this project. Read the existing code first, keep what's already there working, and follow its conventions.`
+        : `build a ${qualifier} of the features listed in ${where}.`;
     const slice = sliceVal === 'all' ? null : state.slices[sliceVal];
     // A slice with no name shows as "Slice 1" here, but the map has no slice by that name: point at it by position
     const sliceRef = (q) => !slice ? 'the full map'
@@ -94,22 +111,22 @@ function updateBuildPrompt() {
         const cliScope = slice?.name ? `the '${sliceName.replace(/'/g, "\\'")}' slice` : sliceRef();
         if (useCli) {
             const fileRef = targetId === 'codex' ? 'storymap.yml' : '@storymap.yml';
-            let inner = `The storymap file ${fileRef} describes a product plan in user story map format. Use it as a structured specification. Your task: build a ${qualifier} of the features listed in ${cliScope}.`;
+            let inner = `The storymap file ${fileRef} describes a product plan in user story map format. Use it as a structured specification. Your task: ${task(cliScope)}`;
             if (extra) inner += ` ${shellEscape(extra)}`;
             prompt = `npx storymaps pull --force ${mapUrl} && ${cmd} "${inner}"`;
         } else {
-            let inner = `The YAML at ${mapUrl}.yaml describes a product plan in user story map format. Use it as a structured specification. Your task: build a ${qualifier} of the features listed in ${cliScope}.`;
+            let inner = `The YAML at ${mapUrl}.yaml describes a product plan in user story map format. Use it as a structured specification. Your task: ${task(cliScope)}`;
             if (extra) inner += ` ${shellEscape(extra)}`;
             prompt = `${cmd} "${inner}"`;
         }
     } else if (useFetch) {
-        let instructions = `The YAML at the URL below describes a product plan in user story map format.\nUse it as a structured specification. Your task: build a ${qualifier} of the features listed in ${scope}.`;
+        let instructions = `The YAML at the URL below describes a product plan in user story map format.\nUse it as a structured specification. Your task: ${task(scope)}`;
         if (hasPromptSuffix && isPrototype) instructions += ' Output a single self-contained HTML file with inline CSS and JavaScript. Do not use frameworks that require a build step.';
         if (hasPromptSuffix && !isPrototype) instructions += ' Pick the tech stack yourself and provide the code.';
         if (extra) instructions += ` ${extra}`;
         prompt = `${instructions}\n\n${mapUrl}.yaml`;
     } else {
-        let instructions = `The YAML below describes a product plan in user story map format.\nUse it as a structured specification. Your task: build a ${qualifier} of the features listed in ${scope}.`;
+        let instructions = `The YAML below describes a product plan in user story map format.\nUse it as a structured specification. Your task: ${task(scope)}`;
         if (hasPromptSuffix && isPrototype) instructions += ' Output a single self-contained HTML file with inline CSS and JavaScript. Do not use frameworks that require a build step.';
         if (hasPromptSuffix && !isPrototype) instructions += ' Pick the tech stack yourself and provide the code.';
         if (extra) instructions += ` ${extra}`;

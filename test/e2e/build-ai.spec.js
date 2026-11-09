@@ -86,3 +86,40 @@ test('Build with AI shows every section in full in a short window', async ({ pag
   await page.locator('.build-ai-target[data-target="chatgpt"]').click();
   expect(await squashedSections(page)).toEqual([]);
 });
+
+test('Build with AI can add a slice to an existing app, for coding agents only', async ({ page, createMap }) => {
+  const id = await createMap();
+  await openMap(page, id);
+  await page.locator('#buildAiBtn').click();
+  const prompt = page.locator('#buildAiPrompt');
+  const mode = page.locator('#buildAiModeSelect');
+  const pick = (target) => page.locator(`.build-ai-target[data-target="${target}"]`).click();
+  const existing = mode.locator('option[value="existing"]');
+
+  // An app builder starts from nothing, and so does a chat
+  await expect(existing).toHaveCount(0);
+  await pick('claude');
+  await expect(existing).toHaveCount(0);
+
+  // A terminal agent gets it in the command
+  await pick('claude-code');
+  await mode.selectOption('existing');
+  await expect(prompt).toHaveValue(/Your task: add the features listed in .* to the existing app in this project\./);
+  await expect(prompt).not.toHaveValue(/build a full app/);
+
+  // An editor agent gets it in the prompt, and keeps the mode when you change agent
+  await pick('cursor');
+  await expect(mode).toHaveValue('existing');
+  await expect(prompt).toHaveValue(/to the existing app in this project\./);
+
+  // Moving to a tool that can't use it goes back to a prototype
+  await pick('lovable');
+  await expect(existing).toHaveCount(0);
+  await expect(mode).toHaveValue('prototype');
+  await expect(prompt).toHaveValue(/build a functional prototype/);
+
+  // The other modes read as before
+  await pick('claude-code');
+  await mode.selectOption('full');
+  await expect(prompt).toHaveValue(/build a full app of the features listed/);
+});
