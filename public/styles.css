@@ -2658,7 +2658,7 @@ body.main-menu-open .step:hover {
     background-color: rgba(20, 184, 166, 0.2);
 }
 
-/* Multi-card drag: count badge on the dragged clone, other selected cards fade until the drop */
+/* Multi-card drag: count badge on the dragged clone, other selected cards travel with it */
 .multi-drag-badge {
     display: none;
 }
@@ -2682,8 +2682,12 @@ body.main-menu-open .step:hover {
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
 
-.story-card.multi-drag-pending {
-    opacity: 0.35;
+.story-card.multi-drag-following {
+    position: relative;
+    z-index: 1000;
+    transition: none;
+    pointer-events: none;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
 }
 
 .slice-container.sortable-ghost {

@@ -277,6 +277,65 @@ let _SortableLib = null;
 let autoScrollFrame = null;
 let autoScrollPointer = null;
 
+// Cards selected from several columns keep their columns when dragged, so only up and down means
+// anything. Sortable reads the pointer from these events, so holding x still keeps the dragged card
+// in its column, and the drop on that column, however far the pointer drifts.
+let lockedDragX = null;
+const holdPointerX = (e) => Object.defineProperty(e, 'clientX', { value: lockedDragX });
+
+const lockDragToColumn = (x) => {
+    lockedDragX = x;
+    window.addEventListener('pointermove', holdPointerX, true);
+    window.addEventListener('mousemove', holdPointerX, true);
+};
+
+const releaseDragColumn = () => {
+    lockedDragX = null;
+    window.removeEventListener('pointermove', holdPointerX, true);
+    window.removeEventListener('mousemove', holdPointerX, true);
+};
+
+// The other selected cards travel with the dragged one, keeping their places relative to it.
+// Each frame they're put where they started plus however far the drag clone has moved, which
+// allows for the map scrolling and for rows changing height under them.
+let dragFollowers = [];
+let dragGhostStart = null;
+
+const startDragFollowers = (ids, dragged) => {
+    const draggedBox = dragged.getBoundingClientRect();
+    dragGhostStart = { left: draggedBox.left, top: draggedBox.top };
+    dragFollowers = ids.filter(id => id !== dragged.dataset.storyId)
+        .map(id => _dom.storyMap.querySelector(`.story-card[data-story-id="${id}"]`))
+        .filter(Boolean)
+        .map((card) => {
+            const box = card.getBoundingClientRect();
+            card.classList.add('multi-drag-following');
+            return { card, left: box.left, top: box.top, x: 0, y: 0 };
+        });
+};
+
+const moveDragFollowers = () => {
+    const ghost = _SortableLib?.ghost;
+    if (!ghost || !dragGhostStart || !dragFollowers.length) return;
+    const now = ghost.getBoundingClientRect();
+    const scale = ghost.offsetWidth ? now.width / ghost.offsetWidth : 1;
+    for (const f of dragFollowers) {
+        const box = f.card.getBoundingClientRect();
+        f.x += f.left + now.left - dragGhostStart.left - box.left;
+        f.y += f.top + now.top - dragGhostStart.top - box.top;
+        f.card.style.transform = `translate(${f.x / scale}px, ${f.y / scale}px)`;
+    }
+};
+
+const stopDragFollowers = () => {
+    for (const { card } of dragFollowers) {
+        card.classList.remove('multi-drag-following');
+        card.style.transform = '';
+    }
+    dragFollowers = [];
+    dragGhostStart = null;
+};
+
 const trackDragPointer = (e) => {
     const point = e.touches ? e.touches[0] : e;
     if (point) autoScrollPointer = { x: point.clientX, y: point.clientY };
@@ -296,14 +355,15 @@ const stopDragAutoScroll = () => {
 
 const autoScrollTick = () => {
     // Stop if the drag ended without an onEnd (e.g. a re-render destroyed the Sortable mid-drag)
-    if (!_SortableLib?.active) { stopDragAutoScroll(); return; }
+    if (!_SortableLib?.active) { stopDragAutoScroll(); releaseDragColumn(); stopDragFollowers(); return; }
     autoScrollFrame = requestAnimationFrame(autoScrollTick);
+    moveDragFollowers();
     if (!autoScrollPointer) return;
 
     const wrapper = _dom.storyMapWrapper;
     const rect = wrapper.getBoundingClientRect();
     const { x, y } = autoScrollPointer;
-    const dx = edgeSpeed(rect.right - x) - edgeSpeed(x - rect.left);
+    const dx = lockedDragX === null ? edgeSpeed(rect.right - x) - edgeSpeed(x - rect.left) : 0;
     const dy = edgeSpeed(rect.bottom - y) - edgeSpeed(y - rect.top);
     if (!dx && !dy) return;
 
@@ -368,18 +428,21 @@ export const initSortable = async () => {
             onChoose: (evt) => {
                 const ids = getMultiDragIds(evt.item.dataset.storyId);
                 if (ids) evt.item.appendChild(el('span', 'multi-drag-badge', { text: `${ids.length}` }));
+                if (ids && keepsColumns(ids.map(findStoryLocation).filter(Boolean))) {
+                    const box = evt.item.getBoundingClientRect();
+                    lockDragToColumn(evt.originalEvent?.clientX ?? box.left + box.width / 2);
+                }
             },
             onUnchoose: (evt) => {
                 evt.item.querySelector('.multi-drag-badge')?.remove();
+                releaseDragColumn();
             },
+            // A selection that keeps its columns can only land in a slice
+            onMove: (evt) => lockedDragX === null || !!evt.to.dataset.sliceId,
             onStart: (evt) => {
                 startDragAutoScroll();
                 const multiIds = getMultiDragIds(evt.item.dataset.storyId);
-                if (multiIds) {
-                    multiIds.filter(id => id !== evt.item.dataset.storyId).forEach(id => {
-                        _dom.storyMap.querySelector(`.story-card[data-story-id="${id}"]`)?.classList.add('multi-drag-pending');
-                    });
-                }
+                if (multiIds) startDragFollowers(multiIds, evt.item);
                 if (_broadcastDragStart) {
                     const storyId = evt.item.dataset.storyId;
                     const sliceId = evt.from.dataset.sliceId;
@@ -400,7 +463,7 @@ export const initSortable = async () => {
             onEnd: (evt) => {
                 stopDragAutoScroll();
                 if (_broadcastDragEnd) _broadcastDragEnd();
-                _dom.storyMap.querySelectorAll('.multi-drag-pending').forEach(card => card.classList.remove('multi-drag-pending'));
+                stopDragFollowers();
                 // If a pinch gesture is active, revert the card to its original position
                 if (_getIsPinching && _getIsPinching()) {
                     const ref = evt.from.children[evt.oldIndex];
@@ -1602,8 +1665,14 @@ const findStoryLocation = (storyId) => {
     return null;
 };
 
+// Cards in the slices, picked from more than one column
+const keepsColumns = (locations) => locations.every(l => l.sliceId) && new Set(locations.map(l => l.columnId)).size > 1;
+
 // Move all selected cards to where the dragged card was dropped, stacked in map reading order
-// (users, activities, then slices top to bottom; left to right within a row; top to bottom within a cell)
+// (users, activities, then slices top to bottom; left to right within a row; top to bottom within a cell).
+// Cards from several columns keep their columns instead, since a column is the step a card belongs to.
+// In the dragged card's column they land at the drop point, and in the others at the same level,
+// keeping any rows they were apart when they started from the same slice.
 export const moveSelectedStories = (storyIds, droppedEl, toColumnId, toSliceId, toRowType = null) => {
     const locations = storyIds.map(findStoryLocation).filter(Boolean);
     if (locations.length < 2) return false;
@@ -1622,16 +1691,27 @@ export const moveSelectedStories = (storyIds, droppedEl, toColumnId, toSliceId, 
     const colOrder = (l) => _state.columns.findIndex(c => c.id === l.columnId);
     locations.sort((a, b) => rowOrder(a) - rowOrder(b) || colOrder(a) - colOrder(b) || a.index - b.index);
 
+    const acrossColumns = !toRowType && keepsColumns(locations);
+    const landing = acrossColumns ? locations.filter(l => l.columnId === toColumnId) : locations;
+    const following = acrossColumns ? locations.filter(l => l.columnId !== toColumnId) : [];
+
     _pushUndo();
-    for (const l of locations) l.list.splice(l.list.indexOf(l.story), 1);
+    for (const l of [...landing, ...following]) l.list.splice(l.list.indexOf(l.story), 1);
     const beforeIndex = beforeId ? toStories.findIndex(s => s.id === beforeId) : -1;
-    toStories.splice(beforeIndex === -1 ? toStories.length : beforeIndex, 0, ...locations.map(l => l.story));
+    toStories.splice(beforeIndex === -1 ? toStories.length : beforeIndex, 0, ...landing.map(l => l.story));
+    const dragged = landing.find(l => l.story.id === droppedEl.dataset?.storyId) ?? landing[0];
+    const level = dragged ? toStories.indexOf(dragged.story) : 0;
+    for (const l of following) {
+        const column = ensureStoriesArray(l.columnId, toSliceId, null);
+        const offset = dragged && l.sliceId === dragged.sliceId ? l.index - dragged.index : 0;
+        column.splice(Math.max(0, Math.min(column.length, level + offset)), 0, l.story);
+    }
 
     // Keep the moved cards selected in their new position
     const stepClicks = selection.clickedCards.filter(c => c.type === 'step');
     selection.clickedCards = [
         ...stepClicks,
-        ...locations.map(l => ({ columnId: toColumnId, type: 'story', storyId: l.story.id, sliceId: toSliceId, rowType: toRowType })),
+        ...locations.map(l => ({ columnId: acrossColumns ? l.columnId : toColumnId, type: 'story', storyId: l.story.id, sliceId: toSliceId, rowType: toRowType })),
     ];
     selection.columnIds = [...new Set(selection.clickedCards.map(c => c.columnId))];
     selection.anchorId = toColumnId;

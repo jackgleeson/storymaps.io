@@ -201,10 +201,51 @@ describe('moving cards', () => {
 
   test('moveSelectedStories inserts before the first card after the drop point that is not moving', () => {
     const [list, filter] = state.slices[0].stories[col(0)];
-    const card = state.slices[0].stories[col(1)][0];
+    const wishlist = state.slices[1].stories[col(0)][0];
     const dropped = { nextElementSibling: { dataset: { storyId: filter.id }, nextElementSibling: null } };
-    render.moveSelectedStories([list.id, card.id], dropped, col(0), state.slices[0].id);
-    assert.deepEqual(names(state.slices[0].stories[col(0)]), ['List', 'Card', 'Filter']);
+    render.moveSelectedStories([list.id, wishlist.id], dropped, col(0), state.slices[0].id);
+    assert.deepEqual(names(state.slices[0].stories[col(0)]), ['List', 'Wishlist', 'Filter']);
+  });
+
+  test('cards selected from several columns stay in their own columns and move to the slice', () => {
+    const list = state.slices[0].stories[col(0)][0];
+    const card = state.slices[0].stories[col(1)][0];
+    const wishlist = state.slices[1].stories[col(0)][0];
+    state.slices[1].stories[col(1)] = [{ id: 'exist001', name: 'Existing' }];
+    // Dropped in Later / Browse, above Wishlist
+    const dropped = { nextElementSibling: { dataset: { storyId: wishlist.id }, nextElementSibling: null } };
+    assert.equal(render.moveSelectedStories([list.id, card.id], dropped, col(0), state.slices[1].id), true);
+    assert.deepEqual(names(state.slices[1].stories[col(0)]), ['List', 'Wishlist'], 'lands where it was dropped');
+    assert.deepEqual(names(state.slices[1].stories[col(1)]), ['Card', 'Existing'], 'lands at the same level in its own column');
+    assert.deepEqual(names(state.slices[0].stories[col(0)]), ['Filter']);
+    assert.deepEqual(state.slices[0].stories[col(1)], []);
+    assert.deepEqual(selection.clickedCards.map(c => c.columnId), [col(0), col(1)], 'the cards stay selected in their columns');
+  });
+
+  test('cards from other columns land level with the dropped card', () => {
+    const list = state.slices[0].stories[col(0)][0];
+    const card = state.slices[0].stories[col(1)][0];
+    state.slices[1].stories[col(1)] = [{ id: 'exist001', name: 'Existing' }, { id: 'exist002', name: 'Second' }];
+    // Dropped under Wishlist, the second level of Later / Browse
+    render.moveSelectedStories([list.id, card.id], { dataset: { storyId: list.id }, nextElementSibling: null }, col(0), state.slices[1].id);
+    assert.deepEqual(names(state.slices[1].stories[col(0)]), ['Wishlist', 'List']);
+    assert.deepEqual(names(state.slices[1].stories[col(1)]), ['Existing', 'Card', 'Second']);
+  });
+
+  test('cards from the same slice keep the rows they were apart', () => {
+    const [list, filter] = state.slices[0].stories[col(0)];
+    const pay = state.slices[0].stories[col(1)][0];
+    state.slices[0].stories[col(1)] = [{ id: 'exist001', name: 'Existing' }, pay];
+    const dropped = { dataset: { storyId: list.id }, nextElementSibling: { dataset: { storyId: filter.id }, nextElementSibling: null } };
+    render.moveSelectedStories([list.id, pay.id], dropped, col(0), state.slices[0].id);
+    assert.deepEqual(names(state.slices[0].stories[col(1)]), ['Existing', 'Card']);
+  });
+
+  test('a card from another column goes to the bottom when its column is shorter', () => {
+    const list = state.slices[0].stories[col(0)][0];
+    const card = state.slices[0].stories[col(1)][0];
+    render.moveSelectedStories([list.id, card.id], { dataset: { storyId: list.id }, nextElementSibling: null }, col(0), state.slices[1].id);
+    assert.deepEqual(names(state.slices[1].stories[col(1)]), ['Card']);
   });
 });
 
