@@ -95,3 +95,21 @@ test('a card link copied in a project keeps the project, and opens the card in t
   await page.locator('#cardExpandModalClose').click();
   await expect(page).toHaveURL(`${origin}/p/${project}/${b}`);
 });
+
+test('a link to a card still opens it after a push changes the card', async ({ page, createMap, pullMap, request }) => {
+  const id = await createMap();
+  await openMap(page, id);
+  const card = page.locator('.slice-container .story-card').last();
+  const cardId = await card.getAttribute('data-story-id');
+
+  const map = await pullMap(id);
+  map.slices[0].stories[2][0].body = 'Changed by a push';
+  map.slices[0].stories[0].push({ name: 'A new card' });
+  expect((await request.put(`/api/maps/${id}`, { data: map })).status()).toBe(200);
+
+  await page.goto('about:blank');
+  await page.goto(`/${id}#card-${cardId}`);
+  await expect(page.locator('#cardExpandModal')).toHaveClass(/visible/);
+  await expect(page.locator('#cardExpandName')).toHaveValue('Card payment');
+  await expect(page.locator('#cardExpandBody')).toHaveValue('Changed by a push');
+});

@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { generateCardId } from './data.js';
+import { keepStepIds, keepSliceIds, keepCardIds, groupsByColumn } from './keep-ids.js';
 import { copySliceDetails, normalizePoints } from '../src/core/constants.js';
 
 export const serializeDoc = (doc) => {
@@ -236,14 +237,28 @@ export const diffPush = (oldSnapshot, body, newDoc) => {
   return { text: parts.join(', ').replace(/^./, c => c.toUpperCase()), ids };
 };
 
+const parsePartialMaps = (raw) => {
+  const maps = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  return Array.isArray(maps) ? maps : [];
+};
+
 export const writeDocFromJson = (doc, data, Y) => {
   doc.transact(() => {
     const ymap = doc.getMap('storymap');
+    // What the map holds now, read before anything is replaced, so what's pushed can keep its IDs
+    const before = {
+      columns: ymap.get('columns')?.toJSON() || [],
+      users: ymap.get('users')?.toJSON() || {},
+      activities: ymap.get('activities')?.toJSON() || {},
+      slices: ymap.get('slices')?.toJSON() || [],
+      partialMaps: parsePartialMaps(ymap.get('partialMaps')),
+    };
     ymap.set('name', data.name || '');
 
     // Columns
-    const columns = (data.steps || []).map(step => {
-      const id = generateCardId();
+    const columnIds = keepStepIds(data.steps, before.columns);
+    const columns = (data.steps || []).map((step, stepIndex) => {
+      const id = columnIds[stepIndex];
       if (step.partialMapId) {
         const col = { id, partialMapId: step.partialMapId };
         if (step.partialMapOrigin) col.partialMapOrigin = true;
@@ -278,9 +293,9 @@ export const writeDocFromJson = (doc, data, Y) => {
     ymap.set('columns', yColumns);
 
     // Helper: create a Y.Map card from a plain object
-    const makeYCard = (card) => {
+    const makeYCard = (card, id) => {
       const ym = new Y.Map();
-      ym.set('id', generateCardId());
+      ym.set('id', id);
       ym.set('name', card.name || '');
       if (card.body) ym.set('body', card.body);
       if (card.color) ym.set('color', card.color);
@@ -293,33 +308,42 @@ export const writeDocFromJson = (doc, data, Y) => {
       return ym;
     };
 
+    // Positional rows of cards as groups for keepCardIds, one group per column that exists
+    const rowGroups = (rows, ids, group = '') => (rows || []).slice(0, ids.length).map((cards, i) => ({ col: ids[i], group, cards }));
+
     // Users (positional array -> keyed by column ID)
+    const userId = keepCardIds(rowGroups(data.users, columnIds), groupsByColumn(before.users));
     const yUsers = new Y.Map();
     (data.users || []).forEach((cards, i) => {
       if (i >= columns.length) return;
       const yArr = new Y.Array();
-      (cards || []).forEach(card => yArr.push([makeYCard(card)]));
+      (cards || []).forEach((card, at) => yArr.push([makeYCard(card, userId(columns[i].id, '', at))]));
       yUsers.set(columns[i].id, yArr);
     });
     ymap.set('users', yUsers);
 
     // Activities
+    const activityId = keepCardIds(rowGroups(data.activities, columnIds), groupsByColumn(before.activities));
     const yActivities = new Y.Map();
     (data.activities || []).forEach((cards, i) => {
       if (i >= columns.length) return;
       const yArr = new Y.Array();
-      (cards || []).forEach(card => yArr.push([makeYCard(card)]));
+      (cards || []).forEach((card, at) => yArr.push([makeYCard(card, activityId(columns[i].id, '', at))]));
       yActivities.set(columns[i].id, yArr);
     });
     ymap.set('activities', yActivities);
 
-    // Slices (collect generated IDs for partial map story keying)
-    const sliceIds = [];
+    // Slices (the IDs also key the stories of partial maps)
+    const sliceIds = keepSliceIds(data.slices, before.slices);
+    // One pool for every slice, so a card moved to another slice keeps its ID
+    const storyId = keepCardIds(
+      (data.slices || []).flatMap((slice, si) => rowGroups(slice.stories, columnIds, sliceIds[si])),
+      before.slices.flatMap(slice => groupsByColumn(slice.stories, slice.id)),
+    );
     const ySlices = new Y.Array();
-    (data.slices || []).forEach(slice => {
+    (data.slices || []).forEach((slice, sliceIndex) => {
       const ySlice = new Y.Map();
-      const sliceId = generateCardId();
-      sliceIds.push(sliceId);
+      const sliceId = sliceIds[sliceIndex];
       ySlice.set('id', sliceId);
       ySlice.set('name', slice.name || '');
       if (slice.collapsed) ySlice.set('collapsed', true);
@@ -330,7 +354,7 @@ export const writeDocFromJson = (doc, data, Y) => {
       (slice.stories || []).forEach((cards, i) => {
         if (i >= columns.length) return;
         const yArr = new Y.Array();
-        (cards || []).forEach(card => yArr.push([makeYCard(card)]));
+        (cards || []).forEach((card, at) => yArr.push([makeYCard(card, storyId(columns[i].id, sliceId, at))]));
         yStories.set(columns[i].id, yArr);
       });
       ySlice.set('stories', yStories);
@@ -363,29 +387,37 @@ export const writeDocFromJson = (doc, data, Y) => {
     // open clients only replace their partial maps when the key is present.
     if (!data.partialMaps?.length && ymap.has('partialMaps')) ymap.set('partialMaps', '[]');
     if (data.partialMaps?.length) {
-      const mkCard = (c) => ({
-        id: generateCardId(),
+      const mkCard = (c, id) => ({
+        id,
         name: c.name || '', body: c.body || '', color: c.color || null,
         url: c.url || null, hidden: c.hidden || false, status: c.status || null,
         points: normalizePoints(c.points), tags: c.tags || [],
       });
       const statePMs = data.partialMaps.map(pm => {
         if (pm.columns) return pm; // already in state format
-        const pmColumns = (pm.steps || []).map(mkCard);
+        const old = before.partialMaps.find(p => p.id === pm.id);
+        const pmColumnIds = keepStepIds(pm.steps, old?.columns);
+        const pmColumns = (pm.steps || []).map((step, i) => mkCard(step, pmColumnIds[i]));
+        const userId = keepCardIds(rowGroups(pm.users, pmColumnIds), groupsByColumn(old?.users));
         const users = {};
         (pm.users || []).forEach((cards, i) => {
-          if (i < pmColumns.length) users[pmColumns[i].id] = (cards || []).map(mkCard);
+          if (i < pmColumns.length) users[pmColumns[i].id] = (cards || []).map((c, at) => mkCard(c, userId(pmColumns[i].id, '', at)));
         });
+        const activityId = keepCardIds(rowGroups(pm.activities, pmColumnIds), groupsByColumn(old?.activities));
         const activities = {};
         (pm.activities || []).forEach((cards, i) => {
-          if (i < pmColumns.length) activities[pmColumns[i].id] = (cards || []).map(mkCard);
+          if (i < pmColumns.length) activities[pmColumns[i].id] = (cards || []).map((c, at) => mkCard(c, activityId(pmColumns[i].id, '', at)));
         });
+        const pmStoryId = keepCardIds(
+          (pm.stories || []).slice(0, sliceIds.length).flatMap((sliceCards, si) => rowGroups(sliceCards, pmColumnIds, sliceIds[si])),
+          Object.entries(old?.stories || {}).flatMap(([sliceId, byColumn]) => groupsByColumn(byColumn, sliceId)),
+        );
         const stories = {};
         (pm.stories || []).forEach((sliceCards, si) => {
           if (si < sliceIds.length) {
             stories[sliceIds[si]] = {};
             (sliceCards || []).forEach((cards, ci) => {
-              if (ci < pmColumns.length) stories[sliceIds[si]][pmColumns[ci].id] = (cards || []).map(mkCard);
+              if (ci < pmColumns.length) stories[sliceIds[si]][pmColumns[ci].id] = (cards || []).map((c, at) => mkCard(c, pmStoryId(pmColumns[ci].id, sliceIds[si], at)));
             });
           }
         });

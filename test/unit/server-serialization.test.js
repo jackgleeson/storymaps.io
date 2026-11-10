@@ -257,3 +257,130 @@ describe('appendLogEntry', () => {
     assert.equal(log[19].text, 'Entry 25');
   });
 });
+
+describe('a push keeps the IDs of what it matches', () => {
+  const steps = (...names) => names.map(name => ({ name }));
+  const base = () => ({
+    name: 'Coffee',
+    users: [[{ name: 'Customer' }], []],
+    activities: [[{ name: 'Order' }], []],
+    steps: steps('Browse', 'Pay'),
+    slices: [
+      { name: 'MVP', stories: [[{ name: 'Menu', body: 'List' }, { name: 'Search' }], [{ name: 'Card' }]] },
+      { name: 'Later', stories: [[{ name: 'Offers' }], []] },
+    ],
+  });
+  const read = (doc) => {
+    const ymap = doc.getMap('storymap');
+    const columns = ymap.get('columns').toJSON();
+    const slices = ymap.get('slices').toJSON();
+    const named = new Map();
+    const note = (card) => named.set(card.name, card.id);
+    columns.forEach(col => note(col));
+    Object.values(ymap.get('users').toJSON()).flat().forEach(note);
+    Object.values(ymap.get('activities').toJSON()).flat().forEach(note);
+    slices.forEach(slice => {
+      named.set(`slice ${slice.name}`, slice.id);
+      Object.values(slice.stories).flat().forEach(note);
+    });
+    return Object.fromEntries(named);
+  };
+  const push = (doc, data) => writeDocFromJson(doc, data, Y);
+
+  test('pushing the same map changes no ID', () => {
+    const doc = writeMap(base());
+    const before = read(doc);
+    push(doc, base());
+    assert.deepEqual(read(doc), before);
+    assert.equal(new Set(Object.values(before)).size, Object.keys(before).length);
+  });
+
+  test('a card keeps its ID when its body changes, and when it is renamed in place', () => {
+    const doc = writeMap(base());
+    const before = read(doc);
+    const data = base();
+    data.slices[0].stories[0][0].body = 'New detail';
+    data.slices[0].stories[1][0].name = 'Credit card';
+    push(doc, data);
+    const after = read(doc);
+    assert.equal(after.Menu, before.Menu);
+    assert.equal(after['Credit card'], before.Card);
+  });
+
+  test('a card keeps its ID when it moves to another step or slice', () => {
+    const doc = writeMap(base());
+    const before = read(doc);
+    const data = base();
+    const [search] = data.slices[0].stories[0].splice(1, 1);
+    data.slices[1].stories[1].push(search);
+    push(doc, data);
+    assert.equal(read(doc).Search, before.Search);
+  });
+
+  test('steps keep their IDs when reordered, and their cards go with them', () => {
+    const doc = writeMap(base());
+    const before = read(doc);
+    const data = base();
+    data.steps.reverse();
+    data.users.reverse();
+    data.activities.reverse();
+    data.slices.forEach(slice => slice.stories.reverse());
+    push(doc, data);
+    assert.deepEqual(read(doc), before);
+  });
+
+  test('steps and slices keep their IDs when renamed', () => {
+    const doc = writeMap(base());
+    const before = read(doc);
+    const data = base();
+    data.steps[1].name = 'Checkout';
+    data.slices[1].name = 'Phase 2';
+    push(doc, data);
+    const after = read(doc);
+    assert.equal(after.Checkout, before.Pay);
+    assert.equal(after['slice Phase 2'], before['slice Later']);
+    assert.equal(after.Card, before.Card);
+  });
+
+  test('a new card gets a new ID and the others keep theirs', () => {
+    const doc = writeMap(base());
+    const before = read(doc);
+    const data = base();
+    data.slices[1].stories[0].push({ name: 'Gift cards' });
+    push(doc, data);
+    const after = read(doc);
+    assert.ok(after['Gift cards']);
+    assert.ok(!Object.values(before).includes(after['Gift cards']));
+    assert.equal(after.Offers, before.Offers);
+  });
+
+  test('cards with the same name each keep their own ID, and no ID is used twice', () => {
+    const data = { name: 'Twins', steps: steps('One', 'Two'), slices: [{ name: 'S', stories: [[{ name: 'Same' }], [{ name: 'Same' }]] }] };
+    const doc = writeMap(data);
+    const ids = () => {
+      const [slice] = doc.getMap('storymap').get('slices').toJSON();
+      return doc.getMap('storymap').get('columns').toJSON().map(col => slice.stories[col.id][0].id);
+    };
+    const before = ids();
+    push(doc, data);
+    assert.deepEqual(ids(), before);
+    assert.notEqual(before[0], before[1]);
+  });
+
+  test('cards in a partial map keep their IDs', () => {
+    const data = {
+      name: 'Partial',
+      steps: [{ partialMapId: 'pm000001', partialMapOrigin: true }, { name: 'Pay' }],
+      slices: [{ name: 'S', stories: [[], [{ name: 'Card' }]] }],
+      partialMaps: [{ id: 'pm000001', name: 'Checkout', users: [[]], activities: [[]], steps: [{ name: 'Basket' }], stories: [[[{ name: 'Edit basket' }]]] }],
+    };
+    const doc = writeMap(data);
+    const partial = () => JSON.parse(doc.getMap('storymap').get('partialMaps'))[0];
+    const columnId = () => doc.getMap('storymap').get('columns').toJSON()[0].id;
+    const sliceId = () => doc.getMap('storymap').get('slices').toJSON()[0].id;
+    const card = () => partial().stories[sliceId()][partial().columns[0].id][0];
+    const before = { column: columnId(), step: partial().columns[0].id, card: card().id };
+    push(doc, data);
+    assert.deepEqual({ column: columnId(), step: partial().columns[0].id, card: card().id }, before);
+  });
+});
