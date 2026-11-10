@@ -46,6 +46,6 @@ storymaps.io {
     }
 }
 
-www.storymaps.io {
+www.storymaps.io, http://www.storymaps.io {
     redir https://storymaps.io{uri} permanent
 }
