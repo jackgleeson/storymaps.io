@@ -42,7 +42,9 @@ const ICONS = {
 };
 
 
-const mapLabel = (map) => map.id === _mapId ? (state.name || dom.boardName.value || 'Untitled map') : (map.name || 'Untitled map');
+// The open map shows its live title. A map nobody else has open is read from disk after the tabs
+// draw, so until its title arrives the tab uses the name the server has for it.
+const mapLabel = (map) => (map.id === _mapId ? (state.name || map.name || dom.boardName.value) : map.name) || 'Untitled map';
 
 // =============================================================================
 // Server
@@ -258,10 +260,12 @@ const scrollTabs = (direction) => {
 };
 
 // The tab for the current map follows the title as it changes
-const updateCurrentTab = () => {
+const setCurrentTab = (label) => {
     const tab = dom.projectTabs?.querySelector('.project-tab.current');
-    if (tab) tab.textContent = mapLabel({ id: _mapId });
+    if (tab) tab.textContent = label;
 };
+
+const updateCurrentTab = () => setCurrentTab(mapLabel({ id: _mapId }));
 
 // =============================================================================
 // Add and manage boxes
@@ -632,7 +636,8 @@ export const watch = (provider, ymap) => {
         if (changed) refresh();
     });
     ymap?.observe((event) => {
-        if (event.keysChanged.has('name')) updateCurrentTab();
+        // This runs before state has the new title, so read it from the map
+        if (event.keysChanged.has('name')) setCurrentTab(ymap.get('name') || 'Untitled map');
     });
 };
 

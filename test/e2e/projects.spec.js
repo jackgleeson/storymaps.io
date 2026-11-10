@@ -728,3 +728,30 @@ test('arrows, the wheel and the current tab move along tabs that overflow the ba
   await expect(left).toBeVisible();
   await expect(right).toBeHidden();
 });
+
+test('the open tab keeps its name when the map arrives after the tabs', async ({ page, createMap, request }) => {
+  const [ordering, loyalty] = [await createMap(map('Ordering')), await createMap(map('Loyalty'))];
+  const res = await request.post('/api/projects', { data: { mapIds: [ordering, loyalty], name: 'Cafe' }, headers: { origin: 'http://localhost' } });
+  const project = (await res.json()).project;
+
+  // A map nobody has open is read from disk after the socket syncs. Answer the sync as if the map
+  // were empty, then send its content a moment later as an update.
+  let release;
+  const held = new Promise(resolve => { release = resolve; });
+  await page.routeWebSocket(new RegExp(ordering), (ws) => {
+    const server = ws.connectToServer();
+    server.onMessage((message) => {
+      const content = typeof message !== 'string' && message[0] === 0 && (message[1] === 1 || message[1] === 2) && message.length > 8;
+      if (!content) return ws.send(message);
+      if (message[1] === 1) ws.send(Buffer.from([0, 1, 2, 0, 0]));
+      held.then(() => ws.send(Buffer.from([0, 2, ...message.subarray(2)])));
+    });
+  });
+
+  await page.goto(`/p/${project.id}/${ordering}`);
+  await expect(tabs(page)).toHaveCount(2);
+  await expect(page.locator('.project-tab.current')).toHaveText('Ordering');
+  release();
+  await expect(page.locator('#boardName')).toHaveValue('Ordering');
+  await expect(page.locator('.project-tab.current')).toHaveText('Ordering');
+});
