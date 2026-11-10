@@ -291,6 +291,22 @@ export const initState = () => {
     ];
 };
 
+// Forget the map that was open, before opening another in the page. Anything left in state while
+// the next map loads can be written into it, as if it were a new map being saved for the first time.
+export const clearMapContent = () => {
+    state.name = '';
+    state.columns = [];
+    state.users = {};
+    state.activities = {};
+    state.slices = [];
+    state.legend = [];
+    state.notes = '';
+    state.partialMaps = [];
+    partialMapEditState.activeId = null;
+    partialMapEditState.expandedIds.clear();
+    partialMapEditState.editingColIds.clear();
+};
+
 export const hasContent = () => {
     if (state.name) return true;
     if (state.columns.some(s => s.name)) return true;

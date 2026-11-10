@@ -5,7 +5,7 @@ import * as notepad from '/src/features/notepad.js';
 import * as connectionStatus from '/src/features/connection-status.js';
 import * as log from '/src/core/log.js';
 import { generateId, el, CARD_COLORS } from '/src/core/constants.js';
-import { state, init as stateInit, initState, hasContent, pushUndo, undo, redo, updateUndoRedoButtons, clearUndoHistory, createStory, createSlice, selection, clearSelection } from '/src/core/state.js';
+import { state, init as stateInit, initState, clearMapContent, hasContent, pushUndo, undo, redo, updateUndoRedoButtons, clearUndoHistory, createStory, createSlice, selection, clearSelection } from '/src/core/state.js';
 import { serialize, deserialize } from '/src/core/serialization.js';
 import * as navigation from '/src/ui/navigation.js';
 import * as presence from '/src/ui/presence.js';
@@ -1806,6 +1806,7 @@ const loadMapById = async (mapId) => {
     destroyYjs();
 
     if (mapId) {
+        clearMapContent();
         state.mapId = mapId;
         const known = await mapKnownToServer(mapId);
         await createYjsDoc(mapId);

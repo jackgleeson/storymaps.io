@@ -108,6 +108,81 @@ test('tabs open each map fresh at the project link, and back returns to the last
   await expect(tabs(page).first()).toHaveAttribute('aria-current', 'page');
 });
 
+// Move to a tab and give the browser time to write anything it was going to
+const visitTab = async (page, index, firstStep) => {
+  await tabs(page).nth(index).click();
+  await expect(tabs(page).nth(index)).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('.step .step-text').first()).toHaveValue(firstStep);
+  await page.waitForTimeout(400);
+};
+
+test('switching tabs writes nothing from one map into another', async ({ page, createMap, pullMap }) => {
+  const a = await createMap(`${map('Ordering', 'Browse', 'Pay')}notes: Notes from Ordering\n`);
+  const b = await createMap(map('Loyalty', 'Join', 'Redeem'));
+  const before = await pullContent(pullMap, b);
+  await openMap(page, a, 2);
+  await addByLink(page, b);
+
+  for (let hop = 0; hop < 4; hop++) {
+    await visitTab(page, 1, 'Join');
+    await expect(page.locator('#boardName')).toHaveValue('Loyalty');
+    await visitTab(page, 0, 'Browse');
+    await expect(page.locator('#boardName')).toHaveValue('Ordering');
+  }
+
+  expect(await pullContent(pullMap, b)).toEqual(before);
+});
+
+test('a map that arrives late is not overwritten by the tab before it', async ({ page, createMap, pullMap }) => {
+  const a = await createMap(`${map('Ordering', 'Browse', 'Pay')}notes: Notes from Ordering\n`);
+  const b = await createMap(map('Loyalty', 'Join', 'Redeem'));
+  const before = await pullContent(pullMap, b);
+  await openMap(page, a, 2);
+  await addByLink(page, b);
+
+  // The server can answer before it has read a map from disk: an empty sync first, the map after
+  let held = false;
+  await page.routeWebSocket(new RegExp(`/${b}$`), (ws) => {
+    const server = ws.connectToServer();
+    ws.onMessage(m => server.send(m));
+    server.onMessage((m) => {
+      const isSyncAnswer = typeof m !== 'string' && m[0] === 0 && m[1] === 1;
+      if (held || !isSyncAnswer) return ws.send(m);
+      held = true;
+      ws.send(Buffer.from([0, 1, 2, 0, 0]));
+      setTimeout(() => ws.send(m), 500);
+    });
+  });
+
+  await visitTab(page, 1, 'Join');
+  await expect(page.locator('#boardName')).toHaveValue('Loyalty');
+  expect(held).toBe(true);
+  await visitTab(page, 0, 'Browse');
+
+  expect(await pullContent(pullMap, b)).toEqual(before);
+});
+
+test('switching to an untitled map in a project leaves it untitled and empty', async ({ page, createMap, pullMap }) => {
+  const a = await createMap(`${map('Ordering', 'Browse', 'Pay')}notes: Notes from Ordering\n`);
+  await openMap(page, a, 2);
+  await startProject(page);
+  await page.locator('#projectAddBtn').click();
+  await panel(page).getByRole('button', { name: 'New map' }).click();
+  await expect(tabs(page)).toHaveText(['Ordering', 'Untitled map']);
+  const untitled = new URL(page.url()).pathname.split('/').pop();
+  await page.waitForTimeout(400);
+  const before = await pullContent(pullMap, untitled);
+
+  for (let hop = 0; hop < 4; hop++) {
+    await visitTab(page, 0, 'Browse');
+    await visitTab(page, 1, 'New Step');
+    await expect(page.locator('#boardName')).toHaveValue('');
+  }
+
+  await expect(tabs(page)).toHaveText(['Ordering', 'Untitled map']);
+  expect(await pullContent(pullMap, untitled)).toEqual(before);
+});
+
 test('switching tabs keeps full screen, opening the map in the page', async ({ page, createMap }) => {
   const [a, b] = [await createMap(map('Ordering', 'Browse', 'Pay')), await createMap(map('Loyalty', 'Join', 'Redeem'))];
   await openMap(page, a, 2);
