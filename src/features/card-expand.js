@@ -6,7 +6,7 @@ import { state, pushUndo } from '/src/core/state.js';
 import { isMapEditable } from '/src/core/lock.js';
 import * as log from '/src/core/log.js';
 import { CARD_COLORS, STATUS_OPTIONS, el, isValidUrl } from '/src/core/constants.js';
-import { createPointsInput, createTagEditor, patchCardForItem } from '/src/ui/ui.js';
+import { createPointsInput, createTagEditor, patchCardForItem, sliceClosedLabel } from '/src/ui/ui.js';
 import { STORY_LINES, addLines, enterAction } from '/src/core/story-lines.js';
 
 let _deps = {};
@@ -38,25 +38,36 @@ const isSliceCard = (item) =>
     state.slices.some(slice => inCards(slice.stories, item))
     || state.partialMaps.some(pm => Object.values(pm.stories || {}).some(stories => inCards(stories, item)));
 
-// Where a card sits on the map: its step and slice, or the partial it's in. Cards in the user,
-// activity and step rows have no place to show.
+// Where a card sits on the map: its step and slice, with the slice closed or complete if it is, or
+// the partial it's in. Cards in the user and activity rows have no place to show.
 const cardPlace = (item) => {
     for (const slice of state.slices) {
         const columnId = Object.keys(slice.stories || {}).find(id => slice.stories[id].includes(item));
         if (columnId) {
             const step = state.columns.find(c => c.id === columnId);
-            return [step?.name, slice.name || 'Unnamed slice'].filter(Boolean);
+            return { step: step?.name, name: slice.name || 'Unnamed slice', status: sliceClosedLabel(slice)?.toLowerCase() };
         }
     }
     const partial = state.partialMaps.find(pm => Object.values(pm.stories || {}).some(stories => inCards(stories, item)));
-    return partial ? [partial.name || 'Untitled partial'] : [];
+    return partial ? { name: partial.name || 'Untitled partial' } : null;
 };
 
 const renderPlace = (item) => {
-    dom.cardExpandPlace.replaceChildren(...cardPlace(item).flatMap((name, i) => {
-        const part = el('span', 'card-expand-place-part', { text: name, title: name });
-        return i === 0 ? [part] : [el('span', 'card-expand-place-sep', { html: ICONS.place }), part];
-    }));
+    const place = cardPlace(item);
+    const parts = [];
+    if (place?.step) {
+        parts.push(
+            el('span', 'card-expand-place-part card-expand-place-step', { text: place.step, title: place.step }),
+            el('span', 'card-expand-place-sep', { html: ICONS.place })
+        );
+    }
+    if (place) {
+        const where = el('span', 'card-expand-place-where');
+        where.append(el('span', 'card-expand-place-part card-expand-place-name', { text: place.name, title: place.name }));
+        if (place.status) where.append(el('span', 'card-expand-place-status', { text: `(${place.status})` }));
+        parts.push(where);
+    }
+    dom.cardExpandPlace.replaceChildren(...parts);
 };
 
 // Replace part of the body as if typed, so the textarea's own undo can take it back, and fire the

@@ -7049,9 +7049,33 @@ html.dark-mode .connection-notice.is-online::before {
     white-space: nowrap;
 }
 
-.card-expand-place-part:last-child {
+/* When names don't fit, the step gives way first, the slice name next, and the status never */
+.card-expand-place-step {
+    flex: 0 1000 auto;
+}
+
+.card-expand-place-where {
+    flex: 0 1 auto;
+    min-width: 0;
+    /* Leaves the step room to show a few letters */
+    max-width: calc(100% - 72px);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.card-expand-place-where:first-child {
+    max-width: 100%;
+}
+
+.card-expand-place-name {
     font-weight: 600;
     color: rgba(0, 0, 0, 0.8);
+}
+
+.card-expand-place-status {
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .card-expand-place-sep {

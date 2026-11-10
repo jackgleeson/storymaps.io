@@ -72,3 +72,56 @@ test('long step and slice names stay on one line and leave the buttons in place'
   const link = await page.locator('#cardExpandCopyLink').boundingBox();
   expect(placeBox.x + placeBox.width).toBeLessThanOrEqual(link.x);
 });
+
+const closedSliceMap = (slice, step = 'Pay') => ({
+  name: 'Closed',
+  steps: [{ name: step }],
+  slices: [{ collapsed: true, stories: [[{ name: 'Card', body: 'Details' }]], ...slice }, { name: 'Next', stories: [[]] }],
+});
+const openPeekedCard = async (page, request, map) => {
+  const id = (await (await request.post('/api/maps', { data: map })).json()).id;
+  await openMap(page, id, 1);
+  await page.getByRole('button', { name: /Show cards/ }).first().click();
+  await page.locator('.slice-peek-col .story-card .btn-expand').first().click();
+  await expect(page.locator('#cardExpandModal')).toHaveClass(/visible/);
+};
+const status = (page) => place(page).locator('.card-expand-place-status');
+
+test('a card in a complete or closed slice says so after the slice name', async ({ page, request }) => {
+  await openPeekedCard(page, request, closedSliceMap({ name: 'Phase 1', closedReason: 'complete' }));
+  await expect(placeParts(page)).toHaveText(['Pay', 'Phase 1']);
+  await expect(status(page)).toHaveText('(complete)');
+
+  await page.locator('#cardExpandModalClose').click();
+  await openPeekedCard(page, request, closedSliceMap({ name: 'Phase 2', closedReason: 'closed' }));
+  await expect(status(page)).toHaveText('(closed)');
+});
+
+test('a card in an open slice shows no status', async ({ page, createMap }) => {
+  await openMap(page, await createMap());
+  await openCard(page.locator('.slice-container .story-card').first());
+  await expect(placeParts(page)).toHaveCount(2);
+  await expect(status(page)).toHaveCount(0);
+});
+
+test('when names are too long the step shrinks first and the status is never cut', async ({ page, request }) => {
+  const long = 'A very long name that goes on and on and on, well past the width of the expanded card itself';
+  await openPeekedCard(page, request, closedSliceMap({ name: `${long} slice`, closedReason: 'complete' }, `${long} step`));
+
+  const box = (locator) => locator.boundingBox();
+  const placeBox = await box(place(page));
+  const [step, name] = [await box(placeParts(page).nth(0)), await box(placeParts(page).nth(1))];
+  const statusBox = await box(status(page));
+  expect(statusBox.x + statusBox.width).toBeLessThanOrEqual(placeBox.x + placeBox.width + 1);
+  expect(await status(page).evaluate(s => s.scrollWidth <= s.clientWidth)).toBe(true);
+  expect(step.width).toBeGreaterThanOrEqual(30);
+  expect(name.width).toBeGreaterThan(step.width * 3);
+  expect((await box(page.locator('.card-expand-modal .modal-header'))).height).toBeLessThanOrEqual(35);
+});
+
+test('a short step keeps its whole name beside a long slice name', async ({ page, request }) => {
+  const long = 'A very long name that goes on and on and on, well past the width of the expanded card itself';
+  await openPeekedCard(page, request, closedSliceMap({ name: long, closedReason: 'closed' }));
+  await expect(placeParts(page).first()).toHaveText('Pay');
+  expect(await placeParts(page).first().evaluate(s => s.scrollWidth <= s.clientWidth)).toBe(true);
+});

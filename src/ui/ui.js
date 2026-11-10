@@ -295,6 +295,9 @@ const markSliceComplete = async (slice) => {
     keepSliceInPlace(slice.id, () => _renderAndSave());
 };
 
+// Complete or Closed for a slice that has been closed, null for one that's open
+export const sliceClosedLabel = (slice) => slice.collapsed ? (slice.closedReason === 'closed' ? 'Closed' : 'Complete') : null;
+
 export const createExpandButton = (item, { readOnly = false } = {}) => {
     const btn = el('button', 'btn-expand', { title: 'Expand card', ariaLabel: 'Expand card', html: '⤢' });
     btn.addEventListener('click', (e) => {
@@ -1678,7 +1681,7 @@ const renderSliceProgress = () => {
         const row = el('div', 'map-stats-slice');
         row.appendChild(el('span', 'map-stats-slice-name', { text: name }));
 
-        const closed = slice.collapsed ? (slice.closedReason === 'closed' ? 'Closed' : 'Complete') : null;
+        const closed = sliceClosedLabel(slice);
         if (closed) row.classList.add('map-stats-slice-closed');
         if (total === 0) {
             row.appendChild(el('span', `map-stats-slice-count${closed ? ` map-stats-${closed.toLowerCase()}` : ''}`, { text: closed ? `${closed === 'Complete' ? '✓ ' : ''}${closed}` : 'No tasks' }));
