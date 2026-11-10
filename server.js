@@ -338,7 +338,9 @@ const server = createServer(async (req, res) => {
               ? dumpYaml(jsonToYamlObj(data))
               : JSON.stringify(data, null, 2);
           const ct = ext === '.csv' ? 'text/csv' : ext === '.yaml' ? 'text/yaml' : 'application/json';
-          const headers = { 'Content-Type': ct + '; charset=utf-8', 'Cache-Control': 'no-store' };
+          // robots.txt must leave these open, because AI tools that obey it fetch these links.
+          // The header is what keeps them out of search results.
+          const headers = { 'Content-Type': ct + '; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex' };
           if (ext === '.csv') headers['Content-Disposition'] = `attachment; filename="${sanitizeFilename(data.name) + '.csv'}"`;
           res.writeHead(200, headers);
           res.end(body);

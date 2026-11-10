@@ -4,9 +4,6 @@ Disallow: /new?
 Disallow: /sample/
 Disallow: /p/*/new
 Disallow: /api/
-Disallow: /*.yaml$
-Disallow: /*.json$
-Disallow: /*.csv$
 Allow: /
 
 Sitemap: https://storymaps.io/sitemap.xml

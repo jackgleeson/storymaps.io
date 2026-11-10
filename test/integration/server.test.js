@@ -416,6 +416,19 @@ describe('pages and files', () => {
     }
   });
 
+  test('AI tools may fetch the format links of a map, which stay out of search results', async () => {
+    const robots = await (await fetch(`${base}/robots.txt`)).text();
+    assert.ok(!/\.(yaml|json|csv)/.test(robots), 'robots.txt leaves the format links open');
+    assert.match(robots, /Disallow: \/api\//);
+
+    const id = await createMap();
+    for (const ext of ['yaml', 'json', 'csv']) {
+      const res = await fetch(`${base}/${id}.${ext}`);
+      assert.equal(res.status, 200, ext);
+      assert.equal(res.headers.get('x-robots-tag'), 'noindex', ext);
+    }
+  });
+
   test('map, project and sample links get the app, and paths scanners probe are a 404', async () => {
     for (const path of ['/abc12345', '/new', '/tour', '/sample/recipe-app', '/p/abc12345', '/p/abc12345/def67890', '/p/abc12345/']) {
       const res = await rawGet(path);
