@@ -1574,7 +1574,7 @@ html.dark-mode .map-stats-slice-count.map-stats-closed {
     position: relative; /* Required for cursor positioning */
     display: inline-flex;
     flex-direction: column;
-    margin: var(--map-top-room, 60px) 150vw 100vh; /* Scrollable space on all sides; src/ui/navigation.js sets the room above */
+    margin: var(--map-top-room, 20px) 150vw 100vh; /* Scrollable space on all sides; src/ui/navigation.js sets the room above */
 }
 
 /* The map is zoomed in two parts, the top rows and the slices (src/ui/map-top.js). The top part
