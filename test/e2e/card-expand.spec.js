@@ -158,3 +158,14 @@ test('placeholder text is clearly fainter than real text', async ({ page, create
   const placeholder = await page.locator('#cardExpandBody').evaluate(body => getComputedStyle(body, '::placeholder').color);
   expect(placeholder).toBe('rgba(0, 0, 0, 0.42)');
 });
+
+test('a link in the closed footer is blue, and underlined only on hover', async ({ page, createMap }) => {
+  await openMap(page, await createMap('name: Links\nsteps:\n  - Browse\nslices:\n  - name: MVP\n    stories:\n      Browse:\n        - name: One\n          url: https://example.com/a\n'), 1);
+  await openCard(page.locator('.slice-container .story-card').first());
+  const link = page.locator('.card-expand-summary-link');
+  const style = () => link.evaluate(a => ({ color: getComputedStyle(a).color, line: getComputedStyle(a).textDecorationLine }));
+  await page.locator('#cardExpandName').hover();
+  expect(await style()).toEqual({ color: 'rgb(3, 105, 161)', line: 'none' });
+  await link.hover();
+  expect((await style()).line).toBe('underline');
+});

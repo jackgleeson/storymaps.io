@@ -7309,8 +7309,8 @@ html.dark-mode .connection-notice.is-online::before {
 }
 
 .card-expand-summary-link {
-    color: var(--card-ink);
-    text-decoration: underline;
+    color: #0369a1;
+    text-decoration: none;
 }
 
 .card-expand-summary-link:hover {
