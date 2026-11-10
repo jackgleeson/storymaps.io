@@ -96,6 +96,14 @@ const ICONS = {
     close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 15l-6-6-6 6"/></svg>'
 };
 
+// No colour leaves the default from the stylesheet
+const setModalColour = (colour) => {
+    const modal = dom.cardExpandModal.querySelector('.card-expand-modal');
+    if (!modal) return;
+    if (colour) modal.style.setProperty('--card-colour', colour);
+    else modal.style.removeProperty('--card-colour');
+};
+
 const statusDot = (status) => {
     const dot = el('span', 'card-expand-status-dot');
     dot.style.backgroundColor = STATUS_OPTIONS[status].color;
@@ -205,7 +213,7 @@ const buildColourField = (item, editable, onChange) => {
             pushUndo();
             item.color = hex;
             log.logEvent(`Changed card color${log.quoted(item.name)}`, [item.id]);
-            dom.cardExpandModal.querySelector('.card-expand-modal').style.backgroundColor = hex;
+            setModalColour(hex);
             swatches.forEach(s => s.classList.toggle('selected', s === swatch));
             onChange();
         });
@@ -302,8 +310,7 @@ export const openExpandModal = (item, { readOnly = false, focus = true } = {}) =
     dom.cardExpandBody.value = item.body || '';
     dom.cardExpandName.readOnly = !editable;
     dom.cardExpandBody.readOnly = !editable;
-    const modal = dom.cardExpandModal.querySelector('.card-expand-modal');
-    if (modal) modal.style.backgroundColor = item.color || '';
+    setModalColour(item.color);
     dom.cardExpandChips.hidden = !editable || !isSliceCard(item);
     renderPlace(item);
     renderFooter(item, editable);

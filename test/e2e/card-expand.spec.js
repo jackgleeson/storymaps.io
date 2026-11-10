@@ -125,3 +125,36 @@ test('a short step keeps its whole name beside a long slice name', async ({ page
   await expect(placeParts(page).first()).toHaveText('Pay');
   expect(await placeParts(page).first().evaluate(s => s.scrollWidth <= s.clientWidth)).toBe(true);
 });
+
+const colours = (page) => page.evaluate(() => {
+  const style = (selector) => getComputedStyle(document.querySelector(selector));
+  return {
+    backdrop: style('#cardExpandModal').backgroundColor,
+    card: style('.card-expand-modal').backgroundColor,
+    title: style('#cardExpandName').color,
+    body: style('#cardExpandBody').color,
+  };
+});
+const BACKDROP = 'rgba(0, 0, 0, 0.35)';
+const NEAR_BLACK = 'rgb(26, 26, 26)';
+
+test('the expanded card keeps its colour, with near-black text', async ({ page, createMap }) => {
+  await openMap(page, await createMap('name: Users\nsteps:\n  - Browse\nusers:\n  - name: Home cook\n    step: Browse\n    color: "#fca5a5"\nslices:\n  - name: MVP\n    stories:\n      Browse:\n        - name: One\n'), 1);
+  await openCard(page.locator('.users-row .story-card').first());
+  expect(await colours(page)).toEqual({ backdrop: BACKDROP, card: 'rgb(252, 165, 165)', title: NEAR_BLACK, body: NEAR_BLACK });
+});
+
+test('changing the colour of an open card changes the card and keeps the text near-black', async ({ page, createMap }) => {
+  await openMap(page, await createMap());
+  await openCard(page.locator('.slice-container .story-card').first());
+  await page.locator('#cardExpandFooter .card-expand-toggle').click();
+  await page.locator('.card-expand-swatch[title="blue"]').click();
+  expect(await colours(page)).toEqual({ backdrop: BACKDROP, card: 'rgb(147, 197, 253)', title: NEAR_BLACK, body: NEAR_BLACK });
+});
+
+test('placeholder text is clearly fainter than real text', async ({ page, createMap }) => {
+  await openMap(page, await createMap());
+  await openCard(page.locator('.slice-container .story-card').first());
+  const placeholder = await page.locator('#cardExpandBody').evaluate(body => getComputedStyle(body, '::placeholder').color);
+  expect(placeholder).toBe('rgba(0, 0, 0, 0.42)');
+});
