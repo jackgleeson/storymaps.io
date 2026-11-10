@@ -18,6 +18,7 @@ import { hashPassword, lockState, onLockChange } from '/src/core/lock.js';
 const REFRESH_MS = 30_000;
 const CACHE_KEY = 'project:';
 const UNLOCKED_KEY = 'unlockedProjects';
+const MIN_PASSWORD_LENGTH = 4; // the same as a map lock
 
 let _mapId = null;      // the open map
 let _projectId = null;  // the project whose tabs show, from the page address
@@ -703,7 +704,11 @@ const openLockDialog = () => {
     const error = errorLine();
     const { actions, confirm } = dialogActions(close, 'Lock');
     const submit = async () => {
-        if (!input.value) return input.focus();
+        if (input.value.length < MIN_PASSWORD_LENGTH) {
+            error.textContent = `Use a password of at least ${MIN_PASSWORD_LENGTH} characters`;
+            error.hidden = false;
+            return input.focus();
+        }
         const projectId = _project.id;
         const lockMaps = withMaps.input.checked;
         confirm.disabled = true;

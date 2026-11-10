@@ -979,3 +979,21 @@ test('moving a map closes an open password box, and the next move uses the new o
   await panel(page).getByRole('button', { name: 'Move Ordering down' }).click();
   await expect(tabs(page)).toHaveText(['Loyalty', 'Barista', 'Ordering']);
 });
+
+test('a project password needs at least 4 characters, like a map lock', async ({ page, createMap, request }) => {
+  const a = await createMap(map('Ordering'));
+  const project = await projectOfMaps(request, [a]);
+  await page.goto(`/p/${project}/${a}`);
+  await expect(tabs(page)).toHaveCount(1);
+  await projectName(page).click();
+  await panel(page).getByRole('button', { name: 'Lock project' }).click();
+
+  await page.locator('#projectLockPassword').fill('abc');
+  await page.locator('#projectLockConfirm').click();
+  await expect(page.locator('#projectLockDialog .project-panel-error')).toHaveText('Use a password of at least 4 characters');
+  expect((await (await request.get(`/api/projects/${project}`)).json()).project.locked).toBe(false);
+
+  await page.locator('#projectLockPassword').fill('abcd');
+  await page.locator('#projectLockConfirm').click();
+  await expect(panel(page).locator('.project-panel-locked')).toHaveText('Locked');
+});
