@@ -2,7 +2,7 @@
 // Navigation: zoom, pan, scroll, menu helpers
 
 import { ZOOM_LEVELS } from '/src/core/constants.js';
-import { fitMapTop } from '/src/ui/map-top.js';
+import { fitMapTop, mapBody } from '/src/ui/map-top.js';
 
 let _dom = null;
 let _state = null;
@@ -83,10 +83,28 @@ const updatePanMode = () => {
     }
 };
 
+// The room to scroll above the map. A map that fits in the window can go anywhere in it, right
+// down to the bottom edge, which is useful when zoomed out. A map taller than the window stops just
+// below the top, so scrolling up can't lose it. The view stays put when the room changes.
+const MIN_TOP_ROOM = 60;
+const updateMapTopRoom = () => {
+    const map = _dom.storyMap;
+    const wrapper = _dom.storyMapWrapper;
+    const body = mapBody(map);
+    if (!body) return;
+    const height = body.getBoundingClientRect().bottom - map.getBoundingClientRect().top;
+    const room = `${Math.max(MIN_TOP_ROOM, Math.round(wrapper.clientHeight - height))}px`;
+    if (map.style.getPropertyValue('--map-top-room') === room) return;
+    const before = map.offsetTop;
+    map.style.setProperty('--map-top-room', room);
+    wrapper.scrollTop += map.offsetTop - before;
+};
+
 // transform: scale() with origin top-left extends content past the layout box,
 // but scrollWidth is based on layout — so native scroll/pan can't reach the overflow.
 // Expand right/bottom margins so the full scaled content is scrollable.
 const updateZoomScrollBounds = () => {
+    updateMapTopRoom();
     const map = _dom.storyMap;
     if (zoomLevel <= 1) {
         map.style.marginRight = '';
@@ -423,6 +441,11 @@ export const toggleSliceMenu = (sliceId, button) => {
 export const initPan = () => {
     const wrapper = _dom.storyMapWrapper;
 
+    // Cards added or removed, or a resized window, can change whether the map fits
+    const topRoom = new ResizeObserver(updateMapTopRoom);
+    topRoom.observe(_dom.storyMap);
+    topRoom.observe(wrapper);
+
     // Suppress native browser context menu (custom menu shown on mouseup instead)
     wrapper.addEventListener('contextmenu', (e) => {
         e.preventDefault();
@@ -516,7 +539,7 @@ export const initWheelZoom = () => {
 
         // Scroll so the same content point stays under the cursor
         wrapper.scrollLeft = mapLeft + cursorX * zoomLevel - (e.clientX - wrapperRect.left);
-        wrapper.scrollTop = mapTop + cursorY * zoomLevel - (e.clientY - wrapperRect.top);
+        wrapper.scrollTop = _dom.storyMap.offsetTop + cursorY * zoomLevel - (e.clientY - wrapperRect.top);
 
         // Defer pan mode update to next frame
         requestAnimationFrame(() => {
@@ -576,7 +599,7 @@ export const initPinchZoom = () => {
 
         // Keep the midpoint stable
         wrapper.scrollLeft = mapLeft + contentX * zoomLevel - (midX - wrapperRect.left);
-        wrapper.scrollTop = mapTop + contentY * zoomLevel - (midY - wrapperRect.top);
+        wrapper.scrollTop = _dom.storyMap.offsetTop + contentY * zoomLevel - (midY - wrapperRect.top);
     }, { passive: false });
 
     const onTouchEnd = (e) => {
@@ -608,7 +631,7 @@ const zoomAroundCenter = (newZoom) => {
 
     // Scroll so the same content point stays at viewport center
     wrapper.scrollLeft = mapLeft + cx * zoomLevel - wrapper.clientWidth / 2;
-    wrapper.scrollTop = mapTop + cy * zoomLevel - wrapper.clientHeight / 2;
+    wrapper.scrollTop = _dom.storyMap.offsetTop + cy * zoomLevel - wrapper.clientHeight / 2;
 };
 
 export const zoomIn = () => {

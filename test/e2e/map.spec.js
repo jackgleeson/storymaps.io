@@ -35,3 +35,82 @@ test('the map header fits between a phone and a laptop, with the menu button in 
     expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBe(0);
   }
 });
+
+// The room above the map: the whole window when the map fits, a small strip when it doesn't
+const mapOfSlices = (count) => `name: Heights
+steps:
+  - One
+  - Two
+slices:
+${Array.from({ length: count }, (_, i) => `  - name: Slice ${i}
+    stories:
+      One:
+        - name: Card A${i}
+        - name: Card B${i}
+`).join('')}`;
+
+const scrollToTop = async (page) => {
+  await page.locator('#storyMapWrapper').evaluate(w => { w.scrollTop = 0; });
+  await page.evaluate(() => new Promise(requestAnimationFrame));
+};
+
+const mapEdges = (page) => page.evaluate(() => {
+  const wrapper = document.getElementById('storyMapWrapper');
+  const map = document.getElementById('storyMap');
+  const area = wrapper.getBoundingClientRect();
+  return {
+    top: map.getBoundingClientRect().top - area.top,
+    bottom: map.querySelector(':scope > .map-body').getBoundingClientRect().bottom - area.top,
+    height: wrapper.clientHeight,
+  };
+});
+
+test('scrolling up stops just above a map taller than the window', async ({ page, createMap }) => {
+  await openMap(page, await createMap(mapOfSlices(12)), 2);
+  await scrollToTop(page);
+  const { top, bottom, height } = await mapEdges(page);
+  expect(bottom).toBeGreaterThan(height);
+  expect(top).toBeGreaterThanOrEqual(0);
+  expect(top).toBeLessThanOrEqual(61);
+});
+
+test('a map that fits in the window can move to its bottom edge, but no further', async ({ page, createMap }) => {
+  await openMap(page, await createMap(mapOfSlices(1)), 2);
+  await scrollToTop(page);
+  const { top, bottom, height } = await mapEdges(page);
+  expect(top).toBeGreaterThan(61);
+  expect(Math.abs(bottom - height)).toBeLessThanOrEqual(2);
+});
+
+test('zooming out a tall map frees the room above it and keeps the middle of the view still', async ({ page, createMap }) => {
+  await openMap(page, await createMap(mapOfSlices(12)), 2);
+  const wrapper = page.locator('#storyMapWrapper');
+  await wrapper.evaluate((w) => {
+    w.scrollTop = document.getElementById('storyMap').offsetTop + 300;
+  });
+  const middle = () => page.evaluate(() => {
+    const w = document.getElementById('storyMapWrapper');
+    const map = document.getElementById('storyMap');
+    const zoom = parseFloat(map.style.getPropertyValue('--zoom')) || 1;
+    return (w.getBoundingClientRect().top + w.clientHeight / 2 - map.getBoundingClientRect().top) / zoom;
+  });
+  const before = await middle();
+  await page.locator('#zoomOut').click();
+  expect(Math.abs(await middle() - before)).toBeLessThanOrEqual(3);
+
+  for (let i = 0; i < 8; i++) await page.locator('#zoomOut').click();
+  await scrollToTop(page);
+  const { top, bottom, height } = await mapEdges(page);
+  expect(bottom).toBeLessThanOrEqual(height + 2);
+  expect(top).toBeGreaterThan(61);
+});
+
+test('a map that grows past the window loses the extra room', async ({ page, createMap }) => {
+  await openMap(page, await createMap(mapOfSlices(1)), 2);
+  await scrollToTop(page);
+  expect((await mapEdges(page)).top).toBeGreaterThan(61);
+
+  for (let i = 0; i < 10; i++) await addCard(page, `Card ${i}`);
+  await scrollToTop(page);
+  expect((await mapEdges(page)).top).toBeLessThanOrEqual(61);
+});
