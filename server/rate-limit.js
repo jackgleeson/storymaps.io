@@ -59,7 +59,8 @@ const checkLimits = (req, ...checked) => {
 };
 
 const api = createLimiter(30, 60_000);
-const proxy = createLimiter(5, 60_000);
+const proxy = createLimiter(10, 60_000);
+const passwordAttempts = createLimiter(10, 60_000);
 // Creating maps through the API: people and the CLI make one at a time, so this only stops
 // scripts. The daily cap is generous because an office or school can share one address.
 const createPerMinute = createLimiter(10, 60_000);
@@ -67,9 +68,11 @@ const createPerDay = createLimiter(500, 24 * 60 * 60_000);
 
 export const isRateLimited = (req) => checkLimits(req, api);
 export const isProxyRateLimited = (req) => checkLimits(req, proxy);
-// For changes sent with a password: only a wrong password counts against the limit
-export const isPasswordLimited = (req) => proxy.full(getClientIp(req), Date.now());
-export const countWrongPassword = (req) => proxy.record(getClientIp(req), Date.now());
+// Project passwords have their own allowance, so other calls can't use it up. An attempt is taken
+// before the password is checked, so guesses sent at the same time all count. It's given back when
+// the password was right, so someone who has it can work through a project's maps.
+export const reservePasswordAttempt = (req) => checkLimits(req, passwordAttempts);
+export const refundPasswordAttempt = (req) => { passwordAttempts.hits.get(getClientIp(req))?.pop(); };
 export const isCreateRateLimited = (req) => checkLimits(req, createPerMinute, createPerDay);
 
 // Clean up stale entries every 5 minutes. unref() so this timer does

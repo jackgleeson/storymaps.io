@@ -188,7 +188,7 @@ describe('WebSocket sync', () => {
 
 // A SHA-256 of the password, as the app and the CLI send it
 const h = (password) => createHash('sha256').update(password).digest('hex');
-// Locking and unlocking allow 5 a minute from one address, so each request has its own
+// Locking and unlocking allow 10 a minute from one address, so each request has its own
 const lockPost = (path, body, headers = {}) => api('POST', path, { body, headers: { ...newAddress(), ...headers } });
 
 describe('locks', () => {
@@ -244,8 +244,8 @@ describe('locks', () => {
     await lockPost(`/api/lock/${id}`, { passwordHash: h('owner') });
     const from = { 'x-forwarded-for': '203.0.113.90' };
     const tries = [];
-    for (let i = 0; i < 6; i++) tries.push((await lockPost(`/api/lock/${id}`, { passwordHash: h(`guess${i}`) }, from)).status);
-    assert.deepEqual(tries, [403, 403, 403, 403, 403, 429]);
+    for (let i = 0; i < 11; i++) tries.push((await lockPost(`/api/lock/${id}`, { passwordHash: h(`guess${i}`) }, from)).status);
+    assert.deepEqual(tries, [...Array(10).fill(403), 429]);
   });
 
   test('a locked map takes no live edits from a connection without the password', async () => {
@@ -472,11 +472,37 @@ describe('pages and files', () => {
       assert.equal((await post(`/api/projects/${id}/map-lock`, { mapId: maps[0], action: 'lock', passwordHash: secret })).status, 200);
       assert.equal((await post(`/api/projects/${id}/map-lock`, { mapId: maps[0], action: 'unlock', passwordHash: secret })).status, 200);
     }
-    for (let i = 0; i < 5; i++) {
+    // Setting the password above used one of the ten attempts
+    for (let i = 0; i < 9; i++) {
       assert.equal((await post(`/api/projects/${id}/unlock`, { passwordHash: wrong })).status, 403);
     }
     assert.equal((await post(`/api/projects/${id}/unlock`, { passwordHash: wrong })).status, 429);
     assert.equal((await post(`/api/projects/${id}/unlock`, { passwordHash: secret })).status, 429);
+  });
+
+  test('re-locking with new passwords cannot be used to guess the password of a map', async () => {
+    const map = await createMap();
+    const headers = { origin: 'http://localhost', 'x-forwarded-for': '198.51.100.251' };
+    const post = (path, body) => api('POST', path, { body, headers });
+    const { id } = (await post('/api/projects', { mapIds: [map], name: 'Guesses' })).json.project;
+    const hash = (n) => n.toString(16).repeat(64);
+    assert.equal((await post(`/api/projects/${id}/lock`, { passwordHash: hash(1) })).status, 200);
+    for (let n = 2; n <= 10; n++) {
+      assert.equal((await post(`/api/projects/${id}/lock`, { passwordHash: hash(n), currentPasswordHash: hash(n - 1) })).status, 200);
+    }
+    assert.equal((await post(`/api/projects/${id}/lock`, { passwordHash: hash(11), currentPasswordHash: hash(10) })).status, 429);
+  });
+
+  test('guesses sent at the same time all count against the limit', async () => {
+    const map = await createMap();
+    const headers = { origin: 'http://localhost', 'x-forwarded-for': '198.51.100.252' };
+    const post = (path, body) => api('POST', path, { body, headers });
+    const { id } = (await post('/api/projects', { mapIds: [map], name: 'Parallel' })).json.project;
+    await post(`/api/lock/${map}`, { passwordHash: 'c'.repeat(64) });
+    const guesses = Array.from({ length: 15 }, (_, i) => post(`/api/projects/${id}/map-lock`, { mapId: map, action: 'unlock', passwordHash: String(i % 10).repeat(64) }));
+    const statuses = (await Promise.all(guesses)).map(r => r.status);
+    assert.equal(statuses.filter(s => s === 403).length, 10);
+    assert.equal(statuses.filter(s => s === 429).length, 5);
   });
 
   test('a map row locks with the project password and unlocks with the password of its own lock', async () => {

@@ -937,3 +937,45 @@ test('the lock dialog offers only the project when every map is already locked',
   await expect(page.locator('#projectLockOnly')).toBeVisible();
   await expect(page.locator('#projectLockAll')).toHaveCount(0);
 });
+
+test('a tab whose unlock has gone stale drops back to locked', async ({ page, createMap, request }) => {
+  const a = await createMap(map('Ordering'));
+  const project = await projectOfMaps(request, [a]);
+  const headers = { origin: 'http://localhost' };
+  await request.post(`/api/projects/${project}/lock`, { data: { passwordHash: sha('old') }, headers });
+  await page.goto(`/p/${project}/${a}`);
+  await expect(tabs(page)).toHaveCount(1);
+  await projectName(page).click();
+  await panel(page).getByRole('button', { name: 'Unlock project' }).click();
+  await panel(page).locator('#projectUnlockPassword').fill('old');
+  await panel(page).getByRole('button', { name: 'Unlock', exact: true }).click();
+  await expect(panel(page).locator('.project-panel-unlocked')).toBeVisible();
+
+  await request.post(`/api/projects/${project}/lock`, { data: { passwordHash: sha('new'), currentPasswordHash: sha('old') }, headers });
+  await panel(page).getByRole('button', { name: 'Lock Ordering' }).click();
+  await expect(panel(page).locator('.project-panel-locked')).toHaveText('Locked');
+  await expect(panel(page).locator('.project-panel-unlocked')).toHaveCount(0);
+});
+
+test('moving a map closes an open password box, and the next move uses the new order', async ({ page, createMap, request }) => {
+  const [a, b, c] = [await createMap(map('Ordering')), await createMap(map('Loyalty')), await createMap(map('Barista'))];
+  const project = await projectOfMaps(request, [a, b, c]);
+  const headers = { origin: 'http://localhost' };
+  await request.post(`/api/lock/${c}`, { data: { passwordHash: sha('own') }, headers });
+  await request.post(`/api/projects/${project}/lock`, { data: { passwordHash: sha('pass') }, headers });
+  await page.goto(`/p/${project}/${a}`);
+  await expect(tabs(page)).toHaveCount(3);
+  await projectName(page).click();
+  await panel(page).getByRole('button', { name: 'Unlock project' }).click();
+  await panel(page).locator('#projectUnlockPassword').fill('pass');
+  await panel(page).getByRole('button', { name: 'Unlock', exact: true }).click();
+  await expect(panel(page).locator('.project-panel-unlocked')).toBeVisible();
+
+  await panel(page).getByRole('button', { name: 'Unlock Barista' }).click();
+  await expect(panel(page).locator('.project-panel-row-prompt')).toBeVisible();
+  await panel(page).getByRole('button', { name: 'Move Ordering down' }).click();
+  await expect(tabs(page)).toHaveText(['Loyalty', 'Ordering', 'Barista']);
+  await expect(panel(page).locator('.project-panel-row-prompt')).toHaveCount(0);
+  await panel(page).getByRole('button', { name: 'Move Ordering down' }).click();
+  await expect(tabs(page)).toHaveText(['Loyalty', 'Barista', 'Ordering']);
+});

@@ -13,7 +13,7 @@ let dataDir;
 before(async () => { dataDir = await mkdtemp(join(tmpdir(), 'storymaps-delete-')); });
 after(() => rm(dataDir, { recursive: true, force: true }));
 
-// Each request from its own address, so the 5 a minute limit on backups and locks isn't reached
+// Each request from its own address, so the 10 a minute limit on backups and locks isn't reached
 let nextAddress = 0;
 const call = async (base, method, path, body) => {
   const res = await fetch(base + path, {

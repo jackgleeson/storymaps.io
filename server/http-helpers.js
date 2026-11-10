@@ -200,3 +200,6 @@ export const curlPost = async (url, params, timeoutMs = 30_000) => {
 export const sanitizeFilename = (name) =>
   (name || '').toLowerCase().replace(/[<>:"/\\|?*\x00-\x1f]/g, '-')
     .replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^[.-]+|-+$/g, '').substring(0, 200) || 'story-map';
+
+// The app and the CLI send a SHA-256 of the password, as hex
+export const isHash = (value) => typeof value === 'string' && /^[0-9a-f]{64}$/.test(value);

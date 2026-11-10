@@ -1,4 +1,5 @@
 import { ProjectError } from '../projects.js';
+import { isHash } from '../http-helpers.js';
 
 // Projects, reached by their own ID. Changes are only accepted from the site itself (the origin
 // check), not from the CLI.
@@ -9,9 +10,6 @@ export default function register(ctx) {
     res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
     res.end(JSON.stringify(body));
   };
-
-  // The app sends a SHA-256 of the password, as hex
-  const isHash = (value) => typeof value === 'string' && /^[0-9a-f]{64}$/.test(value);
 
   // Each locked map says whether it shares the project password. The passwords stay here.
   const withMapLocks = async (project) => {
@@ -32,21 +30,24 @@ export default function register(ctx) {
     send(res, 500, { error: 'Something went wrong. Try again.' });
   };
 
-  // Run a store call and answer with the project it returns
-  const answer = async (res, fn, status = 200, onLocked) => {
+  // Run a store call and answer with the project it returns. onDone is told the error, if any.
+  const answer = async (res, fn, status = 200, onDone) => {
     try {
       send(res, status, { project: await withMapLocks(fn()) });
+      onDone?.();
     } catch (err) {
-      if (err instanceof ProjectError && err.status === 423) onLocked?.();
+      onDone?.(err);
       refuse(res, err);
     }
   };
 
-  const limited = (req, res, check) => {
+  const limited = (req, res, check, error = 'Too many changes. Try again in a minute.') => {
     if (!check(req)) return false;
-    send(res, 429, { error: 'Too many changes. Try again in a minute.' });
+    send(res, 429, { error });
     return true;
   };
+
+  const TOO_MANY_ATTEMPTS = 'Too many attempts. Try again in a minute.';
 
   route('POST', '/api/projects', async (req, res, params, body) => {
     if (limited(req, res, ctx.isCreateRateLimited)) return;
@@ -65,8 +66,10 @@ export default function register(ctx) {
   const write = (path, fn) => route('POST', path, async (req, res, { id }, body) => {
     if (limited(req, res, ctx.isRateLimited)) return;
     const withPassword = typeof body?.lockPasswordHash === 'string';
-    if (withPassword && limited(req, res, ctx.isPasswordLimited)) return;
-    await answer(res, () => fn(id, body || {}), 200, () => { if (withPassword) ctx.countWrongPassword(req); });
+    if (withPassword && limited(req, res, ctx.reservePasswordAttempt, TOO_MANY_ATTEMPTS)) return;
+    await answer(res, () => fn(id, body || {}), 200, (err) => {
+      if (withPassword && err?.status !== 423) ctx.refundPasswordAttempt(req);
+    });
   });
 
   // A change to a locked project needs its password
@@ -81,22 +84,27 @@ export default function register(ctx) {
   write('/api/projects/:id/name', guarded((id, body) => projects.rename(id, body.name)));
   write('/api/projects/:id/delete', guarded((id) => projects.destroy(id)));
 
-  // Limited by wrong passwords only, so someone with the password can work through a project's maps
-  const lockRoute = (path, fn) => route('POST', path, async (req, res, { id }, body) => {
-    if (limited(req, res, ctx.isPasswordLimited)) return;
+  // Limited by wrong passwords, so someone with the password can work through a project's maps.
+  // With alwaysCount, every request uses up an attempt.
+  const lockRoute = (path, fn, { alwaysCount = false } = {}) => route('POST', path, async (req, res, { id }, body) => {
+    if (limited(req, res, ctx.reservePasswordAttempt, TOO_MANY_ATTEMPTS)) return;
     if (!isHash(body?.passwordHash) || (body.currentPasswordHash != null && !isHash(body.currentPasswordHash))) {
+      ctx.refundPasswordAttempt(req);
       return send(res, 400, { error: 'Password hash required' });
     }
     try {
       send(res, 200, await fn(id, body));
+      if (!alwaysCount) ctx.refundPasswordAttempt(req);
     } catch (err) {
-      if (err instanceof ProjectError && err.status === 403) ctx.countWrongPassword(req);
+      if (err?.status !== 403) ctx.refundPasswordAttempt(req);
       refuse(res, err);
     }
   });
 
   // Locks the project and, if asked, every map in it that isn't locked. All in one request, as
   // per-map calls would use up the limit above. A map with another password is left as it is.
+  // Always counted: the answer shows which maps share this password, so re-locking with new
+  // passwords would otherwise be a way to guess the password of any map.
   lockRoute('/api/projects/:id/lock', async (id, body) => {
     projects.lock(id, body.passwordHash, body.currentPasswordHash);
     const skipped = [];
@@ -109,7 +117,7 @@ export default function register(ctx) {
       });
     }
     return { project: await withMapLocks(projects.get(id)), skipped };
-  });
+  }, { alwaysCount: true });
 
   // Locks a map with the project password, or removes a map lock with that lock's own password
   lockRoute('/api/projects/:id/map-lock', async (id, body) => {

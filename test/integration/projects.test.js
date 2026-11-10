@@ -45,7 +45,7 @@ test('a project is started, added to, reordered, renamed and emptied', async () 
   const [a, b, c] = [await newMap('Ordering'), await newMap('Loyalty'), await newMap('Barista')];
   const started = await start(a, b);
   assert.match(started.id, /^[a-z0-9]{8}$/);
-  assert.deepEqual(started, { id: started.id, name: 'Untitled project', maps: [{ id: a, name: 'Ordering' }, { id: b, name: 'Loyalty' }] });
+  assert.deepEqual(started, { id: started.id, name: 'Untitled project', locked: false, maps: [{ id: a, name: 'Ordering' }, { id: b, name: 'Loyalty' }] });
   const id = started.id;
 
   let res = await call('POST', `/api/projects/${id}/maps`, { mapId: c });

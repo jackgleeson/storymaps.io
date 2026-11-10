@@ -62,8 +62,7 @@ const send = async (url, body) => {
         : { cache: 'no-store' });
     const json = await res.json().catch(() => ({}));
     if (!res.ok) {
-        const message = res.status === 429 ? 'Too many attempts. Try again in a minute.' : json.error;
-        const err = new Error(message || 'Something went wrong. Try again.');
+        const err = new Error(json.error || 'Something went wrong. Try again.');
         err.status = res.status;
         throw err;
     }
@@ -179,6 +178,7 @@ const change = async (path, body, errorEl) => {
         const lockPasswordHash = unlockedHash(projectId) ?? undefined;
         const project = await request(`/${encodeURIComponent(projectId)}${path}`, { ...body, lockPasswordHash });
         _changing--;
+        _rowPrompt = null;
         apply(projectId, seq, project);
         signal();
         return true;
@@ -769,6 +769,7 @@ const openRemoveLockDialog = () => {
             signal();
         } catch (err) {
             _changing--;
+            forgetStaleUnlock(err, projectId);
             showError(err, error);
             confirm.disabled = false;
         }
@@ -856,6 +857,13 @@ const setMapLock = async (mapId, action, passwordHash) => {
     signal();
 };
 
+// The password this tab unlocked with has stopped working, so someone must have changed it
+const forgetStaleUnlock = (err, projectId) => {
+    if (err.status !== 403) return;
+    rememberUnlock(projectId, null);
+    refresh();
+};
+
 const rowLockButton = (map, name) => {
     const action = map.lock ? 'unlock' : 'lock';
     const button = el('button', 'project-panel-lock-action', {
@@ -869,6 +877,7 @@ const rowLockButton = (map, name) => {
                 await setMapLock(map.id, action, known);
             } catch (err) {
                 button.disabled = false;
+                forgetStaleUnlock(err, _project.id);
                 showError(err);
             }
             return;
@@ -924,6 +933,7 @@ const rowPrompt = (map) => {
 const renderManageList = ({ force = false } = {}) => {
     const list = document.getElementById('projectMapsList');
     if (!list) return;
+    if (_rowPrompt && !_project?.maps.some(m => m.id === _rowPrompt.mapId)) _rowPrompt = null;
     // Redrawing would lose a password being typed
     if (_rowPrompt && !force) return;
     const locked = isLocked();

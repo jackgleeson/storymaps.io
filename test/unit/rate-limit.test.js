@@ -22,15 +22,15 @@ describe('rate limits', () => {
     assert.equal(isRateLimited(req), true);
   });
 
-  test('allows 5 proxy requests a minute, then limits', () => {
+  test('allows 10 proxy requests a minute, then limits', () => {
     const req = newClient();
-    assert.ok(sendRequests(isProxyRateLimited, req, 5).every(limited => !limited));
+    assert.ok(sendRequests(isProxyRateLimited, req, 10).every(limited => !limited));
     assert.equal(isProxyRateLimited(req), true);
   });
 
   test('allows requests again once the minute has passed', () => {
     const req = newClient();
-    sendRequests(isProxyRateLimited, req, 5);
+    sendRequests(isProxyRateLimited, req, 10);
     assert.equal(isProxyRateLimited(req), true);
     mock.timers.tick(59_999);
     assert.equal(isProxyRateLimited(req), true, 'still limited just before the minute is up');
@@ -40,16 +40,16 @@ describe('rate limits', () => {
 
   test('limited requests do not count towards the limit', () => {
     const req = newClient();
-    sendRequests(isProxyRateLimited, req, 5);
+    sendRequests(isProxyRateLimited, req, 10);
     mock.timers.tick(30_000);
     sendRequests(isProxyRateLimited, req, 10);
     mock.timers.tick(30_000);
-    assert.equal(isProxyRateLimited(req), false, 'only the first 5 requests were counted');
+    assert.equal(isProxyRateLimited(req), false, 'only the first 10 requests were counted');
   });
 
   test('each client IP has its own limit', () => {
     const busy = newClient();
-    sendRequests(isProxyRateLimited, busy, 5);
+    sendRequests(isProxyRateLimited, busy, 10);
     assert.equal(isProxyRateLimited(busy), true);
     assert.equal(isProxyRateLimited(newClient()), false);
   });
@@ -87,7 +87,7 @@ describe('rate limits', () => {
 
   test('the API and proxy limits are counted separately', () => {
     const req = newClient();
-    sendRequests(isProxyRateLimited, req, 5);
+    sendRequests(isProxyRateLimited, req, 10);
     assert.equal(isProxyRateLimited(req), true);
     assert.equal(isRateLimited(req), false);
   });

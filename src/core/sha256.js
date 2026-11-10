@@ -1,4 +1,4 @@
-// Storymaps.io — AGPL-3.0 — see LICENCE for details
+// Storymaps.io, AGPL-3.0, see LICENCE for details
 // SHA-256 for pages served over plain HTTP, such as a self-hosted copy or a phone on the local
 // network, where browsers don't provide crypto.subtle. Gives the same result, as lowercase hex.
 

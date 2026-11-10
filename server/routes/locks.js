@@ -1,5 +1,4 @@
-// The app and the CLI send a SHA-256 of the password, as hex
-const isHash = (value) => typeof value === 'string' && /^[0-9a-f]{64}$/.test(value);
+import { isHash } from '../http-helpers.js';
 
 export default function register(ctx) {
   const { route } = ctx;
