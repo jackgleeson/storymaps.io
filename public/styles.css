@@ -7017,22 +7017,52 @@ html.dark-mode .connection-notice.is-online::before {
         3px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+/* The strip along the top: where the card sits on the map, then the link and close buttons */
 .card-expand-modal .modal-header {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    z-index: 1;
-    padding: 0;
-    border: none;
-    background: none;
+    flex-shrink: 0;
+    gap: 2px;
+    height: 34px;
+    box-sizing: border-box;
+    padding: 0 4px 0 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(0, 0, 0, 0.05);
 }
 
 .card-expand-modal .modal-header h2 {
     display: none;
 }
 
-.card-expand-modal .modal-header {
-    gap: 2px;
+.card-expand-place {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: rgba(0, 0, 0, 0.65);
+}
+
+.card-expand-place-part {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.card-expand-place-part:last-child {
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.8);
+}
+
+.card-expand-place-sep {
+    display: flex;
+    flex-shrink: 0;
+    color: rgba(0, 0, 0, 0.45);
+}
+
+.card-expand-place-sep svg {
+    width: 12px;
+    height: 12px;
 }
 
 .card-expand-copy-link {
@@ -7070,7 +7100,7 @@ html.dark-mode .connection-notice.is-online::before {
 }
 
 .card-expand-modal .modal-body {
-    padding: 20px 20px 12px;
+    padding: 14px 20px 12px;
     display: flex;
     flex-direction: column;
     min-height: 0;
@@ -7097,8 +7127,6 @@ html.dark-mode .connection-notice.is-online::before {
 }
 
 .card-expand-name {
-    /* Clear of the link and close buttons in the corner */
-    padding-right: 44px;
     font-size: 17px;
     font-weight: 600;
     line-height: 1.4;

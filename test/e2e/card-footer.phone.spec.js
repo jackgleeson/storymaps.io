@@ -18,3 +18,15 @@ test('the collapsed footer fits a phone and opens with a tap', async ({ page, cr
   await showLess.tap();
   await expect(summary).toBeVisible();
 });
+
+test('the expanded card shows its step and slice on a phone, with the close button in view', async ({ page, createMap }) => {
+  await openMap(page, await createMap());
+  await page.locator('.slice-container .story-card').first().locator('.btn-expand').tap();
+  await expect(page.locator('#cardExpandPlace .card-expand-place-part')).toHaveText(['Browse', 'MVP']);
+
+  const modal = await page.locator('.card-expand-modal').boundingBox();
+  const close = await page.locator('#cardExpandModalClose').boundingBox();
+  expect(close.x + close.width).toBeLessThanOrEqual(modal.x + modal.width);
+  await page.locator('#cardExpandModalClose').tap();
+  await expect(page.locator('#cardExpandModal')).not.toHaveClass(/visible/);
+});

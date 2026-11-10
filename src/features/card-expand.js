@@ -38,6 +38,27 @@ const isSliceCard = (item) =>
     state.slices.some(slice => inCards(slice.stories, item))
     || state.partialMaps.some(pm => Object.values(pm.stories || {}).some(stories => inCards(stories, item)));
 
+// Where a card sits on the map: its step and slice, or the partial it's in. Cards in the user,
+// activity and step rows have no place to show.
+const cardPlace = (item) => {
+    for (const slice of state.slices) {
+        const columnId = Object.keys(slice.stories || {}).find(id => slice.stories[id].includes(item));
+        if (columnId) {
+            const step = state.columns.find(c => c.id === columnId);
+            return [step?.name, slice.name || 'Unnamed slice'].filter(Boolean);
+        }
+    }
+    const partial = state.partialMaps.find(pm => Object.values(pm.stories || {}).some(stories => inCards(stories, item)));
+    return partial ? [partial.name || 'Untitled partial'] : [];
+};
+
+const renderPlace = (item) => {
+    dom.cardExpandPlace.replaceChildren(...cardPlace(item).flatMap((name, i) => {
+        const part = el('span', 'card-expand-place-part', { text: name, title: name });
+        return i === 0 ? [part] : [el('span', 'card-expand-place-sep', { html: ICONS.place }), part];
+    }));
+};
+
 // Replace part of the body as if typed, so the textarea's own undo can take it back, and fire the
 // input event that saves it. setRangeText is the fallback where execCommand isn't supported.
 const editBody = ({ from, to, insert, caret }) => {
@@ -59,6 +80,7 @@ const ICONS = {
     tags: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.5" fill="currentColor"/></svg>',
     link: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
     colour: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/></svg>',
+    place: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>',
     open: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>',
     close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 15l-6-6-6 6"/></svg>'
 };
@@ -272,6 +294,7 @@ export const openExpandModal = (item, { readOnly = false, focus = true } = {}) =
     const modal = dom.cardExpandModal.querySelector('.card-expand-modal');
     if (modal) modal.style.backgroundColor = item.color || '';
     dom.cardExpandChips.hidden = !editable || !isSliceCard(item);
+    renderPlace(item);
     renderFooter(item, editable);
     dom.cardExpandModal.classList.add('visible');
     requestAnimationFrame(() => {
