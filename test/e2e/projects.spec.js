@@ -997,3 +997,14 @@ test('a project password needs at least 4 characters, like a map lock', async ({
   await page.locator('#projectLockConfirm').click();
   await expect(panel(page).locator('.project-panel-locked')).toHaveText('Locked');
 });
+
+test('the lock dialog reads naturally for a project with one map', async ({ page, createMap, request }) => {
+  const a = await createMap(map('Ordering'));
+  await page.goto(`/p/${await projectOfMaps(request, [a])}/${a}`);
+  await expect(tabs(page)).toHaveCount(1);
+  await projectName(page).click();
+  await panel(page).getByRole('button', { name: 'Lock project' }).click();
+  const option = page.locator('.project-lock-choice', { has: page.locator('#projectLockAll') });
+  await expect(option.locator('.project-lock-choice-title')).toHaveText('The project and its map');
+  await expect(option.locator('.project-lock-choice-detail')).toHaveText('Nobody can edit that map without the password either, and it can be unlocked on its own later.');
+});

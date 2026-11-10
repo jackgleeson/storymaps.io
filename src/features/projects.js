@@ -694,9 +694,13 @@ const openLockDialog = () => {
     const keeping = _project.maps.filter(m => m.lock).map(mapLabel);
     const { body, close } = lockDialog('Lock This Project');
     const projectOnly = choice('projectLockOnly', true, 'The project', 'Nobody can rename the project, or add, remove or reorder its maps, without the password. What\'s on each map can still be edited.');
-    const mapsWord = `${keeping.length ? 'unlocked ' : ''}${lockable === 1 ? 'map' : 'maps'}`;
+    const unlockedWord = keeping.length ? 'unlocked ' : '';
+    const mapsTitle = lockable === 1 ? `its ${unlockedWord}map` : `its ${lockable} ${unlockedWord}maps`;
+    const mapsDetail = lockable === 1
+        ? 'Nobody can edit that map without the password either, and it can be unlocked on its own later.'
+        : 'Nobody can edit those maps without the password either, and each one can be unlocked on its own later.';
     const keepNote = keeping.length ? ` ${namesSentence(keeping)} ${keeping.length === 1 ? 'keeps its own lock.' : 'keep their own locks.'}` : '';
-    const withMaps = choice('projectLockAll', false, `The project and its ${lockable} ${mapsWord}`, `Nobody can edit ${lockable === 1 ? 'that map' : 'those maps'} without the password either, and each one can be unlocked on its own later.${keepNote}`);
+    const withMaps = choice('projectLockAll', false, `The project and ${mapsTitle}`, `${mapsDetail}${keepNote}`);
     const legend = el('p', 'project-lock-what', { text: 'What to lock' });
     const field = el('div', 'lock-password-field');
     const input = el('input', '', { id: 'projectLockPassword', type: 'password', placeholder: 'Enter password', autocomplete: 'off' });
