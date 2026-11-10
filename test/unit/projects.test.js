@@ -36,6 +36,7 @@ test('a project starts untitled with its maps in order', () => {
   assert.deepEqual(project, {
     id: 'p0',
     name: 'Untitled project',
+    locked: false,
     maps: [{ id: 'ordering', name: 'Ordering' }, { id: 'loyalty', name: 'Loyalty' }],
   });
   assert.deepEqual(projects.get('p0'), project);
@@ -156,4 +157,35 @@ test('creating the tables again keeps the projects', () => {
   const { id } = projects.create(['ordering', 'loyalty']);
   createProjects(sqlite, { generateId: () => 'x' });
   assert.deepEqual(ids(projects.get(id)), ['ordering', 'loyalty']);
+});
+
+test('a locked project refuses changes without its password, and takes them with it', () => {
+  const { id } = projects.create(['ordering']);
+  assert.equal(projects.lock(id, 'secret').locked, true);
+  rejects(() => projects.assertEditable(id), 423, /locked/);
+  rejects(() => projects.assertEditable(id, 'wrong'), 423);
+  assert.doesNotThrow(() => projects.assertEditable(id, 'secret'));
+});
+
+test('the password of a locked project is never in what the project sends', () => {
+  const { id } = projects.create(['ordering']);
+  assert.ok(!JSON.stringify(projects.lock(id, 'secret')).includes('secret'));
+  assert.ok(!JSON.stringify(projects.get(id)).includes('secret'));
+});
+
+test('a locked project only takes a new password from someone who knows the current one', () => {
+  const { id } = projects.create(['ordering']);
+  projects.lock(id, 'secret');
+  rejects(() => projects.lock(id, 'other'), 403, /already locked/);
+  rejects(() => projects.lock(id, 'other', 'wrong'), 403);
+  projects.lock(id, 'other', 'secret');
+  assert.equal(projects.passwordHash(id), 'other');
+});
+
+test('removing a project lock needs the password', () => {
+  const { id } = projects.create(['ordering']);
+  projects.lock(id, 'secret');
+  rejects(() => projects.unlock(id, 'wrong'), 403, /Incorrect/);
+  assert.equal(projects.unlock(id, 'secret').locked, false);
+  assert.doesNotThrow(() => projects.assertEditable(id));
 });

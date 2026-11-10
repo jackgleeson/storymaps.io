@@ -755,3 +755,185 @@ test('the open tab keeps its name when the map arrives after the tabs', async ({
   await expect(page.locator('#boardName')).toHaveValue('Ordering');
   await expect(page.locator('.project-tab.current')).toHaveText('Ordering');
 });
+
+const projectOfMaps = async (request, mapIds, name = 'Cafe') => (await (await request.post('/api/projects', { data: { mapIds, name }, headers: { origin: 'http://localhost' } })).json()).project.id;
+const sha = (text) => createHash('sha256').update(text).digest('hex');
+const lockLabels = (page) => panel(page).locator('.project-panel-lock-label');
+
+const lockFromPanel = async (page, password, { withMaps = false } = {}) => {
+  await projectName(page).click();
+  await panel(page).getByRole('button', { name: 'Lock project' }).click();
+  if (withMaps) await page.locator('#projectLockAll').check();
+  await page.locator('#projectLockPassword').fill(password);
+  await page.locator('#projectLockConfirm').click();
+  await expect(panel(page).locator('.project-panel-locked')).toHaveText('Locked');
+};
+
+test('locking a project and its maps makes the project read-only until it is unlocked', async ({ page, createMap, request }) => {
+  const [a, b] = [await createMap(map('Ordering')), await createMap(map('Loyalty'))];
+  await page.goto(`/p/${await projectOfMaps(request, [a, b])}/${a}`);
+  await expect(tabs(page)).toHaveCount(2);
+
+  await lockFromPanel(page, 'open sesame', { withMaps: true });
+  await expect(panel(page).locator('.project-panel-note')).toHaveText('Project and 2 maps locked.');
+  await expect(lockLabels(page)).toHaveText(['Project lock', 'Project lock']);
+  await expect(panel(page).getByRole('button', { name: 'Remove', exact: true })).toHaveCount(0);
+  await expect(panel(page).locator('#projectNameInput')).toHaveCount(0);
+  await expect(panel(page).getByRole('button', { name: 'Delete project' })).toHaveCount(0);
+  await panel(page).getByRole('button', { name: 'Done' }).click();
+
+  const add = page.locator('#projectAddBtn');
+  await expect(add).toHaveAttribute('aria-label', 'Add map, locked');
+  await add.click();
+  await expect(panel(page)).toContainText("maps can't be added or removed");
+  await panel(page).locator('#projectUnlockPassword').fill('wrong');
+  await panel(page).getByRole('button', { name: 'Unlock' }).click();
+  await expect(panel(page).locator('.project-panel-error')).toHaveText('Incorrect password');
+  await panel(page).locator('#projectUnlockPassword').fill('open sesame');
+  await panel(page).getByRole('button', { name: 'Unlock' }).click();
+  await expect(panel(page).getByRole('button', { name: 'New map' })).toBeVisible();
+  await expect(add).not.toHaveAttribute('aria-label', 'Add map, locked');
+  await panel(page).press('Escape');
+
+  await projectName(page).click();
+  await expect(panel(page).locator('.project-panel-unlocked')).toContainText('Unlocked in this tab');
+  await expect(panel(page).locator('#projectNameInput')).toBeVisible();
+  await panel(page).getByRole('button', { name: 'Remove lock' }).click();
+  await page.locator('#projectRemoveMaps').check();
+  await page.locator('#projectLockConfirm').click();
+  await expect(panel(page).getByRole('button', { name: 'Lock project' })).toBeVisible();
+  await expect(lockLabels(page)).toHaveText(['', '']);
+  await expect.poll(async () => (await (await request.get(`/api/lock/${a}`)).json()).isLocked).toBe(false);
+});
+
+test('a map with its own password stays as it is, and unlocks on its own with that password', async ({ page, createMap, request }) => {
+  const [a, b] = [await createMap(map('Ordering')), await createMap(map('Loyalty'))];
+  await request.post(`/api/lock/${b}`, { data: { passwordHash: sha('own') }, headers: { origin: 'http://localhost' } });
+  await page.goto(`/p/${await projectOfMaps(request, [a, b])}/${a}`);
+  await expect(tabs(page)).toHaveCount(2);
+
+  await lockFromPanel(page, 'project pass', { withMaps: true });
+  await expect(panel(page).locator('.project-panel-note')).toHaveText("1 of 2 maps locked. Loyalty already has a map lock with a different password, so it wasn't changed.");
+  await expect(lockLabels(page)).toHaveText(['Project lock', 'Map lock']);
+  await expect(lockLabels(page).nth(0)).toHaveAttribute('title', 'Locked with the project password');
+  await expect(lockLabels(page).nth(1)).toHaveAttribute('title', 'Locked with its own password, different from the project');
+
+  await panel(page).getByRole('button', { name: 'Unlock Loyalty' }).click();
+  const prompt = panel(page).locator('.project-panel-row-prompt');
+  await expect(prompt).toContainText('different password from the project');
+  await prompt.locator('input').fill('project pass');
+  await prompt.getByRole('button', { name: 'Unlock' }).click();
+  await expect(prompt.locator('.project-panel-error')).toHaveText('Incorrect password');
+  await prompt.locator('input').fill('own');
+  await prompt.getByRole('button', { name: 'Unlock' }).click();
+  await expect(panel(page).getByRole('button', { name: 'Lock Loyalty' })).toBeVisible();
+  await expect(lockLabels(page)).toHaveText(['Project lock', '']);
+  await expect.poll(async () => (await (await request.get(`/api/lock/${b}`)).json()).isLocked).toBe(false);
+});
+
+test('copying a map in a locked project makes a copy outside the project', async ({ page, createMap, request }) => {
+  const [a, b] = [await createMap(map('Ordering')), await createMap(map('Loyalty'))];
+  const project = await projectOfMaps(request, [a, b]);
+  await request.post(`/api/projects/${project}/lock`, { data: { passwordHash: sha('pass') }, headers: { origin: 'http://localhost' } });
+  await page.goto(`/p/${project}/${a}`);
+  await expect(tabs(page)).toHaveCount(2);
+
+  await openMenu(page, 'copyExistingBtn');
+  expect(await acceptDialog(page)).toContain("Cafe is locked, so the copy won't be in it");
+  await expect(page).toHaveURL(/\/[a-z0-9]+$/);
+  await expect(page).not.toHaveURL(new RegExp(`/p/${project}/`));
+  await expect(tabs(page)).toHaveCount(0);
+  expect((await (await request.get(`/api/projects/${project}`)).json()).project.maps.map(m => m.id)).toEqual([a, b]);
+});
+
+test('copying a locked map in an unlocked project adds an unlocked copy as a new tab', async ({ page, createMap, request }) => {
+  const [a, b] = [await createMap(map('Ordering')), await createMap(map('Loyalty'))];
+  await request.post(`/api/lock/${a}`, { data: { passwordHash: sha('map pass') }, headers: { origin: 'http://localhost' } });
+  await page.goto(`/p/${await projectOfMaps(request, [a, b])}/${a}`);
+  await expect(tabs(page)).toHaveCount(2);
+  await expect(page.getByText('This map is read-only')).toBeVisible();
+
+  await openMenu(page, 'copyExistingBtn');
+  const message = await acceptDialog(page);
+  expect(message).toContain('An unlocked copy will be created');
+  expect(message).toContain('as a new tab next to this map');
+  await expect(tabs(page)).toHaveText(['Ordering', 'Ordering (Copy)', 'Loyalty']);
+  const copy = new URL(page.url()).pathname.split('/').pop();
+  expect(copy).not.toBe(a);
+  expect((await (await request.get(`/api/lock/${copy}`)).json()).isLocked).toBe(false);
+  await expect(page.getByText('This map is read-only')).toBeHidden();
+});
+
+test('a project locks and unlocks on a page without crypto.subtle, as over plain HTTP', async ({ page, createMap, request }) => {
+  await page.addInitScript(() => Object.defineProperty(window.crypto, 'subtle', { value: undefined }));
+  const a = await createMap(map('Ordering'));
+  const project = await projectOfMaps(request, [a]);
+  await page.goto(`/p/${project}/${a}`);
+  await expect(tabs(page)).toHaveCount(1);
+
+  await lockFromPanel(page, 'open sesame');
+  await panel(page).getByRole('button', { name: 'Unlock project' }).click();
+  await panel(page).locator('#projectUnlockPassword').fill('open sesame');
+  await panel(page).getByRole('button', { name: 'Unlock', exact: true }).click();
+  await expect(panel(page).locator('.project-panel-unlocked')).toContainText('Unlocked in this tab');
+
+  // The same hash the browser's own SHA-256 would send
+  const res = await request.post(`/api/projects/${project}/unlock`, { data: { passwordHash: sha('open sesame') }, headers: { origin: 'http://localhost' } });
+  expect(res.status()).toBe(200);
+});
+
+test('a project with no lock shows which of its maps are locked, without lock controls', async ({ page, createMap, request }) => {
+  const [a, b] = [await createMap(map('Ordering')), await createMap(map('Loyalty'))];
+  await request.post(`/api/lock/${b}`, { data: { passwordHash: sha('own') }, headers: { origin: 'http://localhost' } });
+  await page.goto(`/p/${await projectOfMaps(request, [a, b])}/${a}`);
+  await expect(tabs(page)).toHaveCount(2);
+  await projectName(page).click();
+
+  const rows = panel(page).locator('.project-panel-item');
+  await expect(rows.nth(1).locator('.project-panel-lock-label')).toHaveText('Map lock');
+  await expect(rows.nth(0).locator('.project-panel-lock-label')).toBeHidden();
+  await expect(panel(page).locator('.project-panel-lock-action')).toHaveCount(0);
+  await expect(panel(page).getByRole('button', { name: 'Lock project' })).toBeVisible();
+  await expect(panel(page).locator('.project-panel-padlock')).toHaveCount(0);
+  await panel(page).getByRole('button', { name: 'Done' }).click();
+
+  await expect(tabs(page).nth(0).locator('.project-tab-lock')).toHaveCount(0);
+  await expect(tabs(page).nth(1).locator('.project-tab-lock')).toBeVisible();
+  await expect(tabs(page)).toHaveText(['Ordering', 'Loyalty']);
+});
+
+test('the padlock on the open tab follows the map being locked from the menu', async ({ page, createMap, request }) => {
+  const [a, b] = [await createMap(map('Ordering')), await createMap(map('Loyalty'))];
+  await page.goto(`/p/${await projectOfMaps(request, [a, b])}/${a}`);
+  await expect(tabs(page)).toHaveCount(2);
+  await expect(tabs(page).nth(0).locator('.project-tab-lock')).toHaveCount(0);
+
+  await request.post(`/api/lock/${a}`, { data: { passwordHash: sha('map pass') }, headers: { origin: 'http://localhost' } });
+  await expect(tabs(page).nth(0).locator('.project-tab-lock')).toBeVisible({ timeout: 10000 });
+  await expect(tabs(page).nth(1).locator('.project-tab-lock')).toHaveCount(0);
+});
+
+test('the lock dialog only counts maps it can lock', async ({ page, createMap, request }) => {
+  const headers = { origin: 'http://localhost' };
+  const [a, b, c] = [await createMap(map('Ordering')), await createMap(map('Loyalty')), await createMap(map('Barista'))];
+  await request.post(`/api/lock/${b}`, { data: { passwordHash: sha('own') }, headers });
+  await page.goto(`/p/${await projectOfMaps(request, [a, b, c])}/${a}`);
+  await expect(tabs(page)).toHaveCount(3);
+  await projectName(page).click();
+  await panel(page).getByRole('button', { name: 'Lock project' }).click();
+  const option = page.locator('.project-lock-choice', { has: page.locator('#projectLockAll') });
+  await expect(option.locator('.project-lock-choice-title')).toHaveText('The project and its 2 unlocked maps');
+  await expect(option.locator('.project-lock-choice-detail')).toContainText('Loyalty keeps its own lock.');
+});
+
+test('the lock dialog offers only the project when every map is already locked', async ({ page, createMap, request }) => {
+  const headers = { origin: 'http://localhost' };
+  const a = await createMap(map('Ordering'));
+  await request.post(`/api/lock/${a}`, { data: { passwordHash: sha('own') }, headers });
+  await page.goto(`/p/${await projectOfMaps(request, [a])}/${a}`);
+  await expect(tabs(page)).toHaveCount(1);
+  await projectName(page).click();
+  await panel(page).getByRole('button', { name: 'Lock project' }).click();
+  await expect(page.locator('#projectLockOnly')).toBeVisible();
+  await expect(page.locator('#projectLockAll')).toHaveCount(0);
+});

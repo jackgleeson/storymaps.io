@@ -7,7 +7,7 @@ import { deserialize } from '/src/core/serialization.js';
 import { shiftSliceDates } from '/src/core/constants.js';
 import { closeMainMenu, zoomToFit } from '/src/ui/navigation.js';
 import { clearPresence, clearCursors } from '/src/ui/presence.js';
-import { clearLockSubscription, updateLockUI } from '/src/core/lock.js';
+import { clearLockSubscription, updateLockUI, lockState } from '/src/core/lock.js';
 import { destroyYjs } from '/src/core/yjs.js';
 import { showAlert, showConfirm } from '/src/core/modals.js';
 import * as tour from '/src/features/tour.js';
@@ -228,9 +228,12 @@ export const copyMap = async () => {
     _deps.saveToStorage();
     const project = projects.current();
     const original = state.mapId;
-    const joins = project && project.mapCount < MAX_PROJECT_MAPS;
-    let message = 'Copy this map?\n\nA copy will be created with a new URL.';
-    if (joins) message = `Copy this map?\n\nA copy will be created with a new URL, and added to ${project.name} next to this map.`;
+    // A locked project takes nothing new, so a copy made from it stays outside it
+    const joins = project && !project.locked && project.mapCount < MAX_PROJECT_MAPS;
+    const aCopy = lockState.isLocked ? 'An unlocked copy' : 'A copy';
+    let message = `Copy this map?\n\n${aCopy} will be created with a new URL.`;
+    if (joins) message = `Copy this map?\n\n${aCopy} will be created with a new URL, and added to ${project.name} ${lockState.isLocked ? 'as a new tab ' : ''}next to this map.`;
+    else if (project?.locked) message += ` ${project.name} is locked, so the copy won't be in it.`;
     else if (project) message += ` ${project.name} already has ${MAX_PROJECT_MAPS} maps, the most a project can hold, so the copy won't be in it.`;
     if (!await showConfirm(message)) {
         return;

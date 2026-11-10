@@ -429,6 +429,85 @@ describe('pages and files', () => {
     }
   });
 
+  test('locking a project with its maps leaves a map with another password alone', async () => {
+    const [one, two, own] = [await createMap(), await createMap(), await createMap()];
+    const origin = { origin: 'http://localhost' };
+    const post = (path, body) => api('POST', path, { body, headers: { ...origin, ...newAddress() } });
+    const [secret, other] = ['a'.repeat(64), 'b'.repeat(64)];
+    const { id } = (await post('/api/projects', { mapIds: [one, two, own], name: 'Cafe' })).json.project;
+    await post(`/api/lock/${own}`, { passwordHash: other });
+
+    const locked = await post(`/api/projects/${id}/lock`, { passwordHash: secret, lockMaps: true });
+    assert.equal(locked.status, 200);
+    assert.deepEqual(locked.json.skipped, [own]);
+    assert.equal(locked.json.project.locked, true);
+    assert.deepEqual(locked.json.project.maps.map(m => m.lock), ['project', 'project', 'map']);
+    assert.ok(!locked.text.includes(secret), 'the password stays on the server');
+    assert.equal((await api('GET', `/api/lock/${one}`)).json.isLocked, true);
+
+    assert.equal((await post(`/api/projects/${id}/name`, { name: 'Nope' })).status, 423);
+    assert.equal((await post(`/api/projects/${id}/name`, { name: 'Nope', lockPasswordHash: other })).status, 423);
+    assert.equal((await post(`/api/projects/${id}/delete`, {})).status, 423);
+    assert.equal((await post(`/api/projects/${id}/remove`, { mapId: one })).status, 423);
+    assert.equal((await post(`/api/projects/${id}/name`, { name: 'Coffee', lockPasswordHash: secret })).json.project.name, 'Coffee');
+
+    assert.equal((await post(`/api/projects/${id}/unlock`, { passwordHash: other })).status, 403);
+    assert.equal((await post(`/api/projects/${id}/unlock`, { passwordHash: secret })).status, 200);
+
+    const removed = await post(`/api/projects/${id}/lock/remove`, { passwordHash: secret, removeMaps: true });
+    assert.equal(removed.json.project.locked, false);
+    assert.deepEqual(removed.json.project.maps.map(m => m.lock), [undefined, undefined, 'map']);
+    assert.equal((await api('GET', `/api/lock/${own}`)).json.isLocked, true);
+  });
+
+  test('only wrong passwords count against the project lock limit', async () => {
+    const maps = [await createMap(), await createMap()];
+    const headers = { origin: 'http://localhost', 'x-forwarded-for': '198.51.100.250' };
+    const post = (path, body) => api('POST', path, { body, headers });
+    const [secret, wrong] = ['a'.repeat(64), 'b'.repeat(64)];
+    const { id } = (await post('/api/projects', { mapIds: maps, name: 'Cafe' })).json.project;
+    assert.equal((await post(`/api/projects/${id}/lock`, { passwordHash: secret })).status, 200);
+
+    for (let i = 0; i < 4; i++) {
+      assert.equal((await post(`/api/projects/${id}/map-lock`, { mapId: maps[0], action: 'lock', passwordHash: secret })).status, 200);
+      assert.equal((await post(`/api/projects/${id}/map-lock`, { mapId: maps[0], action: 'unlock', passwordHash: secret })).status, 200);
+    }
+    for (let i = 0; i < 5; i++) {
+      assert.equal((await post(`/api/projects/${id}/unlock`, { passwordHash: wrong })).status, 403);
+    }
+    assert.equal((await post(`/api/projects/${id}/unlock`, { passwordHash: wrong })).status, 429);
+    assert.equal((await post(`/api/projects/${id}/unlock`, { passwordHash: secret })).status, 429);
+  });
+
+  test('a map row locks with the project password and unlocks with the password of its own lock', async () => {
+    const [one, other] = [await createMap(), await createMap()];
+    const post = (path, body) => api('POST', path, { body, headers: { origin: 'http://localhost', ...newAddress() } });
+    const [secret, own] = ['a'.repeat(64), 'b'.repeat(64)];
+    const { id } = (await post('/api/projects', { mapIds: [one], name: 'Cafe' })).json.project;
+    await post(`/api/projects/${id}/lock`, { passwordHash: secret });
+
+    assert.equal((await post(`/api/projects/${id}/map-lock`, { mapId: other, action: 'lock', passwordHash: secret })).status, 404);
+    assert.equal((await post(`/api/projects/${id}/map-lock`, { mapId: one, action: 'lock', passwordHash: own })).status, 403);
+    const locked = await post(`/api/projects/${id}/map-lock`, { mapId: one, action: 'lock', passwordHash: secret });
+    assert.equal(locked.json.project.maps[0].lock, 'project');
+    assert.equal((await post(`/api/projects/${id}/map-lock`, { mapId: one, action: 'unlock', passwordHash: own })).status, 403);
+    assert.equal((await post(`/api/lock/${one}`, {})).status, 400);
+    const unlocked = await post(`/api/projects/${id}/map-lock`, { mapId: one, action: 'unlock', passwordHash: secret });
+    assert.equal(unlocked.json.project.maps[0].lock, undefined);
+  });
+
+  test('nothing can be added to a locked project without its password', async () => {
+    const [one, two] = [await createMap(), await createMap()];
+    const post = (path, body) => api('POST', path, { body, headers: { origin: 'http://localhost', ...newAddress() } });
+    const secret = 'a'.repeat(64);
+    const { id } = (await post('/api/projects', { mapIds: [one], name: 'Cafe' })).json.project;
+    await post(`/api/projects/${id}/lock`, { passwordHash: secret });
+
+    assert.equal((await post(`/api/projects/${id}/maps`, { mapId: two })).status, 423);
+    assert.equal((await post(`/api/projects/${id}/maps`, { mapId: two, after: one, copy: true })).status, 423);
+    assert.equal((await post(`/api/projects/${id}/maps`, { mapId: two, after: one, lockPasswordHash: secret })).status, 200);
+  });
+
   test('map, project and sample links get the app, and paths scanners probe are a 404', async () => {
     for (const path of ['/abc12345', '/new', '/tour', '/sample/recipe-app', '/p/abc12345', '/p/abc12345/def67890', '/p/abc12345/']) {
       const res = await rawGet(path);

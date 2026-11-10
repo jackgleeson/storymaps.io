@@ -11320,6 +11320,9 @@ body:not(.in-project) .project-tabs-wrap {
 }
 
 .project-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     flex-shrink: 0;
     max-width: 200px;
     margin-bottom: -1px;
@@ -11330,8 +11333,19 @@ body:not(.in-project) .project-tabs-wrap {
     font-size: 13px;
     font-weight: 500;
     text-decoration: none;
-    text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.project-tab-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.project-tab-lock {
+    display: flex;
+    flex-shrink: 0;
+    color: var(--color-text-muted);
 }
 
 .project-tab:hover {
@@ -11446,7 +11460,7 @@ body.in-project .project-add[aria-expanded="true"] {
 
 /* The project box lists maps by name, so it gets more room */
 .project-panel-manage {
-    width: 420px;
+    width: 540px;
 }
 
 .project-panel:focus {
@@ -11770,6 +11784,267 @@ html.dark-mode .project-panel-error {
     color: #fca5a5;
 }
 
+.project-add.locked {
+    color: var(--color-text-muted);
+}
+
+.project-add.locked svg:last-child {
+    color: #0f766e;
+}
+
+.project-panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.project-panel-head .project-panel-locked {
+    flex-shrink: 0;
+}
+
+.project-panel-locked {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #0f766e;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.project-panel-note {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #f0fdfa;
+    color: #134e4a;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.project-panel-unlocked {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #f0fdfa;
+    color: #0f766e;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.project-panel-unlocked > span {
+    flex: 1;
+}
+
+html.dark-mode .project-panel-note,
+html.dark-mode .project-panel-unlocked {
+    background: rgba(20, 184, 166, 0.14);
+    color: #99f6e4;
+}
+
+html.dark-mode .project-panel-locked {
+    color: #5eead4;
+}
+
+.project-panel-unlock {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.project-panel-unlock[hidden] {
+    display: none;
+}
+
+/* Stays on the right when Unlock project has given way to the password box */
+.project-panel-footer > :last-child {
+    margin-left: auto;
+}
+
+/* Text buttons line up with the text and buttons above them, not with their own padding */
+.project-panel-footer > button:first-child:not(:last-child) {
+    padding-left: 0;
+}
+
+.project-panel-item > button:last-child {
+    padding-right: 0;
+}
+
+.project-panel-footer-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.project-panel-footer-right .project-panel-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.project-panel-text {
+    height: 34px;
+    padding: 0 8px;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    color: #0f766e;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.project-panel-text[hidden] {
+    display: none;
+}
+
+.project-panel-item-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.project-panel-lock-label {
+    flex-shrink: 0;
+    padding: 1px 8px;
+    border-radius: 10px;
+    background: var(--color-bg-elevated);
+    color: var(--color-text-secondary);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.project-panel-lock-label:empty {
+    display: none;
+}
+
+.project-panel-lock-label.project {
+    background: #ccfbf1;
+    color: #115e59;
+}
+
+html.dark-mode .project-panel-lock-label.project {
+    background: rgba(20, 184, 166, 0.2);
+    color: #99f6e4;
+}
+
+.project-panel-lock-action {
+    height: 28px;
+    padding: 0 8px;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    color: #0f766e;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.project-panel-lock-action:hover {
+    background: rgba(15, 118, 110, 0.08);
+}
+
+html.dark-mode .project-panel-lock-action,
+html.dark-mode .project-panel-text {
+    color: #5eead4;
+}
+
+.project-panel-item.prompting {
+    /* The list scrolls, so a row opened for a password keeps its full height */
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    padding: 6px 8px 10px;
+    border-radius: 8px;
+    background: #f0fdfa;
+}
+
+html.dark-mode .project-panel-item.prompting {
+    background: rgba(20, 184, 166, 0.14);
+}
+
+.project-panel-row-prompt {
+    flex-basis: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.project-panel-row-prompt .project-panel-primary {
+    flex-shrink: 0;
+    padding: 0 14px;
+}
+
+.project-panel-row-prompt .project-panel-text {
+    flex-shrink: 0;
+}
+
+.lock-modal-body .project-panel-error {
+    color: #b91c1c;
+}
+
+html.dark-mode .lock-modal-body .project-panel-error {
+    color: #fca5a5;
+}
+
+.project-lock-what {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.project-lock-choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid var(--color-border-medium);
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.45;
+    cursor: pointer;
+}
+
+.project-lock-choice:has(input:checked) {
+    border-color: #14b8a6;
+    background: #f0fdfa;
+}
+
+html.dark-mode .project-lock-choice:has(input:checked) {
+    background: rgba(20, 184, 166, 0.14);
+}
+
+.project-lock-choice input {
+    width: 16px;
+    height: 16px;
+    margin: 2px 0 0;
+    flex-shrink: 0;
+    accent-color: #0d9488;
+}
+
+.project-lock-choice-title {
+    display: block;
+    font-weight: 500;
+}
+
+.project-lock-choice-detail {
+    display: block;
+    color: var(--color-text-secondary);
+    font-size: 13px;
+}
+
+.btn.project-lock-danger {
+    background: #b91c1c;
+    border-color: #b91c1c;
+}
+
 /* Phones: the header gap is smaller, and the boxes open as a sheet from the bottom of the screen */
 @media (max-width: 600px) {
     .project-bar {
@@ -11778,6 +12053,30 @@ html.dark-mode .project-panel-error {
 
     /* On a phone a map in no project shows nothing here, leaving the room to the map; Start a
        project is in the main menu. The bar shows while its box is open, as the box lives in it. */
+    /* The password box takes the whole line, with the buttons under it */
+    .project-panel-row-prompt .project-panel-row {
+        flex-wrap: wrap;
+    }
+
+    .project-panel-row-prompt .project-panel-input {
+        flex: 1 1 100%;
+    }
+
+    /* A tooltip can't be seen on a phone, so the kind of lock goes under the name */
+    .project-panel-item-text {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+    }
+
+    .project-panel-item-name {
+        max-width: 100%;
+    }
+
+    .project-panel-lock-label {
+        margin-top: 2px;
+    }
+
     body:not(.in-project) .project-bar:not(.panel-open) {
         display: none;
     }
@@ -11856,10 +12155,45 @@ html.dark-mode .project-panel-error {
         font-size: 15px;
     }
 
-    .project-panel-input,
-    .project-panel-secondary {
+    /* Fields stay at 16px, or iOS zooms the page when one is focused */
+    .project-panel-input {
         height: 44px;
         font-size: 16px;
+    }
+
+    /* One scale on a phone: 15px for text and every button, 13px for small labels */
+    .project-panel-secondary,
+    .project-panel-text,
+    .project-panel-remove,
+    .project-panel-lock-action {
+        font-size: 15px;
+    }
+
+    .project-panel-secondary {
+        height: 44px;
+    }
+
+    .project-panel-text,
+    .project-panel-lock-action {
+        height: 44px;
+    }
+
+    .project-panel-title {
+        font-size: 17px;
+    }
+
+    .project-panel-item,
+    .project-panel-hint {
+        font-size: 15px;
+    }
+
+    .project-panel-label,
+    .project-panel-locked {
+        font-size: 13px;
+    }
+
+    .project-panel-lock-label {
+        font-size: 12px;
     }
 
     .project-panel-icon,

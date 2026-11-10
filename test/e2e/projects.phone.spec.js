@@ -58,3 +58,37 @@ test('on a phone a project starts from the menu, the tabs scroll, the boxes open
   await expect(page.locator('.story-card textarea').first()).toHaveValue('Delivery partners card');
   await expect(tabs.nth(3)).toHaveAttribute('aria-current', 'page');
 });
+
+test('on a phone the kind of lock shows under the map name', async ({ page, createMap, request }) => {
+  const a = await createMap(map('Ordering'));
+  const headers = { origin: 'http://localhost' };
+  const project = (await (await request.post('/api/projects', { data: { mapIds: [a], name: 'Cafe' }, headers })).json()).project.id;
+  await request.post(`/api/projects/${project}/lock`, { data: { passwordHash: 'a'.repeat(64), lockMaps: true }, headers });
+  await page.goto(`/p/${project}/${a}`);
+  await page.locator('#projectName').tap();
+  const panel = page.locator('#projectPanel');
+  const label = panel.locator('.project-panel-lock-label');
+  await expect(label).toHaveText('Project lock');
+  const [name, under] = [await panel.locator('.project-panel-item-name').boundingBox(), await label.boundingBox()];
+  expect(under.y).toBeGreaterThanOrEqual(name.y + name.height - 1);
+});
+
+test('on a phone a map row opened for a password keeps its height and its buttons can be tapped', async ({ page, createMap, request }) => {
+  const ids = [await createMap(map('Ordering')), await createMap(map('Loyalty')), await createMap(map('Barista'))];
+  const headers = { origin: 'http://localhost' };
+  const project = (await (await request.post('/api/projects', { data: { mapIds: ids, name: 'Cafe' }, headers })).json()).project.id;
+  await request.post(`/api/projects/${project}/lock`, { data: { passwordHash: 'a'.repeat(64), lockMaps: true }, headers });
+  await page.goto(`/p/${project}/${ids[0]}`);
+  await page.locator('#projectName').tap();
+  const panel = page.locator('#projectPanel');
+  await panel.getByRole('button', { name: 'Unlock Loyalty' }).tap();
+  const prompting = panel.locator('.project-panel-item.prompting');
+  const content = await prompting.evaluate(row => row.scrollHeight);
+  // scrollHeight is a whole number, so it can round up by a fraction of a pixel
+  expect((await prompting.boundingBox()).height).toBeGreaterThanOrEqual(content - 1);
+  const cancel = prompting.getByRole('button', { name: 'Cancel' });
+  const [button, row] = [await cancel.boundingBox(), await prompting.boundingBox()];
+  expect(button.x + button.width).toBeLessThanOrEqual(row.x + row.width);
+  await cancel.tap();
+  await expect(prompting).toHaveCount(0);
+});

@@ -23,7 +23,7 @@ const PORT = process.env.PORT || 8080;
 
 // Shared utilities
 import { DATA_DIR, LOCK_FILE, BACKUPS_DIR, getBackupFile, ensureDataDir, readJson, updateJson, generateCardId } from './server/data.js';
-import { isRateLimited, isProxyRateLimited, isCreateRateLimited } from './server/rate-limit.js';
+import { isRateLimited, isProxyRateLimited, isCreateRateLimited, isPasswordLimited, countWrongPassword } from './server/rate-limit.js';
 import { sanitizeFilename } from './server/http-helpers.js';
 import { serializeDoc, contentEtag, loadAndSerialize, appendLogEntry, diffPush, writeDocFromJson, countCards } from './server/serialization.js';
 import { createRouter } from './server/router.js';
@@ -134,7 +134,7 @@ const ctx = {
   readJson, updateJson: updateJsonKeepingLocks, DATA_DIR, LOCK_FILE, getBackupFile,
   countMaps: () => stmtCount.get().n,
   serializeDoc, contentEtag, appendLogEntry, diffPush, writeDocFromJson, countCards,
-  isRateLimited, isProxyRateLimited, isCreateRateLimited,
+  isRateLimited, isProxyRateLimited, isCreateRateLimited, isPasswordLimited, countWrongPassword,
   generateUniqueMapId, generateCardId,
   loadAndSerialize: (mapId, host) => loadAndSerialize(mapId, host, { Y, docs, getPersistence, readJson, LOCK_FILE, getBackupFile }),
   // Add a CLI entry to a map's activity log, as a push does. An open map gets it straight away and

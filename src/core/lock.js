@@ -2,6 +2,7 @@
 // Lock feature — password-protect maps
 
 import { showAlert, showConfirm } from '/src/core/modals.js';
+import { sha256Hex } from '/src/core/sha256.js';
 
 let _state = null;
 let _dom = null;
@@ -67,9 +68,9 @@ export const init = ({ state, getProvider, getYdoc, getCursorColor, render, note
 };
 
 // Hash password using SHA-256
-const hashPassword = async (password) => {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
+export const hashPassword = async (password) => {
+    const data = new TextEncoder().encode(password);
+    if (!crypto.subtle) return sha256Hex(data);
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -324,6 +325,10 @@ const unlockMap = async (password) => {
 };
 
 // Update lock menu item and banner UI
+// Told each time the lock state of the open map is shown
+let _onLockChange = null;
+export const onLockChange = (fn) => { _onLockChange = fn; };
+
 export const updateLockUI = () => {
     if (!_dom.lockMapBtn || !_dom.readOnlyBanner) return;
 
@@ -371,6 +376,7 @@ export const updateLockUI = () => {
         _dom.samplesSubmenuTrigger?.classList.remove('disabled');
         _dom.importSubmenuTrigger?.classList.remove('disabled');
     }
+    _onLockChange?.();
 };
 
 // Fields that never edit the map, so typing in them is fine on a locked map: dialogs (including the

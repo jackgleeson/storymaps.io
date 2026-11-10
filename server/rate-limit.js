@@ -67,6 +67,9 @@ const createPerDay = createLimiter(500, 24 * 60 * 60_000);
 
 export const isRateLimited = (req) => checkLimits(req, api);
 export const isProxyRateLimited = (req) => checkLimits(req, proxy);
+// For changes sent with a password: only a wrong password counts against the limit
+export const isPasswordLimited = (req) => proxy.full(getClientIp(req), Date.now());
+export const countWrongPassword = (req) => proxy.record(getClientIp(req), Date.now());
 export const isCreateRateLimited = (req) => checkLimits(req, createPerMinute, createPerDay);
 
 // Clean up stale entries every 5 minutes. unref() so this timer does

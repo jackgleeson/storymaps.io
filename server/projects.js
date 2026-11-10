@@ -4,8 +4,9 @@
 // A project lives only in these two tables, next to the map index. Nothing here reads or
 // writes the data inside a map, so a project can't change what is on a map. A map can be in any
 // number of projects, and a plain map link never shows them: only a project link does. Like a
-// map ID, a project ID is a public link, and anyone who has the link can change the tabs. A
-// project only goes when it is deleted on purpose: removing the last map leaves the project empty.
+// map ID, a project ID is a public link, and anyone who has the link can change the tabs unless the
+// project is locked with a password. A project only goes when it is deleted on purpose: removing
+// the last map leaves the project empty.
 
 export const MAX_PROJECT_MAPS = 20;
 export const MAX_PROJECT_NAME = 100;
@@ -45,10 +46,14 @@ export const createProjects = (sqlite, { generateId }) => {
     );
     CREATE INDEX IF NOT EXISTS project_maps_by_map ON project_maps (map_id);
   `);
+  if (!sqlite.prepare('PRAGMA table_info(projects)').all().some(c => c.name === 'password_hash')) {
+    sqlite.exec('ALTER TABLE projects ADD COLUMN password_hash TEXT');
+  }
 
   const q = {
     mapExists: sqlite.prepare('SELECT 1 FROM maps WHERE id = ?'),
-    project: sqlite.prepare('SELECT name FROM projects WHERE id = ?'),
+    project: sqlite.prepare('SELECT name, password_hash FROM projects WHERE id = ?'),
+    setPassword: sqlite.prepare('UPDATE projects SET password_hash = ?, updated_at = ? WHERE id = ?'),
     members: sqlite.prepare(`
       SELECT pm.map_id AS id, m.name AS name FROM project_maps pm
       LEFT JOIN maps m ON m.id = pm.map_id
@@ -100,6 +105,7 @@ export const createProjects = (sqlite, { generateId }) => {
     return {
       id: projectId,
       name: project.name,
+      locked: !!project.password_hash,
       maps: q.members.all(projectId).map(({ id, name }) => ({ id, name: name && name !== 'untitled' ? name : '' })),
     };
   };
@@ -194,6 +200,41 @@ export const createProjects = (sqlite, { generateId }) => {
     return view(projectId);
   });
 
+  // The password of a locked project stays on the server. Null when it isn't locked.
+  const passwordHash = (projectId) => q.project.get(projectId)?.password_hash ?? null;
+
+  const memberIds = (projectId) => q.members.all(projectId).map(m => m.id);
+
+  // A locked project only changes for someone sending its password
+  const assertEditable = (projectId, password) => {
+    requireProject(projectId);
+    const hash = passwordHash(projectId);
+    if (hash && password !== hash) throw new ProjectError(423, 'This project is locked');
+  };
+
+  // A locked project only takes a new password from someone who sends the current one
+  const lock = sqlite.transaction((projectId, password, current) => {
+    requireProject(projectId);
+    const hash = passwordHash(projectId);
+    if (hash && password !== hash && current !== hash) throw new ProjectError(403, 'This project is already locked');
+    q.setPassword.run(password, new Date().toISOString(), projectId);
+    return view(projectId);
+  });
+
+  const checkPassword = (projectId, password) => {
+    requireProject(projectId);
+    const hash = passwordHash(projectId);
+    if (!hash) throw new ProjectError(409, 'This project is not locked');
+    if (password !== hash) throw new ProjectError(403, 'Incorrect password');
+    return view(projectId);
+  };
+
+  const unlock = sqlite.transaction((projectId, password) => {
+    checkPassword(projectId, password);
+    q.setPassword.run(null, new Date().toISOString(), projectId);
+    return view(projectId);
+  });
+
   // For deleting a map from the server: take it out of every project it's in, leaving the
   // projects in place. Returns how many.
   const forget = sqlite.transaction((mapId) => q.removeMapEverywhere.run(mapId).changes);
@@ -201,5 +242,5 @@ export const createProjects = (sqlite, { generateId }) => {
   // How many projects a map is in, for the report from the delete script
   const countForMap = (mapId) => q.projectsOfMap.all(mapId).length;
 
-  return { get, create, add, remove, destroy, reorder, rename, forget, countForMap };
+  return { get, create, add, remove, destroy, reorder, rename, forget, countForMap, passwordHash, memberIds, assertEditable, lock, checkPassword, unlock };
 };
