@@ -370,7 +370,7 @@ const positionCurrentStep = () => {
     positionTooltip(tooltipAnchor);
 
     const wrapper = $('storyMapWrapper');
-    _heldScroll = step.holdScroll && wrapper ? { left: wrapper.scrollLeft, top: wrapper.scrollTop } : null;
+    _heldScroll = step.holdScroll && wrapper ? { left: wrapper.scrollLeft, top: wrapper.scrollTop - $('storyMap').offsetTop } : null;
 };
 
 const renderStep = () => {
@@ -505,11 +505,12 @@ const onTouchMove = (e) => {
     if (e.touches.length > 1) e.stopPropagation();
 };
 
-// Dragging a card near the edge scrolls the story map, away from the highlight and with no way back
+// Dragging a card near the edge scrolls the story map, away from the highlight and with no way back.
+// The top is held relative to the map, because the room above the map follows its height.
 const onMapScroll = (e) => {
     if (!_heldScroll) return;
     e.target.scrollLeft = _heldScroll.left;
-    e.target.scrollTop = _heldScroll.top;
+    e.target.scrollTop = _heldScroll.top + $('storyMap').offsetTop;
 };
 
 // Only moves things: entering the step again would save any cards dragged so far as their places.

@@ -68,3 +68,21 @@ test('the old Lego house tour is no longer in the menu, and its link still opens
   await page.locator('#menuBtn').click();
   await expect(page.locator('.dropdown-item[data-sample="lego-house"]')).toHaveCount(0);
 });
+
+test('the map stays under the highlight when the first release step hides the add buttons', async ({ page }) => {
+  // Tall enough for the map to fit, which is when the room above it follows its height
+  await page.setViewportSize({ width: 1800, height: 1100 });
+  await page.goto('/tour');
+  await expect(page.locator('#boardName')).toHaveValue('Coffee App');
+  while (await title(page).textContent() !== 'Release slices') await next(page).click();
+
+  const top = (selector) => page.locator(selector).first().evaluate(el => el.getBoundingClientRect().top);
+  await page.waitForTimeout(100);
+  const before = await top('.users-row');
+
+  await next(page).click();
+  await expect(title(page)).toHaveText('A first release');
+  await page.waitForTimeout(300);
+  expect(Math.abs(await top('.users-row') - before)).toBeLessThanOrEqual(1);
+  expect(Math.abs(await top('#tourSpotlight') - await top('.slice-container'))).toBeLessThanOrEqual(12);
+});
