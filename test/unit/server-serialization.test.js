@@ -2,8 +2,7 @@ import { describe, test } from 'node:test';
 import { strict as assert } from 'node:assert';
 import * as Y from 'yjs';
 import {
-  serializeDoc, writeDocFromJson, diffPush, countCards, contentEtag, appendLogEntry,
-} from '../../server/serialization.js';
+  serializeDoc, writeDocFromJson, diffPush, countCards, contentEtag, appendLogEntry, siteOf } from '../../server/serialization.js';
 import { fullMap, smallMap } from '../fixtures.js';
 
 const writeMap = (data) => {
@@ -383,4 +382,13 @@ describe('a push keeps the IDs of what it matches', () => {
     push(doc, data);
     assert.deepEqual({ column: columnId(), step: partial().columns[0].id, card: card().id }, before);
   });
+});
+
+test('a map says the site it is on without the port, except on a local server off port 3000', () => {
+  assert.equal(siteOf('storymaps.io'), 'storymaps.io');
+  assert.equal(siteOf('maps.example.com:8443'), 'maps.example.com');
+  assert.equal(siteOf('localhost:3000'), 'localhost');
+  assert.equal(siteOf('localhost:3312'), 'localhost:3312');
+  assert.equal(siteOf('127.0.0.1:8080'), '127.0.0.1:8080');
+  assert.equal(siteOf(undefined), '');
 });

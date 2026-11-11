@@ -2,6 +2,7 @@ import { jsonToYamlObj, dumpYaml } from '../../src/transfer/yaml.js';
 import { exportToCsv } from '../../src/transfer/csv.js';
 import { withProject } from '../../src/core/project-links.js';
 import { sanitizeFilename } from '../http-helpers.js';
+import { siteOf } from '../serialization.js';
 
 export default function register(ctx) {
   const { route } = ctx;
@@ -47,7 +48,7 @@ export default function register(ctx) {
 
       ctx.stmtInsert.run(id, body.name || 'untitled', now, now);
 
-      const site = (req.headers.host || '').replace(/:\d+$/, '');
+      const site = siteOf(req.headers.host);
       const proto = req.headers['x-forwarded-proto'] || 'http';
       res.writeHead(201, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ id, url: `${proto}://${site}/${id}`, created_at: now }));

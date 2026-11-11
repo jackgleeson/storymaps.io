@@ -79,6 +79,12 @@ export const serializeDoc = (doc) => {
 };
 
 // Compute ETag from content fields only (excludes volatile metadata like exported, locked)
+// The site a map says it's on: the host without its port, except on a local server
+export const siteOf = (host) => {
+  const value = host || '';
+  return /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(value) ? value.replace(/:3000$/, '') : value.replace(/:\d+$/, '');
+};
+
 export const contentEtag = (data) => {
   const { app, v, exported, id, site, locked, backups, ...content } = data;
   return `"${createHash('md5').update(JSON.stringify(content, null, 2)).digest('hex')}"`;
@@ -105,7 +111,8 @@ export const loadAndSerialize = async (mapId, host, { Y, docs, getPersistence, r
     // Insert name, id, locked for readable key ordering
     const { app, v, exported, name, ...rest } = data;
     const locks = await readJson(LOCK_FILE, {});
-    const site = (host || '').replace(/:\d+$/, '');
+    // A local server keeps its port, so the CLI can find a server that isn't on port 3000
+    const site = siteOf(host);
     data = { app, v, exported, name, id: mapId, site, locked: !!locks[mapId]?.isLocked, ...rest };
     // Include backups for the routes that need them; links like /<map>.yaml and the CLI API leave them out
     const backups = await readJson(getBackupFile(mapId), []);
