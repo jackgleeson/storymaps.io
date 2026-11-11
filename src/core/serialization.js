@@ -52,8 +52,9 @@ export const serialize = () => ({
     exported: new Date().toISOString(),
     name: state.name,
     ...(state.mapId && { id: state.mapId }),
-    // A local server keeps its port, so the CLI can find a server that isn't on port 3000
-    site: /^(localhost|127\.0\.0\.1)$/.test(window.location.hostname) && window.location.port && window.location.port !== '3000' ? window.location.host : window.location.hostname,
+    // The site with its port, if it has one, as the server writes it, so the CLI finds the same
+    // server again and never guesses a port
+    site: window.location.host,
     users: state.columns.map(col => (state.users[col.id] || []).map(serializeCard)),
     activities: state.columns.map(col => (state.activities[col.id] || []).map(serializeCard)),
     steps: state.columns.map(col => {

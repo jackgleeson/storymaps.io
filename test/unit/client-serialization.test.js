@@ -7,7 +7,7 @@ import { serializeDoc, writeDocFromJson } from '../../server/serialization.js';
 import { fullMap, smallMap, samples } from '../fixtures.js';
 
 // serialize() records the site it was exported from
-globalThis.window ??= { location: { hostname: 'storymaps.io' } };
+globalThis.window ??= { location: { hostname: 'storymaps.io', host: 'storymaps.io' } };
 
 const asFile = (map) => ({ app: 'storymap', v: 1, ...map });
 
@@ -41,6 +41,17 @@ describe('serialize and deserialize', () => {
     assert.ok(!isNaN(Date.parse(out.exported)));
     assert.equal(out.site, 'storymaps.io');
     assert.equal(out.id, 'abc12345');
+  });
+
+  test('a local server keeps its port in the site, port 3000 included', () => {
+    const before = window.location;
+    window.location = { hostname: 'localhost', host: 'localhost:3000', port: '3000' };
+    try {
+      deserialize(asFile(smallMap()));
+      assert.equal(serialize().site, 'localhost:3000');
+    } finally {
+      window.location = before;
+    }
   });
 
   test('the browser and the server serialize the same map the same way', () => {
