@@ -200,6 +200,34 @@ describe('CSV round trip', () => {
   });
 });
 
+describe('a partial placed in the journey', () => {
+  const withPartial = () => ({
+    name: 'Coffee app',
+    users: [[], [], []], activities: [[], [], []],
+    steps: [{ name: 'Browse' }, { partialMapId: 'p1', partialMapOrigin: true }, { name: 'Collect' }],
+    slices: [
+      { name: 'MVP', stories: [[{ name: 'Menu' }], [], [{ name: 'Notify' }]] },
+      { name: 'Later', stories: [[], [], [{ name: 'Rate it' }]] },
+    ],
+    partialMaps: [{
+      id: 'p1', name: 'Checkout', users: [[], []], activities: [[], []],
+      steps: [{ name: 'Pay' }, { name: 'Confirm' }],
+      stories: [[[{ name: 'Credit card' }, { name: 'Apple Pay' }], [{ name: 'Submit order' }]], [[{ name: 'Split payment' }], []]],
+    }],
+  });
+
+  test('keeps its cards in the partial, and none in the journey column it sits in', () => {
+    const out = roundTrip(withPartial());
+    const ref = out.steps.findIndex(s => s.partialMapId);
+    assert.equal(ref, 1);
+    assert.deepEqual(out.slices.map(sl => sl.stories[ref]), [[], []]);
+    assert.deepEqual(out.slices.map(sl => sl.stories.map(col => col.map(c => c.name))), [[['Menu'], [], ['Notify']], [[], [], ['Rate it']]]);
+    const partial = out.partialMaps.find(pm => pm.id === out.steps[ref].partialMapId);
+    assert.deepEqual(partial.steps.map(s => s.name), ['Pay', 'Confirm']);
+    assert.deepEqual(partial.stories.map(sl => sl.map(col => col.map(c => c.name))), [[['Credit card', 'Apple Pay'], ['Submit order']], [['Split payment'], []]]);
+  });
+});
+
 describe('importFromCsv', () => {
   test('skips comment and blank rows', () => {
     const out = importFromCsv('# A comment\n\nname,Mine\n# Another\nsteps,A\n');

@@ -639,10 +639,15 @@ export function importFromCsv(csvString) {
     // A slicemeta row with no slice rows after it describes no slice
     const sliceList = sliceBlocks.filter(block => block.rows.length > 0);
 
+    // A partial's columns hold the partial's own cards, which go into the partial (below), not into
+    // the journey column the partial sits in
+    const partialCols = new Set(Object.values(partialDefs).flatMap(def => def.colIndices));
+
     const jsonSlices = sliceList.map(({ name: sliceName, rows: cellRows, details }) => {
         const stories = Array.from({ length: n }, () => []);
         cellRows.forEach(cells => {
             for (let c = 1; c < cells.length; c++) {
+                if (partialCols.has(c)) continue;
                 const val = (cells[c] || '').trim();
                 if (!val) continue;
                 let cardText = val;
