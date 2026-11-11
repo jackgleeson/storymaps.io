@@ -206,10 +206,11 @@ const PUBLIC_DIR = join(__dirname, 'public');
 const SRC_DIR = join(__dirname, 'src');
 const STATIC_DIRS = [PUBLIC_DIR, SRC_DIR];
 
+// Text files say they're UTF-8, so a stylesheet's ✓ or › never shows as "âœ“"
 const MIME_TYPES = {
-  '.html': 'text/html',
-  '.css': 'text/css',
-  '.js': 'text/javascript',
+  '.html': 'text/html; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
   '.json': 'application/json',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
@@ -394,7 +395,7 @@ const server = createServer(async (req, res) => {
         etag,
         raw: content,
         gzipped: COMPRESSIBLE.has(fileExt) ? gzipSync(content) : null,
-        contentType: isHtmlFallback ? 'text/html' : (MIME_TYPES[ext] || 'application/octet-stream'),
+        contentType: isHtmlFallback ? MIME_TYPES['.html'] : (MIME_TYPES[ext] || 'application/octet-stream'),
         cacheControl: cacheHeader(fileExt),
       };
       fileCache.set(cacheKey, cached);

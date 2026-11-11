@@ -125,3 +125,13 @@ test('zooming back in to normal size loses the extra room above a map that fits'
   await scrollToTop(page);
   expect((await mapEdges(page)).top).toBeLessThanOrEqual(21);
 });
+
+test('Tab moves from one step to the next, left to right, without stopping on its buttons', async ({ page, createMap }) => {
+  await openMap(page, await createMap());
+  const steps = page.locator('.step .step-text');
+  await steps.nth(0).click();
+  for (const next of [1, 2]) {
+    await page.keyboard.press('Tab');
+    await expect(steps.nth(next)).toBeFocused();
+  }
+});

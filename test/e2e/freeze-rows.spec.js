@@ -172,9 +172,10 @@ for (const stuck of [false, true]) {
     await page.keyboard.type('Barista', { delay: 20 });
     expect(await scrollTop()).toBe(before);
 
-    // Tab from card to card along the rows
+    // Tab from card to card along the rows, as far as the last step, the end of the frozen rows
     await clickAt(page, page.locator('.activities-row .story-card textarea').first());
-    for (let i = 0; i < 4; i++) await page.keyboard.press('Tab');
+    for (let i = 0; i < 3; i++) await page.keyboard.press('Tab');
+    await expect(page.locator('.step .step-text').last()).toBeFocused();
     expect(await scrollTop()).toBe(before);
   });
 }

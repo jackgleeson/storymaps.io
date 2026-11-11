@@ -300,6 +300,7 @@ export const sliceClosedLabel = (slice) => slice.collapsed ? (slice.closedReason
 
 export const createExpandButton = (item, { readOnly = false } = {}) => {
     const btn = el('button', 'btn-expand', { title: 'Expand card', ariaLabel: 'Expand card', html: '⤢' });
+    btn.tabIndex = -1;
     btn.addEventListener('click', (e) => {
         e.stopPropagation();
         if (_openExpandModal) _openExpandModal(item, { readOnly });
@@ -443,6 +444,9 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
     const container = el('div', 'card-options');
 
     const btn = el('button', 'btn-options', { text: '...', title: 'Options', ariaLabel: 'Options menu', ariaHasPopup: 'true', ariaExpanded: 'false' });
+    // Tab moves from card to card, so the card's buttons stay out of the way; the right-click
+    // menu has the same options
+    btn.tabIndex = -1;
     const menu = el('div', 'options-menu');
 
     // Color option
