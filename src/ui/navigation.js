@@ -83,9 +83,9 @@ const updatePanMode = () => {
     }
 };
 
-// The room to scroll above the map. A map that fits in the window can go anywhere in it, right
-// down to the bottom edge, which is useful when zoomed out. A map taller than the window stops just
-// below the top, so scrolling up can't lose it. The view stays put when the room changes.
+// The room to scroll above the map. Scrolling up stops just above the map, so it can't leave a
+// big gap under the header. Zoomed out, a map that fits in the window can go anywhere in it, right
+// down to the bottom edge. The view stays put when the room changes.
 const MIN_TOP_ROOM = 20;
 const updateMapTopRoom = () => {
     const map = _dom.storyMap;
@@ -93,7 +93,8 @@ const updateMapTopRoom = () => {
     const body = mapBody(map);
     if (!body) return;
     const height = body.getBoundingClientRect().bottom - map.getBoundingClientRect().top;
-    const room = `${Math.max(MIN_TOP_ROOM, Math.round(wrapper.clientHeight - height))}px`;
+    const fit = zoomLevel < 1 ? Math.round(wrapper.clientHeight - height) : 0;
+    const room = `${Math.max(MIN_TOP_ROOM, fit)}px`;
     if (map.style.getPropertyValue('--map-top-room') === room) return;
     const before = map.offsetTop;
     map.style.setProperty('--map-top-room', room);

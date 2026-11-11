@@ -74,8 +74,18 @@ test('scrolling up stops just above a map taller than the window', async ({ page
   expect(top).toBeLessThanOrEqual(21);
 });
 
-test('a map that fits in the window can move to its bottom edge, but no further', async ({ page, createMap }) => {
+test('scrolling up stops just above a map that fits in the window too, so no big gap opens under the header', async ({ page, createMap }) => {
   await openMap(page, await createMap(mapOfSlices(1)), 2);
+  await scrollToTop(page);
+  const { top, bottom, height } = await mapEdges(page);
+  expect(bottom).toBeLessThan(height);
+  expect(top).toBeGreaterThanOrEqual(0);
+  expect(top).toBeLessThanOrEqual(21);
+});
+
+test('zoomed out, a map that fits in the window can move to its bottom edge, but no further', async ({ page, createMap }) => {
+  await openMap(page, await createMap(mapOfSlices(1)), 2);
+  await page.locator('#zoomOut').click();
   await scrollToTop(page);
   const { top, bottom, height } = await mapEdges(page);
   expect(top).toBeGreaterThan(21);
@@ -105,12 +115,13 @@ test('zooming out a tall map frees the room above it and keeps the middle of the
   expect(top).toBeGreaterThan(21);
 });
 
-test('a map that grows past the window loses the extra room', async ({ page, createMap }) => {
+test('zooming back in to normal size loses the extra room above a map that fits', async ({ page, createMap }) => {
   await openMap(page, await createMap(mapOfSlices(1)), 2);
+  await page.locator('#zoomOut').click();
   await scrollToTop(page);
   expect((await mapEdges(page)).top).toBeGreaterThan(21);
 
-  for (let i = 0; i < 10; i++) await addCard(page, `Card ${i}`);
+  await page.locator('#zoomIn').click();
   await scrollToTop(page);
   expect((await mapEdges(page)).top).toBeLessThanOrEqual(21);
 });
