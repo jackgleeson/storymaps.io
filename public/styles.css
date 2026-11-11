@@ -1373,6 +1373,19 @@ html.dark-mode .map-stats-slice-count.map-stats-closed {
         max-height: calc(100vh - 100px);
         max-height: calc(100dvh - 100px);
     }
+
+    /* The panel covers most of the map, so a tap beside it closes it rather than editing the map */
+    .controls-right.panel-open:not(.hidden) + .panel-shade {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 999;
+        background: rgba(0, 0, 0, 0.25);
+    }
+}
+
+.panel-shade {
+    display: none;
 }
 
 .bottom-controls {

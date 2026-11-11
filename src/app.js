@@ -1314,6 +1314,11 @@ const initEventListeners = () => {
     dom.partialsToggle?.addEventListener('click', () => switchPanelTab('partials'));
     dom.notesToggle?.addEventListener('click', () => switchPanelTab('notepad'));
     dom.logToggle?.addEventListener('click', () => switchPanelTab('log'));
+    // The shade behind the panel on a phone closes it
+    document.getElementById('panelShade')?.addEventListener('click', () => {
+        const open = dom.panelBody?.querySelector('.panel-section.open');
+        if (open) switchPanelTab(open.dataset.section);
+    });
     dom.legendAddBtn?.addEventListener('click', () => {
         if (state.legend.length >= Object.keys(CARD_COLORS).length) return;
         pushUndo();

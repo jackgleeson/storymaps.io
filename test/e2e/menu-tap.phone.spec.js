@@ -43,3 +43,23 @@ for (const menu of MENUS) {
     await expect(card).toBeFocused();
   });
 }
+
+for (const [tab, section] of [['#notesToggle', 'notepad'], ['#legendToggle', 'legend'], ['#logToggle', 'log']]) {
+  test(`on a phone a tap beside the ${section} panel closes it without editing the card underneath`, async ({ page, createMap }) => {
+    const id = await createMap(MAP);
+    await openMap(page, id, 3);
+    await page.locator(tab).tap();
+    const panel = page.locator(`.panel-section[data-section="${section}"]`);
+    await expect(panel).toBeVisible();
+    // Tap the map just above the panel, which can cover most of the screen
+    const top = (await page.locator('#controlsRight').boundingBox()).y;
+    const x = 60, y = top - 20;
+    const under = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.id, { x, y });
+    expect(under).toBe('panelShade');
+    await page.touchscreen.tap(x, y);
+    await expect(panel).toBeHidden();
+    await expect(page.locator('#panelShade')).toBeHidden();
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => document.activeElement?.matches('textarea, input'))).toBe(false);
+  });
+}
