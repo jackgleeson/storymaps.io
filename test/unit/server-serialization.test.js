@@ -168,6 +168,16 @@ describe('diffPush', () => {
     assert.equal(result.text, 'Renamed map, added 1 slice');
   });
 
+  test('renaming the map and editing a card says both, as the entry highlights the card', () => {
+    const { result } = push(smallMap(), b => {
+      b.name = 'Renamed';
+      b.slices[0].stories[0][0].name = 'Sign up form';
+    });
+    assert.equal(result.text, 'Renamed map, renamed 1 card');
+    assert.equal(result.ids.length, 1);
+    assert.equal(push(smallMap(), b => { b.name = 'Renamed'; }).result.text, 'Renamed map');
+  });
+
   test('renaming a story card says how many cards were renamed', () => {
     assert.equal(push(smallMap(), b => { b.slices[0].stories[0][0].name = 'Sign up form'; }).result.text, 'Renamed 1 card');
   });

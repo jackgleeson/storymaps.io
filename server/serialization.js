@@ -172,12 +172,15 @@ export const diffPush = (oldSnapshot, body, newDoc) => {
     return renamed;
   };
   if (old.name !== (body.name || '')) parts.push('renamed map');
+  const counted = parts.length;
   diff('steps', oldSteps, newSteps);
   diff('slices', oldSlices, newSlices);
   diff('cards', oldCards, newCards);
 
-  // Detect per-item content edits and collect new Yjs IDs of changed items
-  if (!parts.length) {
+  // Detect per-item content edits and collect new Yjs IDs of changed items. Only when nothing was
+  // added or removed, as positions no longer line up then. A map rename doesn't stop it, so a push
+  // that renames the map and edits a card says both, matching the cards its entry highlights.
+  if (parts.length === counted) {
     const j = (v) => JSON.stringify(v ?? []);
     if (j(old.steps) !== j(body.steps)) parts.push('edited steps');
     if (j(old.users) !== j(body.users)) parts.push('edited user cards');
