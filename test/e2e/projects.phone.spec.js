@@ -59,7 +59,31 @@ test('on a phone a project starts from the menu, the tabs scroll, the boxes open
   await expect(tabs.nth(3)).toHaveAttribute('aria-current', 'page');
 });
 
-test('on a phone the kind of lock shows under the map name', async ({ page, createMap, request }) => {
+test('on a phone the project sheet closes with its close button or a tap on the shade, and the tap does not reach the map', async ({ page, createMap }) => {
+  const id = await createMap(map('Ordering'));
+  await openMap(page, id, 2);
+  await page.locator('#menuBtn').tap();
+  await page.locator('#projectMenuBtn').tap();
+  await page.locator('#projectPanel').getByRole('button', { name: 'Create project' }).tap();
+  await expect(page.locator('#projectPanel')).toBeHidden();
+
+  // The close button
+  await page.locator('#projectAddBtn').tap();
+  await expect(page.locator('#projectPanel')).toBeVisible();
+  await page.locator('#projectPanel').getByRole('button', { name: 'Close' }).tap();
+  await expect(page.locator('#projectPanel')).toBeHidden();
+
+  // A tap on the shade, over a card, closes the sheet without starting to edit the card
+  await page.locator('#projectAddBtn').tap();
+  const card = page.locator('.story-card textarea').first();
+  const box = await card.boundingBox();
+  await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+  await expect(page.locator('#projectPanel')).toBeHidden();
+  await page.waitForTimeout(300);
+  await expect(card).not.toBeFocused();
+});
+
+test('on a phone the kind of lock shows under the map name',async ({ page, createMap, request }) => {
   const a = await createMap(map('Ordering'));
   const headers = { origin: 'http://localhost' };
   const project = (await (await request.post('/api/projects', { data: { mapIds: [a], name: 'Cafe' }, headers })).json()).project.id;

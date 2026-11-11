@@ -46,6 +46,7 @@ const ICONS = {
     down: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>',
     locked: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
     grip: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>',
+    cross: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
 };
 
 
@@ -347,7 +348,10 @@ const openPanel = (kind, trigger, { note = null } = {}) => {
     trigger?.setAttribute('aria-expanded', 'true');
     const panel = dom.projectPanel;
     panel.className = `project-panel project-panel-${kind}`;
-    panel.replaceChildren(...({ start: buildStart, add: buildAdd, manage: buildManage })[kind]());
+    // On a phone the box is a sheet over the page, so it gets a close button
+    const close = el('button', 'project-panel-close', { type: 'button', html: ICONS.cross, title: 'Close', ariaLabel: 'Close' });
+    close.addEventListener('click', () => closePanel());
+    panel.replaceChildren(close, ...({ start: buildStart, add: buildAdd, manage: buildManage })[kind]());
     panel.hidden = false;
     dom.projectBackdrop.hidden = false;
     dom.projectBar.classList.add('panel-open');
@@ -358,7 +362,7 @@ const openPanel = (kind, trigger, { note = null } = {}) => {
     // The start box starts on the name field; the add box on its first recent map, or New map; the
     // manage box on the box itself, so a phone doesn't open its keyboard for a name that's already set
     if (kind === 'start') panel.querySelector('input')?.focus();
-    else if (kind === 'add') panel.querySelector('.project-recent-tick, button')?.focus();
+    else if (kind === 'add') panel.querySelector('.project-recent-tick, button:not(.project-panel-close)')?.focus();
     else panel.focus();
 };
 
@@ -1155,8 +1159,9 @@ export const initListeners = ({ openMap } = {}) => {
             closePanel();
         }
     });
+    // The backdrop closes the box on its own click, so the tap doesn't land on the map underneath
     document.addEventListener('pointerdown', (e) => {
-        if (_panel && !dom.projectPanel.contains(e.target) && !e.target.closest?.('#projectAddBtn, #projectName, #projectMenuBtn, .modal-overlay, .modal')) closePanel({ restoreFocus: false });
+        if (_panel && !dom.projectPanel.contains(e.target) && e.target !== dom.projectBackdrop && !e.target.closest?.('#projectAddBtn, #projectName, #projectMenuBtn, .modal-overlay, .modal')) closePanel({ restoreFocus: false });
     });
     dom.boardName.addEventListener('input', updateCurrentTab);
     // The padlock on the open tab follows the map being locked or unlocked

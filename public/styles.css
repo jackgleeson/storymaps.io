@@ -11458,6 +11458,28 @@ body.in-project .project-add[aria-expanded="true"] {
     display: none;
 }
 
+/* Only on a phone, where the box is a sheet over the page */
+.project-panel-close {
+    display: none;
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 10px;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+}
+
+.project-panel-close svg {
+    display: block;
+}
+
+.project-panel-close:focus-visible {
+    outline: 2px solid var(--color-teal);
+}
+
 /* The project box lists maps by name, so it gets more room */
 .project-panel-manage {
     width: 540px;
@@ -12107,6 +12129,15 @@ html.dark-mode .project-lock-choice:has(input:checked) {
         padding: 16px 16px calc(24px + env(safe-area-inset-bottom));
         overflow-y: auto;
         border-radius: 16px 16px 0 0;
+    }
+
+    .project-panel-close {
+        display: block;
+    }
+
+    /* Room for the close button beside the title */
+    .project-panel-close + * {
+        padding-right: 36px;
     }
 
     /* The project name shows as its icon, leaving the width for the tabs */
