@@ -79,11 +79,9 @@ export const serializeDoc = (doc) => {
 };
 
 // Compute ETag from content fields only (excludes volatile metadata like exported, locked)
-// The site a map says it's on: the host without its port, except on a local server
-export const siteOf = (host) => {
-  const value = host || '';
-  return /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(value) ? value.replace(/:3000$/, '') : value.replace(/:\d+$/, '');
-};
+// The site a map says it's on: the host as the request named it, with its port when it has one,
+// such as localhost:3000 or maps.example.com:8443. No port is ever left out for the CLI to guess.
+export const siteOf = (host) => host || '';
 
 export const contentEtag = (data) => {
   const { app, v, exported, id, site, locked, backups, ...content } = data;
@@ -111,7 +109,7 @@ export const loadAndSerialize = async (mapId, host, { Y, docs, getPersistence, r
     // Insert name, id, locked for readable key ordering
     const { app, v, exported, name, ...rest } = data;
     const locks = await readJson(LOCK_FILE, {});
-    // A local server keeps its port, so the CLI can find a server that isn't on port 3000
+    // The site with its port, if it has one, so the CLI finds the same server again
     const site = siteOf(host);
     data = { app, v, exported, name, id: mapId, site, locked: !!locks[mapId]?.isLocked, ...rest };
     // Include backups for the routes that need them; links like /<map>.yaml and the CLI API leave them out

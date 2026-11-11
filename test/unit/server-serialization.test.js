@@ -394,10 +394,10 @@ describe('a push keeps the IDs of what it matches', () => {
   });
 });
 
-test('a map says the site it is on without the port, except on a local server off port 3000', () => {
+test('a map says the site it is on with its port, so no port is ever guessed', () => {
   assert.equal(siteOf('storymaps.io'), 'storymaps.io');
-  assert.equal(siteOf('maps.example.com:8443'), 'maps.example.com');
-  assert.equal(siteOf('localhost:3000'), 'localhost');
+  assert.equal(siteOf('maps.example.com:8443'), 'maps.example.com:8443');
+  assert.equal(siteOf('localhost:3000'), 'localhost:3000');
   assert.equal(siteOf('localhost:3312'), 'localhost:3312');
   assert.equal(siteOf('127.0.0.1:8080'), '127.0.0.1:8080');
   assert.equal(siteOf(undefined), '');

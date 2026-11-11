@@ -103,7 +103,7 @@ describe('POST /api/maps', () => {
     const res = await server.call('POST', '/api/maps', { body: smallMap(), headers: { 'x-forwarded-proto': 'https' } });
     assert.equal(res.status, 201);
     assert.equal(res.json.id, 'map00001');
-    assert.equal(res.json.url, 'https://localhost/map00001');
+    assert.equal(res.json.url, 'https://localhost:3000/map00001');
   });
 
   test('stores the content, a log entry and the map index row', async () => {
@@ -133,7 +133,7 @@ describe('GET /api/maps/:id', () => {
     const res = await server.call('GET', `/api/maps/${id}`);
     assert.equal(res.status, 200);
     assert.equal(res.json.id, id);
-    assert.equal(res.json.site, 'localhost');
+    assert.equal(res.json.site, 'localhost:3000');
     assert.equal(res.json.locked, false);
     assert.equal(res.headers.ETag, contentEtag(res.json));
   });
