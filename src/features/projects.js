@@ -969,9 +969,11 @@ const renderManageList = ({ force = false } = {}) => {
             btn.addEventListener('click', () => order && change('/order', { mapIds: order }));
             return btn;
         };
-        const lockLabel = map.lock ? LOCK_LABELS[map.lock] : '';
+        // In a locked project the heading says the maps are locked, so only a map with its own
+        // password, which the project password doesn't open, is labelled
+        const labelled = map.lock && !(map.lock === 'project' && locked);
         const textStack = el('span', 'project-panel-item-text');
-        textStack.append(text, el('span', `project-panel-lock-label${map.lock ? ` ${map.lock}` : ''}`, { text: lockLabel, title: LOCK_HINTS[map.lock] }));
+        textStack.append(text, el('span', `project-panel-lock-label${labelled ? ` ${map.lock}` : ''}`, labelled ? { text: LOCK_LABELS[map.lock], title: LOCK_HINTS[map.lock] } : {}));
         const prompting = _rowPrompt?.mapId === map.id;
         if (prompting) row.classList.add('prompting');
         if (readOnly) {

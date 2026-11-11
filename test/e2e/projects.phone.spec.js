@@ -83,18 +83,27 @@ test('on a phone the project sheet closes with its close button or a tap on the 
   await expect(card).not.toBeFocused();
 });
 
-test('on a phone the kind of lock shows under the map name',async ({ page, createMap, request }) => {
-  const a = await createMap(map('Ordering'));
+test('on a phone a locked project lists each map on one line, with a label only for a map lock', async ({ page, createMap, request }) => {
+  const [a, b] = [await createMap(map('Ordering')), await createMap(map('A loyalty programme with a very long name indeed'))];
   const headers = { origin: 'http://localhost' };
-  const project = (await (await request.post('/api/projects', { data: { mapIds: [a], name: 'Cafe' }, headers })).json()).project.id;
+  await request.post(`/api/lock/${b}`, { data: { passwordHash: 'b'.repeat(64) }, headers });
+  const project = (await (await request.post('/api/projects', { data: { mapIds: [a, b], name: 'Cafe' }, headers })).json()).project.id;
   await request.post(`/api/projects/${project}/lock`, { data: { passwordHash: 'a'.repeat(64), lockMaps: true }, headers });
   await page.goto(`/p/${project}/${a}`);
   await page.locator('#projectName').tap();
   const panel = page.locator('#projectPanel');
-  const label = panel.locator('.project-panel-lock-label');
-  await expect(label).toHaveText('Project lock');
-  const [name, under] = [await panel.locator('.project-panel-item-name').boundingBox(), await label.boundingBox()];
-  expect(under.y).toBeGreaterThanOrEqual(name.y + name.height - 1);
+  const rows = panel.locator('.project-panel-item');
+  await expect(rows.locator('.project-panel-lock-label')).toHaveText(['', 'Map lock']);
+  for (const row of [rows.nth(0), rows.nth(1)]) {
+    const [name, button] = [await row.locator('.project-panel-item-name').boundingBox(), await row.getByRole('button').boundingBox()];
+    // One line: the name sits level with its Unlock button, and stops before it
+    expect(Math.abs((name.y + name.height / 2) - (button.y + button.height / 2))).toBeLessThan(4);
+    expect(name.x + name.width).toBeLessThanOrEqual(button.x);
+  }
+  // The long name is cut short, with the label still in view after it
+  const [name, label] = [await rows.nth(1).locator('.project-panel-item-name').boundingBox(), await rows.nth(1).locator('.project-panel-lock-label').boundingBox()];
+  expect(label.x).toBeGreaterThanOrEqual(name.x + name.width);
+  expect(await rows.nth(1).locator('.project-panel-item-name').evaluate(e => e.scrollWidth > e.clientWidth)).toBe(true);
 });
 
 test('on a phone a map row opened for a password keeps its height and its buttons can be tapped', async ({ page, createMap, request }) => {

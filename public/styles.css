@@ -11944,6 +11944,11 @@ html.dark-mode .project-panel-locked {
     gap: 8px;
 }
 
+/* The label sits just after the name, and a long name is cut short to keep the row on one line */
+.project-panel-item-text .project-panel-item-name {
+    flex: 0 1 auto;
+}
+
 .project-panel-lock-label {
     flex-shrink: 0;
     padding: 1px 8px;
@@ -12097,21 +12102,6 @@ html.dark-mode .project-lock-choice:has(input:checked) {
         flex: 1 1 100%;
     }
 
-    /* A tooltip can't be seen on a phone, so the kind of lock goes under the name */
-    .project-panel-item-text {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0;
-    }
-
-    .project-panel-item-name {
-        max-width: 100%;
-    }
-
-    .project-panel-lock-label {
-        margin-top: 2px;
-    }
-
     body:not(.in-project) .project-bar:not(.panel-open) {
         display: none;
     }
@@ -12170,9 +12160,13 @@ html.dark-mode .project-lock-choice:has(input:checked) {
         background: rgba(0, 0, 0, 0.25);
     }
 
-    .project-panel-list,
     .project-recent {
         max-height: 40vh;
+    }
+
+    /* Room for a project's maps, a line each, before the list scrolls */
+    .project-panel-list {
+        max-height: 50vh;
     }
 }
 
@@ -12236,9 +12230,6 @@ html.dark-mode .project-lock-choice:has(input:checked) {
         font-size: 13px;
     }
 
-    .project-panel-lock-label {
-        font-size: 12px;
-    }
 
     .project-panel-icon,
     .project-panel-remove {

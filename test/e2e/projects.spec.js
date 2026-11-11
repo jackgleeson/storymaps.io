@@ -776,7 +776,7 @@ test('locking a project and its maps makes the project read-only until it is unl
 
   await lockFromPanel(page, 'open sesame', { withMaps: true });
   await expect(panel(page).locator('.project-panel-note')).toHaveText('Project and 2 maps locked.');
-  await expect(lockLabels(page)).toHaveText(['Project lock', 'Project lock']);
+  await expect(lockLabels(page)).toHaveText(['', '']);
   await expect(panel(page).getByRole('button', { name: 'Remove', exact: true })).toHaveCount(0);
   await expect(panel(page).locator('#projectNameInput')).toHaveCount(0);
   await expect(panel(page).getByRole('button', { name: 'Delete project' })).toHaveCount(0);
@@ -814,8 +814,7 @@ test('a map with its own password stays as it is, and unlocks on its own with th
 
   await lockFromPanel(page, 'project pass', { withMaps: true });
   await expect(panel(page).locator('.project-panel-note')).toHaveText("1 of 2 maps locked. Loyalty already has a map lock with a different password, so it wasn't changed.");
-  await expect(lockLabels(page)).toHaveText(['Project lock', 'Map lock']);
-  await expect(lockLabels(page).nth(0)).toHaveAttribute('title', 'Locked with the project password');
+  await expect(lockLabels(page)).toHaveText(['', 'Map lock']);
   await expect(lockLabels(page).nth(1)).toHaveAttribute('title', 'Locked with its own password, different from the project');
 
   await panel(page).getByRole('button', { name: 'Unlock Loyalty' }).click();
@@ -827,7 +826,7 @@ test('a map with its own password stays as it is, and unlocks on its own with th
   await prompt.locator('input').fill('own');
   await prompt.getByRole('button', { name: 'Unlock' }).click();
   await expect(panel(page).getByRole('button', { name: 'Lock Loyalty' })).toBeVisible();
-  await expect(lockLabels(page)).toHaveText(['Project lock', '']);
+  await expect(lockLabels(page)).toHaveText(['', '']);
   await expect.poll(async () => (await (await request.get(`/api/lock/${b}`)).json()).isLocked).toBe(false);
 });
 
