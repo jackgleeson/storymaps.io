@@ -34,6 +34,7 @@ import { isOriginAllowed, isCliApi, parseBody } from './server/middleware.js';
 // YAML body parsing) and client (import/export UI). Safe to share in this monolith
 // since both sides run in Node.js/browser with identical logic.
 import { jsonToYamlObj, dumpYaml } from './src/transfer/yaml.js';
+import { withProject } from './src/core/project-links.js';
 import { exportToCsv } from './src/transfer/csv.js';
 
 // Set YPERSISTENCE *before* importing y-websocket utils, which reads it at load time
@@ -73,6 +74,13 @@ const stmtUpdate = sqlite.prepare(
   'UPDATE maps SET name = ?, updated_at = ?, edit_count = edit_count + ? WHERE id = ?'
 );
 const stmtExists = sqlite.prepare('SELECT 1 FROM maps WHERE id = ?');
+
+// IDs of maps deleted with server/admin/delete-map.js. A deleted map leaves no data behind, so
+// without this an old copy pushed from the CLI, or a tab still open on it, would bring it back
+// at its old link.
+sqlite.exec('CREATE TABLE IF NOT EXISTS deleted_maps (id TEXT PRIMARY KEY, deleted_at TEXT)');
+const stmtDeleted = sqlite.prepare('SELECT 1 FROM deleted_maps WHERE id = ?');
+const isDeletedMap = (id) => !!stmtDeleted.get(id);
 const stmtMeta = sqlite.prepare('SELECT created_at, updated_at, edit_count FROM maps WHERE id = ?');
 // The "story maps created" count on the home page: every map with a row in the index
 const stmtCount = sqlite.prepare('SELECT count(*) AS n FROM maps');
@@ -89,7 +97,7 @@ const projects = createProjects(sqlite, { generateId: randomId });
 const generateUniqueMapId = () => {
   for (let i = 0; i < 10; i++) {
     const id = randomId();
-    if (!stmtExists.get(id)) return id;
+    if (!stmtExists.get(id) && !isDeletedMap(id)) return id;
   }
   throw new Error('Failed to generate unique ID');
 };
@@ -129,7 +137,7 @@ const askForMissingEdits = (doc, conn) => {
 const ctx = {
   route,
   Y, docs, getPersistence,
-  stmtInsert, stmtUpdate, stmtExists, stmtMeta, editCountSince, projects,
+  stmtInsert, stmtUpdate, stmtExists, stmtMeta, editCountSince, projects, isDeletedMap,
   getPendingEdits: (mapId) => pendingEdits.get(mapId) || 0,
   readJson, updateJson: updateJsonKeepingLocks, DATA_DIR, LOCK_FILE, getBackupFile,
   countMaps: () => stmtCount.get().n,
@@ -323,15 +331,19 @@ const server = createServer(async (req, res) => {
 
     // Format extension: /:mapId.json, /:mapId.yaml, or /:mapId.csv, and the same at the end of a project
     // link (/p/:project/:mapId.yaml), so a map seen in a project can be fetched the same way
-    const projectFormat = reqPath.match(/^\/p\/[a-zA-Z0-9_-]+\/([a-zA-Z0-9_-]+)\.(?:json|yaml|csv)$/);
+    // A project link names the project, so the map comes with a project key, and only if it's in
+    // that project. A plain map link never says which projects a map is in.
+    const projectFormat = reqPath.match(/^\/p\/([a-zA-Z0-9_-]+)\/([a-zA-Z0-9_-]+)\.(?:json|yaml|csv)$/);
     if (!content && (!reqPath.includes('/', 1) || projectFormat) && (ext === '.json' || ext === '.yaml' || ext === '.csv')) {
-      const mapId = projectFormat ? projectFormat[1] : reqPath.slice(1, -ext.length);
-      if (MAP_ID.test(mapId)) {
+      const mapId = projectFormat ? projectFormat[2] : reqPath.slice(1, -ext.length);
+      const projectId = projectFormat ? projectFormat[1] : null;
+      if (MAP_ID.test(mapId) && (!projectId || projects.isMember(projectId, mapId))) {
         const loaded = await ctx.loadAndSerialize(mapId, req.headers.host);
         if (loaded) {
           // The map as it is now, without its backups: AI tools fetch these links, and old copies of
           // the map would only mislead them. Export in the app still brings the backups along.
-          const { backups, ...data } = loaded;
+          const { backups, ...plain } = loaded;
+          const data = withProject(plain, projectId);
           const body = ext === '.csv'
             ? exportToCsv(data)
             : ext === '.yaml'
@@ -513,6 +525,11 @@ wss.on('connection', (ws, req) => {
   const docName = (req.url || '').slice(1).split('?')[0];
   if (!MAP_ID.test(docName)) {
     ws.close(4400, 'Not a map');
+    return;
+  }
+  // A tab still open on a deleted map would otherwise send the map back when it reconnects
+  if (isDeletedMap(docName)) {
+    ws.close(4410, 'Map deleted');
     return;
   }
   keepLockedMapsReadOnly(ws, docName);

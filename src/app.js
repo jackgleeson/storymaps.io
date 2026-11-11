@@ -1782,6 +1782,7 @@ renderMod.init({
 const mapKnownToServer = async (mapId) => {
     try {
         const res = await fetch(`/api/maps/${encodeURIComponent(mapId)}/meta`, { cache: 'no-store' });
+        if (res.status === 410) return 'deleted';
         if (res.status === 404) return false;
         return res.ok ? true : null;
     } catch {
@@ -1823,6 +1824,8 @@ const loadMapById = async (mapId) => {
         clearMapContent();
         state.mapId = mapId;
         const known = await mapKnownToServer(mapId);
+        // A deleted map can't be opened, and the server refuses its connection
+        if (known === 'deleted') return false;
         await createYjsDoc(mapId);
         await subscribeToMap(mapId);
 

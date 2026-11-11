@@ -6,6 +6,7 @@ import { state, initState, pushUndo, confirmOverwrite } from '/src/core/state.js
 import { el } from '/src/core/constants.js';
 import { serialize, deserialize, appendImport } from '/src/core/serialization.js';
 import { exportToYaml, importFromYaml } from '/src/transfer/yaml.js';
+import { parseLocation, withProject } from '/src/core/project-links.js';
 import { exportToCsv, importFromCsv } from '/src/transfer/csv.js';
 import { showAlert } from '/src/core/modals.js';
 import { isMapEditable, lockState, lockHeaders } from '/src/core/lock.js';
@@ -263,9 +264,12 @@ const importYamlFile = async (file) => {
 // JSON Export
 let _exportBackups = null;
 
+// The map as exported, with its project when it's open inside one
+const exportData = () => withProject(serialize(), parseLocation(location.pathname).projectId);
+
 const updateExportJson = () => {
     const minify = dom.exportMinify.checked;
-    const data = serialize();
+    const data = exportData();
     if (_exportBackups?.length) data.backups = _exportBackups;
     const json = minify ? JSON.stringify(data) : JSON.stringify(data, null, 2);
     dom.exportJsonText.value = json;
@@ -333,7 +337,7 @@ const exportYaml = () => {
 const showExportYamlModal = async () => {
     dom.exportYamlModal.classList.add('visible');
     dom.exportYamlFilename.value = sanitizeFilename(state.name || 'story-map');
-    const data = serialize();
+    const data = exportData();
     dom.exportYamlText.value = exportToYaml(data);
     if (state.mapId) {
         try {

@@ -16,6 +16,19 @@ test('Export as YAML shows the map', async ({ page, createMap }) => {
   await expect(yaml).toHaveValue(/name: Card payment/);
 });
 
+test('Export inside a project says which project, straight after the map ID', async ({ page, createMap, request }) => {
+  const id = await createMap();
+  const project = (await (await request.post('/api/projects', { data: { mapIds: [id], name: 'Cafe' }, headers: { origin: 'http://localhost' } })).json()).project.id;
+  await page.goto(`/p/${project}/${id}`);
+  await expect(page.locator('.story-card').first()).toBeVisible();
+  await openSubmenu(page, 'exportSubmenuTrigger', 'exportYamlBtn');
+  await expect(page.locator('#exportYamlText')).toHaveValue(new RegExp(`^name: Coffee app\nid: ${id}\nproject: ${project}\n`));
+  // Opened by itself, the same map doesn't know about the project
+  await openMap(page, id);
+  await openSubmenu(page, 'exportSubmenuTrigger', 'exportYamlBtn');
+  await expect(page.locator('#exportYamlText')).toHaveValue(new RegExp(`^name: Coffee app\nid: ${id}\nsite: `));
+});
+
 test('Import from YAML replaces the map and saves it', async ({ page, createMap, pullMap }) => {
   const id = await createMap();
   await openMap(page, id);

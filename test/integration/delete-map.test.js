@@ -5,6 +5,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
+import WebSocket from 'ws';
 import { smallMap } from '../fixtures.js';
 import { ROOT, startServer, testEnv } from './server-process.js';
 
@@ -53,7 +54,16 @@ test('deletes exactly one map, leaving maps whose IDs start the same way untouch
   server = await startServer(dataDir);
   try {
     assert.equal((await call(server.base, 'GET', '/api/maps/abcd1234')).status, 404);
-    assert.equal((await call(server.base, 'GET', '/api/maps/abcd1234/meta')).status, 404);
+    assert.equal((await call(server.base, 'GET', '/api/maps/abcd1234/meta')).status, 410);
+    // An old copy pushed from the CLI can't bring it back at its old link
+    assert.equal((await call(server.base, 'PUT', '/api/maps/abcd1234', { ...smallMap(), name: 'Back again' })).status, 410);
+    assert.equal((await call(server.base, 'GET', '/api/maps/abcd1234')).status, 404);
+    // Nor can a tab still open on it, when it reconnects
+    const closed = await new Promise((resolve) => {
+      const ws = new WebSocket(`${server.wsBase}/abcd1234`, { origin: 'http://localhost:3000' });
+      ws.on('close', (code) => resolve(code));
+    });
+    assert.equal(closed, 4410);
     assert.deepEqual((await call(server.base, 'GET', '/api/backups/abcd1234')).json, []);
     assert.equal((await call(server.base, 'GET', '/api/lock/abcd1234')).json.isLocked, false);
     assert.deepEqual((await call(server.base, 'GET', `/api/projects/${project}`)).json.project.maps.map(m => m.id), ['abcd12345', 'abcd123']);

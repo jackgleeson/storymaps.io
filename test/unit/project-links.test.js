@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { parseMapId, moveItem, parseLocation, projectPath, MAX_PROJECT_MAPS } from '../../src/core/project-links.js';
+import { parseMapId, moveItem, parseLocation, projectPath, withProject, MAX_PROJECT_MAPS } from '../../src/core/project-links.js';
 import { MAX_PROJECT_MAPS as SERVER_MAX_PROJECT_MAPS } from '../../server/projects.js';
 
 test('reads the map ID from a pasted link or a bare ID', () => {
@@ -44,4 +44,14 @@ test('reads the map and project from a page address', () => {
 
 test('the app and the server share the same limit on maps in a project', () => {
   assert.equal(MAX_PROJECT_MAPS, SERVER_MAX_PROJECT_MAPS);
+});
+
+test('adds the project straight after the map ID, and only when there is one', () => {
+  const data = { app: 'storymap', v: 1, name: 'CLI', id: '1g2pt83x', site: 'storymaps.io', steps: [] };
+  assert.deepEqual(Object.keys(withProject(data, 'jas75z7l')), ['app', 'v', 'name', 'id', 'project', 'site', 'steps']);
+  assert.equal(withProject(data, 'jas75z7l').project, 'jas75z7l');
+  assert.equal(withProject(data, null), data);
+  // A stale key is replaced, and a map with no ID still gets one
+  assert.equal(withProject({ ...data, project: 'old00000' }, 'jas75z7l').project, 'jas75z7l');
+  assert.deepEqual(Object.keys(withProject({ name: 'New' }, 'jas75z7l')), ['name', 'project']);
 });

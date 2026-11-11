@@ -350,6 +350,51 @@ describe('HTTP API', () => {
     assert.equal((await api('POST', '/api/maps', { body: smallMap(), headers: newAddress() })).status, 201);
   });
 
+  test('a push to an unused ID makes a map, counted as a new map, and can ask to create only', async () => {
+    const headers = { 'x-forwarded-for': '203.0.113.60' };
+    for (let i = 0; i < 10; i++) {
+      assert.equal((await api('PUT', `/api/maps/newmap0${i}`, { body: smallMap(), headers })).status, 200, `map ${i + 1}`);
+    }
+    // The 11th new map in a minute is refused, as on POST /api/maps, while pushes to maps that exist go on
+    assert.equal((await api('PUT', '/api/maps/newmap10', { body: smallMap(), headers })).status, 429);
+    assert.equal((await api('PUT', '/api/maps/newmap00', { body: smallMap(), headers })).status, 200);
+    // If-None-Match: * never writes over a map that already has the ID
+    const taken = await api('PUT', '/api/maps/newmap00', { body: { ...smallMap(), name: 'Mine' }, headers: { ...newAddress(), 'if-none-match': '*' } });
+    assert.equal(taken.status, 412);
+    assert.notEqual((await api('GET', '/api/maps/newmap00')).json.name, 'Mine');
+    assert.equal((await api('PUT', '/api/maps/newmap99', { body: smallMap(), headers: { ...newAddress(), 'if-none-match': '*' } })).status, 200);
+  });
+
+  test('wrong passwords on a push count against the limit on wrong passwords, and right ones do not', async () => {
+    const id = await createMap();
+    const [secret, wrong] = ['e'.repeat(64), 'f'.repeat(64)];
+    const headers = { 'x-forwarded-for': '203.0.113.61' };
+    assert.equal((await api('POST', `/api/lock/${id}`, { body: { passwordHash: secret }, headers: newAddress() })).status, 200);
+    for (let i = 0; i < 12; i++) {
+      assert.equal((await api('PUT', `/api/maps/${id}`, { body: smallMap(), headers: { ...headers, 'x-lock-password': secret } })).status, 200, `right ${i + 1}`);
+    }
+    // No password at all is a plain 423, not a guess
+    assert.equal((await api('PUT', `/api/maps/${id}`, { body: smallMap(), headers })).status, 423);
+    for (let i = 0; i < 10; i++) {
+      assert.equal((await api('PUT', `/api/maps/${id}`, { body: smallMap(), headers: { ...headers, 'x-lock-password': wrong } })).status, 423, `wrong ${i + 1}`);
+    }
+    assert.equal((await api('PUT', `/api/maps/${id}`, { body: smallMap(), headers: { ...headers, 'x-lock-password': wrong } })).status, 429);
+  });
+
+  test('checking a map password only counts wrong ones', async () => {
+    const id = await createMap();
+    const [secret, wrong] = ['1'.repeat(64), '2'.repeat(64)];
+    const headers = { 'x-forwarded-for': '203.0.113.62' };
+    assert.equal((await api('POST', `/api/lock/${id}`, { body: { passwordHash: secret }, headers: newAddress() })).status, 200);
+    for (let i = 0; i < 15; i++) {
+      assert.equal((await api('POST', `/api/lock/${id}/unlock`, { body: { passwordHash: secret }, headers })).status, 200, `right ${i + 1}`);
+    }
+    for (let i = 0; i < 10; i++) {
+      assert.equal((await api('POST', `/api/lock/${id}/unlock`, { body: { passwordHash: wrong }, headers })).status, 403, `wrong ${i + 1}`);
+    }
+    assert.equal((await api('POST', `/api/lock/${id}/unlock`, { body: { passwordHash: secret }, headers })).status, 429);
+  });
+
   test('invalid JSON is a 400', async () => {
     const res = await api('POST', '/api/maps', { body: '{nope' });
     assert.equal(res.status, 400);

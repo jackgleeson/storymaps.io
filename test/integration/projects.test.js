@@ -114,9 +114,26 @@ test('refused changes say why', async () => {
   assert.deepEqual(ids((await project(id)).json.project), [a, b]);
 });
 
-test('changes are only taken from the site itself', async () => {
-  const a = await newMap('A');
-  assert.equal((await call('POST', '/api/projects', { mapIds: [a] }, { origin: null })).status, 403);
+test('the CLI can start a project, add maps, check the password and lock, but nothing else', async () => {
+  const [a, b] = [await newMap('A'), await newMap('B')];
+  const cli = { origin: null };
+  const started = await call('POST', '/api/projects', { mapIds: [a], name: 'From the CLI' }, cli);
+  assert.equal(started.status, 201);
+  const id = started.json.project.id;
+  assert.equal((await call('POST', `/api/projects/${id}/maps`, { mapId: b }, cli)).status, 200);
+  const hash = 'c'.repeat(64);
+  const locked = await call('POST', `/api/projects/${id}/lock`, { passwordHash: hash, lockMaps: true }, cli);
+  assert.equal(locked.status, 200);
+  assert.deepEqual(locked.json.project.maps.map(m => m.lock), ['project', 'project']);
+  assert.equal((await call('POST', `/api/projects/${id}/unlock`, { passwordHash: hash }, cli)).status, 200);
+  assert.equal((await call('POST', `/api/projects/${id}/unlock`, { passwordHash: 'd'.repeat(64) }, cli)).status, 403);
+  // Renaming, reordering, removing and deleting stay in the app
+  for (const [path, body] of [['name', { name: 'X' }], ['order', { mapIds: [b, a] }], ['remove', { mapId: a }], ['delete', {}], ['map-lock', { mapId: a, action: 'unlock', passwordHash: hash }]]) {
+    assert.equal((await call('POST', `/api/projects/${id}/${path}`, { ...body, lockPasswordHash: hash }, cli)).status, 403, path);
+  }
+  assert.equal((await call('POST', `/api/projects/${id}/lock/remove`, { passwordHash: hash, removeMaps: true }, cli)).status, 200);
+  assert.equal((await project(id)).json.project.locked, false);
+  // Another site is still refused everywhere
   assert.equal((await call('POST', '/api/projects', { mapIds: [a] }, { origin: 'https://evil.example' })).status, 403);
 });
 
@@ -145,15 +162,43 @@ test('format extensions work at the end of a project link, the same as on a map 
     const plain = await text(`/${a}.${ext}`);
     assert.equal(viaProject.status, 200, ext);
     assert.equal(viaProject.type, plain.type, ext);
-    // JSON and CSV carry the time they were read, so compare them without it
+    // JSON and CSV carry the time they were read, so compare them without it. Through the project
+    // link, YAML and JSON also say which project; CSV carries no IDs at all.
     const strip = (body) => ext === 'json'
-      ? JSON.stringify({ ...JSON.parse(body), exported: null })
-      : body.replace(/^# \d{4}-\d{2}-\d{2}T[\d:.]+Z,*$/m, '');
+      ? JSON.stringify({ ...JSON.parse(body), exported: null, project: undefined })
+      : body.replace(/^# \d{4}-\d{2}-\d{2}T[\d:.]+Z,*$/m, '').replace(`project: ${id}\n`, '');
     assert.equal(strip(viaProject.body), strip(plain.body), ext);
   }
-  assert.match((await text(`/p/${id}/${a}.yaml`)).body, /^name: Format map/m);
+  // The project key sits straight after the map ID, and a plain link never has one
+  assert.match((await text(`/p/${id}/${a}.yaml`)).body, new RegExp(`^name: Format map\nid: ${a}\nproject: ${id}\n`));
+  assert.deepEqual(Object.keys(JSON.parse((await text(`/p/${id}/${a}.json`)).body)).slice(4, 6), ['id', 'project']);
+  assert.doesNotMatch((await text(`/${a}.yaml`)).body, /^project:/m);
+  // A map that isn't in the project isn't served through its link
+  const outside = await newMap('Outside');
+  assert.equal((await text(`/p/${id}/${outside}.yaml`)).status, 404);
   assert.equal((await text(`/p/${id}/zzzzzzzz.yaml`)).status, 404);
   assert.equal((await text(`/p/${id}/${a}/extra.yaml`)).status, 404);
+});
+
+test('the CLI pulls a map through its project with the project key, and the same ETag', async () => {
+  const [a, outside] = [await newMap('Pulled'), await newMap('Outside')];
+  const { id } = await start(a);
+  const get = (path) => fetch(server.base + path);
+  const plain = await get(`/api/maps/${a}?format=yaml`);
+  const viaProject = await get(`/api/maps/${a}?format=yaml&project=${id}`);
+  assert.equal(viaProject.status, 200);
+  assert.match(await viaProject.text(), new RegExp(`^name: Pulled\nid: ${a}\nproject: ${id}\n`));
+  assert.doesNotMatch(await plain.text(), /^project:/m);
+  // Being in a project isn't an edit, so the conflict check sees the same map either way
+  assert.equal(viaProject.headers.get('etag'), plain.headers.get('etag'));
+  const json = await (await get(`/api/maps/${a}?project=${id}`)).json();
+  assert.equal(json.project, id);
+  assert.equal((await get(`/api/maps/${outside}?format=yaml&project=${id}`)).status, 404);
+  // A YAML file with the key pushes like any other, and the key isn't stored on the map
+  const yaml = await (await get(`/api/maps/${a}?format=yaml&project=${id}`)).text();
+  const pushed = await fetch(`${server.base}/api/maps/${a}`, { method: 'PUT', headers: { 'Content-Type': 'text/yaml', 'X-Forwarded-For': '10.9.9.9' }, body: yaml });
+  assert.equal(pushed.status, 200);
+  assert.doesNotMatch(await (await get(`/api/maps/${a}?format=yaml`)).text(), /^project:/m);
 });
 
 test('projects are kept when the server restarts', async () => {

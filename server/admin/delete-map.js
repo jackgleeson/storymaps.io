@@ -1,5 +1,6 @@
-// Delete one map by ID: its Yjs data, map index row, project tabs, backups and lock. One map per run, so a
-// slip can never delete more than that.
+// Delete one map by ID: its Yjs data, map index row, project tabs, backups and lock, keeping only the
+// ID so the map can't be brought back at its old link. One map per run, so a slip can never delete
+// more than that.
 //
 //   node server/admin/delete-map.js --dry-run <id>   show what would be deleted
 //   node server/admin/delete-map.js <id>             delete
@@ -46,6 +47,10 @@ try {
   if (what.length === 0) fail(`${id}: not found`);
 
   if (!dryRun) {
+    // Kept so the server never brings the map back at its old link: a push from an old copy, or a
+    // tab still open on it, is refused. Only the ID is kept, nothing from the map.
+    sqlite.exec('CREATE TABLE IF NOT EXISTS deleted_maps (id TEXT PRIMARY KEY, deleted_at TEXT)');
+    sqlite.prepare('INSERT OR IGNORE INTO deleted_maps (id, deleted_at) VALUES (?, ?)').run(id, new Date().toISOString());
     if (found.data) await persistence.clearDocument(id);
     if (found.index) sqlite.prepare('DELETE FROM maps WHERE id = ?').run(id);
     if (found.projects) projects.forget(id);

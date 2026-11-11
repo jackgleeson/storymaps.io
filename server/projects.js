@@ -204,6 +204,7 @@ export const createProjects = (sqlite, { generateId }) => {
   const passwordHash = (projectId) => q.project.get(projectId)?.password_hash ?? null;
 
   const memberIds = (projectId) => q.members.all(projectId).map(m => m.id);
+  const isMember = (projectId, mapId) => !!q.isMember.get(projectId, mapId);
 
   // A locked project only changes for someone sending its password
   const assertEditable = (projectId, password) => {
@@ -242,5 +243,5 @@ export const createProjects = (sqlite, { generateId }) => {
   // How many projects a map is in, for the report from the delete script
   const countForMap = (mapId) => q.projectsOfMap.all(mapId).length;
 
-  return { get, create, add, remove, destroy, reorder, rename, forget, countForMap, passwordHash, memberIds, assertEditable, lock, checkPassword, unlock };
+  return { get, create, add, remove, destroy, reorder, rename, forget, countForMap, passwordHash, memberIds, isMember, assertEditable, lock, checkPassword, unlock };
 };

@@ -23,6 +23,25 @@ export const parseLocation = (pathname) => {
 // The address of a map shown with the tabs of a project
 export const projectPath = (projectId, mapId) => `/p/${encodeURIComponent(projectId)}/${encodeURIComponent(mapId)}`;
 
+// A copy of exported map data with the project it was fetched through, placed straight after the
+// map ID so the two IDs read together. Only used when a project is in scope: a project link, or a
+// map open inside a project. A plain map link never says which projects a map is in.
+export const withProject = (data, projectId) => {
+    if (!projectId) return data;
+    const result = {};
+    let placed = false;
+    for (const [key, value] of Object.entries(data)) {
+        if (key === 'project') continue;
+        result[key] = value;
+        if (key === 'id') {
+            result.project = projectId;
+            placed = true;
+        }
+    }
+    if (!placed) result.project = projectId;
+    return result;
+};
+
 // The map ID in a pasted link ("https://storymaps.io/abc123", "storymaps.io/abc123#slice-x",
 // a project link ending in a map) or a bare ID, or null when the text doesn't name one map
 export const parseMapId = (text) => {

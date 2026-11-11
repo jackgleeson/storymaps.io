@@ -9,6 +9,8 @@ const captureHandlers = (register, extraCtx = {}) => {
   const ctx = {
     route: (method, path, handler) => { handlers[`${method} ${path}`] = handler; },
     isProxyRateLimited: () => false,
+    reservePasswordAttempt: () => false,
+    refundPasswordAttempt: () => {},
     readJson: async () => ({}),
     updateJson: async (path, fallback, fn) => fn(fallback),
     LOCK_FILE: '/dev/null',
@@ -30,7 +32,8 @@ const fakeRes = () => {
   };
 };
 
-const ratelimited = () => ({ isProxyRateLimited: (req) => req.__shouldLimit === true });
+// Checking a map password uses the limit on wrong passwords; the other routes use the proxy limit
+const ratelimited = () => ({ isProxyRateLimited: (req) => req.__shouldLimit === true, reservePasswordAttempt: (req) => req.__shouldLimit === true });
 
 describe('rate-limited routes return 429 when the proxy bucket is full', () => {
   test('POST /api/lock/:mapId/unlock', async () => {

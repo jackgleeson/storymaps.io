@@ -33,10 +33,12 @@ export const isOriginAllowed = (origin) => {
 };
 
 // CLI API routes skip origin checks (rate-limited instead). The CLI can make a backup,
-// but not import or delete one
+// but not import or delete one. For projects, it can start one, add maps, check the password,
+// and lock or remove the lock; renaming, reordering, removing maps and deleting stay in the app.
 export const isCliApi = (path, method) =>
   (/^\/api\/(maps(\/[a-z0-9]+)?|lock\/[a-z0-9]+(\/(?:unlock|remove))?)$/.test(path) && ['POST', 'PUT', 'DELETE'].includes(method))
-  || (/^\/api\/backups\/[a-z0-9]+$/.test(path) && method === 'POST');
+  || (/^\/api\/backups\/[a-z0-9]+$/.test(path) && method === 'POST')
+  || (/^\/api\/projects(\/[a-zA-Z0-9_-]+\/(maps|unlock|lock|lock\/remove))?$/.test(path) && method === 'POST');
 
 // Parse body for POST/PUT/DELETE (5 MB limit, YAML-aware)
 export const parseBody = (req) => {

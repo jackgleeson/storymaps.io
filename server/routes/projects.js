@@ -1,8 +1,8 @@
 import { ProjectError } from '../projects.js';
 import { isHash } from '../http-helpers.js';
 
-// Projects, reached by their own ID. Changes are only accepted from the site itself (the origin
-// check), not from the CLI.
+// Projects, reached by their own ID. Changes come from the site itself (the origin check), or
+// from the CLI for starting a project, adding maps, checking the password and locking.
 export default function register(ctx) {
   const { route, projects } = ctx;
 

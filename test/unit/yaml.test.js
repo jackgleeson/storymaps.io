@@ -198,3 +198,20 @@ describe('validateYaml', () => {
     assert.equal(result.warnings.length, 1);
   });
 });
+
+describe('project key', () => {
+  test('is written straight after id, and loading the YAML ignores it', () => {
+    const yaml = exportToYaml({ name: 'CLI', id: '1g2pt83x', project: 'jas75z7l', site: 'storymaps.io', steps: [{ name: 'Sign up' }], slices: [] });
+    assert.match(yaml, /^name: CLI\nid: 1g2pt83x\nproject: jas75z7l\nsite: storymaps.io\n/);
+    assert.equal(importFromYaml(yaml).project, undefined);
+  });
+
+  test('must be a project ID', () => {
+    assert.ok(validateYaml(jsyaml.load(`${MAP}project: jas75z7l\n`)).valid);
+    for (const bad of ['"has spaces"', '12345', '[a, b]', '"../x"']) {
+      const result = validateYaml(jsyaml.load(`${MAP}project: ${bad}\n`));
+      assert.ok(!result.valid, bad);
+      assert.match(result.errors.join(), /project/);
+    }
+  });
+});

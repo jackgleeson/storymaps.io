@@ -45,6 +45,16 @@ describe('isCliApi', () => {
     assert.ok(isCliApi('/api/backups/abc12345', 'POST'));
   });
 
+  test('matches the project routes the CLI uses, and no others', () => {
+    for (const path of ['/api/projects', '/api/projects/x7m2k9qa/maps', '/api/projects/x7m2k9qa/unlock', '/api/projects/x7m2k9qa/lock', '/api/projects/x7m2k9qa/lock/remove']) {
+      assert.ok(isCliApi(path, 'POST'), path);
+    }
+    for (const path of ['/api/projects/x7m2k9qa/name', '/api/projects/x7m2k9qa/order', '/api/projects/x7m2k9qa/remove', '/api/projects/x7m2k9qa/delete', '/api/projects/x7m2k9qa/map-lock']) {
+      assert.ok(!isCliApi(path, 'POST'), path);
+    }
+    assert.ok(!isCliApi('/api/projects', 'PUT'));
+  });
+
   test('does not match reads', () => {
     assert.ok(!isCliApi('/api/maps/abc12345', 'GET'));
   });

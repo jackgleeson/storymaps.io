@@ -1,5 +1,6 @@
 import { jsonToYamlObj, dumpYaml } from '../../src/transfer/yaml.js';
 import { exportToCsv } from '../../src/transfer/csv.js';
+import { withProject } from '../../src/core/project-links.js';
 import { sanitizeFilename } from '../http-helpers.js';
 
 export default function register(ctx) {
@@ -65,10 +66,21 @@ export default function register(ctx) {
       res.end(JSON.stringify({ error: 'Map not found' }));
       return;
     }
-    const { backups, ...clean } = data;
+    // The ETag covers the map alone, so adding a map to a project or taking it out in the app
+    // never looks like an edit to the conflict check
     const etag = ctx.contentEtag(data);
     const url = new URL(req.url, `http://${req.headers.host}`);
     const format = url.searchParams.get('format');
+    // ?project=<id>, from the CLI pulling through a project link: the map comes with a project key,
+    // and only if it's in that project
+    const projectId = url.searchParams.get('project');
+    if (projectId && !ctx.projects.isMember(projectId, mapId)) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'That map is not in this project' }));
+      return;
+    }
+    const { backups, ...rest } = data;
+    const clean = withProject(rest, projectId);
     if (format === 'yaml') {
       const yamlStr = dumpYaml(jsonToYamlObj(clean));
       res.writeHead(200, { 'Content-Type': 'text/yaml; charset=utf-8', 'Cache-Control': 'no-cache', 'ETag': etag });
@@ -87,6 +99,11 @@ export default function register(ctx) {
 
   // GET /api/maps/:id/meta - created/updated dates and total edits, for the Log panel
   route('GET', '/api/maps/:id/meta', async (req, res, { id: mapId }) => {
+    if (ctx.isDeletedMap(mapId)) {
+      res.writeHead(410, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'This map was deleted' }));
+      return;
+    }
     const row = ctx.stmtMeta.get(mapId);
     if (!row) {
       res.writeHead(404, { 'Content-Type': 'application/json' });
@@ -147,10 +164,16 @@ export default function register(ctx) {
       return;
     }
 
-    // Check lock
+    // Check lock. A wrong password counts against the limit on wrong passwords, as it does on the
+    // lock routes, so a push can't be used to guess faster; a right one isn't counted.
     const locks = await ctx.readJson(ctx.LOCK_FILE, {});
     if (locks[mapId]?.isLocked) {
       const lockPassword = req.headers['x-lock-password'];
+      if (lockPassword && lockPassword !== locks[mapId].passwordHash && ctx.reservePasswordAttempt(req)) {
+        res.writeHead(429, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Too many attempts. Try again in a minute.' }));
+        return;
+      }
       if (!lockPassword || lockPassword !== locks[mapId].passwordHash) {
         res.writeHead(423, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Map is locked' }));
@@ -158,18 +181,35 @@ export default function register(ctx) {
       }
     }
 
+    const current = await ctx.loadAndSerialize(mapId, req.headers.host);
+
+    // A push to an ID with no map creates one. If-None-Match: * asks for that only, so a map made
+    // offline with an ID that turns out to be taken never writes over the map that has it.
+    if (current && req.headers['if-none-match'] === '*') {
+      res.writeHead(412, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'A map already has this ID' }));
+      return;
+    }
+    if (!current) {
+      if (ctx.isDeletedMap(mapId)) {
+        res.writeHead(410, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'This map was deleted' }));
+        return;
+      }
+      // Creating a map this way counts as a new map, the same as POST /api/maps
+      if (ctx.isCreateRateLimited(req)) {
+        res.writeHead(429, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Too many new maps from your address. Try again later.' }));
+        return;
+      }
+    }
+
     // ETag conflict detection
     const ifMatch = req.headers['if-match'];
-    if (ifMatch) {
-      const current = await ctx.loadAndSerialize(mapId, req.headers.host);
-      if (current) {
-        const currentEtag = ctx.contentEtag(current);
-        if (ifMatch !== currentEtag) {
-          res.writeHead(409, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'Conflict: map has been modified since last pull. Pull again to get the latest version.' }));
-          return;
-        }
-      }
+    if (ifMatch && current && ifMatch !== ctx.contentEtag(current)) {
+      res.writeHead(409, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Conflict: map has been modified since last pull. Pull again to get the latest version.' }));
+      return;
     }
 
     try {

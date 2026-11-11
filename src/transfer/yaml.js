@@ -88,6 +88,9 @@ export function jsonToYamlObj(data) {
     const result = {};
     result.name = data.name || '';
     if (data.id) result.id = data.id;
+    // The project a map was fetched through, if any: a description of the map, like id and site,
+    // so loading the YAML back into a map ignores it
+    if (data.project) result.project = data.project;
     if (data.site) result.site = data.site;
     if (data.locked != null) result.locked = data.locked;
 
@@ -233,6 +236,11 @@ export function validateYaml(obj) {
     if (!Array.isArray(obj.steps) || obj.steps.length === 0) {
         errors.push('Missing or empty "steps" list');
         return { valid: false, errors, warnings };
+    }
+
+    // Same characters the server allows in a project ID
+    if (obj.project != null && !(typeof obj.project === 'string' && /^[a-zA-Z0-9_-]{1,64}$/.test(obj.project))) {
+        errors.push('"project" must be a project ID, such as the part after /p/ in a project link');
     }
 
     const stepNames = [];

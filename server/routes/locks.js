@@ -49,8 +49,10 @@ export default function register(ctx) {
     res.end(JSON.stringify({ isLocked: true }));
   });
 
+  // Checks a map's password. Every check uses up an attempt, and a right one is given back, so only
+  // wrong passwords count: the CLI can check the passwords of many maps before pushing a project.
   route('POST', '/api/lock/:mapId/unlock', async (req, res, { mapId }, body) => {
-    if (ctx.isProxyRateLimited(req)) {
+    if (ctx.reservePasswordAttempt(req)) {
       res.writeHead(429, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Too many attempts' }));
       return;
@@ -58,11 +60,13 @@ export default function register(ctx) {
     const locks = await ctx.readJson(ctx.LOCK_FILE, {});
     const lock = locks[mapId];
     if (!lock?.isLocked) {
+      ctx.refundPasswordAttempt(req);
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: true }));
       return;
     }
     const ok = body?.passwordHash === lock.passwordHash;
+    if (ok) ctx.refundPasswordAttempt(req);
     res.writeHead(ok ? 200 : 403, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok }));
   });
