@@ -249,7 +249,7 @@ const onDismissContextMenuKey = (e) => {
     if (e.key === 'Escape') dismissContextMenu();
 };
 
-const dismissContextMenu = () => {
+export const dismissContextMenu = () => {
     if (!contextMenuEl) return;
     contextMenuEl.remove();
     contextMenuEl = null;

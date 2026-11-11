@@ -8,6 +8,7 @@ import { generateId, el, CARD_COLORS } from '/src/core/constants.js';
 import { state, init as stateInit, initState, clearMapContent, hasContent, pushUndo, undo, redo, updateUndoRedoButtons, clearUndoHistory, createStory, createSlice, selection, clearSelection } from '/src/core/state.js';
 import { serialize, deserialize } from '/src/core/serialization.js';
 import * as navigation from '/src/ui/navigation.js';
+import * as menuTap from '/src/ui/menu-tap.js';
 import * as presence from '/src/ui/presence.js';
 import * as lock from '/src/core/lock.js';
 import * as yjs from '/src/core/yjs.js';
@@ -1430,6 +1431,14 @@ const initEventListeners = () => {
         closeAllOptionsMenus();
         dom.shareMenu.classList.remove('visible');
         closeFilterPanel();
+    });
+
+    menuTap.init(() => {
+        closeMainMenu();
+        closeAllOptionsMenus();
+        dom.shareMenu.classList.remove('visible');
+        navigation.dismissContextMenu();
+        document.querySelectorAll('.selection-toolbar-split-menu.visible').forEach(m => m.classList.remove('visible'));
     });
 
     document.addEventListener('keydown', (e) => {
