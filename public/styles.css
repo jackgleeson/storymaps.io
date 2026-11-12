@@ -1606,6 +1606,13 @@ html.dark-mode .map-stats-slice-count.map-stats-closed {
     transform-origin: top left;
 }
 
+/* Safari redraws the whole zoomed map for every hover and drag move unless it has its own layer,
+   which made the map sluggish when zoomed out. Other browsers don't need it. */
+html.safari .map-top-inner,
+html.safari .map-body {
+    will-change: transform;
+}
+
 .map-top-inner {
     position: relative;
     width: max-content;

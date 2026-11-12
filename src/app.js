@@ -239,6 +239,8 @@ const { showWelcomeScreen, hideWelcomeScreen, showLoading, hideLoading, startNew
 // =============================================================================
 
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+// Lets the styles give Safari what it needs, such as its own layer for the zoomed map
+if (isSafari) document.documentElement.classList.add('safari');
 
 const { applySearchFilter, hasActiveFilters, closeSearch, openSearch, closeFilterPanel, itemMatchesFilters } = search;
 
