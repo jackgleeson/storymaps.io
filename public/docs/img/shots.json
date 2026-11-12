@@ -475,5 +475,15 @@
     "width": 661,
     "height": 65,
     "callouts": []
+  },
+  "reduce-duplication-with-partials/add-after": {
+    "width": 567,
+    "height": 337,
+    "callouts": []
+  },
+  "reduce-duplication-with-partials/replace": {
+    "width": 981,
+    "height": 528,
+    "callouts": []
   }
 }
