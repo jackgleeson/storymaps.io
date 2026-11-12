@@ -183,7 +183,7 @@ Projects are kept in SQLite next to the map index (`projects` and `project_maps`
 ### Client
 The client has no build step - ES modules are loaded directly from `src/`. Third-party libraries (Yjs, CodeMirror, html-to-image, js-yaml, html2canvas) are vendored as pre-built bundles in `public/vendor/`.
 
-Page views on storymaps.io are counted with [Umami Cloud](https://umami.is), open-source web analytics that uses no cookies. It's loaded by `src/features/analytics.js`, only on that hostname. It receives page addresses, including map links, and the names of a few actions such as creating a map or exporting, but no map content or display names.
+Page views on storymaps.io are counted with [Umami Cloud](https://umami.is), open-source web analytics that uses no cookies. It's loaded by `src/features/analytics.js`, only on that hostname, for the app and for the docs and site pages. It receives page addresses, including map links, and the names of a few actions such as creating a map or exporting, but no map content or display names.
 
 ## Self-Hosting
 
@@ -334,6 +334,7 @@ npm run test:unit         # unit tests only: a few seconds, no server
 npm run test:integration  # starts the server on a spare port with a temporary data folder
 npm run test:e2e          # browser tests in Chrome and phone-sized WebKit
 npm run test:coverage     # unit and integration tests with a coverage report
+npm run test:docs         # rebuild the docs, then run only the docs tests
 ```
 
 - **Unit tests** (`test/unit`) cover saving and loading maps, projects, JSON, YAML and CSV import and export, real-time sync including two people editing at once, editing and partial maps, search, locks, backups, the activity log, and the Jira, Asana, Linear and Phabricator imports and exports against canned API responses.
@@ -381,6 +382,7 @@ If you find this tool useful, consider [buying me a coffee](https://buymeacoffee
 - Collaborative notepad powered by [CodeMirror 6](https://codemirror.net/)
 
 ## Documentation
+- [Docs](https://storymaps.io/docs) - guides for every part of the app, and short courses
 - [Contributing](CONTRIBUTING.md) - development setup, code style, and contribution guidelines
 
 ## License

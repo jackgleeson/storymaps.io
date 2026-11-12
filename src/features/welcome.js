@@ -1,6 +1,7 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Welcome screen, counter, tutorial toast, new/copy/sample map creation
 
+import { isLesson } from '/src/features/lesson.js';
 import { dom } from '/src/ui/dom.js';
 import { state, initState, hasContent } from '/src/core/state.js';
 import { deserialize } from '/src/core/serialization.js';
@@ -24,6 +25,10 @@ export const init = (deps) => { _deps = deps; };
 // Counter state
 let counterLoaded = false;
 let legendAutoOpened = false;
+// A practice story map opened from a docs lesson (?lesson) leaves the Overview closed, so it doesn't
+// cover the story map beside the lesson. Read before the app swaps /new or /sample/<name> for the
+// link of the map.
+const _lesson = new URLSearchParams(location.search).has('lesson');
 let activeMappersInterval = null;
 
 const setCounterValue = (count) => {
@@ -115,7 +120,7 @@ export const hideWelcomeScreen = () => {
     dom.redoBtn.style.display = '';
     dom.buildAiBtn.style.display = '';
     unsubscribeFromCounter();
-    if (!legendAutoOpened && window.matchMedia('(pointer: fine)').matches) {
+    if (!legendAutoOpened && !_lesson && window.matchMedia('(pointer: fine)').matches) {
         _deps.switchPanelTab('legend');
         legendAutoOpened = true;
     }
@@ -130,7 +135,8 @@ export const hideLoading = () => {
 };
 
 export const showTutorialToast = () => {
-    if (!window.matchMedia('(pointer: fine)').matches) return;
+    // Beside a lesson, the bar above the practice story map carries these tips
+    if (!window.matchMedia('(pointer: fine)').matches || isLesson()) return;
     const isMac = navigator.platform.includes('Mac') || navigator.userAgent.includes('Mac');
     const shortcutEl = dom.tutorialToast.querySelector('.reset-shortcut-key');
     if (isMac && shortcutEl) shortcutEl.textContent = 'Shift + 0';

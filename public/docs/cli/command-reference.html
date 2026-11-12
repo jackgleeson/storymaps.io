@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Story map CLI command reference - Storymaps CLI docs</title>
+    <meta name="description" content="Every Storymaps CLI command and option, from init, pull, diff and push to status, log, locks, backups, validate, convert and the project commands.">
+    <link rel="canonical" href="https://storymaps.io/docs/cli/command-reference">
+    <meta property="og:title" content="Story map CLI command reference - Storymaps CLI docs">
+    <meta property="og:description" content="Every Storymaps CLI command and option, from init, pull, diff and push to status, log, locks, backups, validate, convert and the project commands.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://storymaps.io/docs/cli/command-reference">
+    <meta property="og:image" content="https://storymaps.io/resources/screenshot.png">
+    <meta property="og:image:width" content="1532">
+    <meta property="og:image:height" content="886">
+    <meta property="og:image:alt" content="A user story map in Storymaps.io, with cards organised by activities and releases">
+    <meta property="og:site_name" content="Storymaps.io">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Story map CLI command reference - Storymaps CLI docs">
+    <meta name="twitter:description" content="Every Storymaps CLI command and option, from init, pull, diff and push to status, log, locks, backups, validate, convert and the project commands.">
+    <meta name="twitter:image" content="https://storymaps.io/resources/screenshot.png">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://storymaps.io/docs"},{"@type":"ListItem","position":2,"name":"CLI","item":"https://storymaps.io/docs/cli"},{"@type":"ListItem","position":3,"name":"Command reference","item":"https://storymaps.io/docs/cli/command-reference"}]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Story map CLI command reference","description":"Every Storymaps CLI command and option, from init, pull, diff and push to status, log, locks, backups, validate, convert and the project commands.","url":"https://storymaps.io/docs/cli/command-reference","inLanguage":"en","dateModified":"2026-11-12","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="/fonts.css">
+    <script>
+    (function() {
+        try {
+            var s = localStorage.getItem('darkMode');
+            var p = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (s !== null ? s === 'true' : p) document.documentElement.classList.add('dark-mode');
+        } catch(e) {}
+    })();
+    </script>
+    <link rel="stylesheet" href="/docs/docs.css?v=2826a66e">
+    <script src="/docs/docs.js?v=5a782a13" defer></script>
+</head>
+<body class="docs-guide docs-cli">
+<div class="site-header-wrap">
+<header class="site-header">
+    <a href="/" class="logo"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1" fill="#fef08a" stroke="#d4aa00" stroke-width="1"/><rect x="14" y="3" width="7" height="7" rx="1" fill="#fecdd3" stroke="#e88a9a" stroke-width="1"/><rect x="3" y="14" width="7" height="7" rx="1" fill="#a5f3fc" stroke="#67c5d6" stroke-width="1"/><rect x="14" y="14" width="7" height="7" rx="1" fill="#14b8a6" stroke="#0d9488" stroke-width="1"/></svg><span class="logo-text">Storymaps.io</span></a>
+    <span class="header-links-divider" aria-hidden="true"></span>
+    <nav class="header-links" aria-label="Resources">
+        <a href="/docs" class="header-link" title="Docs" aria-label="Docs" aria-current="page"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>Docs</span></a>
+    </nav>
+<div class="docs-search header-search" role="search">
+        <input type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" data-search>
+        <kbd aria-hidden="true">/</kbd>
+    </div>
+    <button type="button" class="docs-icon-btn docs-search-btn" data-search-open aria-label="Search the docs" aria-expanded="false"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+    <button type="button" class="docs-icon-btn" data-theme-toggle aria-label="Switch to dark mode" title="Switch to dark mode"></button>
+    <button type="button" class="docs-icon-btn docs-menu-btn" data-nav-open aria-label="Open the docs menu" aria-expanded="false">☰</button>
+</header>
+</div>
+<div class="docs-scroll" id="docsScroll">
+<div class="docs-layout">
+<aside class="docs-side" id="docsNav" aria-label="CLI guides">
+    <div class="drawer-head">
+        <a class="docs-brand" href="/docs/cli"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1" fill="#fef08a" stroke="#d4aa00" stroke-width="1"/><rect x="14" y="3" width="7" height="7" rx="1" fill="#fecdd3" stroke="#e88a9a" stroke-width="1"/><rect x="3" y="14" width="7" height="7" rx="1" fill="#a5f3fc" stroke="#67c5d6" stroke-width="1"/><rect x="14" y="14" width="7" height="7" rx="1" fill="#14b8a6" stroke="#0d9488" stroke-width="1"/></svg><span>Storymaps.io</span> <small>CLI docs</small></a>
+        <button type="button" class="docs-icon-btn" data-nav-close aria-label="Close the docs menu">✕</button>
+    </div>
+    <a class="drawer-back" href="/">‹ Back to the app</a>
+    <div class="docs-search drawer-search" role="search">
+        <input type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" data-search>
+    </div>
+    <nav class="docs-switch" aria-label="Which docs"><a href="/docs"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>Web app</a><a href="/docs/cli" aria-current="true"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>CLI</a></nav>
+    <details class="grp">
+        <summary>Get started</summary>
+        <ul>
+            <li><a href="/docs/cli/install-the-storymaps-cli">Install the Storymaps CLI</a></li>
+            <li><a href="/docs/cli/create-a-story-map-from-the-terminal">Create a story map from the terminal</a></li>
+            <li><a href="/docs/cli/open-a-story-map-in-the-browser">Open a story map in the browser</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Sync a story map</summary>
+        <ul>
+            <li><a href="/docs/cli/pull-a-story-map">Pull a story map</a></li>
+            <li><a href="/docs/cli/edit-the-story-map-yaml">Edit the story map YAML</a></li>
+            <li><a href="/docs/cli/see-what-changed-in-a-story-map">See what changed in a story map</a></li>
+            <li><a href="/docs/cli/push-changes-to-a-story-map">Push changes to a story map</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Work with a project</summary>
+        <ul>
+            <li><a href="/docs/cli/pull-a-project">Pull a project</a></li>
+            <li><a href="/docs/cli/push-changes-to-a-project">Push changes to a project</a></li>
+            <li><a href="/docs/cli/start-a-project-from-the-terminal">Start a project from the terminal</a></li>
+            <li><a href="/docs/cli/lock-and-unlock-a-project">Lock and unlock a project</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Track progress</summary>
+        <ul>
+            <li><a href="/docs/cli/check-story-map-progress">Check story map progress</a></li>
+            <li><a href="/docs/cli/read-the-activity-log">Read the activity log</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Protect a story map</summary>
+        <ul>
+            <li><a href="/docs/cli/lock-and-unlock-a-story-map">Lock and unlock a story map</a></li>
+            <li><a href="/docs/cli/back-up-and-restore-from-the-terminal">Back up and restore from the terminal</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Work with files</summary>
+        <ul>
+            <li><a href="/docs/cli/validate-and-convert-story-map-files">Validate and convert story map files</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Build with AI</summary>
+        <ul>
+            <li><a href="/docs/cli/hand-a-story-map-to-an-ai-coding-agent">Hand a story map to an AI coding agent</a></li>
+            <li><a href="/docs/cli/update-a-story-map-with-an-ai-agent">Update a story map with an AI agent</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Self-host</summary>
+        <ul>
+            <li><a href="/docs/cli/use-the-cli-with-your-own-server">Use the CLI with your own server</a></li>
+        </ul>
+    </details>
+    <details class="grp" open>
+        <summary>Reference</summary>
+        <ul>
+            <li><a href="/docs/cli/use-the-cli-in-scripts-and-ci">Use the CLI in scripts and CI</a></li>
+            <li><a href="/docs/cli/command-reference" class="on" aria-current="page">Command reference</a></li>
+        </ul>
+    </details>
+</aside>
+<div class="docs-shade" data-nav-close></div>
+    <main class="docs-main">
+        <article class="docs-article reference">
+            <div class="crumbs-row"><nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/docs">Docs</a></li><li><a href="/docs/cli">CLI</a></li><li><a href="/docs/cli#reference">Reference</a></li></ol></nav></div>
+            <h1>Command reference</h1>
+            <p class="byline"><span>9 min read</span></p>
+            <details class="toc-mobile"><summary>On this page</summary><nav><a href="#commands">Commands</a>
+            <a href="#one-story-map-or-a-whole-project">One story map or a whole project</a>
+            <a href="#questions-and-passwords">Questions and passwords</a>
+            <a href="#storymaps-init">storymaps init</a>
+            <a href="#storymaps-open">storymaps open</a>
+            <a href="#storymaps-pull">storymaps pull</a>
+            <a href="#storymaps-push">storymaps push</a>
+            <a href="#storymaps-diff">storymaps diff</a>
+            <a href="#storymaps-status">storymaps status</a>
+            <a href="#storymaps-log">storymaps log</a>
+            <a href="#storymaps-lock">storymaps lock</a>
+            <a href="#storymaps-unlock">storymaps unlock</a>
+            <a href="#storymaps-backup">storymaps backup</a>
+            <a href="#storymaps-backups">storymaps backups</a>
+            <a href="#storymaps-restore">storymaps restore</a>
+            <a href="#storymaps-validate">storymaps validate</a>
+            <a href="#storymaps-convert">storymaps convert</a>
+            <a href="#storymaps-project-init">storymaps project init</a>
+            <a href="#storymaps-project-add">storymaps project add</a>
+            <a href="#storymaps-project-lock">storymaps project lock</a>
+            <a href="#storymaps-project-unlock">storymaps project unlock</a></nav></details>
+<p>Every command and option. A <code>target</code> is a user story map: an ID, a link such as <code>storymaps.io/abc12345</code>, or a whole address. A link to a story map in a project works too. Left out, the command uses the story map in <code>storymap.yml</code>, or every story map in the project folder.</p>
+<p><code>storymaps --help</code> lists the commands, <code>storymaps &lt;command&gt; --help</code> shows one, and <code>storymaps --version</code> prints the version.</p>
+<h2 id="commands">Commands</h2>
+<div class="table-wrap"><table>
+<thead><tr><th scope="col">Command</th><th scope="col">What it does</th></tr></thead>
+<tbody><tr><td><a href="#storymaps-init"><code>storymaps init</code></a></td><td>Make a new story map and its <code>storymap.yml</code></td></tr>
+<tr><td><a href="#storymaps-open"><code>storymaps open</code></a></td><td>Open the story map in the browser</td></tr>
+<tr><td><a href="#storymaps-pull"><code>storymaps pull</code></a></td><td>Download a story map, or a whole project</td></tr>
+<tr><td><a href="#storymaps-push"><code>storymaps push</code></a></td><td>Send your changes to the story map</td></tr>
+<tr><td><a href="#storymaps-diff"><code>storymaps diff</code></a></td><td>See what changed before you push</td></tr>
+<tr><td><a href="#storymaps-status"><code>storymaps status</code></a></td><td>Show progress by slice and by status</td></tr>
+<tr><td><a href="#storymaps-log"><code>storymaps log</code></a></td><td>Show the activity log</td></tr>
+<tr><td><a href="#storymaps-lock"><code>storymaps lock</code></a></td><td>Lock a story map with a password</td></tr>
+<tr><td><a href="#storymaps-unlock"><code>storymaps unlock</code></a></td><td>Save the password on this computer, or take the lock off</td></tr>
+<tr><td><a href="#storymaps-backup"><code>storymaps backup</code></a></td><td>Back up a story map, or every story map in a project</td></tr>
+<tr><td><a href="#storymaps-backups"><code>storymaps backups</code></a></td><td>List the backups of a story map</td></tr>
+<tr><td><a href="#storymaps-restore"><code>storymaps restore</code></a></td><td>Put a story map back to a backup</td></tr>
+<tr><td><a href="#storymaps-validate"><code>storymaps validate</code></a></td><td>Check a story map file without the server</td></tr>
+<tr><td><a href="#storymaps-convert"><code>storymaps convert</code></a></td><td>Turn YAML into JSON, or JSON into YAML</td></tr>
+<tr><td><a href="#storymaps-project-init"><code>storymaps project init</code></a></td><td>Start a project</td></tr>
+<tr><td><a href="#storymaps-project-add"><code>storymaps project add</code></a></td><td>Add a story map to the project</td></tr>
+<tr><td><a href="#storymaps-project-lock"><code>storymaps project lock</code></a></td><td>Lock the project, or the project and its story maps</td></tr>
+<tr><td><a href="#storymaps-project-unlock"><code>storymaps project unlock</code></a></td><td>Unlock the project on this computer, or take its lock off</td></tr></tbody>
+</table></div>
+<h2 id="one-story-map-or-a-whole-project">One story map or a whole project</h2>
+<p><code>storymaps &lt;command&gt;</code> works on story maps: one, named with <code>-f</code> or a link, or every story map in the project folder. <code>storymaps project &lt;command&gt;</code> changes the project itself.</p>
+<p>With no <code>-f</code> or link, a project in reach wins: the folder named with <code>--dir</code>, a <code>storymaps</code> folder below you, or project files in the folder you're in. With no project in reach, <code>storymap.yml</code> means one story map. See <a href="/docs/cli/pull-a-project" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Pull</span> a project</a>.</p>
+<h2 id="questions-and-passwords">Questions and passwords</h2>
+<p>Questions are only asked in a terminal. <code>-y, --yes</code> takes the usual answer, and <code>--force</code> answers the questions that guard against overwriting or removing something. Passwords are typed, remembered after an unlock, or taken from <code>STORYMAPS_PASSWORD</code>. See <a href="/docs/cli/use-the-cli-in-scripts-and-ci" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Use</span> the CLI in scripts and CI</a>.</p>
+<h2 id="storymaps-init"><code>storymaps init</code></h2>
+<p>Makes a new <code>storymap.yml</code> in the folder you're in, and the story map on the server. Never joins a project. See <a href="/docs/cli/create-a-story-map-from-the-terminal" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Create</span> a story map from the terminal</a>.</p>
+<p class="ref-label">Syntax</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd>storymaps init [-s &lt;site&gt;]</span></pre>
+</figure>
+<p class="ref-label">Options</p>
+<div class="table-wrap"><table>
+<thead><tr><th scope="col">Option</th><th scope="col">What it does</th></tr></thead>
+<tbody><tr><td><code>-s, --site &lt;site&gt;</code></td><td>The server to make it on, such as <code>storymaps.yourcompany.com</code>, <code>localhost:3000</code> or <code>http://192.168.0.20:8080</code>. A server on your computer names its port. storymaps.io if left out.</td></tr></tbody>
+</table></div>
+<p class="ref-label">Examples</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the commands"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-out term-comment"># Make a new story map and its storymap.yml</span><span class="term-cmd" data-cmd>storymaps init</span><span class="term-out"> </span><span class="term-out term-comment"># Make it on your own server</span><span class="term-cmd" data-cmd>storymaps init -s storymaps.yourcompany.com</span></pre>
+</figure>
+<h2 id="storymaps-open"><code>storymaps open</code></h2>
+<p>Opens the story map in the browser, and prints its link. In a project folder, opens the project at its first story map. See <a href="/docs/cli/open-a-story-map-in-the-browser" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Open</span> a story map in the browser</a>.</p>
+<p class="ref-label">Syntax</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd>storymaps open [target] [-f &lt;path&gt;] [--dir &lt;folder&gt;]</span></pre>
+</figure>
+<p class="ref-label">Options</p>
+<div class="table-wrap"><table>
+<thead><tr><th scope="col">Option</th><th scope="col">What it does</th></tr></thead>
+<tbody><tr><td><code>-f, --file &lt;path&gt;</code></td><td>The file to read the story map from.</td></tr>
+<tr><td><code>--dir &lt;folder&gt;</code></td><td>The project folder. <code>storymaps</code> if left out.</td></tr></tbody>
+</table></div>
+<p class="ref-label">Examples</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the commands"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-out term-comment"># Open the story map in storymap.yml</span><span class="term-cmd" data-cmd>storymaps open</span><span class="term-out"> </span><span class="term-out term-comment"># Open one story map in a project folder</span><span class="term-cmd" data-cmd>storymaps open -f storymaps/abc12345.yml</span></pre>
+</figure>
+<h2 id="storymaps-pull"><code>storymaps pull</code></h2>
+<p>Downloads the story map as YAML, or every story map in a project. Shows what changed and asks before it overwrites a file. See <a href="/docs/cli/pull-a-story-map" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Pull</span> a story map</a> and <a href="/docs/cli/pull-a-project" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Pull</span> a project</a>.</p>
+<p class="ref-label">Syntax</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd>storymaps pull [target] [-f &lt;path&gt;] [--dir &lt;folder&gt;] [--force] [--yes]</span></pre>
+</figure>
+<p class="ref-label">Options</p>
+<div class="table-wrap"><table>
+<thead><tr><th scope="col">Option</th><th scope="col">What it does</th></tr></thead>
+<tbody><tr><td><code>target</code></td><td>A story map, or a project link such as <code>storymaps.io/p/k8f2m9xq</code>.</td></tr>
+<tr><td><code>-f, --file &lt;path&gt;</code></td><td>The file to write, for one story map. <code>storymap.yml</code> if left out.</td></tr>
+<tr><td><code>--dir &lt;folder&gt;</code></td><td>The project folder. <code>storymaps</code> if left out.</td></tr>
+<tr><td><code>--force</code></td><td>Overwrite files without asking.</td></tr>
+<tr><td><code>-y, --yes</code></td><td>Take the usual answers, such as just the story map for a link to one in a project.</td></tr></tbody>
+</table></div>
+<p class="ref-label">Examples</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the commands"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-out term-comment"># Pull a story map into storymap.yml</span><span class="term-cmd" data-cmd>storymaps pull storymaps.io/abc12345</span><span class="term-out"> </span><span class="term-out term-comment"># Pull every story map in a project into the storymaps folder</span><span class="term-cmd" data-cmd>storymaps pull storymaps.io/p/k8f2m9xq</span><span class="term-out"> </span><span class="term-out term-comment"># Pull again, overwriting the file without asking</span><span class="term-cmd" data-cmd>storymaps pull --force</span></pre>
+</figure>
+<h2 id="storymaps-push"><code>storymaps push</code></h2>
+<p>Sends the file to the story map, or every changed story map in a project. Stops if a story map changed since the last pull, and in a project checks everything before sending anything. See <a href="/docs/cli/push-changes-to-a-story-map" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Push</span> changes to a story map</a> and <a href="/docs/cli/push-changes-to-a-project" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Push</span> changes to a project</a>.</p>
+<p class="ref-label">Syntax</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd>storymaps push [target] [-f &lt;path&gt;] [--dir &lt;folder&gt;] [--force]</span></pre>
+</figure>
+<p class="ref-label">Options</p>
+<div class="table-wrap"><table>
+<thead><tr><th scope="col">Option</th><th scope="col">What it does</th></tr></thead>
+<tbody><tr><td><code>-f, --file &lt;path&gt;</code></td><td>The file to push, YAML or JSON, for one story map.</td></tr>
+<tr><td><code>--dir &lt;folder&gt;</code></td><td>The project folder. <code>storymaps</code> if left out.</td></tr>
+<tr><td><code>--force</code></td><td>Skip the conflict check, and replace what changed on the server.</td></tr></tbody>
+</table></div>
+<p class="ref-label">Examples</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the commands"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-out term-comment"># Push storymap.yml, or every changed story map in a project folder</span><span class="term-cmd" data-cmd>storymaps push</span><span class="term-out"> </span><span class="term-out term-comment"># Push another file</span><span class="term-cmd" data-cmd>storymaps push -f plans/checkout.yml</span><span class="term-out"> </span><span class="term-out term-comment"># Replace what changed on the server since the last pull</span><span class="term-cmd" data-cmd>storymaps push --force</span></pre>
+</figure>
+<h2 id="storymaps-diff"><code>storymaps diff</code></h2>
+<p>Compares a file with its story map, or with another file, or every story map in a project with the server. See <a href="/docs/cli/see-what-changed-in-a-story-map" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>See</span> what changed in a story map</a>.</p>
+<p class="ref-label">Syntax</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd>storymaps diff [source] [target] [--full] [--dir &lt;folder&gt;]</span></pre>
+</figure>
+<p class="ref-label">Options</p>
+<div class="table-wrap"><table>
+<thead><tr><th scope="col">Option</th><th scope="col">What it does</th></tr></thead>
+<tbody><tr><td><code>source</code></td><td>The file to compare, or a link or ID to compare your file of that story map. <code>storymap.yml</code> if left out, or the whole project in a project folder.</td></tr>
+<tr><td><code>target</code></td><td>A second file. Left out, it compares with the story map on the server.</td></tr>
+<tr><td><code>--full</code></td><td>Show the changed lines, not only a summary.</td></tr>
+<tr><td><code>--dir &lt;folder&gt;</code></td><td>The project folder. <code>storymaps</code> if left out.</td></tr></tbody>
+</table></div>
+<p class="ref-label">Examples</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the commands"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-out term-comment"># Summarise what you changed, before a push</span><span class="term-cmd" data-cmd>storymaps diff</span><span class="term-out"> </span><span class="term-out term-comment"># Show the changed lines</span><span class="term-cmd" data-cmd>storymaps diff --full</span><span class="term-out"> </span><span class="term-out term-comment"># Compare two files</span><span class="term-cmd" data-cmd>storymaps diff before.yml after.yml</span></pre>
+</figure>
+<h2 id="storymaps-status"><code>storymaps status</code></h2>
+<p>Shows progress overall, by slice and by status, and the cards that are blocked. In a project, a line for each story map with its lock, and a total. See <a href="/docs/cli/check-story-map-progress" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Check</span> story map progress</a>.</p>
+<p class="ref-label">Syntax</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd>storymaps status [target] [-f &lt;path&gt;] [--dir &lt;folder&gt;]</span></pre>
+</figure>
+<p class="ref-label">Options</p>
+<div class="table-wrap"><table>
+<thead><tr><th scope="col">Option</th><th scope="col">What it does</th></tr></thead>
+<tbody><tr><td><code>target</code></td><td>A story map or a project on the server, or a file.</td></tr>
+<tr><td><code>-f, --file &lt;path&gt;</code></td><td>The file to read, for one story map.</td></tr>
+<tr><td><code>--dir &lt;folder&gt;</code></td><td>The project folder. <code>storymaps</code> if left out.</td></tr></tbody>
+</table></div>
+<p class="ref-label">Examples</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the commands"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-out term-comment"># Progress of the story map in storymap.yml, or of the whole project</span><span class="term-cmd" data-cmd>storymaps status</span><span class="term-out"> </span><span class="term-out term-comment"># Progress of any story map, without pulling it</span><span class="term-cmd" data-cmd>storymaps status storymaps.io/abc12345</span></pre>
+</figure>
+<h2 id="storymaps-log"><code>storymaps log</code></h2>
+<p>Shows the activity log of one story map, newest first. See <a href="/docs/cli/read-the-activity-log" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Read</span> the activity log</a>.</p>
+<p class="ref-label">Syntax</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd>storymaps log [target] [-f &lt;path&gt;]</span></pre>
+</figure>
+<p class="ref-label">Options</p>
+<div class="table-wrap"><table>
+<thead><tr><th scope="col">Option</th><th scope="col">What it does</th></tr></thead>
+<tbody><tr><td><code>-f, --file &lt;path&gt;</code></td><td>The file to read the story map from. <code>storymap.yml</code> if left out.</td></tr></tbody>
+</table></div>
+<p class="ref-label">Examples</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the commands"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-out term-comment"># The activity log, newest first</span><span class="term-cmd" data-cmd>storymaps log</span><span class="term-out"> </span><span class="term-out term-comment"># The log of any story map</span><span class="term-cmd" data-cmd>storymaps log storymaps.io/abc12345</span></pre>
+</figure>
+<h2 id="storymaps-lock"><code>storymaps lock</code></h2>
+<p>Locks one story map with a password of at least 4 characters, asked for twice. See <a href="/docs/cli/lock-and-unlock-a-story-map" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Lock</span> and unlock a story map</a>.</p>
+<p class="ref-label">Syntax</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd>storymaps lock [target] [-f &lt;path&gt;]</span></pre>
+</figure>
+<p class="ref-label">Options</p>
+<div class="table-wrap"><table>
+<thead><tr><th scope="col">Option</th><th scope="col">What it does</th></tr></thead>
+<tbody><tr><td><code>-f, --file &lt;path&gt;</code></td><td>The file to read the story map from. Needed in a project folder.</td></tr></tbody>
+</table></div>
+<p class="ref-label">Examples</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-out term-comment"># Lock the story map. It asks for the password twice</span><span class="term-cmd" data-cmd>storymaps lock</span></pre>
+</figure>
+<h2 id="storymaps-unlock"><code>storymaps unlock</code></h2>
+<p>Checks the password and saves it on this computer, so pushes and backups work. The story map stays locked for everyone else.</p>
+<p class="ref-label">Syntax</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd>storymaps unlock [target] [-f &lt;path&gt;] [--remove]</span></pre>
+</figure>
+<p class="ref-label">Options</p>
+<div class="table-wrap"><table>
+<thead><tr><th scope="col">Option</th><th scope="col">What it does</th></tr></thead>
+<tbody><tr><td><code>-f, --file &lt;path&gt;</code></td><td>The file to read the story map from. Needed in a project folder.</td></tr>
+<tr><td><code>--remove</code></td><td>Take the lock off for everyone.</td></tr></tbody>
+</table></div>
+<p class="ref-label">Examples</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the commands"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-out term-comment"># Save the password on this computer, so pushes work</span><span class="term-cmd" data-cmd>storymaps unlock</span><span class="term-out"> </span><span class="term-out term-comment"># Take the lock off for everyone</span><span class="term-cmd" data-cmd>storymaps unlock --remove</span></pre>
+</figure>
+<h2 id="storymaps-backup"><code>storymaps backup</code></h2>
+<p>Backs up the story map on the server, or every story map in a project with the same note. Makes no new backup if nothing changed since one of them. See <a href="/docs/cli/back-up-and-restore-from-the-terminal" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Back</span> up and restore from the terminal</a>.</p>
+<p class="ref-label">Syntax</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd>storymaps backup [target] [-f &lt;path&gt;] [--dir &lt;folder&gt;] [-m &lt;note&gt;]</span></pre>
+</figure>
+<p class="ref-label">Options</p>
+<div class="table-wrap"><table>
+<thead><tr><th scope="col">Option</th><th scope="col">What it does</th></tr></thead>
+<tbody><tr><td><code>-f, --file &lt;path&gt;</code></td><td>The file to read the story map from, for one story map.</td></tr>
+<tr><td><code>--dir &lt;folder&gt;</code></td><td>The project folder. <code>storymaps</code> if left out.</td></tr>
+<tr><td><code>-m, --message &lt;note&gt;</code></td><td>A note, to tell the backup apart later.</td></tr></tbody>
+</table></div>
+<p class="ref-label">Examples</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the commands"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-out term-comment"># Back up the story map, or every story map in a project</span><span class="term-cmd" data-cmd>storymaps backup</span><span class="term-out"> </span><span class="term-out term-comment"># Back up with a note to find it by later</span><span class="term-cmd" data-cmd>storymaps backup -m &quot;Before the release&quot;</span></pre>
+</figure>
+<h2 id="storymaps-backups"><code>storymaps backups</code></h2>
+<p>Lists the backups of the story map, newest first, with the ID to restore each one by. In a project, the newest backup of each story map.</p>
+<p class="ref-label">Syntax</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd>storymaps backups [target] [-f &lt;path&gt;] [--dir &lt;folder&gt;]</span></pre>
+</figure>
+<p class="ref-label">Options</p>
+<div class="table-wrap"><table>
+<thead><tr><th scope="col">Option</th><th scope="col">What it does</th></tr></thead>
+<tbody><tr><td><code>-f, --file &lt;path&gt;</code></td><td>The file to read the story map from, for one story map.</td></tr>
+<tr><td><code>--dir &lt;folder&gt;</code></td><td>The project folder. <code>storymaps</code> if left out.</td></tr></tbody>
+</table></div>
+<p class="ref-label">Examples</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-out term-comment"># List the backups, newest first</span><span class="term-cmd" data-cmd>storymaps backups</span></pre>
+</figure>
+<h2 id="storymaps-restore"><code>storymaps restore</code></h2>
+<p>Puts one story map back to a backup, after backing it up as it is now. Changes the story map, not your file, so pull afterwards. In a project folder, the backup ID says which story map.</p>
+<p class="ref-label">Syntax</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd>storymaps restore &lt;backup-id&gt; [target] [-f &lt;path&gt;] [--dir &lt;folder&gt;] [--force]</span></pre>
+</figure>
+<p class="ref-label">Options</p>
+<div class="table-wrap"><table>
+<thead><tr><th scope="col">Option</th><th scope="col">What it does</th></tr></thead>
+<tbody><tr><td><code>backup-id</code></td><td>The ID of the backup, from <code>storymaps backups</code>.</td></tr>
+<tr><td><code>-f, --file &lt;path&gt;</code></td><td>The file to read the story map from.</td></tr>
+<tr><td><code>--dir &lt;folder&gt;</code></td><td>The project folder. <code>storymaps</code> if left out.</td></tr>
+<tr><td><code>--force</code></td><td>Restore without asking first.</td></tr></tbody>
+</table></div>
+<p class="ref-label">Examples</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-out term-comment"># Put the story map back to a backup, from its ID in storymaps backups</span><span class="term-cmd" data-cmd>storymaps restore 2d61dc7cf364</span></pre>
+</figure>
+<h2 id="storymaps-validate"><code>storymaps validate</code></h2>
+<p>Checks a YAML or JSON story map file, or every story map file in a folder, without the server. See <a href="/docs/cli/validate-and-convert-story-map-files" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Validate</span> and convert story map files</a>.</p>
+<p class="ref-label">Syntax</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd>storymaps validate &lt;file or folder&gt;</span></pre>
+</figure>
+<p class="ref-label">Examples</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the commands"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-out term-comment"># Check a file</span><span class="term-cmd" data-cmd>storymaps validate storymap.yml</span><span class="term-out"> </span><span class="term-out term-comment"># Check every story map file in a folder</span><span class="term-cmd" data-cmd>storymaps validate storymaps</span></pre>
+</figure>
+<h2 id="storymaps-convert"><code>storymaps convert</code></h2>
+<p>Turns a story map file from YAML into JSON, or from JSON into YAML.</p>
+<p class="ref-label">Syntax</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd>storymaps convert &lt;file&gt; [--from &lt;format&gt;] [--to &lt;format&gt;] [--out &lt;file&gt;]</span></pre>
+</figure>
+<p class="ref-label">Options</p>
+<div class="table-wrap"><table>
+<thead><tr><th scope="col">Option</th><th scope="col">What it does</th></tr></thead>
+<tbody><tr><td><code>--from &lt;format&gt;</code></td><td><code>yaml</code> or <code>json</code>. Worked out from the file name if left out.</td></tr>
+<tr><td><code>--to &lt;format&gt;</code></td><td><code>yaml</code> or <code>json</code>. <code>yaml</code> if left out.</td></tr>
+<tr><td><code>--out &lt;file&gt;</code></td><td>The file to write. Prints in the terminal if left out.</td></tr></tbody>
+</table></div>
+<p class="ref-label">Examples</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the commands"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-out term-comment"># Print a YAML file as JSON</span><span class="term-cmd" data-cmd>storymaps convert storymap.yml --to json</span><span class="term-out"> </span><span class="term-out term-comment"># Write a JSON file as YAML</span><span class="term-cmd" data-cmd>storymaps convert coffee.json --out coffee.yml</span></pre>
+</figure>
+<h2 id="storymaps-project-init"><code>storymaps project init</code></h2>
+<p>Starts a project, with a first story map or one from each file, written to the <code>storymaps</code> folder. See <a href="/docs/cli/start-a-project-from-the-terminal" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Start</span> a project from the terminal</a>.</p>
+<p class="ref-label">Syntax</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd>storymaps project init [--name &lt;name&gt;] [files...] [--dir &lt;folder&gt;] [-s &lt;site&gt;]</span></pre>
+</figure>
+<p class="ref-label">Options</p>
+<div class="table-wrap"><table>
+<thead><tr><th scope="col">Option</th><th scope="col">What it does</th></tr></thead>
+<tbody><tr><td><code>--name &lt;name&gt;</code></td><td>The project name. <strong>Untitled project</strong> if left out.</td></tr>
+<tr><td><code>files</code></td><td>Story map files to start from. They're left as they are.</td></tr>
+<tr><td><code>--dir &lt;folder&gt;</code></td><td>Where to write the story maps. <code>storymaps</code> if left out.</td></tr>
+<tr><td><code>-s, --site &lt;site&gt;</code></td><td>The server to make it on. storymaps.io if left out.</td></tr></tbody>
+</table></div>
+<p class="ref-label">Examples</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the commands"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-out term-comment"># Start a project with a first story map</span><span class="term-cmd" data-cmd>storymaps project init --name &quot;Coffee shop&quot;</span><span class="term-out"> </span><span class="term-out term-comment"># Start a project from story map files you already have</span><span class="term-cmd" data-cmd>storymaps project init --name &quot;Coffee shop&quot; app.yml barista.yml</span></pre>
+</figure>
+<h2 id="storymaps-project-add"><code>storymaps project add</code></h2>
+<p>Adds a story map to the project: a new one, one from a file, or one that already exists. Works offline: the next push creates it.</p>
+<p class="ref-label">Syntax</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd>storymaps project add [file or link] [--name &lt;name&gt;] [--dir &lt;folder&gt;] [--project &lt;link&gt;]</span></pre>
+</figure>
+<p class="ref-label">Options</p>
+<div class="table-wrap"><table>
+<thead><tr><th scope="col">Option</th><th scope="col">What it does</th></tr></thead>
+<tbody><tr><td><code>file or link</code></td><td>A story map file, or a story map by its link or ID. A new blank story map if left out.</td></tr>
+<tr><td><code>--name &lt;name&gt;</code></td><td>The name of a new story map. <strong>My Story Map</strong> if left out.</td></tr>
+<tr><td><code>--dir &lt;folder&gt;</code></td><td>The project folder. <code>storymaps</code> if left out.</td></tr>
+<tr><td><code>--project &lt;link&gt;</code></td><td>The project, when there's no project folder yet.</td></tr></tbody>
+</table></div>
+<p class="ref-label">Examples</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the commands"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-out term-comment"># Add a new story map to the project</span><span class="term-cmd" data-cmd>storymaps project add --name &quot;Barista Screen&quot;</span><span class="term-out"> </span><span class="term-out term-comment"># Add a story map that already exists</span><span class="term-cmd" data-cmd>storymaps project add storymaps.io/abc12345</span></pre>
+</figure>
+<h2 id="storymaps-project-lock"><code>storymaps project lock</code></h2>
+<p>Locks the project, or the project and its story maps, the same two choices as in the app. See <a href="/docs/cli/lock-and-unlock-a-project" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Lock</span> and unlock a project</a>.</p>
+<p class="ref-label">Syntax</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd>storymaps project lock [--maps] [--yes] [--dir &lt;folder&gt;] [--project &lt;link&gt;]</span></pre>
+</figure>
+<p class="ref-label">Options</p>
+<div class="table-wrap"><table>
+<thead><tr><th scope="col">Option</th><th scope="col">What it does</th></tr></thead>
+<tbody><tr><td><code>--maps</code></td><td>Lock the story maps that aren't locked too, without asking. On a locked project, lock only those.</td></tr>
+<tr><td><code>-y, --yes</code></td><td>Take the usual answer: the project alone.</td></tr>
+<tr><td><code>--dir &lt;folder&gt;</code></td><td>The project folder. <code>storymaps</code> if left out.</td></tr>
+<tr><td><code>--project &lt;link&gt;</code></td><td>The project, when there's no project folder.</td></tr></tbody>
+</table></div>
+<p class="ref-label">Examples</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the commands"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-out term-comment"># Lock the project. It asks what to lock and for the password</span><span class="term-cmd" data-cmd>storymaps project lock</span><span class="term-out"> </span><span class="term-out term-comment"># Lock the project and its story maps without asking</span><span class="term-cmd" data-cmd>storymaps project lock --maps</span></pre>
+</figure>
+<h2 id="storymaps-project-unlock"><code>storymaps project unlock</code></h2>
+<p>Unlocks the project on this computer, or takes its lock off for everyone.</p>
+<p class="ref-label">Syntax</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd>storymaps project unlock [--remove] [--maps] [--yes] [--dir &lt;folder&gt;] [--project &lt;link&gt;]</span></pre>
+</figure>
+<p class="ref-label">Options</p>
+<div class="table-wrap"><table>
+<thead><tr><th scope="col">Option</th><th scope="col">What it does</th></tr></thead>
+<tbody><tr><td><code>--remove</code></td><td>Take the lock off for everyone.</td></tr>
+<tr><td><code>--maps</code></td><td>Also unlock the story maps that use the project password, or with <code>--remove</code>, take their locks off.</td></tr>
+<tr><td><code>-y, --yes</code></td><td>Take the usual answers: the project only, and the story map locks kept.</td></tr>
+<tr><td><code>--dir &lt;folder&gt;</code></td><td>The project folder. <code>storymaps</code> if left out.</td></tr>
+<tr><td><code>--project &lt;link&gt;</code></td><td>The project, when there's no project folder.</td></tr></tbody>
+</table></div>
+<p class="ref-label">Examples</p>
+<figure class="term ref-block">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the commands"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-out term-comment"># Save the project password on this computer</span><span class="term-cmd" data-cmd>storymaps project unlock</span><span class="term-out"> </span><span class="term-out term-comment"># Take the lock off the project and its story maps for everyone</span><span class="term-cmd" data-cmd>storymaps project unlock --remove --maps</span></pre>
+</figure>
+            <nav class="pager" aria-label="Previous and next">
+                <a class="prev" href="/docs/cli/use-the-cli-in-scripts-and-ci"><span>Previous</span>Use the CLI in scripts and CI</a>
+                <span></span>
+            </nav>
+        </article>
+        <nav class="docs-toc" aria-label="On this page">
+            <strong>On this page</strong>
+            <a href="#commands">Commands</a>
+            <a href="#one-story-map-or-a-whole-project">One story map or a whole project</a>
+            <a href="#questions-and-passwords">Questions and passwords</a>
+            <a href="#storymaps-init">storymaps init</a>
+            <a href="#storymaps-open">storymaps open</a>
+            <a href="#storymaps-pull">storymaps pull</a>
+            <a href="#storymaps-push">storymaps push</a>
+            <a href="#storymaps-diff">storymaps diff</a>
+            <a href="#storymaps-status">storymaps status</a>
+            <a href="#storymaps-log">storymaps log</a>
+            <a href="#storymaps-lock">storymaps lock</a>
+            <a href="#storymaps-unlock">storymaps unlock</a>
+            <a href="#storymaps-backup">storymaps backup</a>
+            <a href="#storymaps-backups">storymaps backups</a>
+            <a href="#storymaps-restore">storymaps restore</a>
+            <a href="#storymaps-validate">storymaps validate</a>
+            <a href="#storymaps-convert">storymaps convert</a>
+            <a href="#storymaps-project-init">storymaps project init</a>
+            <a href="#storymaps-project-add">storymaps project add</a>
+            <a href="#storymaps-project-lock">storymaps project lock</a>
+            <a href="#storymaps-project-unlock">storymaps project unlock</a>
+        </nav>
+    </main>
+</div>
+<footer class="docs-footer">
+    <a href="/">Storymaps.io</a>
+    <a href="/privacy.html">Privacy</a>
+    <a href="https://github.com/jackgleeson/storymaps.io">GitHub</a>
+</footer>
+</div>
+</body>
+</html>

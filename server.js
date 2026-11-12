@@ -206,6 +206,12 @@ const PUBLIC_DIR = join(__dirname, 'public');
 const SRC_DIR = join(__dirname, 'src');
 const STATIC_DIRS = [PUBLIC_DIR, SRC_DIR];
 
+// Site pages served from public/docs/ and public/learn/. None of these can clash with a map ID, which is always 8 characters.
+const PAGE_ROUTES = {
+  '/docs': '/docs/index.html',
+  '/learn': '/learn/index.html',
+};
+
 // Text files say they're UTF-8, so a stylesheet's ✓ or › never shows as "âœ“"
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -304,8 +310,24 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  // Static files - try cache first, then disk
-  let relPath = reqPath === '/' ? '/index.html' : reqPath;
+  // Each docs and course page has one address, so search engines don't split it across several:
+  // no trailing slash, no .html, and a course goes to its first lesson. /learn/cli is the list of
+  // CLI courses, not a course.
+  if (/^\/(docs|learn)(\/[a-z0-9-]+)*(\.html|\/+)?$/.test(reqPath)) {
+    const clean = reqPath.replace(/\/+$/, '').replace(/\.html$/, '').replace(/\/index$/, '');
+    const address = /^\/learn\/[a-z0-9-]+$/.test(clean) && clean !== '/learn/cli' ? `${clean}/1` : clean;
+    if (address !== reqPath) {
+      res.writeHead(301, { 'Location': address + req.url.slice(reqPath.length) });
+      res.end();
+      return;
+    }
+  }
+
+  // Static files - try cache first, then disk. Site pages get clean URLs (/docs -> docs/index.html).
+  // Docs and course pages built from docs/ also get clean URLs: /docs/plan-slices ->
+  // docs/plan-slices.html, /learn/first-map/1 -> learn/first-map/1.html
+  const docsPage = /^\/(docs|learn)(\/[a-z0-9-]+)+$/.test(reqPath) ? reqPath + '.html' : null;
+  let relPath = reqPath === '/' ? '/index.html' : (PAGE_ROUTES[reqPath] || docsPage || reqPath);
   const ext = extname(relPath);
 
   // Resolve cache key: SPA fallback uses '/index.html'

@@ -33,6 +33,7 @@ import * as starterText from '/src/features/starter-text.js';
 import * as projects from '/src/features/projects.js';
 import * as recentMaps from '/src/features/recent-maps.js';
 import * as bookmarkNudge from '/src/features/bookmark-nudge.js';
+import * as lesson from '/src/features/lesson.js';
 import { parseLocation, projectPath } from '/src/core/project-links.js';
 
 const { isMapEditable } = lock;
@@ -347,6 +348,7 @@ const initEventListeners = () => {
     projects.initListeners({ openMap: openMapInPage });
     recentMaps.initListeners();
     bookmarkNudge.initListeners();
+    lesson.init(state, { renderAndSave });
     dom.projectMenuBtn.addEventListener('click', () => {
         closeMainMenu();
         projects.openFromMenu();

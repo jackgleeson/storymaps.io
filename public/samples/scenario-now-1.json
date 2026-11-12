@@ -1,0 +1,121 @@
+{
+  "app": "storymap",
+  "v": 1,
+  "name": "Coffee Shop Today",
+  "users": [
+    [
+      {
+        "name": "Customer",
+        "color": "#fca5a5"
+      }
+    ],
+    [],
+    [],
+    [],
+    [
+      {
+        "name": "Barista",
+        "color": "#fca5a5"
+      }
+    ],
+    [],
+    []
+  ],
+  "activities": [
+    [
+      {
+        "name": "Get a coffee",
+        "color": "#93c5fd"
+      }
+    ],
+    [],
+    [],
+    [],
+    [
+      {
+        "name": "Serve customers",
+        "color": "#93c5fd"
+      }
+    ],
+    [],
+    []
+  ],
+  "steps": [
+    {
+      "name": "Join the queue",
+      "color": "#86efac"
+    },
+    {
+      "name": "Order at the counter",
+      "color": "#86efac"
+    },
+    {
+      "name": "Pay",
+      "color": "#86efac"
+    },
+    {
+      "name": "Collect it",
+      "color": "#86efac"
+    },
+    {
+      "name": "Write the order on a cup",
+      "color": "#86efac"
+    },
+    {
+      "name": "Make the drink",
+      "color": "#86efac"
+    },
+    {
+      "name": "Call out the name",
+      "color": "#86efac"
+    }
+  ],
+  "slices": [
+    {
+      "name": "How it works today",
+      "goal": "See where the morning rush goes wrong",
+      "stories": [
+        [
+          {
+            "name": "Queue at the counter"
+          }
+        ],
+        [
+          {
+            "name": "Read the menu board"
+          },
+          {
+            "name": "Ask about milks and sizes"
+          }
+        ],
+        [],
+        [
+          {
+            "name": "Listen for your name"
+          }
+        ],
+        [
+          {
+            "name": "Drink and name in marker pen"
+          }
+        ],
+        [
+          {
+            "name": "Make drinks in cup order"
+          }
+        ],
+        [
+          {
+            "name": "Shout the name"
+          }
+        ]
+      ]
+    }
+  ],
+  "legend": [
+    {
+      "color": "#fef08a",
+      "label": "How it works today"
+    }
+  ]
+}

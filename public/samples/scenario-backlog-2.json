@@ -1,0 +1,256 @@
+{
+  "app": "storymap",
+  "v": 1,
+  "name": "Coffee App",
+  "users": [
+    [
+      {
+        "name": "",
+        "color": "#fca5a5"
+      }
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    []
+  ],
+  "activities": [
+    [
+      {
+        "name": "",
+        "color": "#93c5fd"
+      }
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    []
+  ],
+  "steps": [
+    {
+      "name": ""
+    },
+    {
+      "name": ""
+    },
+    {
+      "name": ""
+    },
+    {
+      "name": ""
+    },
+    {
+      "name": ""
+    },
+    {
+      "name": ""
+    },
+    {
+      "name": ""
+    },
+    {
+      "name": ""
+    }
+  ],
+  "slices": [
+    {
+      "name": "MVP",
+      "stories": [
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "name": "IMPORTED: Epics & stories",
+      "stories": [
+        [
+          {
+            "name": "Menu",
+            "color": "#bef264",
+            "tags": [
+              "epic-01"
+            ],
+            "url": "https://example.atlassian.net/browse/COF-18"
+          },
+          {
+            "name": "Extra shots and syrups",
+            "tags": [
+              "epic-02-task"
+            ],
+            "url": "https://example.atlassian.net/browse/COF-14"
+          },
+          {
+            "name": "Credit card",
+            "tags": [
+              "epic-04-task"
+            ],
+            "url": "https://example.atlassian.net/browse/COF-1"
+          }
+        ],
+        [
+          {
+            "name": "Drink list with prices",
+            "tags": [
+              "epic-01-task"
+            ],
+            "url": "https://example.atlassian.net/browse/COF-5"
+          },
+          {
+            "name": "Save custom drinks",
+            "tags": [
+              "epic-02-task"
+            ],
+            "url": "https://example.atlassian.net/browse/COF-10"
+          },
+          {
+            "name": "Apple Pay / Google Pay",
+            "tags": [
+              "epic-04-task"
+            ],
+            "url": "https://example.atlassian.net/browse/COF-8"
+          }
+        ],
+        [
+          {
+            "name": "Search by name",
+            "tags": [
+              "epic-01-task"
+            ],
+            "url": "https://example.atlassian.net/browse/COF-2"
+          },
+          {
+            "name": "Basket",
+            "color": "#bef264",
+            "tags": [
+              "epic-03"
+            ],
+            "url": "https://example.atlassian.net/browse/COF-20"
+          },
+          {
+            "name": "Gift cards",
+            "tags": [
+              "epic-04-task"
+            ],
+            "url": "https://example.atlassian.net/browse/COF-3"
+          }
+        ],
+        [
+          {
+            "name": "Photo on each drink",
+            "tags": [
+              "epic-01-task"
+            ],
+            "url": "https://example.atlassian.net/browse/COF-16"
+          },
+          {
+            "name": "Add multiple drinks",
+            "tags": [
+              "epic-03-task"
+            ],
+            "url": "https://example.atlassian.net/browse/COF-12"
+          },
+          {
+            "name": "Split payment",
+            "tags": [
+              "epic-04-task"
+            ],
+            "url": "https://example.atlassian.net/browse/COF-13"
+          }
+        ],
+        [
+          {
+            "name": "Recommend popular combos",
+            "tags": [
+              "epic-01-task"
+            ],
+            "url": "https://example.atlassian.net/browse/COF-15"
+          },
+          {
+            "name": "Order summary with total",
+            "tags": [
+              "epic-03-task"
+            ],
+            "url": "https://example.atlassian.net/browse/COF-17"
+          },
+          {
+            "name": "Checkout",
+            "color": "#bef264",
+            "tags": [
+              "epic-05"
+            ],
+            "url": "https://example.atlassian.net/browse/COF-22"
+          }
+        ],
+        [
+          {
+            "name": "Drink options",
+            "color": "#bef264",
+            "tags": [
+              "epic-02"
+            ],
+            "url": "https://example.atlassian.net/browse/COF-19"
+          },
+          {
+            "name": "Edit or remove items",
+            "tags": [
+              "epic-03-task"
+            ],
+            "url": "https://example.atlassian.net/browse/COF-6"
+          },
+          {
+            "name": "Submit order",
+            "tags": [
+              "epic-05-task"
+            ],
+            "url": "https://example.atlassian.net/browse/COF-11"
+          }
+        ],
+        [
+          {
+            "name": "Choose size",
+            "tags": [
+              "epic-02-task"
+            ],
+            "url": "https://example.atlassian.net/browse/COF-4"
+          },
+          {
+            "name": "Group ordering",
+            "tags": [
+              "epic-03-task"
+            ],
+            "url": "https://example.atlassian.net/browse/COF-7"
+          }
+        ],
+        [
+          {
+            "name": "Select milk type",
+            "tags": [
+              "epic-02-task"
+            ],
+            "url": "https://example.atlassian.net/browse/COF-9"
+          },
+          {
+            "name": "Payments",
+            "color": "#bef264",
+            "tags": [
+              "epic-04"
+            ],
+            "url": "https://example.atlassian.net/browse/COF-21"
+          }
+        ]
+      ]
+    }
+  ]
+}

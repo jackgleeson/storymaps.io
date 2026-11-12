@@ -2,6 +2,7 @@
 // Presence tracking and cursor display (via Yjs awareness)
 
 import { showPrompt } from '/src/core/modals.js';
+import { isLesson } from '/src/features/lesson.js';
 import { mapTop } from '/src/ui/map-top.js';
 
 let _dom = null;
@@ -181,15 +182,18 @@ export const trackPresence = async () => {
 
     const awareness = provider.awareness;
 
-    // Prompt for name if not stored (skip on touch devices and during tour)
+    // Prompt for name if not stored (skip on touch devices, during the tour, and beside a lesson,
+    // where it would stand between the learner and the first step)
     const isTourActive = document.body.classList.contains('tour-active');
     if (!isTouchDevice && !isTourActive) {
         let name = localStorage.getItem('presenceName');
-        if (name === null) {
+        if (name === null && !isLesson()) {
             name = await showPrompt('Enter your name for live collaboration (optional)', '', 'guest') || '';
             if (name) localStorage.setItem('presenceName', name);
         }
-        _presenceName = name || '';
+        // Beside a lesson, with no name saved, the learner is a Storymapper (not saved, so the
+        // app still asks for a name outside lessons)
+        _presenceName = name || (isLesson() ? 'Storymapper' : '');
     } else {
         _presenceName = '';
     }

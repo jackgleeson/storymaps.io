@@ -1,0 +1,231 @@
+{
+  "app": "storymap",
+  "v": 1,
+  "name": "Coffee Order API",
+  "users": [
+    [
+      {
+        "name": "Mobile app",
+        "color": "#fca5a5"
+      }
+    ],
+    [],
+    [],
+    [
+      {
+        "name": "Payment provider",
+        "color": "#fca5a5"
+      }
+    ],
+    [
+      {
+        "name": "Barista screen",
+        "color": "#fca5a5"
+      }
+    ],
+    [],
+    []
+  ],
+  "activities": [
+    [
+      {
+        "name": "Place an order",
+        "color": "#93c5fd"
+      }
+    ],
+    [],
+    [
+      {
+        "name": "Take payment",
+        "color": "#93c5fd"
+      }
+    ],
+    [
+      {
+        "name": "Confirm payment",
+        "color": "#93c5fd"
+      }
+    ],
+    [
+      {
+        "name": "Fulfil the order",
+        "color": "#93c5fd"
+      }
+    ],
+    [],
+    []
+  ],
+  "steps": [
+    {
+      "name": "GET /menu",
+      "color": "#86efac"
+    },
+    {
+      "name": "POST /orders",
+      "color": "#86efac"
+    },
+    {
+      "name": "POST /orders/{id}/payment",
+      "color": "#86efac"
+    },
+    {
+      "name": "Webhook: payment succeeded",
+      "color": "#86efac"
+    },
+    {
+      "name": "GET /orders?status=paid",
+      "color": "#86efac"
+    },
+    {
+      "name": "PATCH /orders/{id}",
+      "color": "#86efac"
+    },
+    {
+      "name": "Push: order ready",
+      "color": "#86efac"
+    }
+  ],
+  "slices": [
+    {
+      "name": "v1",
+      "goal": "One shop, happy path: an order goes from the app to the barista and back",
+      "stories": [
+        [
+          {
+            "name": "Return drinks, sizes and prices",
+            "status": "done",
+            "points": 2
+          }
+        ],
+        [
+          {
+            "name": "Check items against the menu",
+            "status": "done",
+            "points": 3
+          },
+          {
+            "name": "Return order ID and total",
+            "status": "done",
+            "points": 1
+          },
+          {
+            "name": "Item sold out since the menu loaded",
+            "color": "#fecdd3"
+          }
+        ],
+        [
+          {
+            "name": "Create the payment with the provider",
+            "status": "in-progress",
+            "points": 3
+          },
+          {
+            "name": "Return the payment secret to the app",
+            "status": "in-progress",
+            "points": 1
+          }
+        ],
+        [
+          {
+            "name": "Check the webhook signature",
+            "status": "planned",
+            "points": 2
+          },
+          {
+            "name": "Mark the order paid",
+            "status": "planned",
+            "points": 1
+          },
+          {
+            "name": "Webhook arrives twice",
+            "color": "#fecdd3"
+          }
+        ],
+        [
+          {
+            "name": "Paid orders, oldest first",
+            "status": "planned",
+            "points": 2
+          }
+        ],
+        [
+          {
+            "name": "Set status: making, ready, collected",
+            "status": "planned",
+            "points": 2
+          }
+        ],
+        [
+          {
+            "name": "Send a push when the status is ready",
+            "status": "planned",
+            "points": 3
+          },
+          {
+            "name": "No push token on file",
+            "color": "#fecdd3"
+          }
+        ]
+      ]
+    },
+    {
+      "name": "v2",
+      "goal": "Hardening: safe to retry, safe under load",
+      "stories": [
+        [
+          {
+            "name": "Cache headers on the menu"
+          }
+        ],
+        [
+          {
+            "name": "Idempotency key header"
+          },
+          {
+            "name": "Rate limit per device"
+          }
+        ],
+        [
+          {
+            "name": "Handle declined cards"
+          }
+        ],
+        [
+          {
+            "name": "Retry queue for failed updates"
+          }
+        ],
+        [
+          {
+            "name": "Live updates over WebSocket"
+          }
+        ],
+        [
+          {
+            "name": "Audit log of status changes"
+          }
+        ],
+        [
+          {
+            "name": "SMS when push fails"
+          }
+        ]
+      ]
+    }
+  ],
+  "legend": [
+    {
+      "color": "#fef08a",
+      "label": "Work"
+    },
+    {
+      "color": "#fecdd3",
+      "label": "Edge cases"
+    },
+    {
+      "color": "#a5f3fc",
+      "label": "Notes"
+    }
+  ],
+  "notes": "Each step is one call, in the order a single order makes them."
+}

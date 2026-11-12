@@ -1,0 +1,1025 @@
+@charset "UTF-8";
+/* Storymaps.io docs. Same look as the app: Inter, slate and white, teal accents, sticky-note colours */
+
+:root {
+    --bg: #f8fafc;
+    --surface: #ffffff;
+    --surface-2: #f1f5f9;
+    /* The band around the practice story map, so it reads as its own window beside the lesson */
+    --practice-bg: #dbe3ec;
+    /* The shadow the lesson casts onto an open practice story map */
+    --lesson-edge: 8px 0 18px -10px rgba(15, 23, 42, 0.28);
+    --border: #e2e8f0;
+    --text: #334155;
+    --heading: #0f172a;
+    --muted: #64748b;
+    --teal: #14b8a6;
+    --teal-dark: #0d9488;
+    --teal-soft: #ccfbf1;
+    --link: #0d9488;
+    --shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 12px 32px rgba(15, 23, 42, 0.1);
+    --note-text: #1e293b;
+    --yellow: #fef08a;
+    --blue: #93c5fd;
+    --green: #86efac;
+    --cyan: #a5f3fc;
+    --pink: #fecdd3;
+    --header-h: 68px;
+    --app-border: #ddd;
+    --app-border-strong: #d0d0d0;
+    --app-text: #333;
+    --app-text-secondary: #666;
+    --app-hover: #f0f2f5;
+    --card-border: #e5e7eb;
+    --divider: #d1d5db;
+}
+html.dark-mode {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface-2: #172033;
+    --practice-bg: #0a1120;
+    --lesson-edge: 10px 0 22px -10px rgba(0, 0, 0, 0.75);
+    --border: #2a3a4e;
+    --text: #cbd5e1;
+    --heading: #f1f5f9;
+    --muted: #8392a8;
+    --teal: #2dd4bf;
+    --teal-dark: #14b8a6;
+    --teal-soft: rgba(45, 212, 191, 0.14);
+    --link: #5eead4;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px rgba(0, 0, 0, 0.35);
+    --app-border: #334155;
+    --app-border-strong: #3d5068;
+    --app-text: #e2e8f0;
+    --app-text-secondary: #94a3b8;
+    --app-hover: #253044;
+    --card-border: #334155;
+    --divider: #334155;
+    color-scheme: dark;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-padding-top: calc(var(--header-h) + 16px); }
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+}
+a { color: var(--link); }
+img { display: block; max-width: 100%; height: auto; }
+:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+
+kbd {
+    font-family: inherit; font-size: 12px; font-weight: 600; color: var(--muted);
+    border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 5px; padding: 0 6px; background: var(--surface);
+}
+code {
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 0.88em;
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 4px; padding: 0 4px;
+}
+
+/* Header: the app's own, centred at the same width, with the docs search on the right */
+.site-header-wrap { position: sticky; top: 0; z-index: 30; background: var(--bg); }
+
+/* Like the app, the page below the header scrolls in a panel, so the scrollbar sits beside the
+   content and the header keeps the whole window width: it stays put moving between the app and the
+   docs. Phones scroll the page, where the scrollbar floats over it anyway. */
+@media (min-width: 901px) {
+    body { height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+    .site-header-wrap { flex: none; }
+    /* An equal strip on the left keeps the content centred under the header, scrollbar or not */
+    .docs-scroll { flex: 1; min-height: 0; overflow-y: auto; scroll-padding-top: 16px; scrollbar-gutter: stable both-edges; }
+    :root { --sticky-top: 0px; }
+}
+.site-header {
+    max-width: 1400px; margin: 0 auto; padding: 16px 24px; display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--app-border);
+}
+.logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.logo-text { font-size: 20px; font-weight: 700; color: var(--app-text); letter-spacing: -0.5px; }
+.header-links-divider { flex-shrink: 0; width: 1px; height: 20px; margin: 0 4px; background: var(--app-border-strong); }
+.header-links { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+.header-link {
+    display: flex; align-items: center; justify-content: center; gap: 7px; height: 34px; padding: 0 12px;
+    border-radius: 8px; color: var(--app-text-secondary); font-size: 14px; font-weight: 500; text-decoration: none;
+    transition: background-color 0.12s ease, color 0.12s ease;
+}
+.header-link svg { flex-shrink: 0; color: #0d9488; }
+.header-link:hover, .header-link[aria-current] { background: var(--app-hover); color: #0f766e; }
+html.dark-mode .header-link svg { color: #2dd4bf; }
+html.dark-mode .header-link:hover, html.dark-mode .header-link[aria-current] { background: rgba(45, 212, 191, 0.1); color: #5eead4; }
+.docs-brand {
+    display: inline-flex; align-items: center; gap: 9px; text-decoration: none;
+    color: var(--heading); font-weight: 700; font-size: 17px; letter-spacing: -0.4px; white-space: nowrap;
+}
+
+.docs-search { position: relative; display: flex; align-items: center; }
+.header-search { margin-left: auto; width: 260px; }
+.header-search input { height: 34px; padding-top: 0; padding-bottom: 0; }
+.site-header .docs-icon-btn { width: 34px; height: 34px; border-radius: 8px; }
+.docs-search input {
+    width: 100%; font: inherit; font-size: 14px; color: var(--text); background: var(--bg);
+    border: 1px solid var(--border); border-radius: 9px; padding: 7px 34px 7px 12px; outline: none;
+    -webkit-appearance: none; appearance: none;
+}
+.docs-search input::-webkit-search-cancel-button { display: none; }
+.docs-search input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-soft); }
+.docs-search kbd { position: absolute; right: 10px; pointer-events: none; }
+.docs-search input:focus + kbd { display: none; }
+
+.search-results {
+    position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 40; min-width: 300px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow);
+    padding: 6px; max-height: 70vh; overflow-y: auto;
+}
+.header-search .search-results { left: auto; width: 380px; }
+.search-results a {
+    display: block; padding: 9px 11px; border-radius: 8px; text-decoration: none; color: var(--text);
+}
+.search-results a.active, .search-results a:hover { background: var(--surface-2); }
+.search-results b { display: block; color: var(--heading); font-size: 14px; font-weight: 600; }
+.search-results span { display: block; font-size: 13px; color: var(--muted); }
+.search-results .none { padding: 10px 11px; font-size: 14px; color: var(--muted); }
+
+.docs-icon-btn {
+    width: 36px; height: 36px; flex: none; display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border); border-radius: 9px; background: var(--surface); color: var(--text);
+    font-size: 16px; cursor: pointer;
+}
+.docs-icon-btn:hover { border-color: var(--teal); }
+.docs-menu-btn, .docs-search-btn { display: none; }
+
+/* Guide layout: sidebar, article, contents */
+.docs-layout { display: grid; grid-template-columns: 284px minmax(0, 1fr); max-width: 1400px; margin: 0 auto; }
+.docs-side {
+    position: sticky; top: var(--sticky-top, var(--header-h)); align-self: start; height: calc(100vh - var(--header-h));
+    overflow-y: auto; padding: 22px 14px 32px 24px; border-right: 1px solid var(--border); font-size: 14px;
+}
+.drawer-head, .drawer-back, .drawer-search, .docs-shade { display: none; }
+.grp summary {
+    list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px;
+    font-weight: 600; color: var(--heading); padding: 6px 8px; border-radius: 7px; user-select: none;
+}
+.grp summary::-webkit-details-marker { display: none; }
+.grp summary::before { content: '\25B6'; font-size: 9px; color: var(--muted); transition: transform 0.15s; width: 10px; }
+.grp[open] summary::before { transform: rotate(90deg); }
+.grp summary:hover { background: var(--surface-2); }
+.grp ul { list-style: none; margin: 2px 0 10px 13px; border-left: 1px solid var(--border); }
+.grp li a, .grp li .soon { display: block; padding: 4px 12px; margin-left: -1px; border-left: 2px solid transparent; }
+.grp li a { color: var(--muted); text-decoration: none; }
+.grp li a:hover { color: var(--heading); }
+.grp li a.on { color: var(--link); border-left-color: var(--teal); font-weight: 600; }
+.soon { color: var(--muted); opacity: 0.55; cursor: default; }
+
+.docs-main { display: grid; grid-template-columns: minmax(0, 1fr) 200px; gap: 40px; padding: 36px 40px 64px 48px; min-width: 0; }
+.docs-article { min-width: 0; max-width: 760px; }
+.crumbs-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.crumbs { font-size: 13px; color: var(--muted); }
+.crumbs ol { list-style: none; display: flex; flex-wrap: wrap; align-items: baseline; }
+.crumbs li + li::before { content: '\203A'; margin: 0 8px; color: var(--app-border-strong); }
+.crumbs a { color: var(--muted); text-decoration: none; }
+.crumbs a:hover { color: var(--link); text-decoration: underline; text-underline-offset: 3px; }
+.crumbs [aria-current] { color: var(--text); }
+/* Titles read like an article: big and plain, then a quiet byline and a rule before the text */
+.docs-article h1 { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 42px; line-height: 1.22; font-weight: 700; letter-spacing: -0.03em; color: var(--heading); margin-top: 14px; }
+.byline { display: flex; flex-wrap: wrap; gap: 4px 18px; margin: 14px 0 28px; padding-bottom: 22px; border-bottom: 1px solid var(--border); font-size: 14px; color: var(--muted); }
+.docs-article .byline { margin: 14px 0 28px; max-width: none; }
+.docs-article .byline + p, .docs-article .toc-mobile + p { font-size: 18px; color: var(--text); margin-top: 0; }
+.docs-article h2 { font-size: 23px; font-weight: 700; letter-spacing: -0.4px; color: var(--heading); margin: 44px 0 10px; line-height: 1.25; }
+.docs-article h3 { font-size: 18px; font-weight: 700; color: var(--heading); margin: 28px 0 8px; }
+.docs-article p { margin: 10px 0; max-width: 68ch; }
+.docs-article ul { margin: 10px 0 10px 22px; max-width: 68ch; }
+.docs-article ul li { margin: 4px 0; }
+.docs-article strong { color: var(--heading); font-weight: 600; }
+
+ol.steps { list-style: none; margin: 14px 0; max-width: 68ch; }
+ol.steps li { display: grid; grid-template-columns: 30px 1fr; align-items: start; margin: 8px 0; }
+.num, .callout {
+    display: inline-flex; align-items: center; justify-content: center; border-radius: 50%;
+    background: var(--teal); color: #fff; font-size: 12px; font-weight: 700;
+}
+html.dark-mode .num, html.dark-mode .callout { color: #0f172a; }
+.num { width: 21px; height: 21px; margin-top: 2px; }
+
+.docs-toc { position: sticky; top: calc(var(--sticky-top, var(--header-h)) + 36px); align-self: start; font-size: 13px; }
+.docs-toc strong { display: block; color: var(--heading); margin-bottom: 8px; }
+.docs-toc a { display: block; color: var(--muted); text-decoration: none; padding: 3px 0 3px 12px; border-left: 2px solid var(--border); }
+.docs-toc a:hover { color: var(--heading); }
+.docs-toc a.on { color: var(--link); border-left-color: var(--teal); font-weight: 600; }
+.toc-mobile { display: none; }
+
+/* Screenshots: one per theme, numbered callouts on top */
+.shot { margin: 22px 0 8px; }
+.shot-pic { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); box-shadow: var(--shadow); }
+.shot-pic img { width: 100%; cursor: zoom-in; }
+/* A screenshot opened at full size over the page, such as one too small to read beside a story map */
+.shot-zoom { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 24px; background: rgba(15, 23, 42, 0.78); cursor: zoom-out; overflow: auto; }
+.shot-zoom img { max-width: min(96vw, 1600px); max-height: 92vh; width: auto; height: auto; border-radius: 10px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4); background: var(--surface); }
+.shot-phone { max-width: 320px; }
+.shot figcaption { font-size: 14px; color: var(--muted); margin-top: 10px; }
+.callout {
+    position: absolute; width: 26px; height: 26px; margin: -13px 0 0 -13px;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9), 0 2px 6px rgba(15, 23, 42, 0.3);
+}
+html.dark-mode .callout { box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.9), 0 2px 6px rgba(0, 0, 0, 0.4); }
+/* Smaller dots once the screenshot shrinks, so they don't cover what they point at */
+@media (max-width: 600px) {
+    .callout { width: 18px; height: 18px; margin: -9px 0 0 -9px; font-size: 10px; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9), 0 1px 4px rgba(15, 23, 42, 0.3); }
+    html.dark-mode .callout { box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.9), 0 1px 4px rgba(0, 0, 0, 0.4); }
+}
+.only-dark { display: none; }
+
+/* Drawn story maps: small sticky notes in the colours of the app, and a backlog drawn as a list */
+/* ==Highlighted== words in a lesson, like a highlighter pen */
+.docs-article mark { background: #fef08a; color: inherit; padding: 1px 3px; border-radius: 3px; }
+html.dark-mode .docs-article mark { background: rgba(250, 204, 21, 0.25); color: var(--heading); }
+/* The name of a card colour, on that colour like a sticky note */
+.swatch { padding: 1px 7px; border-radius: 4px; background: var(--swatch); color: #1e293b; font-weight: 600; }
+/* The icon of a button in the app, in front of its name in a sentence */
+.button-icon { display: inline-block; vertical-align: -0.15em; line-height: 0; }
+.button-icon svg { width: 1em; height: 1em; }
+.docs-article h2 .button-icon { margin-right: 4px; color: var(--teal-dark); }
+/* At the start of a link in a guide to a course or another guide. Inline-block keeps the link's underline off it. */
+.link-icon { display: inline-block; margin-right: 4px; vertical-align: -3px; line-height: 0; }
+.link-start { white-space: nowrap; }
+.diagram { margin: 22px 0 8px; }
+.diagram-pic { border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); padding: 16px; }
+.diagram figcaption { font-size: 14px; color: var(--muted); margin-top: 10px; }
+.board { display: grid; grid-template-columns: 84px repeat(var(--cols), minmax(0, 1fr)); gap: 6px; align-items: stretch; }
+.board-label { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); align-self: center; line-height: 1.2; }
+.dn {
+    position: relative; min-height: 44px; padding: 6px 5px; border-radius: 2px;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    font-size: 11.5px; font-weight: 500; line-height: 1.25; color: #1e293b;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12); overflow-wrap: break-word; hyphens: auto; transition: opacity 0.2s;
+    /* Only split long words, and never leave fewer than 4 letters either side */
+    hyphenate-limit-chars: 9 4 4; -webkit-hyphenate-limit-before: 4; -webkit-hyphenate-limit-after: 4;
+}
+.dn::after { content: ''; position: absolute; right: 0; bottom: 0; width: 9px; height: 9px; background: linear-gradient(135deg, transparent 50%, rgba(0, 0, 0, 0.08) 50%); }
+.dn.user { background: #fca5a5; }
+.dn.activity { background: #93c5fd; }
+.dn.step { background: #86efac; font-weight: 600; }
+.dn.task { background: #fef08a; }
+.dn.gap { background: transparent; box-shadow: none; border: 2px dashed var(--app-border, #cbd5e1); color: var(--muted); font-size: 18px; font-weight: 700; }
+.dn.gap::after { display: none; }
+.dn.pick { box-shadow: 0 0 0 2px var(--surface-2), 0 0 0 4px var(--teal); }
+.dn.gap.pick { border-color: var(--teal); color: var(--teal-dark); box-shadow: none; }
+.dn.fade { opacity: 0.28; }
+.board-slice {
+    grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; margin: 4px 0 0;
+    font-size: 11px; font-weight: 700; color: var(--teal-dark);
+}
+html.dark-mode .board-slice { color: var(--teal); }
+.board-slice::after { content: ''; flex: 1; border-top: 2px solid var(--teal); }
+.backlog { list-style: none; margin: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; max-width: 420px; }
+.backlog li { display: flex; gap: 12px; padding: 7px 12px; font-size: 14px; color: var(--text); border-top: 1px solid var(--border); }
+.backlog li:first-child { border-top: 0; }
+.backlog span { flex: none; width: 52px; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; padding-top: 2px; }
+.photos { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; align-items: start; }
+.photos img { width: 100%; border-radius: 6px; }
+.photos img:only-child { max-width: 520px; justify-self: center; }
+/* A screenshot still to be added: what goes there, and the file name it needs */
+.photo-todo {
+    display: grid; gap: 6px; justify-items: center; padding: 40px 24px; text-align: center;
+    border: 2px dashed var(--border); border-radius: 10px; color: var(--muted);
+}
+.photo-todo b { color: var(--heading); }
+.photo-todo code { font-size: 13px; }
+.doc { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 6px 0 2px; }
+/* A page with two more stacked behind it */
+.doc-page {
+    width: min(100%, 300px); background: #fff; color: #1e293b; border-radius: 3px; padding: 18px 18px 12px;
+    display: flex; flex-direction: column; gap: 6px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.15), 5px 5px 0 -1px #f1f5f9, 5px 5px 0 0 #cbd5e1, 10px 10px 0 -1px #f8fafc, 10px 10px 0 0 #cbd5e1;
+}
+.doc-page b { font-size: 14px; line-height: 1.3; }
+.doc-page small { font-size: 11px; color: #64748b; }
+.doc-sec { font-size: 11px; font-weight: 600; margin-top: 6px; }
+.doc-page i { display: block; height: 5px; border-radius: 3px; background: #e2e8f0; }
+.doc-page i + i { width: 72%; }
+.doc-page .doc-more { margin-top: 8px; text-align: right; }
+.doc-ok { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 0; }
+.doc-ok span { font-size: 12px; font-weight: 600; color: #166534; background: #dcfce7; border-radius: 999px; padding: 2px 10px; }
+html.dark-mode .doc-ok span { color: #86efac; background: rgba(34, 197, 94, 0.15); }
+/* Two ways of working side by side, as numbered steps joined by a line */
+.flows { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+.flow-title { display: block; font-size: 14px; color: var(--heading); margin-bottom: 10px; }
+.flow ol { list-style: none; margin: 0; counter-reset: flow; }
+.flow li { counter-increment: flow; position: relative; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px 8px 36px; }
+.flow li + li { margin-top: 14px; }
+.flow li + li::after { content: ''; position: absolute; left: 19px; top: -15px; height: 14px; border-left: 2px solid var(--divider); }
+.flow li::before { content: counter(flow); position: absolute; left: 10px; top: 8px; width: 20px; height: 20px; border-radius: 50%; background: var(--surface-2); color: var(--muted); font-size: 11px; font-weight: 700; line-height: 20px; text-align: center; }
+.flow li b { display: block; font-size: 13px; line-height: 1.35; color: var(--heading); }
+.flow li span { display: block; font-size: 12px; line-height: 1.4; color: var(--muted); margin-top: 2px; }
+.flow li em { display: inline-block; margin-top: 6px; font-style: normal; font-size: 11px; font-weight: 600; border-radius: 999px; padding: 1px 8px; color: #854d0e; background: #fef9c3; }
+.flow li em.quiet { color: var(--muted); background: var(--surface-2); }
+.flow li.pick { border-color: var(--teal); background: var(--teal-soft); }
+.flow li.pick::before { background: var(--teal); color: #fff; }
+.flow li.pick em { color: var(--teal-dark); background: var(--surface); }
+.flow li.milestone { counter-increment: none; background: none; border: 0; padding: 0 0 0 36px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.flow li.milestone::before { content: ''; left: 16px; top: 6px; width: 8px; height: 8px; background: var(--muted); }
+.flow li.milestone.early { color: var(--teal-dark); }
+.flow li.milestone.early::before { background: var(--teal); }
+.flow-loop { display: flex; align-items: center; gap: 8px; margin: 10px 0 0; padding-left: 10px; font-size: 12px; font-weight: 600; color: var(--teal-dark); }
+.flow-loop::before { content: '\21BA'; font-size: 18px; line-height: 1; }
+html.dark-mode .flow li em { color: #fde68a; background: rgba(250, 204, 21, 0.14); }
+html.dark-mode .flow li em.quiet { color: var(--muted); background: var(--surface-2); }
+html.dark-mode .flow li.pick::before { color: #0f172a; }
+html.dark-mode .flow li.pick em { color: var(--teal); background: var(--surface); }
+@media (max-width: 600px) {
+    .diagram-pic { padding: 10px; margin: 0 -4px; }
+    .board { grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 4px; }
+    .board-label { display: none; }
+    .dn { min-height: 38px; padding: 4px 2px; font-size: 9px; }
+    .dn.gap { font-size: 14px; }
+    .dn.pick { box-shadow: 0 0 0 2px var(--teal); }
+    .flows { grid-template-columns: 1fr; gap: 24px; }
+}
+html.dark-mode .only-light { display: none; }
+html.dark-mode .only-dark { display: block; }
+
+/* Try it now */
+.try {
+    display: grid; grid-template-columns: 112px 1fr auto; gap: 18px; align-items: center;
+    margin: 24px 0; padding: 16px 18px; border: 1px solid var(--border); border-radius: 14px;
+    background: linear-gradient(135deg, var(--teal-soft), transparent 70%), var(--surface);
+}
+.try-thumb {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; padding: 8px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+}
+.try-thumb i { height: 12px; border-radius: 1.5px; background: var(--yellow); }
+.try-thumb i.b { background: var(--blue); }
+.try-thumb i.g { background: var(--green); }
+.try-thumb i.cut { grid-column: 1 / -1; height: 2px; background: var(--teal); margin: 1px 0; }
+.try-what strong { display: block; color: var(--heading); font-size: 16px; }
+.docs-article .try-what p { font-size: 14px; color: var(--muted); margin: 2px 0 0; }
+.btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap;
+    background: linear-gradient(135deg, #14b8a6, #0d9488); color: #fff; text-decoration: none;
+    font-weight: 600; font-size: 15px; padding: 10px 16px; border-radius: 10px;
+}
+.btn:hover { filter: brightness(1.06); }
+
+/* The CLI docs: a terminal, a file, the shape of a command and tables of options.
+   The terminal stays dark in both themes, like a real one. */
+.term, .file { margin: 16px 0 20px; border-radius: 10px; overflow: hidden; max-width: 760px; }
+.term { background: #0f172a; }
+html.dark-mode .term { background: #020617; box-shadow: inset 0 0 0 1px var(--border); }
+.code-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 38px; padding: 0 6px 0 16px; font-size: 12px; }
+.term .code-bar { color: #94a3b8; border-bottom: 1px solid #1e293b; }
+.code-copy {
+    display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 0 10px; border: 0; border-radius: 6px;
+    font: inherit; font-size: 12px; cursor: pointer;
+}
+.term .code-copy { background: #1e293b; color: #cbd5e1; }
+.term .code-copy:hover { background: #334155; color: #fff; }
+.term pre, .file pre { margin: 0; font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 14px; line-height: 1.7; overflow-x: auto; }
+.term pre { padding: 12px 16px 14px; color: #e2e8f0; }
+/* A long command wraps under itself, and output keeps its lines and scrolls sideways */
+.term-cmd { display: block; white-space: pre-wrap; overflow-wrap: anywhere; padding-left: 2ch; text-indent: -2ch; }
+.term-out { display: block; white-space: pre; }
+.term-prompt { color: #2dd4bf; user-select: none; }
+.term-ok { color: #4ade80; }
+.term-err { color: #f87171; }
+.term-warn { color: #facc15; }
+.term-dim { color: #94a3b8; }
+ol.steps + .term { margin-left: 30px; }
+
+.file { border: 1px solid var(--border); background: var(--surface); box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05); }
+.file .code-bar { padding-left: 0; background: var(--surface-2); border-bottom: 1px solid var(--border); }
+.file-name { align-self: stretch; display: flex; align-items: center; padding: 0 16px; background: var(--surface); border-right: 1px solid var(--border); font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 13px; color: var(--heading); }
+.file .code-copy { background: var(--border); color: var(--text); }
+.file .code-copy:hover { color: var(--heading); }
+.file pre { padding: 10px 0; }
+.file-line { display: flex; align-items: center; min-width: max-content; padding-right: 16px; }
+.file-line code { background: none; border: 0; padding: 0; font-size: inherit; white-space: pre; color: var(--text); }
+.file-n { flex: none; width: 40px; padding-right: 6px; text-align: right; color: var(--muted); opacity: 0.7; user-select: none; }
+.file-mark { flex: none; width: 16px; color: #15803d; font-weight: 700; user-select: none; }
+.file-added { background: #dcfce7; }
+html.dark-mode .file-added { background: rgba(34, 197, 94, 0.14); }
+html.dark-mode .file-mark { color: #4ade80; }
+.y-key { color: #0f766e; }
+.y-dash { color: var(--muted); }
+html.dark-mode .y-key { color: #5eead4; }
+.file-dot { flex: none; margin: 0 0 0 14px; box-shadow: 0 0 0 3px var(--surface); }
+
+.docs-article .usage { margin: 14px 0 18px; max-width: none; }
+/* The shape of a command, on the terminal's dark background so it stands out from the text */
+.usage code { display: inline-block; padding: 8px 14px; border-radius: 8px; border: 0; font-size: 14px; color: #e2e8f0; background: #0f172a; }
+html.dark-mode .usage code { background: #020617; box-shadow: inset 0 0 0 1px var(--border); }
+.usage code span { color: #94a3b8; }
+.usage code i { font-style: normal; white-space: nowrap; }
+/* A command as a heading reads as the heading, in the code face with no box around it */
+.docs-article h2 code, .docs-article h3 code { font-size: 0.92em; padding: 0; background: none; border: 0; border-radius: 0; color: inherit; letter-spacing: -0.01em; }
+
+.table-wrap { margin: 14px 0 20px; max-width: 760px; overflow-x: auto; }
+.table-wrap table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.table-wrap th { padding: 0 16px 6px 0; text-align: left; font-size: 13px; font-weight: 600; color: var(--muted); }
+.table-wrap td { padding: 9px 16px 9px 0; vertical-align: top; border-top: 1px solid var(--border); }
+.table-wrap tr:last-child td { border-bottom: 1px solid var(--border); }
+.table-wrap td:first-child { white-space: nowrap; }
+.table-wrap td:first-child code { color: var(--heading); }
+
+/* In a web app guide: the same thing from the terminal, with a link into the CLI docs */
+.from-cli { display: flex; gap: 14px; margin: 22px 0; padding: 16px 18px; max-width: 68ch; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+.from-cli-icon { flex: none; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: #0f172a; color: #2dd4bf; }
+html.dark-mode .from-cli-icon { background: #020617; box-shadow: inset 0 0 0 1px var(--border); }
+.from-cli div { min-width: 0; }
+.from-cli strong { display: block; color: var(--heading); }
+.docs-article .from-cli p { margin: 4px 0 0; font-size: 15px; }
+
+/* The switch between the web app docs and the CLI docs */
+.docs-switch { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; margin: 0 0 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+.docs-switch a {
+    display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; border-radius: 7px;
+    color: var(--muted); font-size: 13px; font-weight: 600; text-decoration: none;
+}
+.docs-switch a:hover { color: var(--heading); background: var(--surface-2); }
+.docs-switch a[aria-current] { background: var(--teal-soft); color: #0f766e; }
+html.dark-mode .docs-switch a[aria-current] { color: #5eead4; }
+.docs-switch a span { font-weight: 400; }
+.contents-top .docs-switch, .learn-courses-top .docs-switch { align-self: center; display: flex; margin: 0; padding: 3px; gap: 2px; border-radius: 9px; }
+.learn-courses-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.docs-switch-big a { min-height: 32px; padding: 0 12px; font-size: 13px; }
+.contents-intro { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 28px; margin-top: 24px; }
+.contents-intro p { flex: 1 1 360px; font-size: 17px; color: var(--text); }
+.contents-intro .term { flex: 0 1 420px; margin: 8px 0; }
+
+/* Tips in the map's note colours */
+.tip { margin: 20px 0; padding: 12px 16px; border-radius: 4px; color: var(--note-text); max-width: 68ch; box-shadow: 1px 2px 0 rgba(15, 23, 42, 0.1); }
+.docs-article .tip p { margin: 0; }
+.docs-article .tip strong { color: var(--note-text); font-weight: 700; }
+/* The cards stay light in both themes, so links on them keep a dark teal */
+.docs-article .tip a { color: #115e59; font-weight: 600; }
+.tip-tip { background: var(--yellow); }
+.tip-note { background: var(--cyan); }
+/* Before you start, on the first lesson of a course that follows the docs */
+.tip-before { background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 0; box-shadow: none; }
+.docs-article .tip-before strong { color: var(--heading); }
+.docs-article .tip-before a { color: var(--link); }
+/* The one point a page is making, set apart from the text around it */
+.tip-statement { background: none; box-shadow: none; border-left: 4px solid var(--teal); border-radius: 0; padding: 2px 0 2px 18px; margin: 24px 0; }
+.docs-article .tip-statement p { font-size: 20px; line-height: 1.45; font-weight: 600; color: var(--heading); }
+
+.pager { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 48px; }
+.pager a { border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; text-decoration: none; color: var(--heading); font-weight: 600; }
+.pager a span { display: block; font-size: 13px; color: var(--muted); font-weight: 500; }
+.pager a:hover { border-color: var(--teal); }
+.pager .next { text-align: right; grid-column: 2; }
+
+/* Lessons: the course down the side, and the tasks to tick */
+.lesson-side {
+    position: sticky; top: var(--sticky-top, var(--header-h)); align-self: start; height: calc(100vh - var(--header-h));
+    overflow-y: auto; padding: 26px 16px 32px 24px; border-right: 1px solid var(--border); font-size: 14px;
+}
+.lesson-course { display: block; text-decoration: none; color: var(--heading); font-weight: 700; font-size: 16px; line-height: 1.3; }
+.lesson-course span { display: block; font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 2px; }
+.lesson-bar { height: 6px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--border); margin: 14px 0 6px; overflow: hidden; }
+.lesson-bar i { display: block; height: 100%; width: 0; background: var(--teal); border-radius: 6px; transition: width 0.25s; }
+.lesson-count { font-size: 13px; color: var(--muted); }
+.lesson-nav { list-style: none; margin-top: 16px; }
+.lesson-nav a, .lesson-nav .soon, .lesson-list a, .lesson-list .soon {
+    display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: start;
+    padding: 7px 8px; border-radius: 9px; text-decoration: none; color: var(--muted); line-height: 1.35;
+}
+.lesson-nav a:hover, .lesson-list a:hover { color: var(--heading); background: var(--surface-2); }
+.lesson-nav a.on { background: var(--teal-soft); color: var(--heading); font-weight: 600; }
+.dot {
+    width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border); background: var(--surface);
+    display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--muted);
+}
+.lesson-nav a.on .dot { border-color: var(--teal); color: var(--teal-dark); }
+.done .dot { background: var(--teal); border-color: var(--teal); color: #fff; }
+html.dark-mode .done .dot { color: #0f172a; }
+.done .dot { font-size: 0; }
+.done .dot::after { content: '\2713'; font-size: 12px; }
+
+
+.tasks { margin: 24px 0; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; background: var(--surface); }
+.tasks-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    padding: 12px 16px; background: linear-gradient(135deg, var(--teal-soft), transparent 75%), var(--surface-2);
+    border-bottom: 1px solid var(--border);
+}
+.tasks-head strong { color: var(--heading); }
+.docs-article .tasks-how { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+/* Tasks tick themselves only beside the lesson, at the width the practice split needs */
+.docs-article .tasks-how-narrow, .docs-article .tasks-how-reading { display: none; }
+/* With the story map closed on a wide screen, the lesson is for reading: no checkboxes to tick
+   with nothing beside them, and a tick on the tasks already done */
+@media (min-width: 1260px) {
+  body:not(.practicing) .tasks input[type="checkbox"] { display: none; }
+  body:not(.practicing) .tasks label { grid-template-columns: 1fr; pointer-events: none; cursor: default; }
+  body:not(.practicing) .tasks label:has(input:checked) > span::before { content: '\2713  '; color: var(--teal-dark, var(--teal)); font-weight: 700; }
+  body:not(.practicing) .docs-article .tasks-how:not(.tasks-how-reading) { display: none; }
+  body:not(.practicing) .docs-article .tasks-how-reading { display: block; }
+}
+@media (max-width: 1259px) {
+  .docs-article .tasks-how-wide, .task-auto { display: none; }
+  .docs-article .tasks-how-narrow { display: block; }
+}
+/* After the text of a task that ticks itself */
+.task-auto {
+    display: inline-block; margin-left: 2px; padding: 0 8px; border-radius: 999px; vertical-align: 1px;
+    font-size: 12px; font-weight: 600; line-height: 20px; white-space: nowrap;
+    color: var(--teal-dark); background: var(--teal-soft);
+}
+html.dark-mode .task-auto { color: var(--teal); }
+.tasks input:checked + span .task-auto { opacity: 0.6; }
+.tasks-head .btn { padding: 8px 14px; font-size: 14px; }
+.tasks ul { list-style: none; padding: 6px; margin: 0; max-width: none; }
+.tasks li { margin: 0; }
+/* Under a task that hasn't ticked when the story map has a name a letter or two out */
+.tasks .task-hint { margin: -4px 0 6px 44px; font-size: 13px; color: var(--warn-text, #92400e); }
+html.dark-mode .tasks .task-hint { color: #fcd34d; }
+.tasks label { display: grid; grid-template-columns: 24px 1fr; gap: 10px; padding: 9px 10px; border-radius: 9px; cursor: pointer; align-items: start; }
+.tasks label:hover { background: var(--surface-2); }
+.tasks input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--teal); }
+.tasks input:checked + span { color: var(--muted); }
+.tasks input:checked + span strong { color: var(--muted); }
+.tasks.all-done .tasks-head { background: var(--teal-soft); }
+
+.lesson-foot { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--border); }
+.lesson-hint { font-size: 14px; color: var(--muted); }
+.lesson-hint:empty { display: none; }
+.lesson-done .lesson-hint { color: var(--link); font-weight: 600; }
+/* Confetti when a lesson's last task ticks (docs.js celebrate) */
+.confetti { position: fixed; inset: 0; pointer-events: none; z-index: 1000; overflow: hidden; }
+.confetti span { position: absolute; width: 8px; height: 12px; margin: -6px 0 0 -4px; border-radius: 2px; }
+.course-progress:empty { display: none; }
+.course-progress { color: var(--link); font-weight: 600; }
+.course-row h2 a { color: inherit; text-decoration: none; }
+.course-row h2 a:hover { color: var(--link); }
+.lesson-list { list-style: none; margin: 12px 0 0; }
+.lesson-list li { margin: 0; }
+
+/* The docs home: a contents page, like a book's */
+.docs-wide { max-width: 1180px; margin: 0 auto; padding: 56px 32px 72px; }
+.docs-narrow { max-width: 820px; }
+.docs-courses h1, .contents-top h1 {
+    font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 44px; line-height: 1.1; font-weight: 700; letter-spacing: -0.5px; color: var(--heading);
+}
+.page-lead { font-size: 17px; color: var(--muted); margin-top: 14px; }
+
+.contents { padding-top: 48px; }
+.contents-top {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    padding-bottom: 18px; border-bottom: 2px solid var(--heading);
+}
+.contents-top h1 { font-size: 52px; line-height: 1; }
+.contents-top span { font-size: 14px; color: var(--muted); }
+.contents-back { display: none; }
+.contents-lbl { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+
+
+.contents-guides { columns: 3; column-gap: 40px; margin-top: 30px; }
+.contents-sec { break-inside: avoid; margin-bottom: 24px; }
+.contents-sec h2 { display: flex; gap: 8px; font-size: 15px; font-weight: 700; color: var(--heading); margin-bottom: 4px; }
+.contents-sec h2 i { width: 20px; font-style: normal; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+.contents-sec a, .contents-sec .soon { display: flex; align-items: baseline; gap: 6px; font-size: 14px; padding: 3px 0 3px 28px; text-decoration: none; }
+.contents-sec a { color: var(--text); }
+/* A dotted leader runs from the title to the reading time */
+.contents-sec a::after { content: ''; flex: 1; order: 1; border-bottom: 1px dotted var(--app-border); transform: translateY(-4px); }
+.contents-sec a em { order: 2; flex: none; white-space: nowrap; font-style: normal; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.contents-sec a:hover { color: var(--link); }
+
+@media (max-width: 900px) {
+    .contents-guides { columns: 2; }
+}
+/* Phones: one column, and every link a full-height tap target */
+@media (max-width: 600px) {
+    .contents { padding: 20px 16px 36px; }
+    .contents-top { align-items: center; flex-wrap: nowrap; gap: 12px; padding-bottom: 14px; }
+    /* On a phone the switch stays beside the heading, without the page counts */
+    .docs-switch-big a { min-height: 32px; padding: 0 10px; }
+    .docs-switch-big a span { display: none; }
+    .contents-top h1 { font-size: 34px; }
+    .contents-top span { font-size: 13px; }
+    .contents-guides { columns: 1; }
+    .contents-sec { margin-bottom: 0; border-top: 1px solid var(--border); padding: 12px 0 8px; }
+    .contents-sec h2 { font-size: 16px; }
+    .contents-sec a, .contents-sec .soon { font-size: 15px; padding: 8px 0 8px 28px; min-height: 44px; align-items: center; }
+    .contents-sec a::after { transform: none; }
+    .contents-back { display: block; margin-top: 20px; text-align: center; font-size: 14px; color: var(--muted); }
+}
+
+/* The courses page: each course has a sticky note in its colour, like a card on a map, and its
+   lessons run down a track that fills in as they're done */
+.course-list { margin-top: 36px; display: grid; gap: 20px; }
+.course-row {
+    --course-ink: color-mix(in srgb, var(--course) 45%, #0f172a);
+    border: 1px solid var(--border); border-radius: 16px; padding: 24px; background: var(--surface);
+    background-image: linear-gradient(160deg, color-mix(in srgb, var(--course) 16%, transparent), transparent 140px);
+}
+html.dark-mode .course-row { --course-ink: var(--course); }
+.course-row-head { display: grid; grid-template-columns: 56px 1fr; gap: 16px; align-items: center; }
+.course-note {
+    position: relative; width: 56px; height: 56px; display: grid; place-items: center;
+    background: var(--course); color: #0f172a; border-radius: 2px;
+    font-family: 'Outfit', 'Inter', sans-serif; font-size: 26px; font-weight: 700;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12), 0 4px 10px rgba(15, 23, 42, 0.08);
+    transform: rotate(-3deg); transition: transform 0.2s ease;
+}
+/* The folded corner of a card on the map */
+.course-note::after {
+    content: ''; position: absolute; right: 0; bottom: 0; width: 14px; height: 14px;
+    background: linear-gradient(135deg, transparent 50%, rgba(0, 0, 0, 0.12) 50%);
+}
+.course-row:hover .course-note { transform: rotate(0deg); }
+.course-row h2 { font-size: 21px; font-weight: 700; letter-spacing: -0.3px; color: var(--heading); line-height: 1.25; }
+.course-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 6px; font-size: 14px; color: var(--muted); }
+.course-meta b { font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; }
+.course-start { background: var(--teal-soft); color: var(--teal-dark); }
+html.dark-mode .course-start { background: rgba(45, 212, 191, 0.15); color: var(--teal); }
+.course-soon { background: var(--surface-2); color: var(--muted); }
+.course-track-row { display: flex; align-items: center; gap: 12px; margin: 18px 0 4px; }
+.course-track-row .course-progress { font-size: 13px; color: var(--course-ink); white-space: nowrap; }
+.course-summary { color: var(--text); margin: 14px 0 0; }
+.course-track { flex: 1; height: 6px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.course-track span { display: block; height: 100%; width: 0; border-radius: inherit; background: var(--course); transition: width 0.4s ease; }
+.course-row .lesson-list { margin-top: 10px; }
+.course-row .lesson-list li { position: relative; }
+/* The line between one lesson and the next, coloured once the lesson above it is done */
+.course-row .lesson-list li:not(:last-child)::before {
+    content: ''; position: absolute; left: 18px; top: 18px; bottom: -18px; width: 2px; background: var(--border);
+}
+.course-row .lesson-list li:has(.done):not(:last-child)::before { background: var(--course); }
+.course-row .lesson-list .dot { position: relative; z-index: 1; }
+.course-row .lesson-list a { color: var(--text); }
+.course-row .done .dot { background: var(--course); border-color: var(--course); color: #0f172a; }
+.course-row .done span:last-child { color: var(--muted); }
+.course-go { margin-top: 16px; }
+.course-row.not-yet { background-image: none; }
+.course-row.not-yet .course-note { filter: saturate(0.5); opacity: 0.7; }
+
+.docs-footer {
+    display: flex; gap: 22px; justify-content: center; padding: 28px 24px 36px;
+    border-top: 1px solid var(--border); font-size: 14px;
+}
+.docs-footer a { color: var(--muted); text-decoration: none; }
+.docs-footer a:hover { color: var(--heading); }
+.docs-guide .docs-footer { display: none; }
+
+/* Narrower screens: contents list goes, then the sidebar becomes a drawer */
+@media (max-width: 1100px) {
+    .docs-main { grid-template-columns: minmax(0, 1fr); padding: 32px 32px 56px; }
+    .docs-toc { display: none; }
+    .toc-mobile { display: block; }
+}
+@media (max-width: 1100px) {
+    .toc-mobile { margin: 16px 0 4px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+    .toc-mobile summary { cursor: pointer; padding: 9px 14px; font-weight: 600; font-size: 14px; color: var(--heading); }
+    .toc-mobile nav { padding: 0 14px 10px; }
+    .toc-mobile nav a { display: block; padding: 4px 0; font-size: 14px; color: var(--muted); text-decoration: none; }
+}
+/* As on the app's home page, the links show as icons beside the logo, and the header scrolls away */
+@media (max-width: 900px) {
+    :root { --header-h: 0px; }
+    .site-header-wrap { position: static; }
+    .site-header { flex-wrap: wrap; }
+    .header-link { min-width: 34px; padding: 0; }
+    .header-link span { display: none; }
+}
+@media (max-width: 600px) {
+    .site-header { padding: 12px 24px; }
+}
+/* The wordmark goes before the header has to wrap onto a second row */
+@media (max-width: 480px) {
+    .site-header .logo-text { display: none; }
+}
+@media (max-width: 380px) {
+    .site-header .header-links-divider { display: none; }
+    .site-header .header-link { min-width: 30px; }
+}
+@media (max-width: 860px) {
+    .header-search { display: none; }
+    .docs-menu-btn, .docs-search-btn { display: inline-flex; }
+    .site-header .docs-search-btn { margin-left: auto; }
+    /* The search button opens the search box on a row of its own */
+    .site-header.search-open .header-search { display: flex; order: 6; flex: 0 0 100%; width: 100%; margin: 4px 0 0; }
+    .site-header.search-open .header-search kbd { display: none; }
+    .site-header.search-open .header-search .search-results { left: 0; right: 0; width: auto; }
+    .docs-menu-btn[hidden] { display: none; }
+    .site-header.search-open .docs-search-btn { border-color: var(--teal); color: var(--link); }
+    .docs-layout { display: block; }
+    .docs-side {
+        position: fixed; top: 0; left: 0; bottom: 0; z-index: 50; width: min(340px, 88vw); height: 100%;
+        background: var(--surface); border-right: 1px solid var(--border); padding: 12px 16px 28px;
+        transform: translateX(-100%); transition: transform 0.2s ease; visibility: hidden; font-size: 15px;
+    }
+    body.nav-open .docs-side { transform: none; visibility: visible; box-shadow: var(--shadow); }
+    .docs-shade { position: fixed; inset: 0; z-index: 45; background: rgba(15, 23, 42, 0.45); display: none; }
+    body.nav-open .docs-shade { display: block; }
+    body.nav-open { overflow: hidden; }
+    .drawer-head { display: flex; align-items: center; justify-content: space-between; padding: 4px 0 12px; border-bottom: 1px solid var(--border); }
+    .drawer-back { display: block; padding: 12px 0; font-size: 14px; font-weight: 600; color: var(--heading); text-decoration: none; border-bottom: 1px solid var(--border); }
+    .drawer-search { display: flex; margin-top: 14px; }
+    .docs-side .docs-switch { margin-top: 12px; }
+    .docs-side .docs-switch a { min-height: 44px; font-size: 15px; }
+    .drawer-search .search-results { min-width: 0; }
+    .grp summary { padding: 9px 6px; }
+    .grp li a, .grp li .soon { padding: 7px 12px; }
+    .docs-main { padding: 24px 16px 48px; }
+    /* The breadcrumb names the course, so the course box above the title goes */
+    .lesson-side { display: none; }
+    .docs-article h1 { font-size: 32px; line-height: 1.25; letter-spacing: -0.02em; margin-top: 12px; }
+    .docs-article .byline { margin: 12px 0 22px; padding-bottom: 18px; }
+    .docs-article .byline + p, .docs-article .toc-mobile + p { font-size: 17px; }
+    .docs-guide .docs-footer { display: flex; }
+}
+@media (max-width: 600px) {
+    .docs-brand { font-size: 16px; }
+    .docs-wide { padding: 32px 16px 56px; }
+    .docs-courses h1 { font-size: 32px; }
+    .course-list { gap: 16px; margin-top: 28px; }
+    .course-row { padding: 20px 16px; }
+    .course-row-head { grid-template-columns: 48px 1fr; gap: 14px; align-items: start; }
+    .course-note { width: 48px; height: 48px; font-size: 22px; }
+    .course-row h2 { font-size: 19px; }
+    .course-row .lesson-list a, .course-row .lesson-list .soon { padding: 9px 8px; }
+    .course-row .lesson-list li:not(:last-child)::before { top: 20px; bottom: -20px; }
+    .course-go { display: flex; }
+    .page-lead { font-size: 16px; }
+    .try { grid-template-columns: 64px 1fr; gap: 12px; padding: 14px; }
+    .try-thumb { padding: 5px; gap: 2px; }
+    .try-thumb i { height: 7px; }
+    .try .btn { grid-column: 1 / -1; }
+    .pager { grid-template-columns: 1fr; }
+    .pager .next { grid-column: auto; }
+    .search-results { min-width: 0; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+.btn-quiet { background: var(--surface); color: var(--heading); border: 1px solid var(--border); padding: 9px 16px; }
+.btn-quiet svg { color: var(--teal-dark); }
+html.dark-mode .btn-quiet svg { color: var(--teal); }
+.btn-quiet:hover { filter: none; border-color: var(--teal); }
+
+/* Learn home: the heading and how the courses work, then the courses */
+/* The top sits on a dark band, like the why page */
+body.docs-courses .docs-scroll { scrollbar-gutter: stable; }
+.learn-band { background: #0f172a; }
+html.dark-mode .learn-band { background: #020617; border-bottom: 1px solid var(--border); }
+.learn-band h1 { font-size: 48px; line-height: 1.05; letter-spacing: -1px; color: #ffffff; }
+.learn-band .learn-how { color: #cbd5e1; }
+.learn-top { max-width: 1180px; margin: 0 auto; padding: 56px 32px; }
+.learn-how { max-width: 680px; margin-top: 20px; font-size: 18px; }
+.docs-wide.learn-home { padding-top: 40px; }
+.learn-courses-title { font-size: 24px; font-weight: 700; color: var(--heading); }
+.course-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 18px; }
+.course-grid .course-row { display: flex; flex-direction: column; align-items: flex-start; }
+.course-grid .course-row-head, .course-grid .course-track-row { align-self: stretch; }
+/* The progress shows once a lesson is done */
+.course-grid .course-track-row:has(.course-progress:empty) { display: none; }
+.course-grid .course-go { margin-top: auto; }
+.course-grid .course-summary { margin-bottom: 18px; }
+.learn-also { margin-top: 28px; color: var(--muted); }
+@media (max-width: 900px) {
+    .course-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 720px) {
+    .learn-top { padding: 32px 16px 36px; }
+    .docs-wide.learn-home { padding-top: 32px; }
+    .learn-band h1 { font-size: 38px; }
+    .learn-how { font-size: 17px; }
+}
+
+/* Why learn user story mapping (docs/why-user-story-mapping.json): the answer first, then what changes for each role */
+/* The band runs edge to edge, so the why page keeps a scrollbar gap on the scrollbar's side only */
+body.docs-why .docs-scroll { scrollbar-gutter: stable; }
+.why-band { --band: #0f172a; background: var(--band); color: #cbd5e1; }
+html.dark-mode .why-band { --band: #020617; border-bottom: 1px solid var(--border); }
+.why-band-inner { max-width: 1180px; margin: 0 auto; padding: 64px 32px 88px; }
+.why-band .crumbs, .why-band .crumbs a { color: #94a3b8; }
+.why-band .crumbs [aria-current] { color: #e2e8f0; }
+.why-band h1 { margin-top: 28px; font-size: 22px; line-height: 1.3; font-weight: 600; color: #5eead4; }
+.why-answer { margin-top: 14px; max-width: 15em; font-size: 68px; line-height: 1.04; font-weight: 800; letter-spacing: -0.035em; color: #ffffff; }
+.why-text { margin-top: 32px; max-width: 760px; font-size: 19px; line-height: 1.65; color: #cbd5e1; }
+.why-text p + p { margin-top: 14px; }
+.why-go { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
+.why-go .btn { min-height: 48px; padding: 0 20px; }
+.why-band .btn:not(.btn-quiet) { background: #2dd4bf; color: #0f172a; }
+.why-band .btn-quiet { background: transparent; color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.35); }
+.why-band .btn-quiet:hover { border-color: #5eead4; }
+.why { padding-top: 0; }
+.why-roles { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); gap: 12px 48px; margin-top: 64px; padding-top: 28px; border-top: 2px solid var(--heading); }
+.why-roles h2 { font-size: 20px; line-height: 1.3; font-weight: 800; color: var(--heading); }
+.why-role { display: grid; grid-template-columns: 150px minmax(0, 1fr); align-items: start; gap: 4px 20px; padding: 14px 0; border-top: 1px solid var(--border); }
+.why-role:first-child { border-top: 0; padding-top: 0; }
+.why-role h3 { display: flex; align-items: center; gap: 8px; font-size: 16px; line-height: 1.6; color: var(--heading); }
+.why-role i { flex: none; width: 12px; height: 12px; border-radius: 2px; box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.18); }
+.why-role p { line-height: 1.6; }
+.why-next { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); gap: 12px 48px; margin-top: 56px; padding-top: 28px; border-top: 2px solid var(--heading); }
+.why-next h2 { font-size: 20px; line-height: 1.3; font-weight: 800; color: var(--heading); }
+.why-next .why-go { margin-top: 0; }
+.why-pager { margin-top: 56px; }
+@media (max-width: 700px) {
+    .why-band-inner { padding: 40px 16px 56px; }
+    .why-band h1 { margin-top: 20px; font-size: 18px; }
+    .why-answer { font-size: 40px; }
+    .why-text { margin-top: 22px; font-size: 17px; }
+    .why-roles, .why-role, .why-next { grid-template-columns: minmax(0, 1fr); }
+    .why-roles { margin-top: 48px; }
+}
+
+/* Practice mode (docs.js): on a wide screen, a hands-on lesson's practice story map opens beside
+   the lesson. The lesson narrows to a column on the left and scrolls on its own. The story map's
+   controls are in the header (docs/build.js practiceControls); the pane has no bar of its own
+   except in full screen, so the story map starts right under the header. */
+.practice iframe { background: var(--surface); }
+/* Beside the story map, the lesson keeps the page's light background and casts a soft shadow onto
+   the story map, as if it lies on top, so the two read as separate parts with no line between them
+   and the story map keeps every pixel of its side */
+@media (min-width: 1260px) {
+  body.practicing .docs-scroll { position: relative; z-index: 2; background: var(--bg); box-shadow: var(--lesson-edge); }
+  /* A thin scrollbar with a clear track, so a long lesson doesn't put a grey bar along the edge.
+     Firefox takes the standard properties; Chrome and Safari draw their own from the ::-webkit
+     rules, which only apply when the standard ones are left at auto. */
+  body.practicing .docs-scroll { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+  body.practicing .docs-scroll:hover { scrollbar-color: var(--muted) transparent; }
+  @supports selector(::-webkit-scrollbar) {
+    body.practicing .docs-scroll, body.practicing .docs-scroll:hover { scrollbar-width: auto; scrollbar-color: auto; }
+    body.practicing .docs-scroll::-webkit-scrollbar { width: 8px; }
+    body.practicing .docs-scroll::-webkit-scrollbar-track { background: transparent; }
+    body.practicing .docs-scroll::-webkit-scrollbar-button { display: none; }
+    body.practicing .docs-scroll::-webkit-scrollbar-thumb { background: var(--border); border: 2px solid transparent; background-clip: padding-box; }
+    body.practicing .docs-scroll:hover::-webkit-scrollbar-thumb { background-color: var(--muted); }
+  }
+}
+.practice-bar { display: none; align-items: center; gap: 16px; padding: 8px 12px 8px 16px; border-bottom: 1px solid var(--border); background: var(--surface); }
+.practice-step { flex: 1; min-width: 0; margin: 0; font-size: 14px; font-weight: 600; color: var(--heading); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.practice-step-done { padding: 6px 12px; font-size: 13px; border: 0; border-radius: 4px; cursor: pointer; }
+/* The button style sets its display, so hidden needs saying again */
+.practice-step-done[hidden], .practice-link[hidden] { display: none; }
+.practice-step-done:disabled { opacity: .45; cursor: not-allowed; }
+/* In full screen, the way out is a clear button, not a link */
+.practice-link.practice-exit { padding: 6px 12px; border: 1px solid var(--teal); border-radius: 4px; background: var(--surface); }
+.practice-link.practice-exit:hover { background: var(--teal-soft); }
+.practice:fullscreen { display: flex; flex-direction: column; background: var(--surface); }
+.practice:fullscreen .practice-bar { display: flex; }
+.practice:fullscreen iframe { flex: 1; min-height: 0; border: 0; }
+/* The header of a lesson: no search, and the story map's controls while it's open */
+.header-spacer { flex: 1; }
+.practice-controls { display: none; align-items: center; gap: 18px; margin-right: 6px; }
+body.practicing .practice-controls { display: flex; }
+/* The story map's shortcuts, stacked one to a line in the middle of the header while it's open */
+/* Tight enough to sit inside the header's height, so the story map loses nothing to them */
+.practice-tips { flex: 1; min-width: 0; margin: -6px 22px; padding: 0; list-style: none; visibility: hidden; display: flex; flex-direction: column; align-items: flex-end; gap: 0; font-size: 11px; line-height: 1.25; color: var(--muted); white-space: nowrap; }
+.practice-tips li { overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+body.practicing .practice-tips { visibility: visible; }
+.practice-tips kbd { font-family: inherit; font-size: 10px; font-weight: 600; padding: 0 4px; border: 1px solid var(--border); background: var(--surface); color: var(--heading); }
+.practice-link { padding: 0; border: 0; background: none; font: inherit; font-size: 13px; font-weight: 600; color: var(--link); text-decoration: none; cursor: pointer; white-space: nowrap; }
+.practice-link:hover { text-decoration: underline; }
+/* A confirm box, styled as the app's own (.dialog-modal in styles.css) */
+.docs-dialog { margin: auto; width: 90vw; max-width: 440px; padding: 24px; border: 0; border-radius: 12px; background: #fff; color: #333; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15); }
+.docs-dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
+.docs-dialog p { margin: 0 0 16px; font-size: 15px; line-height: 1.5; }
+.docs-dialog-buttons { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.dialog-btn { padding: 8px 18px; font: inherit; font-size: 14px; font-weight: 500; border-radius: 6px; border: none; cursor: pointer; transition: background 0.15s; }
+.dialog-btn-cancel { background: #f3f4f6; color: #374151; }
+.dialog-btn-cancel:hover { background: #e5e7eb; }
+.dialog-btn-ok { background: #3b82f6; color: #fff; }
+.dialog-btn-ok:hover { background: #2563eb; }
+html.dark-mode .docs-dialog { background: #1e293b; color: #e2e8f0; box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4); }
+html.dark-mode .dialog-btn-cancel { background: #253044; color: #94a3b8; }
+html.dark-mode .dialog-btn-cancel:hover { background: #334155; }
+@media (max-width: 720px) {
+    .docs-dialog { width: 94vw; padding: 18px; }
+    .dialog-btn { padding: 10px 18px; }
+}
+.practice iframe { flex: 1; min-height: 0; width: 100%; border: 0; background: var(--bg); }
+/* From 1260px wide, so the story map gets at least the 880px the app header needs */
+@media (min-width: 1260px) {
+    body.practicing { display: grid; grid-template-columns: clamp(360px, 30vw, 440px) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+    body.practicing .site-header-wrap { grid-column: 1 / -1; }
+    /* The header runs the full width, so its line meets the lesson column and the story map's bar */
+    body.practicing .site-header { max-width: none; }
+    body.practicing .docs-scroll { grid-column: 1; grid-row: 2; scrollbar-gutter: auto; }
+    body.practicing .practice { grid-column: 2; grid-row: 2; display: flex; flex-direction: column; min-height: 0; }
+    body.practicing .lesson-side, body.practicing .docs-footer { display: none; }
+    body.practicing .docs-layout { display: block; max-width: none; }
+    body.practicing .docs-main { display: block; padding: 20px 24px 48px; }
+    /* The lesson sits in a narrow column beside the story map, so it's closer together, to bring
+       the tasks up nearer the top. The text keeps its size, to stay easy to read. */
+    body.practicing .docs-main { padding-top: 14px; }
+    body.practicing .docs-article h1 { font-size: 28px; margin-top: 8px; }
+    body.practicing .docs-article .byline { margin: 8px 0 16px; padding-bottom: 12px; }
+    body.practicing .docs-article .byline + p { font-size: 17px; }
+    body.practicing .docs-article p { margin: 8px 0; }
+    body.practicing .docs-article h2 { font-size: 20px; margin: 28px 0 8px; }
+    body.practicing .tasks { margin: 16px 0; }
+    body.practicing .tasks label { padding: 7px 10px; }
+    /* The story map is already open beside the tasks */
+    body.practicing .tasks-head .btn[data-practice] { display: none; }
+}
+
+/* A task that ticked itself when the practice story map showed it was done */
+.tasks li.ticked-for-you label { animation: ticked-for-you 1.6s ease-out; }
+@keyframes ticked-for-you { from { background: var(--teal-soft); } to { background: transparent; } }
+@media (prefers-reduced-motion: reduce) { .tasks li.ticked-for-you label { animation: none; } }
+
+/* A reference page, such as the CLI command reference: each command is an entry under a rule,
+   its name as a plain heading, then Syntax, Options and Examples, each under a bold label, with
+   the syntax and examples in terminal blocks and the flags as code, in boxes like the rest */
+.reference h2:has(> code) { margin-top: 44px; padding-top: 30px; border-top: 1px solid var(--border); }
+.reference h2 > code { font-family: inherit; font-size: 1em; font-weight: inherit; color: inherit; letter-spacing: inherit; }
+.reference .ref-label { margin: 18px 0 8px; font-weight: 700; color: var(--heading); }
+.reference .ref-block { margin: 0 0 16px; max-width: none; }
+.term-comment { color: #94a3b8; font-style: italic; }
+.reference .table-wrap { margin: 0 0 8px; max-width: none; }
+.reference .table-wrap td:first-child { width: 15.5em; white-space: nowrap; }
+.reference .table-wrap td:first-child a { text-decoration: none; }
+@media (max-width: 640px) { .reference .table-wrap td:first-child { white-space: normal; } }
+
+/* A lesson as steps (docs/build.js renderSteps, docs.js drawSteps): a checklist rail, each step a
+   round marker joined to the next by a line, teal as far as the learner has got. The step in focus
+   shows its instruction in a box; the ones done and to come show only their title. Square corners. */
+.lsteps { margin: 20px 0 24px; display: grid; gap: 16px; }
+.lsteps-open { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 14px 16px; border: 1px solid var(--border); background: var(--surface); }
+.lsteps-open p { margin: 0; flex: 1 1 200px; font-size: 14px; color: var(--text); }
+.lsteps-open .btn, .lsteps .btn, .lesson-foot .btn { border-radius: 4px; }
+.lsteps-progress { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.lsteps-bar { flex: 1; height: 4px; background: var(--surface-2); overflow: hidden; }
+.lsteps-bar i { display: block; height: 100%; width: 0; background: var(--teal); transition: width .3s ease; }
+.lsteps-list { list-style: none; margin: 0; padding: 0; display: grid; }
+.lstep { position: relative; padding-bottom: 18px; }
+.lstep:last-child { padding-bottom: 0; }
+/* The rail between one marker and the next */
+.lstep::before { content: ''; position: absolute; left: 11px; top: 28px; bottom: 2px; width: 2px; background: var(--border); }
+.lstep:last-child::before { display: none; }
+.lstep.done::before { background: var(--teal); }
+.lstep-box { position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px; }
+.lstep-head { display: flex; align-items: center; gap: 14px; width: 100%; padding: 0; border: 0; background: none; text-align: left; font: inherit; color: inherit; cursor: pointer; }
+.lstep-head .num { flex: none; position: relative; z-index: 1; width: 24px; height: 24px; box-sizing: border-box; border-radius: 50%; display: grid; place-items: center; font-size: 12.5px; font-weight: 700; border: 1.5px solid var(--border); color: var(--muted); background: var(--bg); }
+.lstep-title { font-weight: 600; color: var(--heading); flex: 1; min-width: 0; }
+.lstep-body { margin: 10px 0 0 38px; padding: 12px 14px; border: 1px solid var(--border); background: var(--surface); display: grid; gap: 12px; }
+.lstep-body > p, .lstep-body > figure, .lstep-body > .tip { margin: 0; }
+.lstep-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.lstep-meta:empty { display: none; }
+.lstep .task-hint { margin: 0; }
+.lstep.done .num { background: var(--teal); border-color: var(--teal); color: #fff; }
+.lstep.done .num span { display: none; }
+.lstep.done .num::before { content: '\2713'; }
+.lstep.done .lstep-title { color: var(--muted); }
+.lstep.current .num { border: 2px solid var(--teal); color: var(--teal-dark); background: var(--surface); }
+.lstep.current .lstep-title { font-size: 17px; font-weight: 700; }
+.lstep.current .lstep-head { cursor: default; }
+.lstep.upcoming .lstep-title { color: var(--muted); font-weight: 500; }
+/* The docs' numbered lists set .num dark in dark mode; the rail's markers keep their own colours */
+html.dark-mode .lstep-head .num { color: var(--muted); }
+html.dark-mode .lstep.current .num { color: var(--teal); }
+html.dark-mode .lstep.done .num, html.dark-mode .lsteps-folded .num { color: #0f172a; }
+.lstep:not(.current):not(.peek) .lstep-body { display: none; }
+.lstep.done .lstep-done, .lstep.upcoming .lstep-done { display: none; }
+.lstep-done { padding: 7px 14px; font-size: 14px; border: 0; font-family: inherit; cursor: pointer; }
+.lstep-done:disabled { opacity: .45; cursor: not-allowed; }
+/* A lesson done: its steps fold to one line, so its moment and the Next button are in view */
+.lsteps-folded { display: none; align-items: center; gap: 14px; font-weight: 600; color: var(--heading); }
+.lsteps-folded .num { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 12.5px; font-weight: 700; background: var(--teal); color: #fff; }
+.lsteps-folded .num::before { content: '\2713'; }
+.lsteps-folded span:nth-child(2) { flex: 1; }
+.lsteps-show { border: 0; background: none; padding: 0; font: inherit; font-size: 14px; font-weight: 500; color: var(--link); cursor: pointer; }
+.lsteps-show:hover { text-decoration: underline; }
+.lsteps-complete .lsteps-folded { display: flex; }
+.lsteps-complete .lsteps-list, .lsteps-complete .lsteps-progress { display: none; }
+.lstep-done-narrow { display: none; }
+/* A step that ticks itself says so, in words */
+.lsteps .auto { font-size: 13px; color: var(--teal-dark); }
+html.dark-mode .lsteps .auto { color: var(--teal); }
+details.stuck { font-size: 14px; }
+details.stuck summary { cursor: pointer; color: var(--link); font-weight: 500; }
+details.stuck p { margin: 6px 0 0; color: var(--muted); }
+.add-cards { margin: 0; }
+/* What the lesson was for, revealed when its last step is done */
+.docs-article .moment { margin: 8px 0 20px; padding: 18px 20px; border: 1px solid var(--border); border-top: 3px solid var(--teal); background: var(--surface); }
+.docs-article .moment h2 { margin: 0 0 8px; padding: 0; border: 0; font-size: 20px; }
+.docs-article .moment p { margin: 0 0 8px; }
+.docs-article .moment p:last-child { margin-bottom: 0; }
+@media (min-width: 1260px) {
+  body.practicing .lsteps-open { display: none; }
+  /* Reading, with the story map closed: every step open, nothing to tick */
+  body:not(.practicing) .lsteps-list .lstep .lstep-body { display: grid; }
+  body:not(.practicing) .lstep:not(.done) .num { border: 1.5px solid var(--border); color: var(--muted); background: var(--bg); }
+  body:not(.practicing) .lstep .lstep-title { color: var(--heading); font-weight: 600; font-size: inherit; }
+  body:not(.practicing) .lstep-done, body:not(.practicing) .lsteps-progress { display: none; }
+  body:not(.practicing) .lstep-head { cursor: default; }
+}
+/* Narrow: the story map opens in another tab, so every step has a button and nothing says it
+   ticks itself */
+@media (max-width: 1259px) {
+  .lsteps .lstep-done-narrow { display: inline-flex; }
+  .lsteps .auto { display: none; }
+}
+@media (max-width: 640px) { .lstep-body { margin-left: 0; } }
+@media (prefers-reduced-motion: reduce) { .lsteps-bar i { transition: none; } }
+
+/* Something folded away in a lesson or guide until it's wanted, such as a long list */
+.docs-article details.fold { margin: 14px 0; }
+.docs-article details.fold > summary { cursor: pointer; color: var(--link); font-weight: 600; font-size: 15px; }
+.docs-article details.fold > summary:hover { text-decoration: underline; }
+.docs-article details.fold[open] > summary { margin-bottom: 10px; }

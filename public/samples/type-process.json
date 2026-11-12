@@ -1,0 +1,262 @@
+{
+  "app": "storymap",
+  "v": 1,
+  "name": "Barista Onboarding and Offboarding",
+  "users": [
+    [
+      {
+        "name": "New starter",
+        "color": "#fca5a5"
+      }
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+      {
+        "name": "Leaver",
+        "color": "#fca5a5"
+      }
+    ],
+    [],
+    [],
+    []
+  ],
+  "activities": [
+    [
+      {
+        "name": "Join the team",
+        "color": "#93c5fd"
+      }
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+      {
+        "name": "Leave the team",
+        "color": "#93c5fd"
+      }
+    ],
+    [],
+    [],
+    []
+  ],
+  "steps": [
+    {
+      "name": "Accept the offer",
+      "color": "#86efac"
+    },
+    {
+      "name": "Paperwork",
+      "color": "#86efac"
+    },
+    {
+      "name": "First day",
+      "color": "#86efac"
+    },
+    {
+      "name": "Training",
+      "color": "#86efac"
+    },
+    {
+      "name": "First solo shift",
+      "color": "#86efac"
+    },
+    {
+      "name": "Hand in notice",
+      "color": "#86efac"
+    },
+    {
+      "name": "Last shifts",
+      "color": "#86efac"
+    },
+    {
+      "name": "Last day",
+      "color": "#86efac"
+    },
+    {
+      "name": "After they leave",
+      "color": "#86efac"
+    }
+  ],
+  "slices": [
+    {
+      "name": "Standard route",
+      "goal": "A new barista works solo shifts, and a leaver goes cleanly",
+      "stories": [
+        [
+          {
+            "name": "Offer letter sent"
+          },
+          {
+            "name": "Start date agreed"
+          }
+        ],
+        [
+          {
+            "name": "Contract signed"
+          },
+          {
+            "name": "Right to work check"
+          },
+          {
+            "name": "Bank details for payroll"
+          },
+          {
+            "name": "Paper forms go missing",
+            "color": "#fecdd3"
+          }
+        ],
+        [
+          {
+            "name": "Uniform and apron"
+          },
+          {
+            "name": "Tour of the shop"
+          },
+          {
+            "name": "Till login set up"
+          }
+        ],
+        [
+          {
+            "name": "Food safety course"
+          },
+          {
+            "name": "Espresso basics"
+          },
+          {
+            "name": "Shadow three shifts"
+          }
+        ],
+        [
+          {
+            "name": "Manager signs off"
+          },
+          {
+            "name": "Added to the rota"
+          }
+        ],
+        [
+          {
+            "name": "Notice received in writing"
+          },
+          {
+            "name": "Leaving date agreed"
+          }
+        ],
+        [
+          {
+            "name": "Taken off the rota after the last date"
+          },
+          {
+            "name": "Hand over regular jobs"
+          }
+        ],
+        [
+          {
+            "name": "Uniform and keys returned"
+          },
+          {
+            "name": "Leaving chat"
+          }
+        ],
+        [
+          {
+            "name": "Till login removed"
+          },
+          {
+            "name": "Final pay"
+          },
+          {
+            "name": "Logins stay active for weeks",
+            "color": "#fecdd3"
+          }
+        ]
+      ]
+    },
+    {
+      "name": "Experienced",
+      "goal": "An experienced barista skips what they already know",
+      "stories": [
+        [],
+        [],
+        [],
+        [
+          {
+            "name": "Skills check, not espresso basics"
+          },
+          {
+            "name": "Shadow one shift"
+          }
+        ],
+        [
+          {
+            "name": "Solo from week one"
+          }
+        ],
+        [],
+        [],
+        [],
+        []
+      ]
+    },
+    {
+      "name": "Seasonal temp",
+      "goal": "Ready for the summer rush, back next year",
+      "stories": [
+        [
+          {
+            "name": "Fixed end date in the offer"
+          }
+        ],
+        [
+          {
+            "name": "Short-term contract"
+          }
+        ],
+        [],
+        [
+          {
+            "name": "Shadow one busy shift"
+          },
+          {
+            "name": "Does last year's food safety count?",
+            "color": "#a5f3fc"
+          }
+        ],
+        [],
+        [
+          {
+            "name": "No notice needed: the contract ends"
+          }
+        ],
+        [],
+        [],
+        [
+          {
+            "name": "Ask them back for next summer"
+          }
+        ]
+      ]
+    }
+  ],
+  "legend": [
+    {
+      "color": "#fef08a",
+      "label": "Steps"
+    },
+    {
+      "color": "#fecdd3",
+      "label": "Problems"
+    },
+    {
+      "color": "#a5f3fc",
+      "label": "Questions"
+    }
+  ],
+  "notes": "Each slice is a route through the same process. Leave a column empty where a route follows the standard one."
+}

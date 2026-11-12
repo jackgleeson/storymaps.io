@@ -505,7 +505,8 @@ const buildAdd = () => {
         return [heading, full, done];
     }
     const newBtn = el('button', 'project-panel-primary', { type: 'button', text: 'New map' });
-    newBtn.addEventListener('click', () => window.location.assign(projectPath(_project.id, 'new')));
+    // Keeps ?lesson, so a practice story map made here still ticks the tasks of the lesson around it
+    newBtn.addEventListener('click', () => window.location.assign(projectPath(_project.id, 'new') + location.search));
     const label = el('label', 'project-panel-label', { htmlFor: 'projectLinkInput', text: 'Or paste the link to a map you have' });
     const input = el('input', 'project-panel-input', { id: 'projectLinkInput', type: 'text', placeholder: `${location.host}/...`, autocomplete: 'off', spellcheck: false });
     const addBtn = el('button', 'project-panel-secondary', { type: 'button', text: 'Add' });

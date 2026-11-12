@@ -15,8 +15,9 @@ storymaps.io {
         Strict-Transport-Security "max-age=31536000; includeSubDomains"
         # Stop browsers from sniffing MIME types away from the declared one.
         X-Content-Type-Options "nosniff"
-        # Disallow framing to mitigate clickjacking.
-        X-Frame-Options "DENY"
+        # Only Storymaps.io's own pages can frame it, which stops clickjacking from other sites.
+        # The docs show a lesson's practice story map in a frame beside the lesson.
+        X-Frame-Options "SAMEORIGIN"
         # Send origin only on cross-origin navigations.
         Referrer-Policy "strict-origin-when-cross-origin"
         # Drop powerful APIs we do not use.

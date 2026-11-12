@@ -1,0 +1,214 @@
+{
+  "app": "storymap",
+  "v": 1,
+  "name": "Coffee Shop App",
+  "users": [
+    [
+      {
+        "name": "Customer",
+        "color": "#fca5a5"
+      }
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [],
+    []
+  ],
+  "activities": [
+    [
+      {
+        "name": "Order Coffee",
+        "color": "#93c5fd"
+      }
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+      {
+        "name": "Buy a Gift Card",
+        "color": "#93c5fd"
+      }
+    ],
+    [],
+    [],
+    []
+  ],
+  "steps": [
+    {
+      "name": "Browse Menu",
+      "color": "#86efac"
+    },
+    {
+      "name": "Customise Drink",
+      "color": "#86efac"
+    },
+    {
+      "name": "Add To Cart",
+      "color": "#86efac"
+    },
+    {
+      "name": "Pay",
+      "color": "#86efac"
+    },
+    {
+      "name": "Confirm",
+      "color": "#86efac"
+    },
+    {
+      "name": "Choose Design",
+      "color": "#86efac"
+    },
+    {
+      "name": "Set Amount",
+      "color": "#86efac"
+    },
+    {
+      "name": "Pay",
+      "color": "#86efac"
+    },
+    {
+      "name": "Confirm",
+      "color": "#86efac"
+    }
+  ],
+  "slices": [
+    {
+      "name": "MVP",
+      "stories": [
+        [
+          {
+            "name": "Drink list with prices"
+          },
+          {
+            "name": "Search by name"
+          }
+        ],
+        [
+          {
+            "name": "Choose size"
+          },
+          {
+            "name": "Select milk type"
+          },
+          {
+            "name": "Which milks do we stock?"
+          }
+        ],
+        [
+          {
+            "name": "Add multiple drinks"
+          },
+          {
+            "name": "Order summary with total"
+          }
+        ],
+        [
+          {
+            "name": "Credit card"
+          },
+          {
+            "name": "Apple Pay / Google Pay"
+          },
+          {
+            "name": "Do we take cash?"
+          }
+        ],
+        [
+          {
+            "name": "Submit order"
+          },
+          {
+            "name": "Email receipt"
+          }
+        ],
+        [
+          {
+            "name": "Pick a card design"
+          }
+        ],
+        [
+          {
+            "name": "Choose an amount"
+          },
+          {
+            "name": "How long is a gift card valid?"
+          }
+        ],
+        [
+          {
+            "name": "Credit card"
+          },
+          {
+            "name": "Apple Pay / Google Pay"
+          }
+        ],
+        [
+          {
+            "name": "Submit order"
+          },
+          {
+            "name": "Email receipt"
+          }
+        ]
+      ]
+    },
+    {
+      "name": "Later",
+      "stories": [
+        [
+          {
+            "name": "Recommend popular combos"
+          }
+        ],
+        [
+          {
+            "name": "Save custom drinks"
+          }
+        ],
+        [
+          {
+            "name": "Group ordering"
+          }
+        ],
+        [
+          {
+            "name": "Split payment"
+          }
+        ],
+        [],
+        [
+          {
+            "name": "Upload your own photo"
+          }
+        ],
+        [
+          {
+            "name": "Send on a set date"
+          }
+        ],
+        [
+          {
+            "name": "Split payment"
+          }
+        ],
+        []
+      ]
+    }
+  ],
+  "legend": [
+    {
+      "color": "#fef08a",
+      "label": "Tasks"
+    },
+    {
+      "color": "#bef264",
+      "label": "Questions"
+    }
+  ]
+}

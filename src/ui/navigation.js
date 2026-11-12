@@ -35,6 +35,13 @@ export let zoomLevel = 1;
 export let isPinching = false;
 const ZOOM_STEP = 0.1;
 const ZOOM_MIN = 0.1;
+// Fitting the map to the window never zooms out further than this: half size on a small screen,
+// where people scroll sideways instead, and 80% beside a lesson, so the cards stay readable in the
+// narrower pane
+// (The lesson module sets window.storymapsLesson beside a lesson; reading it keeps that module, and
+// what it loads, out of this one.)
+const inLesson = () => typeof window !== 'undefined' && !!window.storymapsLesson;
+const fitFloor = (width) => (inLesson() ? 0.8 : width < 600 ? 0.5 : ZOOM_MIN);
 const ZOOM_MAX = 3;
 
 // Pan/drag state
@@ -173,8 +180,7 @@ export const resizeToFit = () => {
     const contentWidth = LABEL_WIDTH + (columnCount * CARD_WIDTH) + (columnCount * GAP);
     const availableWidth = currentWidth - BODY_PADDING;
     const fitZoom = Math.min(1, (availableWidth - 20) / contentWidth);
-    const effectiveMin = currentWidth < 600 ? 0.5 : ZOOM_MIN;
-    zoomLevel = Math.max(effectiveMin, Math.min(ZOOM_MAX, Math.floor(fitZoom * 20) / 20));
+    zoomLevel = Math.max(fitFloor(currentWidth), Math.min(ZOOM_MAX, Math.floor(fitZoom * 20) / 20));
     updateZoom();
     centerScroll();
 };
@@ -197,9 +203,7 @@ export const zoomToFit = () => {
 
     const fitZoom = Math.min(1, (availableWidth - 20) / contentWidth);
 
-    // On small screens, don't zoom below 0.5 — users scroll horizontally instead
-    const effectiveMin = wrapper.clientWidth < 600 ? 0.5 : ZOOM_MIN;
-    zoomLevel = Math.max(effectiveMin, Math.min(ZOOM_MAX, Math.floor(fitZoom * 20) / 20));
+    zoomLevel = Math.max(fitFloor(wrapper.clientWidth), Math.min(ZOOM_MAX, Math.floor(fitZoom * 20) / 20));
 
     updateZoom();
     centerScroll();

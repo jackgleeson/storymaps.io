@@ -3,7 +3,7 @@
 // when it starts to matter, and with no accounts the link is the only way back to it. A map in a
 // project doesn't show it; the project does instead, under the project name, when it is started or
 // renamed. Shown once per map or project in this browser; which have shown it is kept in this
-// browser only.
+// browser only. A practice map opened from a docs lesson (?lesson) never shows it.
 
 import { dom } from '/src/ui/dom.js';
 import { state } from '/src/core/state.js';
@@ -19,6 +19,8 @@ const MAX_SHOWN = 200;
 const STAR = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8l-5.4 2.9 1.1-6.1-4.5-4.2 6.1-.8z"/></svg>';
 
 let _mapId = null;   // the map open now
+// Read before the app swaps /new or /sample/<name> for the link of the map
+const _lesson = new URLSearchParams(location.search).has('lesson');
 let _callout = null;
 let _anchor = null;  // what the reminder points at: the map title or the project name
 
@@ -109,7 +111,7 @@ export const stop = () => {
     _mapId = null;
 };
 
-const canShow = (key) => !_callout && !!_mapId && _mapId === state.mapId
+const canShow = (key) => !_lesson && !_callout && !!_mapId && _mapId === state.mapId
     && !document.body.classList.contains('welcome-visible') && !tour.isActive()
     && !turnedOff() && !shownFor().includes(key);
 

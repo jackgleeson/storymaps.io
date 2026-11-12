@@ -167,6 +167,16 @@ test('naming a map shows the bookmark reminder once for that map', async ({ page
   await expect(callout).toBeHidden();
 });
 
+test('a practice map opened from a docs lesson never shows the bookmark reminder', async ({ page }) => {
+  await page.goto('/new?lesson');
+  await expect(page).toHaveURL(/\/[a-z0-9]{8}$/);
+  await page.locator('#boardName').fill('Coffee');
+  await page.keyboard.press('Enter');
+  await page.locator('#boardName').blur();
+  await expect(page.locator('#boardName')).toHaveValue('Coffee');
+  await expect(page.locator('#bookmarkNudge')).toHaveCount(0);
+});
+
 test('the main menu shows above the map panel in a short window', async ({ page, createMap }) => {
   await page.setViewportSize({ width: 1280, height: 720 });
   // A map with a slice, so the panel has its full height

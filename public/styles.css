@@ -113,6 +113,133 @@ body {
     letter-spacing: -0.5px;
 }
 
+/* Learn and Docs links: labelled on the home page, icons only on a map */
+.header-links-divider {
+    flex-shrink: 0;
+    width: 1px;
+    height: 20px;
+    margin: 0 4px;
+    background: var(--color-border-strong);
+}
+
+.header-links {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.header-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-width: 34px;
+    height: 34px;
+    box-sizing: border-box;
+    border-radius: 8px;
+    color: var(--color-text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.header-link svg {
+    flex-shrink: 0;
+    color: #0d9488;
+}
+
+.header-link:hover {
+    background: var(--color-hover-bg);
+    color: #0f766e;
+}
+
+.header-link-label {
+    display: none;
+}
+
+body.welcome-visible .header-link {
+    padding: 0 12px;
+}
+
+body.welcome-visible .header-link-label {
+    display: inline;
+}
+
+/* Phone-only copy of the links at the top of the main menu on a map */
+.menu-links,
+.menu-links-divider {
+    display: none;
+}
+
+/* Two by two: the menu is too narrow for four labels in a row */
+.menu-links {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2px;
+}
+
+.menu-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 4px;
+    border-radius: 8px;
+    color: var(--color-text-primary);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.25;
+    text-align: center;
+    text-decoration: none;
+}
+
+.menu-link svg {
+    color: #0d9488;
+}
+
+.menu-link:hover {
+    background-color: rgba(20, 184, 166, 0.08);
+}
+
+/* No room beside a map's name and buttons, so the links move into the main menu */
+@media (max-width: 1100px) {
+    body:not(.welcome-visible) .header-links-divider,
+    body:not(.welcome-visible) .header-links {
+        display: none;
+    }
+
+    body:not(.welcome-visible) .menu-links {
+        display: grid;
+    }
+
+    body:not(.welcome-visible) .menu-links-divider {
+        display: block;
+    }
+}
+
+/* Narrower home page: the links show as icons beside the logo, as on a map, so the header stays
+   on one row. Each keeps its name as a tooltip and for screen readers. */
+@media (max-width: 900px) {
+    body.welcome-visible .header-link {
+        padding: 0;
+    }
+
+    body.welcome-visible .header-link-label {
+        display: none;
+    }
+}
+
+/* Phones need a little more room for five links and the buttons on the same row */
+@media (max-width: 480px) {
+    body.welcome-visible .header-links-divider {
+        display: none;
+    }
+
+    body.welcome-visible .header-link {
+        min-width: 30px;
+    }
+}
 
 .community-link {
     position: relative;
@@ -4551,7 +4678,9 @@ html.dark-mode mark.highlight::after {
         margin-bottom: 16px;
     }
 
-    .logo {
+    .logo,
+    .header-links-divider,
+    .header-links {
         order: 1;
     }
 
@@ -4912,7 +5041,8 @@ html.dark-mode mark.highlight::after {
 
 }
 
-@media (max-width: 400px) {
+/* The wordmark goes before the header has to wrap onto a second row */
+@media (max-width: 500px) {
     .logo-text {
         display: none;
     }
@@ -9543,6 +9673,18 @@ html.dark-mode .gh-star:hover {
 }
 html.dark-mode .gh-star-icon {
     color: #8b949e;
+}
+
+html.dark-mode .header-link svg,
+html.dark-mode .menu-link svg {
+    color: #2dd4bf;
+}
+html.dark-mode .header-link:hover {
+    background: rgba(45, 212, 191, 0.1);
+    color: #5eead4;
+}
+html.dark-mode .menu-link:hover {
+    background-color: rgba(45, 212, 191, 0.1);
 }
 
 /* Dropdown glass — dark mode */

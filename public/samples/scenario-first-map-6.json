@@ -1,0 +1,164 @@
+{
+  "app": "storymap",
+  "v": 1,
+  "name": "Coffee App",
+  "users": [
+    [
+      {
+        "name": "Customer",
+        "color": "#fca5a5"
+      }
+    ],
+    [],
+    [],
+    [],
+    [],
+    []
+  ],
+  "activities": [
+    [
+      {
+        "name": "Order Coffee",
+        "color": "#93c5fd"
+      }
+    ],
+    [],
+    [],
+    [],
+    [],
+    []
+  ],
+  "steps": [
+    {
+      "name": "Browse Menu",
+      "color": "#86efac"
+    },
+    {
+      "name": "Customise Drink",
+      "color": "#86efac"
+    },
+    {
+      "name": "Add To Cart",
+      "color": "#86efac"
+    },
+    {
+      "name": "Pay",
+      "color": "#86efac"
+    },
+    {
+      "name": "Confirm",
+      "color": "#86efac"
+    },
+    {
+      "name": "Collect Order",
+      "color": "#86efac"
+    }
+  ],
+  "slices": [
+    {
+      "name": "MVP",
+      "goal": "Order and pay ahead, then pick up",
+      "stories": [
+        [
+          {
+            "name": "Drink list with prices"
+          },
+          {
+            "name": "Search by name"
+          },
+          {
+            "name": "Photo on each drink"
+          }
+        ],
+        [
+          {
+            "name": "Choose size"
+          },
+          {
+            "name": "Select milk type"
+          },
+          {
+            "name": "Extra shots and syrups"
+          }
+        ],
+        [
+          {
+            "name": "Order summary with total"
+          },
+          {
+            "name": "Add multiple drinks"
+          },
+          {
+            "name": "Edit or remove items"
+          }
+        ],
+        [
+          {
+            "name": "Apple Pay / Google Pay"
+          },
+          {
+            "name": "Credit card"
+          }
+        ],
+        [
+          {
+            "name": "Submit order"
+          }
+        ],
+        [
+          {
+            "name": "Notify when ready"
+          }
+        ]
+      ]
+    },
+    {
+      "name": "Later",
+      "stories": [
+        [
+          {
+            "name": "Recommend popular combos"
+          }
+        ],
+        [
+          {
+            "name": "Save custom drinks"
+          }
+        ],
+        [
+          {
+            "name": "Group ordering"
+          }
+        ],
+        [
+          {
+            "name": "Split payment"
+          },
+          {
+            "name": "Gift cards"
+          }
+        ],
+        [],
+        []
+      ]
+    }
+  ],
+  "legend": [
+    {
+      "color": "#fef08a",
+      "label": "Tasks"
+    },
+    {
+      "color": "#a5f3fc",
+      "label": "Notes"
+    },
+    {
+      "color": "#bef264",
+      "label": "Questions"
+    },
+    {
+      "color": "#fecdd3",
+      "label": "Edge cases"
+    }
+  ]
+}

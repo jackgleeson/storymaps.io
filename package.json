@@ -10,7 +10,11 @@
     "test:unit": "node --import ./test/setup.js --test --test-concurrency=1 'test/unit/**/*.test.js'",
     "test:integration": "node --import ./test/setup.js --test --test-concurrency=1 'test/integration/**/*.test.js'",
     "test:e2e": "playwright test",
-    "test:coverage": "node --import ./test/setup.js --test --test-concurrency=1 --experimental-test-coverage --test-coverage-exclude='test/**' --test-coverage-exclude='public/vendor/**' 'test/**/*.test.js'"
+    "test:coverage": "node --import ./test/setup.js --test --test-concurrency=1 --experimental-test-coverage --test-coverage-exclude='test/**' --test-coverage-exclude='public/vendor/**' 'test/**/*.test.js'",
+    "docs": "node docs/build.js",
+    "docs:shots": "node docs/shots.js",
+    "docs:coffee": "node docs/coffee-diagrams.js",
+    "test:docs": "npm run docs && node --import ./test/setup.js --test test/unit/docs.test.js && playwright test test/e2e/docs.spec.js test/e2e/docs.phone.spec.js"
   },
   "keywords": [
     "user-story",

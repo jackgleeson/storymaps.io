@@ -1,0 +1,479 @@
+{
+  "plan-releases-with-story-map-slices/menu": {
+    "width": 578,
+    "height": 256,
+    "callouts": [
+      {
+        "x": 4.7,
+        "y": 31.1
+      },
+      {
+        "x": 39.1,
+        "y": 47.6
+      },
+      {
+        "x": 39.1,
+        "y": 62.8
+      }
+    ]
+  },
+  "plan-releases-with-story-map-slices/details": {
+    "width": 578,
+    "height": 322,
+    "callouts": []
+  },
+  "your-first-story-map/parts": {
+    "width": 578,
+    "height": 362,
+    "callouts": [
+      {
+        "x": 13.6,
+        "y": 5.4
+      },
+      {
+        "x": 13.6,
+        "y": 27.7
+      },
+      {
+        "x": 13.6,
+        "y": 45.3
+      },
+      {
+        "x": 34.9,
+        "y": 69.7
+      },
+      {
+        "x": 4.6,
+        "y": 79
+      }
+    ]
+  },
+  "your-first-story-map/steps": {
+    "width": 890,
+    "height": 97,
+    "callouts": []
+  },
+  "create-a-user-story-map/home": {
+    "width": 442,
+    "height": 370,
+    "callouts": [
+      {
+        "x": 54,
+        "y": 30.2
+      },
+      {
+        "x": 6.8,
+        "y": 30.2
+      },
+      {
+        "x": 5,
+        "y": 12.3
+      },
+      {
+        "x": 6.6,
+        "y": 64.8
+      }
+    ]
+  },
+  "define-the-story-map-backbone/step-menu": {
+    "width": 434,
+    "height": 281,
+    "callouts": []
+  },
+  "add-tasks-to-a-story-map/expanded": {
+    "width": 592,
+    "height": 343,
+    "callouts": []
+  },
+  "share-a-story-map/menu": {
+    "width": 202,
+    "height": 177,
+    "callouts": [
+      {
+        "x": 81.4,
+        "y": 42.9
+      },
+      {
+        "x": 81.4,
+        "y": 61
+      },
+      {
+        "x": 81.4,
+        "y": 79.1
+      }
+    ]
+  },
+  "customise-story-map-cards/options": {
+    "width": 170,
+    "height": 277,
+    "callouts": [
+      {
+        "x": 76.6,
+        "y": 25.1
+      },
+      {
+        "x": 76.6,
+        "y": 40.1
+      },
+      {
+        "x": 76.6,
+        "y": 49.1
+      },
+      {
+        "x": 76.6,
+        "y": 61.1
+      },
+      {
+        "x": 76.6,
+        "y": 72.9
+      }
+    ]
+  },
+  "review-release-progress-on-a-story-map/overview": {
+    "width": 318,
+    "height": 383,
+    "callouts": []
+  },
+  "change-the-story-map-view/controls": {
+    "width": 228,
+    "height": 88,
+    "callouts": [
+      {
+        "x": 21.9,
+        "y": 26.1
+      },
+      {
+        "x": 36,
+        "y": 26.1
+      },
+      {
+        "x": 50,
+        "y": 26.1
+      },
+      {
+        "x": 64,
+        "y": 26.1
+      },
+      {
+        "x": 78.1,
+        "y": 26.1
+      }
+    ]
+  },
+  "change-the-story-map-view/freeze": {
+    "width": 324,
+    "height": 287,
+    "callouts": []
+  },
+  "back-up-and-restore-a-story-map/dialog": {
+    "width": 512,
+    "height": 269,
+    "callouts": [
+      {
+        "x": 65.8,
+        "y": 38.9
+      },
+      {
+        "x": 76,
+        "y": 67.1
+      }
+    ]
+  },
+  "take-the-story-mapping-tour/tooltip": {
+    "width": 408,
+    "height": 259,
+    "callouts": [
+      {
+        "x": 14,
+        "y": 71.8
+      },
+      {
+        "x": 63.6,
+        "y": 71.4
+      },
+      {
+        "x": 82.8,
+        "y": 71.4
+      }
+    ]
+  },
+  "zoom-and-pan-around-a-story-map/zoom": {
+    "width": 162,
+    "height": 82,
+    "callouts": [
+      {
+        "x": 27.1,
+        "y": 20.7
+      },
+      {
+        "x": 51.2,
+        "y": 20.7
+      },
+      {
+        "x": 75.3,
+        "y": 20.7
+      }
+    ]
+  },
+  "bulk-edit-story-map-cards/toolbar": {
+    "width": 901,
+    "height": 100,
+    "callouts": [
+      {
+        "x": 13.5,
+        "y": 32
+      },
+      {
+        "x": 43.9,
+        "y": 26
+      },
+      {
+        "x": 72.7,
+        "y": 26
+      }
+    ]
+  },
+  "search-and-filter-a-story-map/panel": {
+    "width": 582,
+    "height": 483,
+    "callouts": [
+      {
+        "x": 95.9,
+        "y": 19
+      },
+      {
+        "x": 95.9,
+        "y": 48.4
+      },
+      {
+        "x": 95.9,
+        "y": 59.6
+      }
+    ]
+  },
+  "track-changes-to-a-story-map/log": {
+    "width": 354,
+    "height": 295,
+    "callouts": [
+      {
+        "x": 7.6,
+        "y": 31
+      },
+      {
+        "x": 7.6,
+        "y": 60.7
+      }
+    ]
+  },
+  "start-a-story-map-project/start": {
+    "width": 417,
+    "height": 332,
+    "callouts": [
+      {
+        "x": 21.6,
+        "y": 6
+      },
+      {
+        "x": 78.4,
+        "y": 66.3
+      },
+      {
+        "x": 78.4,
+        "y": 79.8
+      }
+    ]
+  },
+  "manage-a-story-map-project/manage": {
+    "width": 572,
+    "height": 386,
+    "callouts": [
+      {
+        "x": 90.7,
+        "y": 37.3
+      },
+      {
+        "x": 78.5,
+        "y": 56.2
+      },
+      {
+        "x": 90.7,
+        "y": 74.9
+      },
+      {
+        "x": 13.5,
+        "y": 80.3
+      },
+      {
+        "x": 71.1,
+        "y": 79.5
+      }
+    ]
+  },
+  "export-a-story-map/menu": {
+    "width": 250,
+    "height": 214,
+    "callouts": []
+  },
+  "build-with-ai/dialog": {
+    "width": 690,
+    "height": 719,
+    "callouts": [
+      {
+        "x": 5.8,
+        "y": 16.3
+      },
+      {
+        "x": 5.8,
+        "y": 55.1
+      },
+      {
+        "x": 51.2,
+        "y": 55.1
+      },
+      {
+        "x": 3.2,
+        "y": 75.1
+      }
+    ]
+  },
+  "user-story-mapping-for-jira/import-menu": {
+    "width": 250,
+    "height": 242,
+    "callouts": [
+      {
+        "x": 8.8,
+        "y": 74.2
+      },
+      {
+        "x": 8.8,
+        "y": 87
+      }
+    ]
+  },
+  "user-story-mapping-for-asana/import-menu": {
+    "width": 250,
+    "height": 242,
+    "callouts": [
+      {
+        "x": 8.8,
+        "y": 74.2
+      },
+      {
+        "x": 8.8,
+        "y": 87
+      }
+    ]
+  },
+  "user-story-mapping-for-phabricator/import-menu": {
+    "width": 250,
+    "height": 242,
+    "callouts": [
+      {
+        "x": 8.8,
+        "y": 74.2
+      },
+      {
+        "x": 8.8,
+        "y": 87
+      }
+    ]
+  },
+  "user-story-mapping-for-linear/import-menu": {
+    "width": 250,
+    "height": 242,
+    "callouts": [
+      {
+        "x": 8.8,
+        "y": 74.2
+      },
+      {
+        "x": 8.8,
+        "y": 87
+      }
+    ]
+  },
+  "reduce-duplication-with-partials/create": {
+    "width": 981,
+    "height": 539,
+    "callouts": []
+  },
+  "reduce-duplication-with-partials/partial-step": {
+    "width": 290,
+    "height": 102,
+    "callouts": []
+  },
+  "reduce-duplication-with-partials/expanded": {
+    "width": 198,
+    "height": 321,
+    "callouts": []
+  },
+  "reduce-duplication-with-partials/panel": {
+    "width": 314,
+    "height": 139,
+    "callouts": []
+  },
+  "search-and-filter-a-story-map/tag-result": {
+    "width": 630,
+    "height": 319,
+    "callouts": []
+  },
+  "search-and-filter-a-story-map/tag-card": {
+    "width": 162,
+    "height": 238,
+    "callouts": [
+      {
+        "x": 86.7,
+        "y": 59.7
+      },
+      {
+        "x": 86.7,
+        "y": 70.5
+      }
+    ]
+  },
+  "search-and-filter-a-story-map/tag-many": {
+    "width": 272,
+    "height": 361,
+    "callouts": []
+  },
+  "search-and-filter-a-story-map/search": {
+    "width": 630,
+    "height": 402,
+    "callouts": []
+  },
+  "build-with-ai/prototype-mvp": {
+    "width": 634,
+    "height": 387,
+    "callouts": []
+  },
+  "build-with-ai/next-release": {
+    "width": 634,
+    "height": 407,
+    "callouts": []
+  },
+  "lock-a-story-map-project/dialog": {
+    "width": 432,
+    "height": 542,
+    "callouts": []
+  },
+  "lock-a-story-map-project/locked": {
+    "width": 572,
+    "height": 363,
+    "callouts": []
+  },
+  "build-with-ai/one-feature": {
+    "width": 634,
+    "height": 387,
+    "callouts": []
+  },
+  "build-with-ai/whole-product": {
+    "width": 634,
+    "height": 407,
+    "callouts": []
+  },
+  "switch-between-story-maps/tabs": {
+    "width": 661,
+    "height": 65,
+    "callouts": []
+  }
+}

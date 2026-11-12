@@ -45,6 +45,8 @@ export default function register(ctx) {
       res.end(JSON.stringify({ error: 'Map is already locked' }));
       return;
     }
+    // The app logs its own locks; one from the CLI (no browser origin) is logged here, in the same words
+    if (!req.headers.origin) await ctx.logToMap(mapId, 'Locked map');
     res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' });
     res.end(JSON.stringify({ isLocked: true }));
   });
@@ -78,6 +80,7 @@ export default function register(ctx) {
       return;
     }
     let wrongPassword = false;
+    let removed = false;
     await ctx.updateJson(ctx.LOCK_FILE, {}, (locks) => {
       const lock = locks[mapId];
       if (!lock?.isLocked) return false;
@@ -86,12 +89,14 @@ export default function register(ctx) {
         return false;
       }
       delete locks[mapId];
+      removed = true;
     });
     if (wrongPassword) {
       res.writeHead(403, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ ok: false, error: 'Incorrect password' }));
       return;
     }
+    if (removed && !req.headers.origin) await ctx.logToMap(mapId, 'Removed map lock');
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: true }));
   });

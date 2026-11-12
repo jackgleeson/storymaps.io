@@ -200,6 +200,17 @@ describe('locks', () => {
     assert.equal((await lockPost(`/api/lock/${id}/unlock`, { passwordHash: h('owner-hash') })).status, 200);
   });
 
+  test('a lock and a removed lock from the CLI go in the activity log, and ones from the app are left to it', async () => {
+    const id = await createMap();
+    await lockPost(`/api/lock/${id}`, { passwordHash: h('cli-hash') });
+    assert.equal((await lockPost(`/api/lock/${id}/remove`, { passwordHash: h('cli-hash') })).status, 200);
+    const texts = () => api('GET', `/api/maps/${id}/log`).then(r => r.json.filter(e => e.src === 'cli' && /lock/i.test(e.text)).map(e => e.text));
+    assert.deepEqual((await texts()).sort(), ['Locked map', 'Removed map lock']);
+    // The app logs its own locks, so a request with the site's origin adds nothing here
+    await lockPost(`/api/lock/${id}`, { passwordHash: h('app-hash') }, { origin: base });
+    assert.equal((await texts()).length, 2);
+  });
+
   test('the owner can lock again with the same password', async () => {
     const id = await createMap();
     await lockPost(`/api/lock/${id}`, { passwordHash: h('owner-hash') });
@@ -452,15 +463,6 @@ describe('pages and files', () => {
     }
   });
 
-  test('keeps story maps and projects out of search results, and leaves the pages to find alone', async () => {
-    for (const path of ['/abc12345', '/new', '/sample/recipe-app', '/p/abc12345', '/p/abc12345/def67890']) {
-      assert.equal((await fetch(`${base}${path}`)).headers.get('x-robots-tag'), 'noindex', path);
-    }
-    for (const path of ['/', '/tour', '/privacy.html']) {
-      assert.equal((await fetch(`${base}${path}`)).headers.get('x-robots-tag'), null, path);
-    }
-  });
-
   test('AI tools may fetch the format links of a map, which stay out of search results', async () => {
     const robots = await (await fetch(`${base}/robots.txt`)).text();
     assert.ok(!/\.(yaml|json|csv)/.test(robots), 'robots.txt leaves the format links open');
@@ -608,6 +610,52 @@ describe('pages and files', () => {
     const yaml = (await api('GET', `/${id}.yaml`)).text;
     assert.match(yaml, /^name: Small/m);
     assert.doesNotMatch(yaml, /backups:|before import/);
+  });
+
+  test('serves the site pages at clean URLs', async () => {
+    const pages = { '/docs': 'User story mapping docs and guides' };
+    for (const [path, title] of Object.entries(pages)) {
+      const res = await api('GET', path);
+      assert.equal(res.status, 200, path);
+      assert.match(res.headers.get('content-type'), /text\/html/);
+      assert.match(res.text, new RegExp(`<title>${title} - Storymaps.io</title>`), path);
+    }
+  });
+
+  test('gives each docs page one address', async () => {
+    const moved = {
+      '/docs/': '/docs', '/docs/bulk-edit-story-map-cards/': '/docs/bulk-edit-story-map-cards', '/docs/bulk-edit-story-map-cards.html': '/docs/bulk-edit-story-map-cards',
+      '/docs/index.html': '/docs', '/docs/bulk-edit-story-map-cards.html?a=1': '/docs/bulk-edit-story-map-cards?a=1',
+    };
+    for (const [from, to] of Object.entries(moved)) {
+      const res = await fetch(`${base}${from}`, { redirect: 'manual' });
+      assert.equal(res.status, 301, from);
+      assert.equal(res.headers.get('location'), to, from);
+    }
+    for (const path of ['/docs', '/docs/bulk-edit-story-map-cards', '/docs/docs.css', '/docs/search.json', '/docs/cli']) {
+      assert.equal((await fetch(`${base}${path}`, { redirect: 'manual' })).status, 200, path);
+    }
+  });
+
+  test('keeps story maps and projects out of search results, and leaves the pages to find alone', async () => {
+    for (const path of ['/abc12345', '/new', '/sample/recipe-app', '/p/abc12345', '/p/abc12345/def67890']) {
+      assert.equal((await fetch(`${base}${path}`)).headers.get('x-robots-tag'), 'noindex', path);
+    }
+    for (const path of ['/', '/tour', '/docs', '/docs/bulk-edit-story-map-cards', '/privacy.html']) {
+      assert.equal((await fetch(`${base}${path}`)).headers.get('x-robots-tag'), null, path);
+    }
+  });
+
+  test('serves every built docs page at its clean URL, and nothing else under /docs', async () => {
+    const index = (await api('GET', '/docs/search.json')).json;
+    assert.ok(index.length > 0);
+    for (const { url, title } of index) {
+      const res = await api('GET', url);
+      assert.equal(res.status, 200, url);
+      assert.ok(res.text.includes(`<h1>${title}</h1>`), url);
+    }
+    assert.equal((await api('GET', '/docs/not-a-page')).status, 404);
+    assert.match((await api('GET', '/docs/docs.css')).headers.get('content-type'), /text\/css/);
   });
 
   test('/favicon.ico redirects to the SVG icon', async () => {

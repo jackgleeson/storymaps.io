@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk edit story map cards - Storymaps.io docs</title>
+    <meta name="description" content="Select many cards or whole columns at once, then move them, change their colour, status or tags, duplicate them or delete them in one go.">
+    <link rel="canonical" href="https://storymaps.io/docs/bulk-edit-story-map-cards">
+    <meta property="og:title" content="Bulk edit story map cards - Storymaps.io docs">
+    <meta property="og:description" content="Select many cards or whole columns at once, then move them, change their colour, status or tags, duplicate them or delete them in one go.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://storymaps.io/docs/bulk-edit-story-map-cards">
+    <meta property="og:image" content="https://storymaps.io/resources/screenshot.png">
+    <meta property="og:image:width" content="1532">
+    <meta property="og:image:height" content="886">
+    <meta property="og:image:alt" content="A user story map in Storymaps.io, with cards organised by activities and releases">
+    <meta property="og:site_name" content="Storymaps.io">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Bulk edit story map cards - Storymaps.io docs">
+    <meta name="twitter:description" content="Select many cards or whole columns at once, then move them, change their colour, status or tags, duplicate them or delete them in one go.">
+    <meta name="twitter:image" content="https://storymaps.io/resources/screenshot.png">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://storymaps.io/docs"},{"@type":"ListItem","position":2,"name":"Bulk edit story map cards","item":"https://storymaps.io/docs/bulk-edit-story-map-cards"}]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Bulk edit story map cards","description":"Select many cards or whole columns at once, then move them, change their colour, status or tags, duplicate them or delete them in one go.","url":"https://storymaps.io/docs/bulk-edit-story-map-cards","inLanguage":"en","dateModified":"2026-11-10","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="/fonts.css">
+    <script>
+    (function() {
+        try {
+            var s = localStorage.getItem('darkMode');
+            var p = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (s !== null ? s === 'true' : p) document.documentElement.classList.add('dark-mode');
+        } catch(e) {}
+    })();
+    </script>
+    <link rel="stylesheet" href="/docs/docs.css?v=2826a66e">
+    <script src="/docs/docs.js?v=5a782a13" defer></script>
+</head>
+<body class="docs-guide">
+<div class="site-header-wrap">
+<header class="site-header">
+    <a href="/" class="logo"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1" fill="#fef08a" stroke="#d4aa00" stroke-width="1"/><rect x="14" y="3" width="7" height="7" rx="1" fill="#fecdd3" stroke="#e88a9a" stroke-width="1"/><rect x="3" y="14" width="7" height="7" rx="1" fill="#a5f3fc" stroke="#67c5d6" stroke-width="1"/><rect x="14" y="14" width="7" height="7" rx="1" fill="#14b8a6" stroke="#0d9488" stroke-width="1"/></svg><span class="logo-text">Storymaps.io</span></a>
+    <span class="header-links-divider" aria-hidden="true"></span>
+    <nav class="header-links" aria-label="Resources">
+        <a href="/docs" class="header-link" title="Docs" aria-label="Docs" aria-current="page"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>Docs</span></a>
+    </nav>
+<div class="docs-search header-search" role="search">
+        <input type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" data-search>
+        <kbd aria-hidden="true">/</kbd>
+    </div>
+    <button type="button" class="docs-icon-btn docs-search-btn" data-search-open aria-label="Search the docs" aria-expanded="false"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+    <button type="button" class="docs-icon-btn" data-theme-toggle aria-label="Switch to dark mode" title="Switch to dark mode"></button>
+    <button type="button" class="docs-icon-btn docs-menu-btn" data-nav-open aria-label="Open the docs menu" aria-expanded="false">☰</button>
+</header>
+</div>
+<div class="docs-scroll" id="docsScroll">
+<div class="docs-layout">
+<aside class="docs-side" id="docsNav" aria-label="Guides">
+    <div class="drawer-head">
+        <a class="docs-brand" href="/docs"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1" fill="#fef08a" stroke="#d4aa00" stroke-width="1"/><rect x="14" y="3" width="7" height="7" rx="1" fill="#fecdd3" stroke="#e88a9a" stroke-width="1"/><rect x="3" y="14" width="7" height="7" rx="1" fill="#a5f3fc" stroke="#67c5d6" stroke-width="1"/><rect x="14" y="14" width="7" height="7" rx="1" fill="#14b8a6" stroke="#0d9488" stroke-width="1"/></svg><span>Storymaps.io</span> <small>docs</small></a>
+        <button type="button" class="docs-icon-btn" data-nav-close aria-label="Close the docs menu">✕</button>
+    </div>
+    <a class="drawer-back" href="/">‹ Back to the app</a>
+    <div class="docs-search drawer-search" role="search">
+        <input type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" data-search>
+    </div>
+    <nav class="docs-switch" aria-label="Which docs"><a href="/docs" aria-current="true"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>Web app</a><a href="/docs/cli"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>CLI</a></nav>
+    <details class="grp">
+        <summary>Why story mapping</summary>
+        <ul>
+            <li><a href="/docs/why-user-story-mapping">Why user story mapping</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Agile has a gap</summary>
+        <ul>
+            <li><a href="/docs/how-do-you-decide-what-to-build">How do you decide what to build?</a></li>
+            <li><a href="/docs/the-problem-with-big-documents-and-long-lists">The problem with big documents and long lists</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>How story mapping works</summary>
+        <ul>
+            <li><a href="/docs/lay-out-the-user-journey-in-a-story-map">Lay out the user journey in a story map</a></li>
+            <li><a href="/docs/prioritise-work-in-a-story-map">Prioritise work in a story map</a></li>
+            <li><a href="/docs/slice-an-mvp-with-a-story-map">Slice an MVP with a story map</a></li>
+            <li><a href="/docs/how-a-story-map-helps-teams-decide-what-to-build">How a story map helps teams decide what to build</a></li>
+            <li><a href="/docs/how-story-mapping-changes-a-product-team">How story mapping changes a product team</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Get started</summary>
+        <ul>
+            <li><a href="/docs/what-is-a-user-story-map">What is a user story map?</a></li>
+            <li><a href="/docs/what-is-a-story-mapping-tool">What is a story mapping tool?</a></li>
+            <li><a href="/docs/take-the-story-mapping-tour">Take the story mapping tour</a></li>
+            <li><a href="/docs/create-a-user-story-map">Create a user story map</a></li>
+            <li><a href="/docs/run-a-user-story-mapping-session">Run a user story mapping session</a></li>
+            <li><a href="/docs/find-your-story-maps">Find your story maps</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Types of story map</summary>
+        <ul>
+            <li><a href="/docs/now-story-map">Now story map</a></li>
+            <li><a href="/docs/future-story-map">Future story map</a></li>
+            <li><a href="/docs/technical-story-map">Technical story map</a></li>
+            <li><a href="/docs/process-story-map">Process story map</a></li>
+        </ul>
+    </details>
+    <details class="grp" open>
+        <summary>Make a story map</summary>
+        <ul>
+            <li><a href="/docs/define-the-story-map-backbone">Define the story map backbone</a></li>
+            <li><a href="/docs/add-tasks-to-a-story-map">Add tasks to a story map</a></li>
+            <li><a href="/docs/write-user-stories-on-a-story-map">Write user stories on a story map</a></li>
+            <li><a href="/docs/customise-story-map-cards">Customise story map cards</a></li>
+            <li><a href="/docs/plan-releases-with-story-map-slices">Plan releases with story map slices</a></li>
+            <li><a href="/docs/reduce-duplication-with-partials">Reduce duplication with partials</a></li>
+            <li><a href="/docs/review-release-progress-on-a-story-map">Review release progress on a story map</a></li>
+            <li><a href="/docs/bulk-edit-story-map-cards" class="on" aria-current="page">Bulk edit story map cards</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Build with AI</summary>
+        <ul>
+            <li><a href="/docs/build-an-app-from-a-story-map-with-ai">Build an app from a story map with AI</a></li>
+            <li><a href="/docs/prototype-an-mvp-with-ai">Prototype an MVP with AI</a></li>
+            <li><a href="/docs/build-the-next-release-with-ai">Build the next release with AI</a></li>
+            <li><a href="/docs/build-one-feature-with-ai">Build one feature with AI</a></li>
+            <li><a href="/docs/prototype-a-whole-product-with-ai">Prototype a whole product with AI</a></li>
+            <li><a href="/docs/compare-product-directions-with-ai">Compare product directions with AI</a></li>
+            <li><a href="/docs/ask-ai-about-a-story-map">Ask AI about a story map</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Find your way around</summary>
+        <ul>
+            <li><a href="/docs/zoom-and-pan-around-a-story-map">Zoom and pan around a story map</a></li>
+            <li><a href="/docs/change-the-story-map-view">Change the story map view</a></li>
+            <li><a href="/docs/search-and-filter-a-story-map">Search and filter a story map</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Work as a team</summary>
+        <ul>
+            <li><a href="/docs/share-a-story-map">Share a story map</a></li>
+            <li><a href="/docs/edit-a-story-map-together">Edit a story map together</a></li>
+            <li><a href="/docs/track-changes-to-a-story-map">Track changes to a story map</a></li>
+            <li><a href="/docs/back-up-and-restore-a-story-map">Back up and restore a story map</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Work across story maps</summary>
+        <ul>
+            <li><a href="/docs/start-a-story-map-project">Start a story map project</a></li>
+            <li><a href="/docs/switch-between-story-maps">Switch between story maps</a></li>
+            <li><a href="/docs/manage-a-story-map-project">Manage a story map project</a></li>
+            <li><a href="/docs/share-a-story-map-project">Share a story map project</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Access controls</summary>
+        <ul>
+            <li><a href="/docs/lock-a-story-map">Lock a story map</a></li>
+            <li><a href="/docs/lock-a-story-map-project">Lock a story map project</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Connect your tools</summary>
+        <ul>
+            <li><a href="/docs/import-a-story-map">Import a story map</a></li>
+            <li><a href="/docs/export-a-story-map">Export a story map</a></li>
+            <li><a href="/docs/story-map-data-links">Story map data links</a></li>
+            <li><a href="/docs/user-story-mapping-for-jira">User story mapping for Jira</a></li>
+            <li><a href="/docs/user-story-mapping-for-asana">User story mapping for Asana</a></li>
+            <li><a href="/docs/user-story-mapping-for-phabricator">User story mapping for Phabricator</a></li>
+            <li><a href="/docs/user-story-mapping-for-linear">User story mapping for Linear</a></li>
+        </ul>
+    </details>
+</aside>
+<div class="docs-shade" data-nav-close></div>
+    <main class="docs-main">
+        <article class="docs-article">
+            <div class="crumbs-row"><nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/docs">Docs</a></li><li><a href="/docs#make-a-story-map">Make a story map</a></li></ol></nav></div>
+            <h1>Bulk edit story map cards</h1>
+            <p class="byline"><span>2 min read</span></p>
+            <details class="toc-mobile"><summary>On this page</summary><nav><a href="#select-cards">Select cards</a>
+            <a href="#the-selection-toolbar">The selection toolbar</a>
+            <a href="#move-cards-together">Move cards together</a>
+            <a href="#change-colour-status-or-tags">Change colour, status or tags</a>
+            <a href="#duplicate">Duplicate</a>
+            <a href="#delete">Delete</a>
+            <a href="#turn-columns-into-a-partial">Turn columns into a partial</a></nav></details>
+<p>Select a group of cards and change them all in one go: moves, colour, status, tags, copies or deletes. One action, one undo.</p>
+<div class="try">
+<span class="try-thumb" aria-hidden="true"><i class="b"></i><i class="b"></i><i class="b"></i><i class="b"></i><i class="g"></i><i class="g"></i><i class="g"></i><i class="g"></i><i></i><i></i><i></i><i></i><i class="cut"></i><i></i><i></i><i></i><i></i></span>
+<div class="try-what"><strong>Try it now</strong><p>Select cards on a finished coffee app story map. It opens as your own copy, so change anything you like.</p></div>
+<a class="btn" href="/sample/coffee-ordering" target="_blank" rel="nofollow noopener" data-practice>Open practice story map</a>
+</div>
+<h2 id="select-cards">Select cards</h2>
+<ul><li><strong>Drag a box</strong> around the cards, starting from an empty part of the story map. Every card the box touches is selected.</li><li><strong>Click a card</strong> away from its text to select it on its own. Clicking the text edits it instead.</li><li><strong>Shift+click</strong> another card to add it, and Shift+click a selected card to remove it from the selection.</li><li><strong>Shift+click a step</strong> after selecting another step to select every column between them.</li></ul>
+<p>Click an empty part of the story map, press <strong>Esc</strong> or click <strong>×</strong> on the toolbar to clear the selection.</p>
+<div class="tip tip-note"><p><strong>Note.</strong> Selecting works with a mouse on an unlocked story map. On a phone or tablet, change cards one at a time.</p></div>
+<h2 id="the-selection-toolbar">The selection toolbar</h2>
+<p>The toolbar shows at the bottom of the screen as soon as anything is selected.</p>
+<figure class="shot" style="max-width: 1352px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/bulk-edit-story-map-cards-toolbar.png?v=911f1ca0" alt="The selection toolbar, with one card selected." width="901" height="100" loading="lazy">
+<img class="only-dark" src="/docs/img/bulk-edit-story-map-cards-toolbar-dark.png?v=bca59996" alt="The selection toolbar, with one card selected." width="901" height="100" loading="lazy"><span class="callout" style="left: 13.5%; top: 32%">1</span><span class="callout" style="left: 43.9%; top: 26%">2</span><span class="callout" style="left: 72.7%; top: 26%">3</span>
+</div>
+<figcaption>The selection toolbar, with one card selected.</figcaption>
+</figure>
+<ol class="steps"><li><span class="num">1</span><span>How many cards and columns are selected.</span></li><li><span class="num">2</span><span><strong>Duplicate</strong> and <strong>Delete</strong> act on the selected cards. Click <strong>▾</strong> beside either to switch it to whole columns.</span></li><li><span class="num">3</span><span><strong>Color</strong>, <strong>Status</strong> and <strong>Tags</strong> change every selected card at once.</span></li></ol>
+<h2 id="move-cards-together">Move cards together</h2>
+<p>Drag any selected card, and the others travel with it.</p>
+<ul><li><strong>Cards from several columns</strong> stay in their own columns and only move up and down, so each task stays under its step. Use this to move a batch of tasks into another slice. A pale card in each column shows where each one will land.</li><li><strong>Cards from one column</strong> can go anywhere, and stack together where you drop them.</li></ul>
+<p><strong>Ctrl+Z</strong> undoes the whole move.</p>
+<h2 id="change-colour-status-or-tags">Change colour, status or tags</h2>
+<ul><li><strong>Color</strong> picks one colour for every selected card. <strong>×</strong> puts them back to their default colour.</li><li><strong>Status</strong> sets <strong>Done</strong>, <strong>In Progress</strong>, <strong>Planned</strong> or <strong>Blocked</strong>, or <strong>No Status</strong> to clear it.</li><li><strong>Tags</strong> lists the tags already on the selection, with <strong>×</strong> to take one off every card. Below them are the other tags in the story map to add, and a box to type a new one.</li></ul>
+<p>The colour and status changes show in the progress bars and the <strong>Overview</strong> tab straight away. <a href="/docs/customise-story-map-cards" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Customise</span> story map cards</a> explains what each one is for.</p>
+<h2 id="duplicate">Duplicate</h2>
+<p><strong>Duplicate Cards</strong> copies the selected cards into new columns, straight after the selection. Switch to <strong>Duplicate Columns</strong> to copy whole columns, with their steps and every card under them. <strong>Ctrl+D</strong> (<strong>⌘D</strong> on a Mac) duplicates the selected columns too.</p>
+<h2 id="delete">Delete</h2>
+<p><strong>Delete Cards</strong> removes the selected cards, and <strong>Delete Columns</strong> removes whole columns with every card in them. Both ask first. <strong>Delete</strong> or <strong>Backspace</strong> on the keyboard deletes the selected cards, or the columns when steps are selected.</p>
+<div class="tip tip-tip"><p><strong>Tip.</strong> Deleted the wrong thing? <strong>Ctrl+Z</strong> undoes it. Before a big clear-out, make a <a href="/docs/back-up-and-restore-a-story-map" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>backup</span></a>.</p></div>
+<h2 id="turn-columns-into-a-partial">Turn columns into a partial</h2>
+<p>Select two or more columns and the toolbar offers <strong>Create Map Partial</strong>. A partial holds a run of steps that more than one journey shares, such as checkout, so you write it once and use it anywhere. <a href="/docs/reduce-duplication-with-partials" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Reduce</span> duplication with partials</a> covers how partials work.</p>
+            <nav class="pager" aria-label="Previous and next">
+                <a class="prev" href="/docs/review-release-progress-on-a-story-map"><span>Previous</span>Review release progress on a story map</a>
+                <a class="next" href="/docs/build-an-app-from-a-story-map-with-ai"><span>Next section: Build with AI</span>Build an app from a story map with AI</a>
+            </nav>
+        </article>
+        <nav class="docs-toc" aria-label="On this page">
+            <strong>On this page</strong>
+            <a href="#select-cards">Select cards</a>
+            <a href="#the-selection-toolbar">The selection toolbar</a>
+            <a href="#move-cards-together">Move cards together</a>
+            <a href="#change-colour-status-or-tags">Change colour, status or tags</a>
+            <a href="#duplicate">Duplicate</a>
+            <a href="#delete">Delete</a>
+            <a href="#turn-columns-into-a-partial">Turn columns into a partial</a>
+        </nav>
+    </main>
+</div>
+<footer class="docs-footer">
+    <a href="/">Storymaps.io</a>
+    <a href="/privacy.html">Privacy</a>
+    <a href="https://github.com/jackgleeson/storymaps.io">GitHub</a>
+</footer>
+</div>
+</body>
+</html>

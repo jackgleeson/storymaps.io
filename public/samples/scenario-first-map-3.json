@@ -1,0 +1,53 @@
+{
+  "app": "storymap",
+  "v": 1,
+  "name": "Coffee App",
+  "users": [
+    [
+      {
+        "name": "Customer",
+        "color": "#fca5a5"
+      }
+    ]
+  ],
+  "activities": [
+    [
+      {
+        "name": "Order Coffee",
+        "color": "#93c5fd"
+      }
+    ]
+  ],
+  "steps": [
+    {
+      "name": "New Step",
+      "color": "#86efac"
+    }
+  ],
+  "slices": [
+    {
+      "name": "",
+      "stories": [
+        []
+      ]
+    }
+  ],
+  "legend": [
+    {
+      "color": "#fef08a",
+      "label": "Tasks"
+    },
+    {
+      "color": "#a5f3fc",
+      "label": "Notes"
+    },
+    {
+      "color": "#bef264",
+      "label": "Questions"
+    },
+    {
+      "color": "#fecdd3",
+      "label": "Edge cases"
+    }
+  ]
+}

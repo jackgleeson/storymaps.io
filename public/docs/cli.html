@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storymaps CLI docs for user story maps - Storymaps.io</title>
+    <meta name="description" content="Every story map has structured data behind it. The Storymaps CLI pulls it as YAML to edit, diff and push back from the terminal, or to hand to an AI coding agent.">
+    <link rel="canonical" href="https://storymaps.io/docs/cli">
+    <meta property="og:title" content="Storymaps CLI docs for user story maps - Storymaps.io">
+    <meta property="og:description" content="Every story map has structured data behind it. The Storymaps CLI pulls it as YAML to edit, diff and push back from the terminal, or to hand to an AI coding agent.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://storymaps.io/docs/cli">
+    <meta property="og:image" content="https://storymaps.io/resources/screenshot.png">
+    <meta property="og:image:width" content="1532">
+    <meta property="og:image:height" content="886">
+    <meta property="og:image:alt" content="A user story map in Storymaps.io, with cards organised by activities and releases">
+    <meta property="og:site_name" content="Storymaps.io">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Storymaps CLI docs for user story maps - Storymaps.io">
+    <meta name="twitter:description" content="Every story map has structured data behind it. The Storymaps CLI pulls it as YAML to edit, diff and push back from the terminal, or to hand to an AI coding agent.">
+    <meta name="twitter:image" content="https://storymaps.io/resources/screenshot.png">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://storymaps.io/docs"},{"@type":"ListItem","position":2,"name":"CLI","item":"https://storymaps.io/docs/cli"}]}</script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="/fonts.css">
+    <script>
+    (function() {
+        try {
+            var s = localStorage.getItem('darkMode');
+            var p = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (s !== null ? s === 'true' : p) document.documentElement.classList.add('dark-mode');
+        } catch(e) {}
+    })();
+    </script>
+    <link rel="stylesheet" href="/docs/docs.css?v=2826a66e">
+    <script src="/docs/docs.js?v=5a782a13" defer></script>
+</head>
+<body class="docs-home docs-cli">
+<div class="site-header-wrap">
+<header class="site-header">
+    <a href="/" class="logo"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1" fill="#fef08a" stroke="#d4aa00" stroke-width="1"/><rect x="14" y="3" width="7" height="7" rx="1" fill="#fecdd3" stroke="#e88a9a" stroke-width="1"/><rect x="3" y="14" width="7" height="7" rx="1" fill="#a5f3fc" stroke="#67c5d6" stroke-width="1"/><rect x="14" y="14" width="7" height="7" rx="1" fill="#14b8a6" stroke="#0d9488" stroke-width="1"/></svg><span class="logo-text">Storymaps.io</span></a>
+    <span class="header-links-divider" aria-hidden="true"></span>
+    <nav class="header-links" aria-label="Resources">
+        <a href="/docs" class="header-link" title="Docs" aria-label="Docs" aria-current="page"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>Docs</span></a>
+    </nav>
+<div class="docs-search header-search" role="search">
+        <input type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" data-search>
+        <kbd aria-hidden="true">/</kbd>
+    </div>
+    <button type="button" class="docs-icon-btn docs-search-btn" data-search-open aria-label="Search the docs" aria-expanded="false"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+    <button type="button" class="docs-icon-btn" data-theme-toggle aria-label="Switch to dark mode" title="Switch to dark mode"></button>
+    <button type="button" class="docs-icon-btn docs-menu-btn" data-nav-open aria-label="Open the docs menu" aria-expanded="false">☰</button>
+</header>
+</div>
+<div class="docs-scroll" id="docsScroll">
+<main class="docs-wide contents" id="top">
+    <div class="contents-top"><h1>Contents</h1><nav class="docs-switch docs-switch-big" aria-label="Which docs"><a href="/docs"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>Web app<span>53</span></a><a href="/docs/cli" aria-current="true"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>CLI<span>21</span></a></nav></div>
+    <div class="contents-intro">
+        <p>Every story map has structured data behind it, and the YAML file is its source code. Pull it into the terminal to edit, diff and push back, or hand it to an AI coding agent as the spec to build from.</p>
+        <figure class="term">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>npm install -g storymaps</span></pre>
+</figure>
+    </div>
+    <div class="contents-guides">
+            <div class="contents-sec" id="get-started">
+                <h2><i>1</i>Get started</h2>
+                <a href="/docs/cli/install-the-storymaps-cli">Install the Storymaps CLI<em>1 min</em></a>
+                <a href="/docs/cli/create-a-story-map-from-the-terminal">Create a story map from the terminal<em>1 min</em></a>
+                <a href="/docs/cli/open-a-story-map-in-the-browser">Open a story map in the browser<em>1 min</em></a>
+            </div>
+            <div class="contents-sec" id="sync-a-story-map">
+                <h2><i>2</i>Sync a story map</h2>
+                <a href="/docs/cli/pull-a-story-map">Pull a story map<em>1 min</em></a>
+                <a href="/docs/cli/edit-the-story-map-yaml">Edit the story map YAML<em>2 min</em></a>
+                <a href="/docs/cli/see-what-changed-in-a-story-map">See what changed in a story map<em>1 min</em></a>
+                <a href="/docs/cli/push-changes-to-a-story-map">Push changes to a story map<em>1 min</em></a>
+            </div>
+            <div class="contents-sec" id="work-with-a-project">
+                <h2><i>3</i>Work with a project</h2>
+                <a href="/docs/cli/pull-a-project">Pull a project<em>2 min</em></a>
+                <a href="/docs/cli/push-changes-to-a-project">Push changes to a project<em>2 min</em></a>
+                <a href="/docs/cli/start-a-project-from-the-terminal">Start a project from the terminal<em>2 min</em></a>
+                <a href="/docs/cli/lock-and-unlock-a-project">Lock and unlock a project<em>2 min</em></a>
+            </div>
+            <div class="contents-sec" id="track-progress">
+                <h2><i>4</i>Track progress</h2>
+                <a href="/docs/cli/check-story-map-progress">Check story map progress<em>1 min</em></a>
+                <a href="/docs/cli/read-the-activity-log">Read the activity log<em>1 min</em></a>
+            </div>
+            <div class="contents-sec" id="protect-a-story-map">
+                <h2><i>5</i>Protect a story map</h2>
+                <a href="/docs/cli/lock-and-unlock-a-story-map">Lock and unlock a story map<em>1 min</em></a>
+                <a href="/docs/cli/back-up-and-restore-from-the-terminal">Back up and restore from the terminal<em>2 min</em></a>
+            </div>
+            <div class="contents-sec" id="work-with-files">
+                <h2><i>6</i>Work with files</h2>
+                <a href="/docs/cli/validate-and-convert-story-map-files">Validate and convert story map files<em>1 min</em></a>
+            </div>
+            <div class="contents-sec" id="build-with-ai">
+                <h2><i>7</i>Build with AI</h2>
+                <a href="/docs/cli/hand-a-story-map-to-an-ai-coding-agent">Hand a story map to an AI coding agent<em>2 min</em></a>
+                <a href="/docs/cli/update-a-story-map-with-an-ai-agent">Update a story map with an AI agent<em>2 min</em></a>
+            </div>
+            <div class="contents-sec" id="self-host">
+                <h2><i>8</i>Self-host</h2>
+                <a href="/docs/cli/use-the-cli-with-your-own-server">Use the CLI with your own server<em>1 min</em></a>
+            </div>
+            <div class="contents-sec" id="reference">
+                <h2><i>9</i>Reference</h2>
+                <a href="/docs/cli/use-the-cli-in-scripts-and-ci">Use the CLI in scripts and CI<em>1 min</em></a>
+                <a href="/docs/cli/command-reference">Command reference<em>9 min</em></a>
+            </div>
+    </div>
+    <a class="contents-back" href="#top">Back to top</a>
+</main>
+<footer class="docs-footer">
+    <a href="/">Storymaps.io</a>
+    <a href="/privacy.html">Privacy</a>
+    <a href="https://github.com/jackgleeson/storymaps.io">GitHub</a>
+</footer>
+</div>
+</body>
+</html>

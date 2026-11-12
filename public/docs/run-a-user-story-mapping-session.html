@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How to run a user story mapping session - Storymaps.io docs</title>
+    <meta name="description" content="Build the first story map together as a team. Who to invite, how to set up, and the order to map in, from the users to a first release.">
+    <link rel="canonical" href="https://storymaps.io/docs/run-a-user-story-mapping-session">
+    <meta property="og:title" content="How to run a user story mapping session - Storymaps.io docs">
+    <meta property="og:description" content="Build the first story map together as a team. Who to invite, how to set up, and the order to map in, from the users to a first release.">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="https://storymaps.io/docs/run-a-user-story-mapping-session">
+    <meta property="og:image" content="https://storymaps.io/resources/screenshot.png">
+    <meta property="og:image:width" content="1532">
+    <meta property="og:image:height" content="886">
+    <meta property="og:image:alt" content="A user story map in Storymaps.io, with cards organised by activities and releases">
+    <meta property="og:site_name" content="Storymaps.io">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="How to run a user story mapping session - Storymaps.io docs">
+    <meta name="twitter:description" content="Build the first story map together as a team. Who to invite, how to set up, and the order to map in, from the users to a first release.">
+    <meta name="twitter:image" content="https://storymaps.io/resources/screenshot.png">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://storymaps.io/docs"},{"@type":"ListItem","position":2,"name":"Run a user story mapping session","item":"https://storymaps.io/docs/run-a-user-story-mapping-session"}]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"How to run a user story mapping session","description":"Build the first story map together as a team. Who to invite, how to set up, and the order to map in, from the users to a first release.","url":"https://storymaps.io/docs/run-a-user-story-mapping-session","inLanguage":"en","dateModified":"2026-11-12","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="/fonts.css">
+    <script>
+    (function() {
+        try {
+            var s = localStorage.getItem('darkMode');
+            var p = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (s !== null ? s === 'true' : p) document.documentElement.classList.add('dark-mode');
+        } catch(e) {}
+    })();
+    </script>
+    <link rel="stylesheet" href="/docs/docs.css?v=2826a66e">
+    <script src="/docs/docs.js?v=5a782a13" defer></script>
+</head>
+<body class="docs-guide">
+<div class="site-header-wrap">
+<header class="site-header">
+    <a href="/" class="logo"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1" fill="#fef08a" stroke="#d4aa00" stroke-width="1"/><rect x="14" y="3" width="7" height="7" rx="1" fill="#fecdd3" stroke="#e88a9a" stroke-width="1"/><rect x="3" y="14" width="7" height="7" rx="1" fill="#a5f3fc" stroke="#67c5d6" stroke-width="1"/><rect x="14" y="14" width="7" height="7" rx="1" fill="#14b8a6" stroke="#0d9488" stroke-width="1"/></svg><span class="logo-text">Storymaps.io</span></a>
+    <span class="header-links-divider" aria-hidden="true"></span>
+    <nav class="header-links" aria-label="Resources">
+        <a href="/docs" class="header-link" title="Docs" aria-label="Docs" aria-current="page"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>Docs</span></a>
+    </nav>
+<div class="docs-search header-search" role="search">
+        <input type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" data-search>
+        <kbd aria-hidden="true">/</kbd>
+    </div>
+    <button type="button" class="docs-icon-btn docs-search-btn" data-search-open aria-label="Search the docs" aria-expanded="false"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+    <button type="button" class="docs-icon-btn" data-theme-toggle aria-label="Switch to dark mode" title="Switch to dark mode"></button>
+    <button type="button" class="docs-icon-btn docs-menu-btn" data-nav-open aria-label="Open the docs menu" aria-expanded="false">☰</button>
+</header>
+</div>
+<div class="docs-scroll" id="docsScroll">
+<div class="docs-layout">
+<aside class="docs-side" id="docsNav" aria-label="Guides">
+    <div class="drawer-head">
+        <a class="docs-brand" href="/docs"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1" fill="#fef08a" stroke="#d4aa00" stroke-width="1"/><rect x="14" y="3" width="7" height="7" rx="1" fill="#fecdd3" stroke="#e88a9a" stroke-width="1"/><rect x="3" y="14" width="7" height="7" rx="1" fill="#a5f3fc" stroke="#67c5d6" stroke-width="1"/><rect x="14" y="14" width="7" height="7" rx="1" fill="#14b8a6" stroke="#0d9488" stroke-width="1"/></svg><span>Storymaps.io</span> <small>docs</small></a>
+        <button type="button" class="docs-icon-btn" data-nav-close aria-label="Close the docs menu">✕</button>
+    </div>
+    <a class="drawer-back" href="/">‹ Back to the app</a>
+    <div class="docs-search drawer-search" role="search">
+        <input type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" data-search>
+    </div>
+    <nav class="docs-switch" aria-label="Which docs"><a href="/docs" aria-current="true"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>Web app</a><a href="/docs/cli"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg>CLI</a></nav>
+    <details class="grp">
+        <summary>Why story mapping</summary>
+        <ul>
+            <li><a href="/docs/why-user-story-mapping">Why user story mapping</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Agile has a gap</summary>
+        <ul>
+            <li><a href="/docs/how-do-you-decide-what-to-build">How do you decide what to build?</a></li>
+            <li><a href="/docs/the-problem-with-big-documents-and-long-lists">The problem with big documents and long lists</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>How story mapping works</summary>
+        <ul>
+            <li><a href="/docs/lay-out-the-user-journey-in-a-story-map">Lay out the user journey in a story map</a></li>
+            <li><a href="/docs/prioritise-work-in-a-story-map">Prioritise work in a story map</a></li>
+            <li><a href="/docs/slice-an-mvp-with-a-story-map">Slice an MVP with a story map</a></li>
+            <li><a href="/docs/how-a-story-map-helps-teams-decide-what-to-build">How a story map helps teams decide what to build</a></li>
+            <li><a href="/docs/how-story-mapping-changes-a-product-team">How story mapping changes a product team</a></li>
+        </ul>
+    </details>
+    <details class="grp" open>
+        <summary>Get started</summary>
+        <ul>
+            <li><a href="/docs/what-is-a-user-story-map">What is a user story map?</a></li>
+            <li><a href="/docs/what-is-a-story-mapping-tool">What is a story mapping tool?</a></li>
+            <li><a href="/docs/take-the-story-mapping-tour">Take the story mapping tour</a></li>
+            <li><a href="/docs/create-a-user-story-map">Create a user story map</a></li>
+            <li><a href="/docs/run-a-user-story-mapping-session" class="on" aria-current="page">Run a user story mapping session</a></li>
+            <li><a href="/docs/find-your-story-maps">Find your story maps</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Types of story map</summary>
+        <ul>
+            <li><a href="/docs/now-story-map">Now story map</a></li>
+            <li><a href="/docs/future-story-map">Future story map</a></li>
+            <li><a href="/docs/technical-story-map">Technical story map</a></li>
+            <li><a href="/docs/process-story-map">Process story map</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Make a story map</summary>
+        <ul>
+            <li><a href="/docs/define-the-story-map-backbone">Define the story map backbone</a></li>
+            <li><a href="/docs/add-tasks-to-a-story-map">Add tasks to a story map</a></li>
+            <li><a href="/docs/write-user-stories-on-a-story-map">Write user stories on a story map</a></li>
+            <li><a href="/docs/customise-story-map-cards">Customise story map cards</a></li>
+            <li><a href="/docs/plan-releases-with-story-map-slices">Plan releases with story map slices</a></li>
+            <li><a href="/docs/reduce-duplication-with-partials">Reduce duplication with partials</a></li>
+            <li><a href="/docs/review-release-progress-on-a-story-map">Review release progress on a story map</a></li>
+            <li><a href="/docs/bulk-edit-story-map-cards">Bulk edit story map cards</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Build with AI</summary>
+        <ul>
+            <li><a href="/docs/build-an-app-from-a-story-map-with-ai">Build an app from a story map with AI</a></li>
+            <li><a href="/docs/prototype-an-mvp-with-ai">Prototype an MVP with AI</a></li>
+            <li><a href="/docs/build-the-next-release-with-ai">Build the next release with AI</a></li>
+            <li><a href="/docs/build-one-feature-with-ai">Build one feature with AI</a></li>
+            <li><a href="/docs/prototype-a-whole-product-with-ai">Prototype a whole product with AI</a></li>
+            <li><a href="/docs/compare-product-directions-with-ai">Compare product directions with AI</a></li>
+            <li><a href="/docs/ask-ai-about-a-story-map">Ask AI about a story map</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Find your way around</summary>
+        <ul>
+            <li><a href="/docs/zoom-and-pan-around-a-story-map">Zoom and pan around a story map</a></li>
+            <li><a href="/docs/change-the-story-map-view">Change the story map view</a></li>
+            <li><a href="/docs/search-and-filter-a-story-map">Search and filter a story map</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Work as a team</summary>
+        <ul>
+            <li><a href="/docs/share-a-story-map">Share a story map</a></li>
+            <li><a href="/docs/edit-a-story-map-together">Edit a story map together</a></li>
+            <li><a href="/docs/track-changes-to-a-story-map">Track changes to a story map</a></li>
+            <li><a href="/docs/back-up-and-restore-a-story-map">Back up and restore a story map</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Work across story maps</summary>
+        <ul>
+            <li><a href="/docs/start-a-story-map-project">Start a story map project</a></li>
+            <li><a href="/docs/switch-between-story-maps">Switch between story maps</a></li>
+            <li><a href="/docs/manage-a-story-map-project">Manage a story map project</a></li>
+            <li><a href="/docs/share-a-story-map-project">Share a story map project</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Access controls</summary>
+        <ul>
+            <li><a href="/docs/lock-a-story-map">Lock a story map</a></li>
+            <li><a href="/docs/lock-a-story-map-project">Lock a story map project</a></li>
+        </ul>
+    </details>
+    <details class="grp">
+        <summary>Connect your tools</summary>
+        <ul>
+            <li><a href="/docs/import-a-story-map">Import a story map</a></li>
+            <li><a href="/docs/export-a-story-map">Export a story map</a></li>
+            <li><a href="/docs/story-map-data-links">Story map data links</a></li>
+            <li><a href="/docs/user-story-mapping-for-jira">User story mapping for Jira</a></li>
+            <li><a href="/docs/user-story-mapping-for-asana">User story mapping for Asana</a></li>
+            <li><a href="/docs/user-story-mapping-for-phabricator">User story mapping for Phabricator</a></li>
+            <li><a href="/docs/user-story-mapping-for-linear">User story mapping for Linear</a></li>
+        </ul>
+    </details>
+</aside>
+<div class="docs-shade" data-nav-close></div>
+    <main class="docs-main">
+        <article class="docs-article">
+            <div class="crumbs-row"><nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/docs">Docs</a></li><li><a href="/docs#get-started">Get started</a></li></ol></nav></div>
+            <h1>Run a user story mapping session</h1>
+            <p class="byline"><span>6 min read</span></p>
+            <details class="toc-mobile"><summary>On this page</summary><nav><a href="#who-to-invite">Who to invite</a>
+            <a href="#before-you-start">Before you start</a>
+            <a href="#1-agree-who-it-s-for">1. Agree who it's for</a>
+            <a href="#2-walk-the-journey">2. Walk the journey</a>
+            <a href="#3-fill-in-the-tasks">3. Fill in the tasks</a>
+            <a href="#4-review-the-tasks-together">4. Review the tasks together</a>
+            <a href="#5-slice-a-first-release">5. Slice a first release</a>
+            <a href="#after-the-session">After the session</a>
+            <a href="#split-the-work-by-team">Split the work by team</a></nav></details>
+<p>The first story map works best when the team builds it together. Everyone adds what they know, and everyone leaves with the same picture of the product and a first release they agreed on. New to story maps? <a href="/docs/what-is-a-user-story-map" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>What</span> is a user story map?</a> explains the parts.</p>
+<h2 id="who-to-invite">Who to invite</h2>
+<p>Invite the people who'll shape and build the product:</p>
+<ul><li><strong>Product</strong>, to lead the session and set out the goal.</li><li><strong>Engineering</strong>, to say what's feasible, and flag what's risky or cheaper another way.</li><li><strong>Design</strong>, to share what they've learned about users and shape the experience.</li><li><strong>Key stakeholders</strong>, such as the sponsor or a department head, to agree the goal and back the first release.</li><li><strong>Anyone close to the users</strong>, such as support or sales, to say what users ask for and struggle with.</li></ul>
+<p>Bring a short brief if there is one: who the product is for and why it's worth building. <a href="/docs/how-story-mapping-changes-a-product-team#from-idea-to-release" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>How</span> story mapping changes a product team</a> explains where a brief fits in.</p>
+<h2 id="before-you-start">Before you start</h2>
+<ol class="steps"><li><span class="num">1</span><span><a href="/docs/create-a-user-story-map" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Create</span> a user story map</a> and name it.</span></li><li><span class="num">2</span><span>Copy the link from <strong>Share → Share URL</strong> and send it to everyone, so the whole team edits the same story map. Changes show for everyone as they happen. The first time someone arrives, the app asks for their name, so everyone can see who's who.</span></li></ol>
+<p>How you run it depends on where everyone is:</p>
+<ul><li><strong>In person:</strong> put the story map on the big screen, and everyone works on it from their own device.</li><li><strong>Remote:</strong> the person leading shares their screen, and everyone else works on it from their own device.</li></ul>
+<p>If everyone's cursors moving around distract whoever's presenting, they can click <span class="button-icon"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2l1 15 3.5-4 4.5 6 2.5-1.5-4.5-6H18L6 2z"/><line x1="3" y1="21" x2="21" y2="3"/></svg></span> <strong>Hide external cursors</strong> in the view controls at the bottom right. It only changes their own view. <a href="/docs/change-the-story-map-view#other-people-s-cursors" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Change</span> the story map view</a> has more.</p>
+<div class="tip tip-tip"><p><strong>Tip.</strong> Put questions on the story map as <span class="swatch" style="--swatch: #bef264">Lime</span> cards, the legend's colour for questions, under the step they're about. Use the <strong>Notes</strong> tab for decisions and anything that doesn't belong to one step. Everyone with the link sees the same notes.</p></div>
+<h2 id="1-agree-who-it-s-for">1. Agree who it's for</h2>
+<p>Start with the users row. Name the people the product is for, such as <strong>Customer</strong> and <strong>Barista</strong>. Settle any disagreement here first, since everything else on the story map depends on who it's for.</p>
+<h2 id="2-walk-the-journey">2. Walk the journey</h2>
+<p>Lay out the backbone from left to right: the activities, then the steps under each. Tell it as the story of one user when everything goes right (the happy path): first they do this, then that. Keep it high-level for now, and get the whole journey down before anyone goes into detail on one step.</p>
+<p>Then read it back out loud, from left to right. If one step doesn't lead to the next, there's a step missing.</p>
+<p><a href="/docs/define-the-story-map-backbone" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Define</span> the story map backbone</a> shows how to add and move users, activities and steps.</p>
+<div class="tip tip-tip"><p><strong>Tip.</strong> When someone raises something that could go wrong, or an unusual case, add it as a <span class="swatch" style="--swatch: #fecdd3">Rose</span> card under that step, the legend's colour for edge cases, and keep going.</p></div>
+<h2 id="3-fill-in-the-tasks">3. Fill in the tasks</h2>
+<p>Under each step, everyone adds the tasks they think are needed to complete it as <span class="swatch" style="--swatch: #fef08a">Yellow</span> cards, the legend's colour for tasks, and any good ideas for the future. Everyone can do this at the same time.</p>
+<p>Don't slice releases yet. To show what's for now and what's for later, move the tasks for now to the top of the column.</p>
+<h2 id="4-review-the-tasks-together">4. Review the tasks together</h2>
+<p>With everyone adding at once, expect some repeats. Go through the story map together from left to right, one step at a time, and talk through what's there. Merge tasks that overlap, remove duplicates, and reword any task that isn't clear to everyone. If the group can't settle something yet, turn it into a <span class="swatch" style="--swatch: #bef264">Lime</span> question card and move on.</p>
+<p>Then sort each column, with the <a href="/docs/prioritise-work-in-a-story-map" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>most</span> important task at the top</a>. If someone moves a card and someone else moves it back, stop and talk about why. <a href="/docs/add-tasks-to-a-story-map" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Add</span> tasks to a story map</a> covers adding and moving them.</p>
+<div class="tip tip-note"><p><strong>Note.</strong> The conversation is as valuable as the story map. As Jeff Patton puts it: &quot;Use the creation of the model as an opportunity to elicit discussion about the features being built.&quot; (<a href="https://jpattonassociates.com/wp-content/uploads/2015/01/how_you_slice_it.pdf" target="_blank" rel="noopener">It's All in How You Slice</a>, Jeff Patton.)</p></div>
+<h2 id="5-slice-a-first-release">5. Slice a first release</h2>
+<p>Decide the first release together. Go through the steps from left to right and ask what's the minimum implementation each one needs to work and be useful. Move the tasks that cover it into the first slice, so users can get from the first step to the last in the simplest way that works. Then give the slice a goal everyone agrees on, such as &quot;Customers can order and pay ahead, then pick up their coffee&quot;, and a target date to make it real.</p>
+<p>Then deal with the rest. If the remaining work is already prioritised, slice it into later releases. If not, put it all in one <strong>Later</strong> slice to come back to. Nothing needs deleting.</p>
+<p>The session is done when the team agrees on the first slice, usually the MVP or V1, and who's picking up what next. <a href="/docs/slice-an-mvp-with-a-story-map" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Slice</span> an MVP with a story map</a> explains why the slice runs across the whole journey, and <a href="/docs/plan-releases-with-story-map-slices" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Plan</span> releases with story map slices</a> shows how to add one and give it a goal and a date.</p>
+<h2 id="after-the-session">After the session</h2>
+<p>The story map is where the plan lives from now on:</p>
+<ul><li>Mark the milestone with a <a href="/docs/back-up-and-restore-a-story-map" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>backup</span></a>, with a note such as &quot;After the first session&quot;, so you can always get back to what the team agreed.</li><li>Build the first slice as a prototype to learn from users before the team commits to it. <a href="/docs/build-an-app-from-a-story-map-with-ai" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Build</span> with AI</a> shows how.</li><li>Turn the first slice into tickets with the team. The <a href="/docs/user-story-mapping-for-jira" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Jira</span></a>, <a href="/docs/user-story-mapping-for-asana" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Asana</span></a>, <a href="/docs/user-story-mapping-for-phabricator" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Phabricator</span></a> and <a href="/docs/user-story-mapping-for-linear" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Linear</span></a> integrations can send the cards as epics or tasks, to save copying them across by hand.</li><li>Share the link wherever the team talks about the work, such as a chat or a ticket.</li><li>Add new ideas and feedback as they come in, under the step they relate to, so they're there when you plan the next release.</li><li>Come back to it to plan each release.</li><li>See how a release is going in <a href="/docs/review-release-progress-on-a-story-map" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Review</span> release progress on a story map</a>.</li></ul>
+<h2 id="split-the-work-by-team">Split the work by team</h2>
+<p>Tag each card with the team that will build it, such as <strong>mobile</strong> or <strong>payments</strong>, so each team can see its own work.</p>
+<ol class="steps"><li><span class="num">1</span><span>Select the cards for one team, by dragging a box around them or with Shift+click.</span></li><li><span class="num">2</span><span>Click <strong>Tags</strong> on the toolbar, type the team name in <strong>New tag...</strong> and press <strong>Enter</strong>.</span></li><li><span class="num">3</span><span>Do the same for each team.</span></li></ol>
+<p>To see the work for one team, click the funnel beside the search box, tick the tag under <strong>Tags</strong> and click <strong>Done</strong>. The cards for that team stay bright in every step and slice. Filters only change what you see, so each team can view its own work at the same time. <a href="/docs/search-and-filter-a-story-map" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Search</span> and filter a story map</a> covers the rest, including searching within the tagged cards.</p>
+            <nav class="pager" aria-label="Previous and next">
+                <a class="prev" href="/docs/create-a-user-story-map"><span>Previous</span>Create a user story map</a>
+                <a class="next" href="/docs/find-your-story-maps"><span>Next</span>Find your story maps</a>
+            </nav>
+        </article>
+        <nav class="docs-toc" aria-label="On this page">
+            <strong>On this page</strong>
+            <a href="#who-to-invite">Who to invite</a>
+            <a href="#before-you-start">Before you start</a>
+            <a href="#1-agree-who-it-s-for">1. Agree who it's for</a>
+            <a href="#2-walk-the-journey">2. Walk the journey</a>
+            <a href="#3-fill-in-the-tasks">3. Fill in the tasks</a>
+            <a href="#4-review-the-tasks-together">4. Review the tasks together</a>
+            <a href="#5-slice-a-first-release">5. Slice a first release</a>
+            <a href="#after-the-session">After the session</a>
+            <a href="#split-the-work-by-team">Split the work by team</a>
+        </nav>
+    </main>
+</div>
+<footer class="docs-footer">
+    <a href="/">Storymaps.io</a>
+    <a href="/privacy.html">Privacy</a>
+    <a href="https://github.com/jackgleeson/storymaps.io">GitHub</a>
+</footer>
+</div>
+</body>
+</html>

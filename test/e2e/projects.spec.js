@@ -282,6 +282,20 @@ test('a broken project link says so, and a project link to a map not in it shows
   await expect(tabs(page)).toHaveCount(0);
 });
 
+test('a map made with New map beside a lesson still reports to the lesson', async ({ page, createMap }) => {
+  const a = await createMap(map('Ordering'));
+  await page.goto(`/${a}?lesson`);
+  await expect(page.locator('.story-card').first()).toBeVisible();
+  await startProject(page);
+  await page.locator('#projectAddBtn').click();
+  await panel(page).getByRole('button', { name: 'New map' }).click();
+  // The lesson flag is read as the new page loads, and the app tidies the address after
+  await expect(page).toHaveURL(/\/p\/[a-z0-9]{8}\/[a-z0-9]+$/);
+  await page.locator('#boardName').fill('Barista Screen');
+  await page.locator('#boardName').blur();
+  await expect.poll(() => page.evaluate(() => window.storymapsLesson?.summary().name)).toBe('Barista Screen');
+});
+
 test('New map makes a map in the project, and its tab follows its title', async ({ page, createMap }) => {
   const a = await createMap(map('Ordering'));
   await openMap(page, a, 2);

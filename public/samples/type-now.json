@@ -1,0 +1,220 @@
+{
+  "app": "storymap",
+  "v": 1,
+  "name": "Coffee Shop Today",
+  "users": [
+    [
+      {
+        "name": "Customer",
+        "color": "#fca5a5"
+      }
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+      {
+        "name": "Barista",
+        "color": "#fca5a5"
+      }
+    ],
+    [],
+    []
+  ],
+  "activities": [
+    [
+      {
+        "name": "Get a coffee",
+        "color": "#93c5fd"
+      }
+    ],
+    [],
+    [],
+    [],
+    [],
+    [
+      {
+        "name": "Serve customers",
+        "color": "#93c5fd"
+      }
+    ],
+    [],
+    []
+  ],
+  "steps": [
+    {
+      "name": "Join the queue",
+      "color": "#86efac"
+    },
+    {
+      "name": "Order at the counter",
+      "color": "#86efac"
+    },
+    {
+      "name": "Pay",
+      "color": "#86efac"
+    },
+    {
+      "name": "Wait for the drink",
+      "color": "#86efac"
+    },
+    {
+      "name": "Collect it",
+      "color": "#86efac"
+    },
+    {
+      "name": "Write the order on a cup",
+      "color": "#86efac"
+    },
+    {
+      "name": "Make the drink",
+      "color": "#86efac"
+    },
+    {
+      "name": "Call out the name",
+      "color": "#86efac"
+    }
+  ],
+  "slices": [
+    {
+      "name": "How it works today",
+      "goal": "See where the morning rush goes wrong",
+      "stories": [
+        [
+          {
+            "name": "Queue at the counter"
+          },
+          {
+            "name": "Queue goes out the door from 8 to 9am",
+            "color": "#fecdd3"
+          },
+          {
+            "name": "Regulars leave when the queue is long",
+            "color": "#fecdd3"
+          },
+          {
+            "name": "Order ahead on a phone",
+            "color": "#bef264"
+          }
+        ],
+        [
+          {
+            "name": "Read the menu board"
+          },
+          {
+            "name": "Ask about milks and sizes"
+          },
+          {
+            "name": "Show the menu on a phone while queuing",
+            "color": "#bef264"
+          },
+          {
+            "name": "Do we tell customers about new ranges?",
+            "color": "#a5f3fc"
+          }
+        ],
+        [
+          {
+            "name": "Card or cash at the till"
+          },
+          {
+            "name": "Loyalty stamp card"
+          },
+          {
+            "name": "Stamp cards get lost",
+            "color": "#fecdd3"
+          },
+          {
+            "name": "Loyalty added at payment",
+            "color": "#bef264"
+          },
+          {
+            "name": "Loyalty tracked through app payments",
+            "color": "#bef264"
+          }
+        ],
+        [
+          {
+            "name": "Stand by the pickup counter"
+          },
+          {
+            "name": "No idea how long it will be",
+            "color": "#fecdd3"
+          },
+          {
+            "name": "Crowd round the pickup counter",
+            "color": "#fecdd3"
+          },
+          {
+            "name": "Text when the drink is ready",
+            "color": "#bef264"
+          }
+        ],
+        [
+          {
+            "name": "Listen for your name"
+          },
+          {
+            "name": "Wrong drink picked up",
+            "color": "#fecdd3"
+          },
+          {
+            "name": "Order number on the cup and a screen",
+            "color": "#bef264"
+          }
+        ],
+        [
+          {
+            "name": "Drink and name in marker pen"
+          }
+        ],
+        [
+          {
+            "name": "Make drinks in cup order"
+          },
+          {
+            "name": "Big orders hold up the line",
+            "color": "#fecdd3"
+          },
+          {
+            "name": "Show the queue on a screen",
+            "color": "#bef264"
+          }
+        ],
+        [
+          {
+            "name": "Shout the name"
+          },
+          {
+            "name": "Can't be heard at busy times",
+            "color": "#fecdd3"
+          },
+          {
+            "name": "Show the name on a screen when ready",
+            "color": "#bef264"
+          }
+        ]
+      ]
+    }
+  ],
+  "legend": [
+    {
+      "color": "#fef08a",
+      "label": "How it works today"
+    },
+    {
+      "color": "#fecdd3",
+      "label": "Problems"
+    },
+    {
+      "color": "#bef264",
+      "label": "Opportunities"
+    },
+    {
+      "color": "#a5f3fc",
+      "label": "Questions"
+    }
+  ],
+  "notes": "Walked through with the morning team. Next: count the people who leave the queue."
+}

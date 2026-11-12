@@ -1,0 +1,154 @@
+{
+  "app": "storymap",
+  "v": 1,
+  "name": "Coffee App",
+  "users": [
+    [
+      {
+        "name": "Customer",
+        "color": "#fca5a5"
+      }
+    ],
+    [],
+    [],
+    [],
+    []
+  ],
+  "activities": [
+    [
+      {
+        "name": "Order Coffee",
+        "color": "#93c5fd"
+      }
+    ],
+    [],
+    [],
+    [],
+    []
+  ],
+  "steps": [
+    {
+      "name": "Browse Menu",
+      "color": "#86efac"
+    },
+    {
+      "name": "Customise Drink",
+      "color": "#86efac"
+    },
+    {
+      "name": "Add To Cart",
+      "color": "#86efac"
+    },
+    {
+      "name": "Pay",
+      "color": "#86efac"
+    },
+    {
+      "name": "Confirm",
+      "color": "#86efac"
+    }
+  ],
+  "slices": [
+    {
+      "name": "",
+      "stories": [
+        [
+          {
+            "name": "Search by name",
+            "color": "#fef08a"
+          },
+          {
+            "name": "Recommend popular combos",
+            "color": "#fef08a"
+          },
+          {
+            "name": "Drink list with prices",
+            "color": "#fef08a"
+          },
+          {
+            "name": "Photo on each drink",
+            "color": "#fef08a"
+          }
+        ],
+        [
+          {
+            "name": "Extra shots and syrups",
+            "color": "#fef08a"
+          },
+          {
+            "name": "Choose size",
+            "color": "#fef08a"
+          },
+          {
+            "name": "Save custom drinks",
+            "color": "#fef08a"
+          },
+          {
+            "name": "Select milk type",
+            "color": "#fef08a"
+          }
+        ],
+        [
+          {
+            "name": "Edit or remove items",
+            "color": "#fef08a"
+          },
+          {
+            "name": "Group ordering",
+            "color": "#fef08a"
+          },
+          {
+            "name": "Add multiple drinks",
+            "color": "#fef08a"
+          },
+          {
+            "name": "Order summary with total",
+            "color": "#fef08a"
+          }
+        ],
+        [
+          {
+            "name": "Apple Pay / Google Pay",
+            "color": "#fef08a"
+          },
+          {
+            "name": "Gift cards",
+            "color": "#fef08a"
+          },
+          {
+            "name": "Credit card",
+            "color": "#fef08a"
+          },
+          {
+            "name": "Split payment",
+            "color": "#fef08a"
+          }
+        ],
+        [
+          {
+            "name": "Submit order",
+            "color": "#fef08a"
+          }
+        ]
+      ]
+    }
+  ],
+  "legend": [
+    {
+      "color": "#fef08a",
+      "label": "Tasks"
+    },
+    {
+      "color": "#a5f3fc",
+      "label": "Notes"
+    },
+    {
+      "color": "#bef264",
+      "label": "Questions"
+    },
+    {
+      "color": "#fecdd3",
+      "label": "Edge cases"
+    }
+  ]
+}

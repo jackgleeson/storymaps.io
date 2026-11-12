@@ -1,0 +1,23 @@
+Summary,Issue key,Issue Type,Status,Parent,Project key
+Menu,COF-18,Epic,To Do,,COF
+Drink options,COF-19,Epic,To Do,,COF
+Basket,COF-20,Epic,To Do,,COF
+Payments,COF-21,Epic,To Do,,COF
+Checkout,COF-22,Epic,To Do,,COF
+Drink list with prices,COF-5,Story,To Do,COF-18,COF
+Search by name,COF-2,Story,To Do,COF-18,COF
+Photo on each drink,COF-16,Story,To Do,COF-18,COF
+Recommend popular combos,COF-15,Story,To Do,COF-18,COF
+Choose size,COF-4,Story,To Do,COF-19,COF
+Select milk type,COF-9,Story,To Do,COF-19,COF
+Extra shots and syrups,COF-14,Story,To Do,COF-19,COF
+Save custom drinks,COF-10,Story,To Do,COF-19,COF
+Add multiple drinks,COF-12,Story,To Do,COF-20,COF
+Order summary with total,COF-17,Story,To Do,COF-20,COF
+Edit or remove items,COF-6,Story,To Do,COF-20,COF
+Group ordering,COF-7,Story,To Do,COF-20,COF
+Credit card,COF-1,Story,To Do,COF-21,COF
+Apple Pay / Google Pay,COF-8,Story,To Do,COF-21,COF
+Gift cards,COF-3,Story,To Do,COF-21,COF
+Split payment,COF-13,Story,To Do,COF-21,COF
+Submit order,COF-11,Story,To Do,COF-22,COF

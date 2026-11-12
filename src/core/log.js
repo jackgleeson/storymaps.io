@@ -88,6 +88,9 @@ export const unbindYjs = () => {
     if (_statsEl) _statsEl.innerHTML = '';
 };
 
+// The entries of the open map, oldest first, as they're stored: { ts, text, src, name, ... }
+export const entries = () => _yarray ? _yarray.toArray() : [];
+
 const fetchMeta = async () => {
     const mapId = _mapId;
     if (!mapId) return;
