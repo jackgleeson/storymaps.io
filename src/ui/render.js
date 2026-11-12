@@ -429,7 +429,11 @@ const edgeSpeed = (distance) => distance >= AUTO_SCROLL_ZONE
     ? 0
     : Math.ceil(AUTO_SCROLL_MAX_SPEED * Math.min(1, 1 - distance / AUTO_SCROLL_ZONE));
 
+const noSelecting = (e) => e.preventDefault();
+
 const stopDragAutoScroll = () => {
+    document.body.classList.remove('dragging-cards');
+    document.removeEventListener('selectstart', noSelecting, true);
     document.removeEventListener('mousemove', trackDragPointer, true);
     document.removeEventListener('touchmove', trackDragPointer, true);
     if (autoScrollFrame) cancelAnimationFrame(autoScrollFrame);
@@ -474,6 +478,15 @@ const autoScrollTick = () => {
 
 const startDragAutoScroll = () => {
     stopDragAutoScroll();
+    // A drag that starts on a card's text would go on selecting text in the cards it passes over,
+    // most visibly in Safari, so text can't be selected until the drag ends (see styles.css)
+    document.body.classList.add('dragging-cards');
+    document.addEventListener('selectstart', noSelecting, true);
+    window.getSelection()?.removeAllRanges();
+    if (document.activeElement?.matches?.('#storyMap textarea')) document.activeElement.blur();
+    for (const field of document.querySelectorAll('#storyMap textarea')) {
+        if (field.selectionStart !== field.selectionEnd) field.setSelectionRange(field.selectionEnd, field.selectionEnd);
+    }
     document.addEventListener('mousemove', trackDragPointer, true);
     document.addEventListener('touchmove', trackDragPointer, { capture: true, passive: true });
     autoScrollFrame = requestAnimationFrame(autoScrollTick);

@@ -94,3 +94,35 @@ test('clicking into a card that still has its starter text selects it, so typing
   await page.keyboard.type('!');
   await expect(activity).not.toHaveValue('!');
 });
+
+test('dragging a card selects no text in the cards it passes over', async ({ page, createMap }) => {
+  const id = await createMap(`name: Drag
+steps:
+  - A
+  - B
+slices:
+  - name: MVP
+    stories:
+      A:
+        - name: first card with some words
+        - name: second card with some words
+        - name: third card with some words
+      B:
+        - name: fourth card with some words
+`);
+  await openMap(page, id, 2);
+  const box = await page.locator('.slice-container .story-card').first().boundingBox();
+  const x = box.x + box.width / 2, y = box.y + box.height / 2;
+  // Grab the card by its text, as people do, and carry it down and across
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x + 40, y + 120, { steps: 15 });
+  await page.mouse.move(x + 200, y + 150, { steps: 15 });
+  await expect(page.locator('.sortable-drag')).toBeVisible();
+  const selected = () => page.evaluate(() => String(window.getSelection()) +
+    [...document.querySelectorAll('#storyMap textarea')].map(t => t.value.slice(t.selectionStart, t.selectionEnd)).join(''));
+  expect(await selected()).toBe('');
+  await page.mouse.up();
+  // Text can be selected again once the card is dropped
+  await expect(page.locator('body')).not.toHaveClass(/dragging-cards/);
+});

@@ -2775,6 +2775,14 @@ body.main-menu-open .step:hover {
     box-shadow: var(--shadow-card);
 }
 
+/* While a card or step is dragged, text in cards can't be selected (src/ui/render.js) */
+body.dragging-cards textarea,
+body.dragging-cards input {
+    -webkit-user-select: none;
+    user-select: none;
+    pointer-events: none;
+}
+
 /* Sortable drag styles */
 .sortable-ghost {
     opacity: 0.4;
