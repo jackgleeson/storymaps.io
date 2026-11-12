@@ -639,7 +639,7 @@ describe('pages and files', () => {
   });
 
   test('keeps story maps and projects out of search results, and leaves the pages to find alone', async () => {
-    for (const path of ['/abc12345', '/new', '/sample/recipe-app', '/p/abc12345', '/p/abc12345/def67890']) {
+    for (const path of ['/abc12345', '/new', '/sample/recipe-app', '/p/abc12345', '/p/abc12345/def67890', '/docs/search.json']) {
       assert.equal((await fetch(`${base}${path}`)).headers.get('x-robots-tag'), 'noindex', path);
     }
     for (const path of ['/', '/tour', '/docs', '/docs/bulk-edit-story-map-cards', '/developers', '/privacy.html']) {

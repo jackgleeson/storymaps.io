@@ -434,8 +434,10 @@ const server = createServer(async (req, res) => {
 
   if (cached) {
     // Story maps and projects are people's own work, reached by their link, so they stay out of
-    // search results. The home page and the tour are the app pages meant to be found.
-    const robots = cacheKey === '/index.html' && reqPath !== '/' && reqPath !== '/tour' ? { 'X-Robots-Tag': 'noindex' } : {};
+    // search results. The home page and the tour are the app pages meant to be found. The docs
+    // search index is data for the search box, not a page to find.
+    const unlisted = (cacheKey === '/index.html' && reqPath !== '/' && reqPath !== '/tour') || reqPath === '/docs/search.json';
+    const robots = unlisted ? { 'X-Robots-Tag': 'noindex' } : {};
 
     if (req.headers['if-none-match'] === cached.etag) {
       res.writeHead(304, { 'Cache-Control': cached.cacheControl, ...robots });
