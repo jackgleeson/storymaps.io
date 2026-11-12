@@ -1023,3 +1023,93 @@ details.stuck p { margin: 6px 0 0; color: var(--muted); }
 .docs-article details.fold > summary { cursor: pointer; color: var(--link); font-weight: 600; font-size: 15px; }
 .docs-article details.fold > summary:hover { text-decoration: underline; }
 .docs-article details.fold[open] > summary { margin-bottom: 10px; }
+
+/* The page for developers (docs/build.js developersPage): the CLI, AI coding agents and
+   self-hosting. Square corners throughout, and terminals stay dark in both themes. */
+.dev-wrap { max-width: 1180px; margin: 0 auto; padding-left: 32px; padding-right: 32px; }
+.dev h1, .dev h2, .dev h3 { color: var(--heading); letter-spacing: -0.02em; }
+.dev h2 { font-size: 30px; line-height: 1.2; font-weight: 800; }
+.dev h3 { font-size: 22px; line-height: 1.25; font-weight: 800; }
+.dev p { font-size: 17px; line-height: 1.6; }
+.dev .term, .dev .file { margin: 0; max-width: none; border-radius: 0; min-width: 0; }
+.dev-link { display: block; width: fit-content; font-weight: 600; color: var(--teal-dark); text-decoration: none; }
+.dev-link:hover { text-decoration: underline; }
+html.dark-mode .dev-link { color: var(--teal); }
+.dev .btn { width: fit-content; }
+.dev-label { font-size: 14px !important; font-weight: 600; color: var(--teal-dark); }
+html.dark-mode .dev-label { color: var(--teal); }
+.dev-copy { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+.dev-hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 24px 48px; align-items: end; padding-top: 64px; padding-bottom: 40px; }
+.dev-hero h1 { font-size: 50px; line-height: 1.05; font-weight: 800; letter-spacing: -0.03em; }
+.dev-lead { margin-top: 14px; max-width: 36em; font-size: 19px !important; }
+
+.dev-ways { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; padding-bottom: 64px; }
+.dev-way { display: flex; flex-direction: column; gap: 14px; min-width: 0; padding: 24px; background: var(--surface); border: 1px solid var(--border); border-top: 4px solid var(--green); }
+.dev-way-agents { border-top-color: #93c5fd; }
+.dev-way-self-host { border-top-color: #fca5a5; }
+.dev-way h2 { font-size: 22px; }
+.dev-way h2 a { color: inherit; text-decoration: none; }
+.dev-way h2 a:hover { color: var(--teal-dark); }
+.dev-way p { font-size: 15px; }
+.dev-way .term { flex: 1; }
+.dev-way .term pre { font-size: 13px; }
+
+.dev-split { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 32px 48px; align-items: center; padding-top: 64px; padding-bottom: 64px; }
+.dev-flip > .dev-copy { order: 2; }
+.dev-band-light { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.dev-file { display: flex; flex-direction: column; gap: 24px; padding-bottom: 64px; }
+.dev-file .dev-copy { max-width: 46em; }
+.dev-views { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; }
+.dev-views .file { border-left: 0; }
+.dev-map { display: flex; flex-direction: column; gap: 12px; min-width: 0; margin: 0; padding: 20px; background: var(--bg); border: 1px solid var(--border); }
+.dev-map figcaption, .dev-diff figcaption { font-size: 12px; font-weight: 600; color: var(--muted); }
+.dev-map-grid { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 8px; }
+.dev-card { position: relative; display: grid; place-items: center; min-height: 56px; padding: 6px; background: #fef08a; color: #1e293b; font-size: 12px; font-weight: 500; line-height: 1.3; text-align: center; overflow-wrap: anywhere; }
+.dev-step { background: #86efac; }
+.dev-user { background: #fca5a5; }
+.dev-done { outline: 2px solid var(--teal-dark); outline-offset: -2px; }
+.dev-done i { position: absolute; top: -9px; right: -6px; padding: 1px 6px; background: var(--teal-dark); color: #fff; font-size: 10px; font-style: normal; font-weight: 700; }
+.dev-slice { grid-column: 1 / -1; margin-top: 4px; padding-top: 6px; border-top: 2px solid var(--app-border-strong); font-size: 11px; font-weight: 600; color: var(--muted); }
+
+.dev-diff { min-width: 0; margin: 0; background: var(--surface); border: 1px solid var(--border); }
+.dev-diff figcaption { padding: 10px 16px; background: var(--surface-2); border-bottom: 1px solid var(--border); font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 13px; color: var(--heading); }
+.dev-diff pre { margin: 0; padding: 8px 0; overflow-x: auto; font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 13.5px; line-height: 1.8; color: var(--text); }
+.dev-diff pre span { display: block; min-width: max-content; padding: 0 16px; white-space: pre; }
+.dev-add { background: #dcfce7; color: #14532d; }
+.dev-del { background: #fee2e2; color: #7f1d1d; }
+html.dark-mode .dev-add { background: rgba(74, 222, 128, 0.16); color: #bbf7d0; }
+html.dark-mode .dev-del { background: rgba(248, 113, 113, 0.16); color: #fecaca; }
+
+.dev-band-dark { background: #0f172a; color: #cbd5e1; }
+html.dark-mode .dev-band-dark { background: #020617; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.dev-band-dark h2 { color: #ffffff; }
+.dev-band-dark .dev-link { color: #5eead4; }
+.dev-band-dark .term { box-shadow: inset 0 0 0 1px #334155; }
+.dev-facts { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 0; }
+.dev-facts li { padding: 4px 10px; border: 1px solid #334155; font-size: 13px; }
+
+.dev-data { display: flex; flex-direction: column; gap: 18px; padding-top: 64px; padding-bottom: 64px; }
+.dev-data p { max-width: 46em; }
+.dev-data ul { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; list-style: none; padding: 0; margin: 0; }
+.dev-data li { padding: 16px; background: var(--surface); border: 1px solid var(--border); overflow-wrap: anywhere; }
+.dev-data li code { background: none; border: 0; padding: 0; font-size: 14px; color: var(--heading); }
+
+.dev-commands > div { display: flex; flex-direction: column; gap: 24px; padding-top: 64px; padding-bottom: 64px; }
+.dev-commands dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1px; margin: 0; background: #1e293b; border: 1px solid #1e293b; }
+.dev-commands dl div { display: flex; flex-direction: column; gap: 6px; padding: 16px; background: #0f172a; }
+html.dark-mode .dev-commands dl div { background: #020617; }
+.dev-commands dt code { background: none; border: 0; padding: 0; font-size: 15px; color: #5eead4; }
+.dev-commands dd { margin: 0; font-size: 14px; }
+
+@media (max-width: 860px) {
+    .dev-wrap { padding-left: 16px; padding-right: 16px; }
+    .dev-hero { grid-template-columns: minmax(0, 1fr); padding-top: 40px; padding-bottom: 32px; }
+    .dev-hero h1 { font-size: 36px; }
+    .dev-split, .dev-views { grid-template-columns: minmax(0, 1fr); }
+    .dev-split { padding-top: 44px; padding-bottom: 44px; }
+    .dev-flip > .dev-copy { order: 0; }
+    .dev-views .file { border-left: 1px solid var(--border); border-top: 0; }
+    .dev-ways, .dev-file, .dev-data, .dev-commands > div { padding-bottom: 44px; }
+    .dev-data, .dev-commands > div { padding-top: 44px; }
+}

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User story mapping for developers - CLI, AI and self-hosting</title>
+    <meta name="description" content="Pull a user story map as YAML with the Storymaps CLI, hand it to an AI coding agent as the spec, or self-host the open source user story mapping tool.">
+    <link rel="canonical" href="https://storymaps.io/developers">
+    <meta property="og:title" content="User story mapping for developers - CLI, AI and self-hosting">
+    <meta property="og:description" content="Pull a user story map as YAML with the Storymaps CLI, hand it to an AI coding agent as the spec, or self-host the open source user story mapping tool.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://storymaps.io/developers">
+    <meta property="og:image" content="https://storymaps.io/resources/screenshot.png">
+    <meta property="og:image:width" content="1532">
+    <meta property="og:image:height" content="886">
+    <meta property="og:image:alt" content="A user story map in Storymaps.io, with cards organised by activities and releases">
+    <meta property="og:site_name" content="Storymaps.io">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="User story mapping for developers - CLI, AI and self-hosting">
+    <meta name="twitter:description" content="Pull a user story map as YAML with the Storymaps CLI, hand it to an AI coding agent as the spec, or self-host the open source user story mapping tool.">
+    <meta name="twitter:image" content="https://storymaps.io/resources/screenshot.png">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Storymaps CLI","description":"Pull a user story map as YAML with the Storymaps CLI, hand it to an AI coding agent as the spec, or self-host the open source user story mapping tool.","url":"https://storymaps.io/developers","applicationCategory":"DeveloperApplication","operatingSystem":"Windows, macOS, Linux","softwareRequirements":"Node.js 18 or later","downloadUrl":"https://www.npmjs.com/package/storymaps","license":"https://www.gnu.org/licenses/agpl-3.0.html","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}</script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="/fonts.css">
+    <script>
+    (function() {
+        try {
+            var s = localStorage.getItem('darkMode');
+            var p = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (s !== null ? s === 'true' : p) document.documentElement.classList.add('dark-mode');
+        } catch(e) {}
+    })();
+    </script>
+    <link rel="stylesheet" href="/docs/docs.css?v=001b12ac">
+    <script src="/docs/docs.js?v=5a782a13" defer></script>
+</head>
+<body class="docs-dev">
+<div class="site-header-wrap">
+<header class="site-header">
+    <a href="/" class="logo"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1" fill="#fef08a" stroke="#d4aa00" stroke-width="1"/><rect x="14" y="3" width="7" height="7" rx="1" fill="#fecdd3" stroke="#e88a9a" stroke-width="1"/><rect x="3" y="14" width="7" height="7" rx="1" fill="#a5f3fc" stroke="#67c5d6" stroke-width="1"/><rect x="14" y="14" width="7" height="7" rx="1" fill="#14b8a6" stroke="#0d9488" stroke-width="1"/></svg><span class="logo-text">Storymaps.io</span></a>
+    <span class="header-links-divider" aria-hidden="true"></span>
+    <nav class="header-links" aria-label="Resources">
+        <a href="/docs" class="header-link" title="Docs" aria-label="Docs"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>Docs</span></a>
+        <a href="/developers" class="header-link" title="Developers" aria-label="Developers" aria-current="page"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg><span>Developers</span></a>
+    </nav>
+<div class="docs-search header-search" role="search">
+        <input type="search" placeholder="Search the docs" aria-label="Search the docs" autocomplete="off" data-search>
+        <kbd aria-hidden="true">/</kbd>
+    </div>
+    <button type="button" class="docs-icon-btn docs-search-btn" data-search-open aria-label="Search the docs" aria-expanded="false"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+    <button type="button" class="docs-icon-btn" data-theme-toggle aria-label="Switch to dark mode" title="Switch to dark mode"></button>
+    <button type="button" class="docs-icon-btn docs-menu-btn" data-nav-open aria-label="Open the docs menu" aria-expanded="false">☰</button>
+</header>
+</div>
+<div class="docs-scroll" id="docsScroll">
+<main class="dev">
+    <section class="dev-hero dev-wrap">
+        <div>
+            <h1>User story mapping for developers</h1>
+            <p class="dev-lead">The same user story map your team plans in, from your terminal, your AI coding agent and your own server.</p>
+        </div>
+        <figure class="term">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>npm install -g storymaps</span></pre>
+</figure>
+    </section>
+    <section class="dev-ways dev-wrap" aria-label="Three ways to use it">
+        <article class="dev-way dev-way-cli">
+            <h2><a href="#cli">Script it</a></h2>
+            <p>Pull a story map or a whole project into YAML, change it next to your code, and push it from your terminal or CI.</p>
+            <figure class="term">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the commands"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>storymaps pull storymaps.io/p/k8f2m9xq</span><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>storymaps diff</span><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>storymaps push</span></pre>
+</figure>
+            <a class="dev-link" href="/docs/cli/use-the-cli-in-scripts-and-ci">Use the CLI in scripts and CI</a>
+        </article>
+        <article class="dev-way dev-way-agents">
+            <h2><a href="#agents">Build with an agent</a></h2>
+            <p>Hand the story map to Claude Code, Codex or Gemini CLI as the spec, and it builds a slice at a time.</p>
+            <figure class="term">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the commands"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>storymaps pull storymaps.io/abc12345</span><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>claude &quot;Read storymap.yml. Build the MVP slice as a web app.&quot;</span></pre>
+</figure>
+            <a class="dev-link" href="/docs/cli/hand-a-story-map-to-an-ai-coding-agent">Hand a story map to an AI coding agent</a>
+        </article>
+        <article class="dev-way dev-way-self-host">
+            <h2><a href="#self-host">Host it yourself</a></h2>
+            <p>Open source under AGPL-3.0. One Docker container behind Caddy, with HTTPS set up for you and no analytics.</p>
+            <figure class="term">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the commands"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>docker compose up -d --build</span><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>storymaps init --site storymaps.yourcompany.com</span></pre>
+</figure>
+            <a class="dev-link" href="/docs/cli/use-the-cli-with-your-own-server">Use the CLI with your own server</a>
+        </article>
+    </section>
+    <section class="dev-band-light" id="cli">
+        <div class="dev-split dev-wrap">
+            <div class="dev-copy">
+                <h2>Your story map, in your repo</h2>
+                <p>Pull a story map as YAML, change it alongside your code, check what changed and push it back. Everyone with the story map open sees the change straight away.</p>
+                <a class="btn" href="/docs/cli">Read the CLI docs</a>
+            </div>
+            <figure class="term">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the commands"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>storymaps pull storymaps.io/abc12345</span><span class="term-out term-ok">Pulled map abc12345 → /home/you/coffee-app/storymap.yml</span><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>storymaps diff</span><span class="term-out">  ~ MVP: 1 card updated (status)</span><span class="term-out">  + V1: 1 card</span><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>storymaps push</span><span class="term-out">  ~ MVP: 1 card updated (status)</span><span class="term-out">  + V1: 1 card</span><span class="term-out term-ok">Pushed to https://storymaps.io/abc12345</span></pre>
+</figure>
+        </div>
+        <div class="dev-wrap dev-file">
+            <div class="dev-copy">
+                <h3>One story map, two views</h3>
+                <p>The story map in the browser and the file in your repo are the same thing. A card marked done in the file is done on the story map.</p>
+                <a class="dev-link" href="/docs/cli/edit-the-story-map-yaml">Edit the story map YAML</a>
+            </div>
+            <div class="dev-views">
+                <figure class="dev-map" aria-label="The story map in the browser">
+                    <figcaption>In the browser: storymaps.io/abc12345</figcaption>
+                    <div class="dev-map-grid" style="--cols: 4">
+                        <span class="dev-card dev-user">Customer</span><span></span><span></span><span></span>
+                        <span class="dev-card dev-step">Browse Menu</span><span class="dev-card dev-step">Customise Drink</span><span class="dev-card dev-step">Pay</span><span class="dev-card dev-step">Collect Order</span>
+                        <span class="dev-slice">MVP</span>
+                        <span class="dev-card dev-done">Drink list with prices<i>Done</i></span><span class="dev-card">Choose size</span><span class="dev-card">Apple Pay / Google Pay</span><span class="dev-card">Notify when ready</span>
+                    </div>
+                </figure>
+                <figure class="file">
+<div class="code-bar"><span class="file-name">storymap.yml</span><button type="button" class="code-copy" data-copy aria-label="Copy the file"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="file-line"><span class="file-n" aria-hidden="true">1</span><span class="file-mark" aria-hidden="true"></span><code><span class="y-key">name</span><span class="y-dash">:</span> <span class="y-val">Coffee App</span></code></span><span class="file-line"><span class="file-n" aria-hidden="true">2</span><span class="file-mark" aria-hidden="true"></span><code><span class="y-key">id</span><span class="y-dash">:</span> <span class="y-val">abc12345</span></code></span><span class="file-line"><span class="file-n" aria-hidden="true">3</span><span class="file-mark" aria-hidden="true"></span><code><span class="y-key">steps</span><span class="y-dash">:</span></code></span><span class="file-line"><span class="file-n" aria-hidden="true">4</span><span class="file-mark" aria-hidden="true"></span><code>  <span class="y-dash">- </span>Browse Menu</code></span><span class="file-line"><span class="file-n" aria-hidden="true">5</span><span class="file-mark" aria-hidden="true"></span><code>  <span class="y-dash">- </span>Customise Drink</code></span><span class="file-line"><span class="file-n" aria-hidden="true">6</span><span class="file-mark" aria-hidden="true"></span><code>  <span class="y-dash">- </span>Pay</code></span><span class="file-line"><span class="file-n" aria-hidden="true">7</span><span class="file-mark" aria-hidden="true"></span><code>  <span class="y-dash">- </span>Collect Order</code></span><span class="file-line"><span class="file-n" aria-hidden="true">8</span><span class="file-mark" aria-hidden="true"></span><code><span class="y-key">slices</span><span class="y-dash">:</span></code></span><span class="file-line"><span class="file-n" aria-hidden="true">9</span><span class="file-mark" aria-hidden="true"></span><code>  <span class="y-dash">- </span><span class="y-key">name</span><span class="y-dash">:</span> <span class="y-val">MVP</span></code></span><span class="file-line"><span class="file-n" aria-hidden="true">10</span><span class="file-mark" aria-hidden="true"></span><code>    <span class="y-key">stories</span><span class="y-dash">:</span></code></span><span class="file-line"><span class="file-n" aria-hidden="true">11</span><span class="file-mark" aria-hidden="true"></span><code>      <span class="y-key">Browse Menu</span><span class="y-dash">:</span></code></span><span class="file-line"><span class="file-n" aria-hidden="true">12</span><span class="file-mark" aria-hidden="true"></span><code>        <span class="y-dash">- </span><span class="y-key">name</span><span class="y-dash">:</span> <span class="y-val">Drink list with prices</span></code></span><span class="file-line file-added"><span class="file-n" aria-hidden="true">13</span><span class="file-mark" aria-hidden="true">+</span><code>          <span class="y-key">status</span><span class="y-dash">:</span> <span class="y-val">done</span></code></span></pre>
+</figure>
+            </div>
+        </div>
+    </section>
+    <section class="dev-split dev-wrap dev-review">
+        <div class="dev-copy">
+            <p class="dev-label">In a pull request</p>
+            <h2>The plan changes with the code</h2>
+            <p>Commit the story map next to the feature. Reviewers see which cards a change finishes, and <code>storymaps push</code> sends it once it's merged, from your terminal or CI.</p>
+            <a class="dev-link" href="/docs/cli/use-the-cli-in-scripts-and-ci">Use the CLI in scripts and CI</a>
+        </div>
+        <figure class="dev-diff" aria-label="A change to storymap.yml in a pull request">
+            <figcaption>storymap.yml</figcaption>
+            <pre><span class="">         - name: Order summary with total</span><span class="dev-add">+          status: done</span><span class="">         - name: Apple Pay / Google Pay</span><span class="dev-del">-          status: in-progress</span><span class="dev-add">+          status: done</span></pre>
+        </figure>
+    </section>
+    <section class="dev-split dev-wrap dev-flip" id="agents">
+        <div class="dev-copy">
+            <p class="dev-label">With your AI coding agent</p>
+            <h2>A spec your agent can read and update</h2>
+            <p>Claude Code, Codex and Gemini CLI read the story map as the plan and build a slice at a time. Ask the agent to add cards or mark what shipped as done, and it edits the file and pushes. The team sees it in the browser.</p>
+            <a class="dev-link" href="/docs/cli/hand-a-story-map-to-an-ai-coding-agent">Hand a story map to an AI coding agent</a>
+            <a class="dev-link" href="/docs/cli/update-a-story-map-with-an-ai-agent">Update a story map with an AI agent</a>
+        </div>
+        <figure class="term">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the commands"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>storymaps pull storymaps.io/abc12345</span><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>claude &quot;Read storymap.yml. Build the MVP slice as a web app.&quot;</span><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>storymaps diff</span><span class="term-out">  + V1: 2 cards</span><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>storymaps push</span><span class="term-out">  + V1: 2 cards</span><span class="term-out term-ok">Pushed to https://storymaps.io/abc12345</span></pre>
+</figure>
+    </section>
+    <section class="dev-band-dark" id="self-host">
+        <div class="dev-split dev-wrap">
+            <div class="dev-copy">
+                <h2>Run it on your own server</h2>
+                <p>Storymaps.io is an open source user story mapping tool, under AGPL-3.0. It's one Docker container behind Caddy, with HTTPS set up for you, and a self-hosted copy sends no analytics. The CLI works with it the same way: give it your site once.</p>
+                <ul class="dev-facts"><li>AGPL-3.0</li><li>One container</li><li>No analytics</li></ul>
+                <a class="dev-link" href="https://github.com/jackgleeson/storymaps.io#self-hosting" rel="noopener">Self-hosting guide on GitHub</a>
+                <a class="dev-link" href="/docs/cli/use-the-cli-with-your-own-server">Use the CLI with your own server</a>
+            </div>
+            <figure class="term">
+<div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the commands"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
+<pre><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>git clone https://github.com/jackgleeson/storymaps.io.git</span><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>cd storymaps.io</span><span class="term-out term-dim"># set your domain in the Caddyfile and docker-compose.yml</span><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>docker compose up -d --build</span><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>storymaps init --site storymaps.yourcompany.com</span></pre>
+</figure>
+        </div>
+    </section>
+    <section class="dev-wrap dev-data">
+        <h2>Every story map is data</h2>
+        <p>Add <code>.json</code>, <code>.yaml</code> or <code>.csv</code> to the end of any story map link for its data, always as it is right now. There's no export step and nothing to keep in sync.</p>
+        <ul><li><code>storymaps.io/abc12345.json</code></li><li><code>storymaps.io/abc12345.yaml</code></li><li><code>storymaps.io/abc12345.csv</code></li></ul>
+        <a class="dev-link" href="/docs/story-map-data-links">Story map data links</a>
+    </section>
+    <section class="dev-band-dark dev-commands">
+        <div class="dev-wrap">
+            <h2>Every command</h2>
+            <dl><div><dt><code>pull / push</code></dt><dd>Sync a story map or a whole project</dd></div><div><dt><code>diff</code></dt><dd>See what changed before you push</dd></div><div><dt><code>status / log</code></dt><dd>Progress by slice, and every change</dd></div><div><dt><code>lock / unlock</code></dt><dd>Keep an agreed plan as it is</dd></div><div><dt><code>backup / restore</code></dt><dd>Save a version, and go back to it</dd></div><div><dt><code>validate / convert</code></dt><dd>Check a file in CI, YAML to JSON and back</dd></div></dl>
+            <a class="dev-link" href="/docs/cli/command-reference">Command reference</a>
+        </div>
+    </section>
+</main>
+<footer class="docs-footer">
+    <a href="/">Storymaps.io</a>
+    <a href="/privacy.html">Privacy</a>
+    <a href="https://github.com/jackgleeson/storymaps.io">GitHub</a>
+</footer>
+</div>
+</body>
+</html>

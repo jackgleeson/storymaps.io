@@ -210,6 +210,7 @@ const STATIC_DIRS = [PUBLIC_DIR, SRC_DIR];
 const PAGE_ROUTES = {
   '/docs': '/docs/index.html',
   '/learn': '/learn/index.html',
+  '/developers': '/developers.html',
 };
 
 // Text files say they're UTF-8, so a stylesheet's ✓ or › never shows as "âœ“"
@@ -321,6 +322,13 @@ const server = createServer(async (req, res) => {
       res.end();
       return;
     }
+  }
+
+  // The developers page has one address too
+  if (/^\/developers(\.html|\/+)$/.test(reqPath)) {
+    res.writeHead(301, { 'Location': '/developers' + req.url.slice(reqPath.length) });
+    res.end();
+    return;
   }
 
   // Static files - try cache first, then disk. Site pages get clean URLs (/docs -> docs/index.html).

@@ -13,6 +13,6 @@ test('on a phone the home page links are icons on the same row as the logo', asy
     expect(Math.abs((box.y + box.height / 2) - (logo.y + logo.height / 2))).toBeLessThan(6);
   }
   expect(Math.abs((menu.y + menu.height / 2) - (logo.y + logo.height / 2))).toBeLessThan(6);
-  await expect(page.locator('.header-links').getByRole('link', { name: 'Learn', exact: true })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Docs' })).toBeVisible();
+  await expect(page.locator('.header-links').getByRole('link', { name: 'Docs', exact: true })).toBeVisible();
+  await expect(page.locator('.header-links').getByRole('link', { name: 'Developers', exact: true })).toBeVisible();
 });

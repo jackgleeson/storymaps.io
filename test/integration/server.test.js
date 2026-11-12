@@ -613,12 +613,12 @@ describe('pages and files', () => {
   });
 
   test('serves the site pages at clean URLs', async () => {
-    const pages = { '/docs': 'User story mapping docs and guides' };
+    const pages = { '/docs': 'User story mapping docs and guides - Storymaps.io', '/developers': 'User story mapping for developers - CLI, AI and self-hosting' };
     for (const [path, title] of Object.entries(pages)) {
       const res = await api('GET', path);
       assert.equal(res.status, 200, path);
       assert.match(res.headers.get('content-type'), /text\/html/);
-      assert.match(res.text, new RegExp(`<title>${title} - Storymaps.io</title>`), path);
+      assert.match(res.text, new RegExp(`<title>${title}</title>`), path);
     }
   });
 
@@ -626,13 +626,14 @@ describe('pages and files', () => {
     const moved = {
       '/docs/': '/docs', '/docs/bulk-edit-story-map-cards/': '/docs/bulk-edit-story-map-cards', '/docs/bulk-edit-story-map-cards.html': '/docs/bulk-edit-story-map-cards',
       '/docs/index.html': '/docs', '/docs/bulk-edit-story-map-cards.html?a=1': '/docs/bulk-edit-story-map-cards?a=1',
+      '/developers.html': '/developers', '/developers/': '/developers', '/developers.html?a=1': '/developers?a=1',
     };
     for (const [from, to] of Object.entries(moved)) {
       const res = await fetch(`${base}${from}`, { redirect: 'manual' });
       assert.equal(res.status, 301, from);
       assert.equal(res.headers.get('location'), to, from);
     }
-    for (const path of ['/docs', '/docs/bulk-edit-story-map-cards', '/docs/docs.css', '/docs/search.json', '/docs/cli']) {
+    for (const path of ['/docs', '/docs/bulk-edit-story-map-cards', '/docs/docs.css', '/docs/search.json', '/docs/cli', '/developers']) {
       assert.equal((await fetch(`${base}${path}`, { redirect: 'manual' })).status, 200, path);
     }
   });
@@ -641,7 +642,7 @@ describe('pages and files', () => {
     for (const path of ['/abc12345', '/new', '/sample/recipe-app', '/p/abc12345', '/p/abc12345/def67890']) {
       assert.equal((await fetch(`${base}${path}`)).headers.get('x-robots-tag'), 'noindex', path);
     }
-    for (const path of ['/', '/tour', '/docs', '/docs/bulk-edit-story-map-cards', '/privacy.html']) {
+    for (const path of ['/', '/tour', '/docs', '/docs/bulk-edit-story-map-cards', '/developers', '/privacy.html']) {
       assert.equal((await fetch(`${base}${path}`)).headers.get('x-robots-tag'), null, path);
     }
   });

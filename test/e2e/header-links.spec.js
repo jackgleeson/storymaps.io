@@ -1,6 +1,6 @@
 import { test, expect, openMap } from './fixtures.js';
 
-const PAGES = [['Docs', '/docs', 'Contents']];
+const PAGES = [['Docs', '/docs', 'Contents'], ['Developers', '/developers', 'User story mapping for developers']];
 
 test('the home page header links lead to their pages', async ({ page }) => {
   for (const [name, path, heading = name] of PAGES) {
@@ -16,20 +16,21 @@ test('on a narrow map the links are in the main menu', async ({ page, createMap 
   await openMap(page, await createMap());
   await expect(page.locator('.header-links')).toBeHidden();
   await page.locator('#menuBtn').click();
+  await expect(page.locator('.menu-links').getByRole('link', { name: 'Developers' })).toHaveAttribute('href', '/developers');
   await page.locator('.menu-links').getByRole('link', { name: 'Docs' }).click();
   await expect(page).toHaveURL('/docs');
 });
 
-test('Docs is a plain link, and a docs page marks it as the one it belongs to', async ({ page }) => {
-  for (const path of ['/', '/docs/plan-releases-with-story-map-slices']) {
+test('Docs is a plain link, and a docs or developers page marks its own link', async ({ page }) => {
+  for (const path of ['/', '/docs/plan-releases-with-story-map-slices', '/developers']) {
     await page.goto(path);
     const links = page.locator('.header-links');
     await links.getByRole('link', { name: 'Docs', exact: true }).hover();
     await expect(page.locator('.docs-menu-panel')).toHaveCount(0);
-    const current = path.startsWith('/docs') ? 'Docs' : null;
+    const current = path.startsWith('/docs') ? 'Docs' : path === '/developers' ? 'Developers' : null;
     // No Learn link until there are courses
     await expect(links.getByRole('link', { name: 'Learn', exact: true })).toHaveCount(0);
-    for (const name of ['Docs']) {
+    for (const name of ['Docs', 'Developers']) {
       const link = links.getByRole('link', { name, exact: true });
       if (name === current) await expect(link).toHaveAttribute('aria-current', 'page');
       else await expect(link).not.toHaveAttribute('aria-current');
