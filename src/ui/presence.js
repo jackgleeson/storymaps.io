@@ -83,6 +83,8 @@ let dragGhostElements = new Map(); // clientId -> DOM element
 const peerCursors = new Map(); // clientId -> last cursor position received
 let cursorThrottleTimeout = null;
 const CURSOR_THROTTLE_MS = 50;
+// Removes the listeners of the map opened before, so they don't send to its closed connection
+let stopTrackingCursor = null;
 
 // Cursor visibility preference
 let cursorsVisible = localStorage.getItem('cursorsVisible') !== 'false'; // Default true
@@ -236,6 +238,22 @@ export const trackCursor = () => {
     const ydoc = _getYdoc();
     if (!provider) return;
 
+    // Opening another map, such as a tab in a project, calls this again. The last map's
+    // listeners would still run first and hold the throttle, so this map's cursor never went out.
+    stopTrackingCursor?.();
+    const listening = new AbortController();
+    const { signal } = listening;
+    stopTrackingCursor = () => {
+        listening.abort();
+        clearTimeout(cursorThrottleTimeout);
+        cursorThrottleTimeout = null;
+        for (const el of cursorElements.values()) el.remove();
+        for (const el of dragGhostElements.values()) el.remove();
+        cursorElements.clear();
+        dragGhostElements.clear();
+        peerCursors.clear();
+    };
+
     const awareness = provider.awareness;
     const sessionId = getSessionId();
 
@@ -283,10 +301,10 @@ export const trackCursor = () => {
             }, CURSOR_THROTTLE_MS);
         };
 
-        _dom.storyMapWrapper.addEventListener('mousemove', broadcastCursor);
+        _dom.storyMapWrapper.addEventListener('mousemove', broadcastCursor, { signal });
         _dom.storyMapWrapper.addEventListener('mouseleave', () => {
             awareness.setLocalStateField('mapCursor', null);
-        });
+        }, { signal });
     }
 
     // Create cursor overlay container (appended to wrapper, not storyMap, so it survives re-renders)
@@ -302,7 +320,7 @@ export const trackCursor = () => {
     // Listen for other users' cursors via awareness
     const localClientId = ydoc.clientID;
 
-    awareness.on('change', () => {
+    const showPeers = () => {
         const states = awareness.getStates();
         const activeClientIds = new Set();
         const zoomLevel = _zoomLevelGetter();
@@ -432,7 +450,9 @@ export const trackCursor = () => {
                 el.addEventListener('animationend', () => el.remove(), { once: true });
             }
         }
-    });
+    };
+    awareness.on('change', showPeers);
+    signal.addEventListener('abort', () => awareness.off('change', showPeers));
 };
 
 // Where a peer's cursor goes in the cursor overlay, which scrolls with the map. A cursor over the

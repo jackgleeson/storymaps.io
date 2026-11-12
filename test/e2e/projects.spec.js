@@ -437,6 +437,31 @@ test('someone else on the same project sees tab changes straight away', async ({
   await expect(tabs(other)).toHaveText(['Ordering', 'Loyalty', 'Barista'], { timeout: 5000 });
 });
 
+// Move the mouse over the first step, so the cursor goes out to anyone else on the map
+const pointAtFirstStep = async (page) => {
+  const box = await page.locator('.step').first().boundingBox();
+  await page.mouse.move(box.x + 10, box.y + 10);
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 3 });
+};
+
+test('cursors still show both ways after switching tabs', async ({ page, createMap, openSecondTab }) => {
+  const [a, b] = [await createMap(map('Ordering', 'Browse', 'Pay')), await createMap(map('Loyalty', 'Join', 'Redeem'))];
+  await openMap(page, a, 2);
+  await addByLink(page, b);
+  const other = await openSecondTab();
+  await other.goto(page.url());
+  await expect(other.locator('.step .step-text').first()).toHaveValue('Browse');
+
+  // Away to the other map and back again, as the cursor stopped going out after a switch
+  await visitTab(page, 1, 'Join');
+  await visitTab(page, 0, 'Browse');
+
+  await pointAtFirstStep(page);
+  await expect(other.locator('.remote-cursor')).toHaveCount(1);
+  await pointAtFirstStep(other);
+  await expect(page.locator('.remote-cursor')).toHaveCount(1);
+});
+
 test('project changes leave every map exactly as it was', async ({ page, createMap, pullMap }) => {
   const [a, b] = [await createMap(map('Ordering')), await createMap(map('Loyalty'))];
   const before = [await pullContent(pullMap, a), await pullContent(pullMap, b)];
