@@ -1086,6 +1086,16 @@ html.dark-mode .dev-band-dark { background: #020617; border-top: 1px solid var(-
 .dev-band-dark h2 { color: #ffffff; }
 .dev-band-dark .dev-link { color: #5eead4; }
 .dev-band-dark .term { box-shadow: inset 0 0 0 1px #334155; }
+/* The top of the page sits on the dark band, like the why page, in both themes */
+html.dark-mode .dev-top { border-top: 0; }
+.dev-top h1 { color: #ffffff; }
+.dev-top .dev-lead { color: #cbd5e1; }
+.dev-top .dev-way { background: #1e293b; border-color: #334155; border-top-color: var(--green); }
+.dev-top .dev-way-agents { border-top-color: #93c5fd; }
+.dev-top .dev-way-self-host { border-top-color: #fca5a5; }
+.dev-top .dev-way h2 a:hover { color: #5eead4; }
+.dev-top .dev-way .term { background: #020617; }
+.dev-band-light { border-top: 0; }
 .dev-facts { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; margin: 0; }
 .dev-facts li { padding: 4px 10px; border: 1px solid #334155; font-size: 13px; }
 
