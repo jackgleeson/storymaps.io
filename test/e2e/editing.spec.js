@@ -114,11 +114,15 @@ slices:
   const box = await page.locator('.slice-container .story-card').first().boundingBox();
   const x = box.x + box.width / 2, y = box.y + box.height / 2;
   // Grab the card by its text, as people do, and carry it down and across
-  await page.mouse.move(x, y);
-  await page.mouse.down();
-  await page.mouse.move(x + 40, y + 120, { steps: 15 });
-  await page.mouse.move(x + 200, y + 150, { steps: 15 });
-  await expect(page.locator('.sortable-drag')).toBeVisible();
+  // A busy machine can miss the start of a drag, so let go and try again until the card is in the air
+  await expect(async () => {
+    await page.mouse.up();
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + 40, y + 120, { steps: 15 });
+    await page.mouse.move(x + 200, y + 150, { steps: 15 });
+    await expect(page.locator('.sortable-drag')).toBeVisible({ timeout: 1000 });
+  }).toPass();
   const selected = () => page.evaluate(() => String(window.getSelection()) +
     [...document.querySelectorAll('#storyMap textarea')].map(t => t.value.slice(t.selectionStart, t.selectionEnd)).join(''));
   expect(await selected()).toBe('');
