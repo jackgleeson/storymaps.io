@@ -790,8 +790,8 @@ html.dark-mode .learn-band { background: #020617; border-bottom: 1px solid var(-
 }
 
 /* Why learn user story mapping (docs/why-user-story-mapping.json): the answer first, then what changes for each role */
-/* The band runs edge to edge, so the why page keeps a scrollbar gap on the scrollbar's side only */
-body.docs-why .docs-scroll { scrollbar-gutter: stable; }
+/* The band runs edge to edge, so the why and developers pages keep a scrollbar gap on the scrollbar's side only */
+body.docs-why .docs-scroll, body.docs-dev .docs-scroll { scrollbar-gutter: stable; }
 .why-band { --band: #0f172a; background: var(--band); color: #cbd5e1; }
 html.dark-mode .why-band { --band: #020617; border-bottom: 1px solid var(--border); }
 .why-band-inner { max-width: 1180px; margin: 0 auto; padding: 64px 32px 88px; }
