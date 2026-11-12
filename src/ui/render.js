@@ -266,6 +266,14 @@ let topRowsObserver = null;
 
 // Store Sortable instances to destroy on re-render
 let sortableInstances = [];
+
+// Safari gives every card its own layer while a card slides aside, about 140 extra on a map of
+// 50 cards, and joining them each frame makes a drag stutter when the map is zoomed. So in Safari
+// cards move aside without sliding unless the map is at 100%. Set as a drag starts, as zoom changes.
+const setDragAnimation = () => {
+    const slide = _getIsSafari() && Math.abs(_zoomLevelGetter() - 1) > 0.001 ? 0 : 150;
+    for (const sortable of sortableInstances) sortable.option('animation', slide);
+};
 let _sortableInitPending = null;
 
 // Edge auto-scroll while dragging cards or steps. Sortable's built-in version only reacts within 30px
@@ -502,6 +510,7 @@ export const initSortable = async () => {
             scroll: false, // replaced by startDragAutoScroll
             // Added on grab so Sortable's drag clone includes it; CSS only shows it on the clone
             onChoose: (evt) => {
+                setDragAnimation();
                 const ids = getMultiDragIds(evt.item.dataset.storyId);
                 if (ids) evt.item.appendChild(el('span', 'multi-drag-badge', { text: `${ids.length}` }));
                 if (ids && keepsColumns(ids.map(findStoryLocation).filter(Boolean))) {
@@ -652,6 +661,7 @@ export const initSortable = async () => {
             filter: '.steps-row-spacer, .phantom-step, .partial-map-ref, .partial-map-preview-col',
             scroll: false, // replaced by startDragAutoScroll
             onStart: (evt) => {
+                setDragAnimation();
                 startDragAutoScroll();
                 isDragging = true;
                 dragColumnId = evt.item.dataset.columnId;
