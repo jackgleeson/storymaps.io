@@ -1,6 +1,7 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Page view counts and button clicks with Umami Cloud, on storymaps.io only. A self-hosted copy,
-// the dev server and the tests send nothing. Umami uses no cookies. All the tracking is in this file.
+// the dev server and the tests send nothing. Umami uses no cookies. All the tracking is in this file:
+// the app loads it, and so do the docs and site pages (public/docs/docs.js), for their page views.
 
 const WEBSITE_ID = '4c921c04-1a31-41cc-85b5-26b9e2e75451';
 const LIVE_HOSTNAME = 'storymaps.io';

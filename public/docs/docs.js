@@ -803,4 +803,10 @@
             try { sessionStorage.setItem(scrollKey, String(Math.round(scrollPanel.scrollTop))); } catch (e) { /* as above */ }
         });
     }
+
+    // Page views, counted as the app counts them (src/features/analytics.js): on storymaps.io
+    // only, so a self-hosted copy and the dev server never fetch it
+    if (window.location.hostname === 'storymaps.io') {
+        import('/src/features/analytics.js').then(function (m) { m.loadAnalytics(); }).catch(function () { /* the page works without it */ });
+    }
 })();
