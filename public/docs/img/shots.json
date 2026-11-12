@@ -485,5 +485,10 @@
     "width": 981,
     "height": 528,
     "callouts": []
+  },
+  "bulk-edit-story-map-cards/drag-box": {
+    "width": 390,
+    "height": 201,
+    "callouts": []
   }
 }
