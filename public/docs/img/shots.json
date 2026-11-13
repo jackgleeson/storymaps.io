@@ -490,5 +490,15 @@
     "width": 390,
     "height": 201,
     "callouts": []
+  },
+  "plan-releases-with-story-map-slices/complete": {
+    "width": 578,
+    "height": 226,
+    "callouts": []
+  },
+  "review-release-progress-on-a-story-map/complete": {
+    "width": 311,
+    "height": 383,
+    "callouts": []
   }
 }

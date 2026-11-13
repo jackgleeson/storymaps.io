@@ -20,7 +20,7 @@
     <meta name="twitter:description" content="Read the size of the story map and the progress of each slice in the Overview tab, and give the colours meaning with a legend.">
     <meta name="twitter:image" content="https://storymaps.io/resources/screenshot.png">
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://storymaps.io/docs"},{"@type":"ListItem","position":2,"name":"Review release progress on a story map","item":"https://storymaps.io/docs/review-release-progress-on-a-story-map"}]}</script>
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Review release progress on a story map","description":"Read the size of the story map and the progress of each slice in the Overview tab, and give the colours meaning with a legend.","url":"https://storymaps.io/docs/review-release-progress-on-a-story-map","inLanguage":"en","dateModified":"2026-11-12","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Review release progress on a story map","description":"Read the size of the story map and the progress of each slice in the Overview tab, and give the colours meaning with a legend.","url":"https://storymaps.io/docs/review-release-progress-on-a-story-map","inLanguage":"en","dateModified":"2026-11-13","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/fonts.css">
     <script>
@@ -205,6 +205,14 @@
 <p>The top of the tab counts the cards, steps, slices, users, activities and partials on the story map.</p>
 <h2 id="progress">Progress</h2>
 <p>Each slice has a bar and a count of its tasks that are done, such as <strong>4/8</strong>. The bar is coloured by status, so you can see what's in progress or planned as well as what's done. Underneath, the counts add up every status across the story map.</p>
+<p>A slice that's been <a href="/docs/plan-releases-with-story-map-slices#finish-a-release" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>marked</span> complete</a> shows <strong>✓ Complete</strong> in place of its count, and a closed slice shows <strong>Closed</strong>.</p>
+<figure class="shot" style="max-width: 467px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/review-release-progress-on-a-story-map-complete.png?v=832b282c" alt="The MVP slice marked complete, with its unfinished cards moved to Later." width="311" height="383" loading="lazy">
+<img class="only-dark" src="/docs/img/review-release-progress-on-a-story-map-complete-dark.png?v=93c4e639" alt="The MVP slice marked complete, with its unfinished cards moved to Later." width="311" height="383" loading="lazy">
+</div>
+<figcaption>The MVP slice marked complete, with its unfinished cards moved to Later.</figcaption>
+</figure>
 <div class="tip tip-note"><p><strong>Note.</strong> Progress counts the <span class="swatch" style="--swatch: #fef08a">Yellow</span> cards, and any other card with a status. A card in another colour with no status, such as a <span class="swatch" style="--swatch: #a5f3fc">Cyan</span> note or a <span class="swatch" style="--swatch: #bef264">Lime</span> question, doesn't count.</p></div>
 <aside class="from-cli" aria-label="From the terminal"><span class="from-cli-icon" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l6-6-6-6"/><path d="M12 19h8"/></svg></span><div><strong>From the terminal</strong><p><code>storymaps status</code> shows progress by slice and by status in the terminal. See <a href="/docs/cli/check-story-map-progress" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Check</span> story map progress</a>.</p></div></aside>
 <h2 id="the-legend">The legend</h2>
