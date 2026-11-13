@@ -190,10 +190,14 @@ test('links on cards open from a peeked slice and from a locked map', async ({ p
   await expect(link).toHaveAttribute('href', 'https://example.com/ticket');
   // A click reaches the link rather than the column under it. Polled, as the map can still be
   // settling into its locked state on a busy machine.
+  // The Overview panel sits over this corner of the story map when it's open, and on a busy machine
+  // it sometimes opens after the map has loaded, so it's closed before each look.
   await expect.poll(() => link.evaluate(a => {
+    document.querySelector('#legendToggle.active')?.click();
     const r = a.getBoundingClientRect();
-    return document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2) === a;
-  })).toBe(true);
+    const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    return top === a ? 'the link' : `${top?.tagName}.${top?.className}`;
+  })).toBe('the link');
 });
 
 // Phase 1 is closed, and three of its five cards sit in the Checkout partial
