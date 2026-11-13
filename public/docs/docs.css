@@ -423,6 +423,13 @@ html.dark-mode .usage code { background: #020617; box-shadow: inset 0 0 0 1px va
 .table-wrap tr:last-child td { border-bottom: 1px solid var(--border); }
 .table-wrap td:first-child { white-space: nowrap; }
 .table-wrap td:first-child code { color: var(--heading); }
+/* On a phone the first column wraps too, or a long one pushes the others off the side. Options stay on one line. */
+@media (max-width: 640px) {
+    .table-wrap td:first-child { white-space: normal; }
+    .table-wrap td code { white-space: nowrap; }
+    .reference .table-wrap td code { white-space: normal; }
+    .table-wrap th, .table-wrap td { padding-right: 12px; }
+}
 
 /* In a web app guide: the same thing from the terminal, with a link into the CLI docs */
 .from-cli { display: flex; gap: 14px; margin: 22px 0; padding: 16px 18px; max-width: 68ch; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
@@ -934,7 +941,6 @@ html.dark-mode .dialog-btn-cancel:hover { background: #334155; }
 .reference .table-wrap { margin: 0 0 8px; max-width: none; }
 .reference .table-wrap td:first-child { width: 15.5em; white-space: nowrap; }
 .reference .table-wrap td:first-child a { text-decoration: none; }
-@media (max-width: 640px) { .reference .table-wrap td:first-child { white-space: normal; } }
 
 /* A lesson as steps (docs/build.js renderSteps, docs.js drawSteps): a checklist rail, each step a
    round marker joined to the next by a line, teal as far as the learner has got. The step in focus
