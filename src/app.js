@@ -760,13 +760,14 @@ const initEventListeners = () => {
     dom.jiraExportDownload.addEventListener('click', () => {
         downloadJiraCsv();
     });
-    [dom.jiraStatusNone, dom.jiraStatusPlanned, dom.jiraStatusInProgress, dom.jiraStatusDone].forEach(input => {
+    [dom.jiraStatusNone, dom.jiraStatusPlanned, dom.jiraStatusInProgress, dom.jiraStatusBlocked, dom.jiraStatusDone].forEach(input => {
         input.addEventListener('input', populateJiraExportEpics);
     });
     const statusFilters = [
         { el: dom.jiraFilterNone, status: 'none' },
         { el: dom.jiraFilterPlanned, status: 'planned' },
         { el: dom.jiraFilterInProgress, status: 'in-progress' },
+        { el: dom.jiraFilterBlocked, status: 'blocked' },
         { el: dom.jiraFilterDone, status: 'done' }
     ];
     statusFilters.forEach(({ el: checkbox, status }) => {
@@ -820,6 +821,7 @@ const initEventListeners = () => {
         { el: dom.phabFilterNone, status: 'none' },
         { el: dom.phabFilterPlanned, status: 'planned' },
         { el: dom.phabFilterInProgress, status: 'in-progress' },
+        { el: dom.phabFilterBlocked, status: 'blocked' },
         { el: dom.phabFilterDone, status: 'done' }
     ];
     phabStatusFilters.forEach(({ el: checkbox, status }) => {
@@ -852,6 +854,7 @@ const initEventListeners = () => {
         { el: dom.asanaCsvFilterNone, status: 'none' },
         { el: dom.asanaCsvFilterPlanned, status: 'planned' },
         { el: dom.asanaCsvFilterInProgress, status: 'in-progress' },
+        { el: dom.asanaCsvFilterBlocked, status: 'blocked' },
         { el: dom.asanaCsvFilterDone, status: 'done' }
     ];
     asanaCsvStatusFilters.forEach(({ el: checkbox, status }) => {
@@ -887,6 +890,7 @@ const initEventListeners = () => {
         { el: dom.jiraProxyFilterNone, status: 'none' },
         { el: dom.jiraProxyFilterPlanned, status: 'planned' },
         { el: dom.jiraProxyFilterInProgress, status: 'in-progress' },
+        { el: dom.jiraProxyFilterBlocked, status: 'blocked' },
         { el: dom.jiraProxyFilterDone, status: 'done' }
     ];
     jiraProxyStatusFilters.forEach(({ el: checkbox, status }) => {
@@ -926,6 +930,7 @@ const initEventListeners = () => {
         { el: dom.phabProxyFilterNone, status: 'none' },
         { el: dom.phabProxyFilterPlanned, status: 'planned' },
         { el: dom.phabProxyFilterInProgress, status: 'in-progress' },
+        { el: dom.phabProxyFilterBlocked, status: 'blocked' },
         { el: dom.phabProxyFilterDone, status: 'done' }
     ];
     phabProxyStatusFilters.forEach(({ el: checkbox, status }) => {
@@ -961,6 +966,7 @@ const initEventListeners = () => {
         { el: dom.asanaProxyFilterNone, status: 'none' },
         { el: dom.asanaProxyFilterPlanned, status: 'planned' },
         { el: dom.asanaProxyFilterInProgress, status: 'in-progress' },
+        { el: dom.asanaProxyFilterBlocked, status: 'blocked' },
         { el: dom.asanaProxyFilterDone, status: 'done' }
     ];
     asanaProxyStatusFilters.forEach(({ el: checkbox, status }) => {
@@ -996,6 +1002,7 @@ const initEventListeners = () => {
         { el: dom.linearProxyFilterNone, status: 'none' },
         { el: dom.linearProxyFilterPlanned, status: 'planned' },
         { el: dom.linearProxyFilterInProgress, status: 'in-progress' },
+        { el: dom.linearProxyFilterBlocked, status: 'blocked' },
         { el: dom.linearProxyFilterDone, status: 'done' }
     ];
     linearProxyStatusFilters.forEach(({ el: checkbox, status }) => {

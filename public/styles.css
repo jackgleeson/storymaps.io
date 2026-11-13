@@ -5932,6 +5932,11 @@ html.dark-mode mark.highlight::after {
     color: #92400e;
 }
 
+.jira-export-task-status.blocked {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
 .jira-export-task-status.planned {
     background: #e5e7eb;
     color: #4b5563;
@@ -6201,6 +6206,11 @@ html.dark-mode mark.highlight::after {
 .export-task-status.in-progress {
     background: #dbeafe;
     color: #1e40af;
+}
+
+.export-task-status.blocked {
+    background: #fee2e2;
+    color: #991b1b;
 }
 
 .export-task-status.planned {

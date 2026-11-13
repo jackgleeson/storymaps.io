@@ -63,7 +63,7 @@ export default function register(ctx) {
     }
     res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' });
     const apiUrl = `${origin}/api/maniphest.edit`;
-    const phabStatusMap = { none: 'open', planned: 'open', 'in-progress': 'progress', done: 'resolved' };
+    const phabStatusMap = { none: 'open', planned: 'open', 'in-progress': 'progress', blocked: 'stalled', done: 'resolved' };
     const userTags = Array.isArray(tags) ? tags : [];
     let created = 0, failed = 0;
     for (const item of items) {

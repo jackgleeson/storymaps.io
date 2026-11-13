@@ -19,7 +19,7 @@ export const init = (deps) => {
 
 export const jiraExportState = {
     selectedSlices: new Set(),
-    selectedStatuses: new Set(['none', 'planned', 'in-progress', 'done']),
+    selectedStatuses: new Set(['none', 'planned', 'in-progress', 'blocked', 'done']),
     epicData: []
 };
 
@@ -174,9 +174,11 @@ export const populateJiraExportEpics = () => {
 
             const statusClass = task.status === 'done' ? 'done' :
                 task.status === 'in-progress' ? 'in-progress' :
+                task.status === 'blocked' ? 'blocked' :
                 task.status === 'planned' ? 'planned' : 'none';
             const jiraStatus = task.status === 'done' ? dom.jiraStatusDone.value :
                 task.status === 'in-progress' ? dom.jiraStatusInProgress.value :
+                task.status === 'blocked' ? dom.jiraStatusBlocked.value :
                 task.status === 'planned' ? dom.jiraStatusPlanned.value :
                 dom.jiraStatusNone.value;
             const statusBadge = el('span', `jira-export-task-status ${statusClass}`, { text: jiraStatus });
@@ -288,7 +290,7 @@ export const downloadJiraCsv = () => {
 
 export const phabExportState = {
     selectedSlices: new Set(),
-    selectedStatuses: new Set(['none', 'planned', 'in-progress', 'done']),
+    selectedStatuses: new Set(['none', 'planned', 'in-progress', 'blocked', 'done']),
     epicData: []
 };
 
@@ -445,9 +447,11 @@ export const populatePhabExportEpics = () => {
 
             const statusClass = task.status === 'done' ? 'done' :
                 task.status === 'in-progress' ? 'in-progress' :
+                task.status === 'blocked' ? 'blocked' :
                 task.status === 'planned' ? 'planned' : 'none';
             const statusText = task.status === 'done' ? 'Done' :
                 task.status === 'in-progress' ? 'In Progress' :
+                task.status === 'blocked' ? 'Blocked' :
                 task.status === 'planned' ? 'Planned' : 'No Status';
             const statusBadge = el('span', `export-task-status ${statusClass}`, { text: statusText });
             taskEl.append(statusBadge);
@@ -539,7 +543,7 @@ export const generatePhabImportCall = () => {
         const epicType = typeSelect?.value || 'epic';
 
         const subtasks = [];
-        const phabStatusMap = {none: 'open', planned: 'open', 'in-progress': 'progress', done: 'resolved'};
+        const phabStatusMap = { none: 'open', planned: 'open', 'in-progress': 'progress', blocked: 'stalled', done: 'resolved' };
         const taskEls = epicEl.querySelectorAll('.export-task');
         taskEls.forEach((taskEl) => {
             const taskCheckbox = taskEl.querySelector('.export-task-checkbox');
@@ -605,7 +609,7 @@ export const copyPhabCode = async (element, button) => {
 
 export const jiraApiExportState = {
     selectedSlices: new Set(),
-    selectedStatuses: new Set(['none', 'planned', 'in-progress', 'done']),
+    selectedStatuses: new Set(['none', 'planned', 'in-progress', 'blocked', 'done']),
     epicData: []
 };
 
@@ -749,9 +753,11 @@ export const populateJiraApiExportEpics = () => {
 
             const statusClass = task.status === 'done' ? 'done' :
                 task.status === 'in-progress' ? 'in-progress' :
+                task.status === 'blocked' ? 'blocked' :
                 task.status === 'planned' ? 'planned' : 'none';
             const statusText = task.status === 'done' ? 'Done' :
                 task.status === 'in-progress' ? 'In Progress' :
+                task.status === 'blocked' ? 'Blocked' :
                 task.status === 'planned' ? 'Planned' : 'No Status';
             const statusBadge = el('span', `export-task-status ${statusClass}`, { text: statusText });
             taskEl.append(statusBadge);
@@ -891,7 +897,7 @@ export const showJiraApiStage1 = () => {
 
 export const asanaExportState = {
     selectedSlices: new Set(),
-    selectedStatuses: new Set(['none', 'planned', 'in-progress', 'done']),
+    selectedStatuses: new Set(['none', 'planned', 'in-progress', 'blocked', 'done']),
     epicData: []
 };
 
@@ -1050,9 +1056,11 @@ export const populateAsanaExportEpics = () => {
 
             const statusClass = task.status === 'done' ? 'done' :
                 task.status === 'in-progress' ? 'in-progress' :
+                task.status === 'blocked' ? 'blocked' :
                 task.status === 'planned' ? 'planned' : 'none';
             const statusText = task.status === 'done' ? 'Done' :
                 task.status === 'in-progress' ? 'In Progress' :
+                task.status === 'blocked' ? 'Blocked' :
                 task.status === 'planned' ? 'Planned' : 'No Status';
             const statusBadge = el('span', `export-task-status ${statusClass}`, { text: statusText });
             taskEl.append(statusBadge);
@@ -1224,7 +1232,7 @@ export const showAsanaStage1 = () => {
 
 export const asanaCsvExportState = {
     selectedSlices: new Set(),
-    selectedStatuses: new Set(['none', 'planned', 'in-progress', 'done']),
+    selectedStatuses: new Set(['none', 'planned', 'in-progress', 'blocked', 'done']),
     epicData: []
 };
 
@@ -1371,9 +1379,11 @@ export const populateAsanaCsvExportEpics = () => {
 
             const statusClass = task.status === 'done' ? 'done' :
                 task.status === 'in-progress' ? 'in-progress' :
+                task.status === 'blocked' ? 'blocked' :
                 task.status === 'planned' ? 'planned' : 'none';
             const statusText = task.status === 'done' ? 'Done' :
                 task.status === 'in-progress' ? 'In Progress' :
+                task.status === 'blocked' ? 'Blocked' :
                 task.status === 'planned' ? 'Planned' : 'No Status';
             const statusBadge = el('span', `export-task-status ${statusClass}`, { text: statusText });
             taskEl.append(statusBadge);
@@ -1689,7 +1699,7 @@ export const verifyAsanaProxy = () => {
 
 export const jiraProxyExportState = {
     selectedSlices: new Set(),
-    selectedStatuses: new Set(['none', 'planned', 'in-progress', 'done']),
+    selectedStatuses: new Set(['none', 'planned', 'in-progress', 'blocked', 'done']),
     epicData: []
 };
 
@@ -1828,8 +1838,8 @@ export const populateJiraProxyExportEpics = () => {
             taskEl.append(taskCheckbox);
             const nameSpan = el('span', 'export-task-name', { text: task.name });
             taskEl.append(nameSpan);
-            const statusClass = task.status === 'done' ? 'done' : task.status === 'in-progress' ? 'in-progress' : task.status === 'planned' ? 'planned' : 'none';
-            const statusText = task.status === 'done' ? 'Done' : task.status === 'in-progress' ? 'In Progress' : task.status === 'planned' ? 'Planned' : 'No Status';
+            const statusClass = task.status === 'done' ? 'done' : task.status === 'in-progress' ? 'in-progress' : task.status === 'blocked' ? 'blocked' : task.status === 'planned' ? 'planned' : 'none';
+            const statusText = task.status === 'done' ? 'Done' : task.status === 'in-progress' ? 'In Progress' : task.status === 'blocked' ? 'Blocked' : task.status === 'planned' ? 'Planned' : 'No Status';
             const statusBadge = el('span', `export-task-status ${statusClass}`, { text: statusText });
             taskEl.append(statusBadge);
             tasksList.append(taskEl);
@@ -1921,7 +1931,7 @@ export const exportToJiraProxy = async () => {
 
 export const phabProxyExportState = {
     selectedSlices: new Set(),
-    selectedStatuses: new Set(['none', 'planned', 'in-progress', 'done']),
+    selectedStatuses: new Set(['none', 'planned', 'in-progress', 'blocked', 'done']),
     epicData: []
 };
 
@@ -2058,8 +2068,8 @@ export const populatePhabProxyExportEpics = () => {
             taskEl.append(taskCheckbox);
             const nameSpan = el('span', 'export-task-name', { text: task.name });
             taskEl.append(nameSpan);
-            const statusClass = task.status === 'done' ? 'done' : task.status === 'in-progress' ? 'in-progress' : task.status === 'planned' ? 'planned' : 'none';
-            const statusText = task.status === 'done' ? 'Done' : task.status === 'in-progress' ? 'In Progress' : task.status === 'planned' ? 'Planned' : 'No Status';
+            const statusClass = task.status === 'done' ? 'done' : task.status === 'in-progress' ? 'in-progress' : task.status === 'blocked' ? 'blocked' : task.status === 'planned' ? 'planned' : 'none';
+            const statusText = task.status === 'done' ? 'Done' : task.status === 'in-progress' ? 'In Progress' : task.status === 'blocked' ? 'Blocked' : task.status === 'planned' ? 'Planned' : 'No Status';
             const statusBadge = el('span', `export-task-status ${statusClass}`, { text: statusText });
             taskEl.append(statusBadge);
             tasksList.append(taskEl);
@@ -2080,7 +2090,7 @@ const updatePhabProxyExportCount = () => {
 export const exportToPhabProxy = async () => {
     const items = [];
     const epicEls = dom.phabProxyExportEpics.querySelectorAll('.export-epic');
-    const phabStatusMap = { none: 'open', planned: 'open', 'in-progress': 'progress', done: 'resolved' };
+    const phabStatusMap = { none: 'open', planned: 'open', 'in-progress': 'progress', blocked: 'stalled', done: 'resolved' };
 
     epicEls.forEach((epicEl) => {
         const checkbox = epicEl.querySelector('.export-epic-checkbox');
@@ -2163,7 +2173,7 @@ export const exportToPhabProxy = async () => {
 
 export const asanaProxyExportState = {
     selectedSlices: new Set(),
-    selectedStatuses: new Set(['none', 'planned', 'in-progress', 'done']),
+    selectedStatuses: new Set(['none', 'planned', 'in-progress', 'blocked', 'done']),
     epicData: []
 };
 
@@ -2295,8 +2305,8 @@ export const populateAsanaProxyExportEpics = () => {
             taskEl.append(taskCheckbox);
             const nameSpan = el('span', 'export-task-name', { text: task.name });
             taskEl.append(nameSpan);
-            const statusClass = task.status === 'done' ? 'done' : task.status === 'in-progress' ? 'in-progress' : task.status === 'planned' ? 'planned' : 'none';
-            const statusText = task.status === 'done' ? 'Done' : task.status === 'in-progress' ? 'In Progress' : task.status === 'planned' ? 'Planned' : 'No Status';
+            const statusClass = task.status === 'done' ? 'done' : task.status === 'in-progress' ? 'in-progress' : task.status === 'blocked' ? 'blocked' : task.status === 'planned' ? 'planned' : 'none';
+            const statusText = task.status === 'done' ? 'Done' : task.status === 'in-progress' ? 'In Progress' : task.status === 'blocked' ? 'Blocked' : task.status === 'planned' ? 'Planned' : 'No Status';
             const statusBadge = el('span', `export-task-status ${statusClass}`, { text: statusText });
             taskEl.append(statusBadge);
             tasksList.append(taskEl);
@@ -2402,7 +2412,7 @@ export const exportToAsanaProxy = async () => {
 
 export const linearProxyExportState = {
     selectedSlices: new Set(),
-    selectedStatuses: new Set(['none', 'planned', 'in-progress', 'done']),
+    selectedStatuses: new Set(['none', 'planned', 'in-progress', 'blocked', 'done']),
     epicData: []
 };
 
@@ -2535,8 +2545,8 @@ export const populateLinearProxyExportEpics = () => {
             taskEl.append(taskCheckbox);
             const nameSpan = el('span', 'export-task-name', { text: task.name });
             taskEl.append(nameSpan);
-            const statusClass = task.status === 'done' ? 'done' : task.status === 'in-progress' ? 'in-progress' : task.status === 'planned' ? 'planned' : 'none';
-            const statusText = task.status === 'done' ? 'Done' : task.status === 'in-progress' ? 'In Progress' : task.status === 'planned' ? 'Planned' : 'No Status';
+            const statusClass = task.status === 'done' ? 'done' : task.status === 'in-progress' ? 'in-progress' : task.status === 'blocked' ? 'blocked' : task.status === 'planned' ? 'planned' : 'none';
+            const statusText = task.status === 'done' ? 'Done' : task.status === 'in-progress' ? 'In Progress' : task.status === 'blocked' ? 'Blocked' : task.status === 'planned' ? 'Planned' : 'No Status';
             const statusBadge = el('span', `export-task-status ${statusClass}`, { text: statusText });
             taskEl.append(statusBadge);
             tasksList.append(taskEl);

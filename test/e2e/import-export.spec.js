@@ -88,3 +88,46 @@ test('with tracker APIs on, the welcome page imports through the API', async ({ 
   await page.locator('.welcome-integration[data-import="jira"]').click();
   await expect(page.locator('#jiraImportTitle')).toHaveText('Import from Jira');
 });
+
+test('tracker exports include blocked cards, and the Status filter can leave them out', async ({ page, createMap }) => {
+  await openMap(page, await createMap(`name: Blocked
+steps:
+  - Pay
+slices:
+  - name: MVP
+    stories:
+      Pay:
+        - name: Card payment
+          status: planned
+        - name: Waiting on the bank
+          status: blocked
+`), 1);
+  const open = async (integration, itemId) => {
+    await page.locator('#menuBtn').click();
+    await page.locator('#exportSubmenuTrigger').click();
+    await page.locator(`#exportSubmenu [data-integration="${integration}"]`).click();
+    await page.locator(`#${itemId}`).click();
+  };
+
+  // Jira CSV: the card is listed with the Jira status that Blocked maps to
+  await open('jira', 'exportJiraBtn');
+  const jiraTask = page.locator('.jira-export-task', { hasText: 'Waiting on the bank' });
+  await expect(jiraTask.locator('.jira-export-task-status')).toHaveText('To Do');
+  await page.locator('#jiraStatusBlocked').fill('On Hold');
+  await expect(jiraTask.locator('.jira-export-task-status')).toHaveText('On Hold');
+  await page.locator('#jiraFilterBlocked').uncheck();
+  await expect(jiraTask).toHaveCount(0);
+  await expect(page.locator('.jira-export-task', { hasText: 'Card payment' })).toBeVisible();
+  // Closing an export asks first, so start each one from a fresh page
+  await page.reload();
+  await page.locator('.slice-container').first().waitFor();
+
+  // The other trackers list it too, marked Blocked
+  for (const [integration, itemId] of [['jira', 'exportJiraProxyBtn'], ['asana', 'exportAsanaCsvBtn'], ['asana', 'exportAsanaProxyBtn'], ['phabricator', 'exportPhabBtn'], ['phabricator', 'exportPhabProxyBtn'], ['linear', 'exportLinearProxyBtn']]) {
+    await open(integration, itemId);
+    const task = page.locator('.export-task:visible', { hasText: 'Waiting on the bank' });
+    await expect(task.locator('.export-task-status'), itemId).toHaveText('Blocked');
+    await page.reload();
+    await page.locator('.slice-container').first().waitFor();
+  }
+});

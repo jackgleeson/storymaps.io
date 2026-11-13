@@ -20,7 +20,7 @@
     <meta name="twitter:description" content="Turn Phabricator tasks into a story map, through the Conduit API or a Maniphest CSV export, and send the steps and cards back as parent tasks and subtasks.">
     <meta name="twitter:image" content="https://storymaps.io/resources/screenshot.png">
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://storymaps.io/docs"},{"@type":"ListItem","position":2,"name":"User story mapping for Phabricator","item":"https://storymaps.io/docs/user-story-mapping-for-phabricator"}]}</script>
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"User story mapping for Phabricator","description":"Turn Phabricator tasks into a story map, through the Conduit API or a Maniphest CSV export, and send the steps and cards back as parent tasks and subtasks.","url":"https://storymaps.io/docs/user-story-mapping-for-phabricator","inLanguage":"en","dateModified":"2026-11-10","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"User story mapping for Phabricator","description":"Turn Phabricator tasks into a story map, through the Conduit API or a Maniphest CSV export, and send the steps and cards back as parent tasks and subtasks.","url":"https://storymaps.io/docs/user-story-mapping-for-phabricator","inLanguage":"en","dateModified":"2026-11-12","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/fonts.css">
     <script>
@@ -220,7 +220,7 @@
 <h2 id="export-to-phabricator">Export to Phabricator</h2>
 <p>Choose <strong>Menu → Export → Phab</strong>, then <strong>Phabricator API</strong> or <strong>Phabricator Console API</strong>. Both work the same way to start:</p>
 <ol class="steps"><li><span class="num">1</span><span>Under <strong>Releases</strong>, tick the slices to send.</span></li><li><span class="num">2</span><span>Under <strong>Status</strong>, tick the statuses to send.</span></li><li><span class="num">3</span><span>Each step becomes a parent task, named after the step, with its cards as subtasks. Rename a parent task, add a description, or untick anything to leave out.</span></li></ol>
-<p>Statuses carry over: no status and planned become open, in progress becomes progress, and done becomes resolved. A card body becomes the description of its task.</p>
+<p>Statuses carry over: no status and planned become open, in progress becomes progress, blocked becomes stalled, and done becomes resolved. A card body becomes the description of its task.</p>
 <h3 id="phabricator-api">Phabricator API</h3>
 <ol class="steps"><li><span class="num">1</span><span>Click <strong>Step 2: Credentials →</strong>.</span></li><li><span class="num">2</span><span>Fill in the <strong>Instance URL</strong> and <strong>API Token</strong>, and add <strong>Project Tags</strong> so the tasks land in the right projects.</span></li><li><span class="num">3</span><span>Click <strong>Export to Phabricator</strong>.</span></li></ol>
 <p>The progress list links to every task as it's made. One export takes up to 200 parent tasks and 2,000 subtasks.</p>

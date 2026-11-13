@@ -797,6 +797,10 @@
                                 <span class="export-slice-name">In Progress</span>
                             </label>
                             <label class="export-slice-checkbox checked">
+                                <input type="checkbox" id="jiraFilterBlocked" checked>
+                                <span class="export-slice-name">Blocked</span>
+                            </label>
+                            <label class="export-slice-checkbox checked">
                                 <input type="checkbox" id="jiraFilterDone" checked>
                                 <span class="export-slice-name">Done</span>
                             </label>
@@ -818,6 +822,10 @@
                         <div class="jira-status-row">
                             <span class="jira-status-label">In Progress →</span>
                             <input type="text" class="jira-status-input" id="jiraStatusInProgress" value="In Progress" placeholder="Jira status">
+                        </div>
+                        <div class="jira-status-row">
+                            <span class="jira-status-label">Blocked →</span>
+                            <input type="text" class="jira-status-input" id="jiraStatusBlocked" value="To Do" placeholder="Jira status">
                         </div>
                         <div class="jira-status-row">
                             <span class="jira-status-label">Done →</span>
@@ -873,6 +881,10 @@
                                 <label class="export-slice-checkbox checked">
                                     <input type="checkbox" id="phabFilterInProgress" checked>
                                     <span class="export-slice-name">In Progress</span>
+                                </label>
+                                <label class="export-slice-checkbox checked">
+                                    <input type="checkbox" id="phabFilterBlocked" checked>
+                                    <span class="export-slice-name">Blocked</span>
                                 </label>
                                 <label class="export-slice-checkbox checked">
                                     <input type="checkbox" id="phabFilterDone" checked>
@@ -1223,6 +1235,7 @@
                                 <label class="export-slice-checkbox checked"><input type="checkbox" id="jiraProxyFilterNone" checked><span class="export-slice-name">No Status</span></label>
                                 <label class="export-slice-checkbox checked"><input type="checkbox" id="jiraProxyFilterPlanned" checked><span class="export-slice-name">Planned</span></label>
                                 <label class="export-slice-checkbox checked"><input type="checkbox" id="jiraProxyFilterInProgress" checked><span class="export-slice-name">In Progress</span></label>
+                                <label class="export-slice-checkbox checked"><input type="checkbox" id="jiraProxyFilterBlocked" checked><span class="export-slice-name">Blocked</span></label>
                                 <label class="export-slice-checkbox checked"><input type="checkbox" id="jiraProxyFilterDone" checked><span class="export-slice-name">Done</span></label>
                             </div>
                         </div>
@@ -1312,6 +1325,7 @@
                                 <label class="export-slice-checkbox checked"><input type="checkbox" id="phabProxyFilterNone" checked><span class="export-slice-name">No Status</span></label>
                                 <label class="export-slice-checkbox checked"><input type="checkbox" id="phabProxyFilterPlanned" checked><span class="export-slice-name">Planned</span></label>
                                 <label class="export-slice-checkbox checked"><input type="checkbox" id="phabProxyFilterInProgress" checked><span class="export-slice-name">In Progress</span></label>
+                                <label class="export-slice-checkbox checked"><input type="checkbox" id="phabProxyFilterBlocked" checked><span class="export-slice-name">Blocked</span></label>
                                 <label class="export-slice-checkbox checked"><input type="checkbox" id="phabProxyFilterDone" checked><span class="export-slice-name">Done</span></label>
                             </div>
                         </div>
@@ -1396,6 +1410,7 @@
                                 <label class="export-slice-checkbox checked"><input type="checkbox" id="asanaProxyFilterNone" checked><span class="export-slice-name">No Status</span></label>
                                 <label class="export-slice-checkbox checked"><input type="checkbox" id="asanaProxyFilterPlanned" checked><span class="export-slice-name">Planned</span></label>
                                 <label class="export-slice-checkbox checked"><input type="checkbox" id="asanaProxyFilterInProgress" checked><span class="export-slice-name">In Progress</span></label>
+                                <label class="export-slice-checkbox checked"><input type="checkbox" id="asanaProxyFilterBlocked" checked><span class="export-slice-name">Blocked</span></label>
                                 <label class="export-slice-checkbox checked"><input type="checkbox" id="asanaProxyFilterDone" checked><span class="export-slice-name">Done</span></label>
                             </div>
                         </div>
@@ -1479,6 +1494,7 @@
                                 <label class="export-slice-checkbox checked"><input type="checkbox" id="linearProxyFilterNone" checked><span class="export-slice-name">No Status</span></label>
                                 <label class="export-slice-checkbox checked"><input type="checkbox" id="linearProxyFilterPlanned" checked><span class="export-slice-name">Planned</span></label>
                                 <label class="export-slice-checkbox checked"><input type="checkbox" id="linearProxyFilterInProgress" checked><span class="export-slice-name">In Progress</span></label>
+                                <label class="export-slice-checkbox checked"><input type="checkbox" id="linearProxyFilterBlocked" checked><span class="export-slice-name">Blocked</span></label>
                                 <label class="export-slice-checkbox checked"><input type="checkbox" id="linearProxyFilterDone" checked><span class="export-slice-name">Done</span></label>
                             </div>
                         </div>
@@ -1569,6 +1585,10 @@
                             <label class="export-slice-checkbox checked">
                                 <input type="checkbox" id="asanaCsvFilterInProgress" checked>
                                 <span class="export-slice-name">In Progress</span>
+                            </label>
+                            <label class="export-slice-checkbox checked">
+                                <input type="checkbox" id="asanaCsvFilterBlocked" checked>
+                                <span class="export-slice-name">Blocked</span>
                             </label>
                             <label class="export-slice-checkbox checked">
                                 <input type="checkbox" id="asanaCsvFilterDone" checked>
