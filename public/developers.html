@@ -58,7 +58,7 @@
     <section class="dev-hero dev-wrap">
         <div>
             <h1>User story mapping for developers</h1>
-            <p class="dev-lead">The same user story map your team plans in, from your terminal, your AI coding agent and your own server.</p>
+            <p class="dev-lead">Read and change the user story map your team plans in, from your terminal or your AI coding agent, and build straight from the plan.</p>
         </div>
         <figure class="term">
 <div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
@@ -67,13 +67,13 @@
     </section>
     <section class="dev-ways dev-wrap" aria-label="Three ways to use it">
         <article class="dev-way dev-way-cli">
-            <h2><a href="#cli">Script it</a></h2>
+            <h2><a href="#cli">Use the CLI</a></h2>
             <p>Pull a story map or a whole project into YAML, change it next to your code, and push it from your terminal or CI.</p>
             <figure class="term">
 <div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the commands"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
 <pre><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>storymaps pull storymaps.io/p/k8f2m9xq</span><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>storymaps diff</span><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>storymaps push</span></pre>
 </figure>
-            <a class="dev-link" href="/docs/cli/use-the-cli-in-scripts-and-ci">Use the CLI in scripts and CI</a>
+            <a class="dev-link" href="/docs/cli/pull-a-story-map">Pull a story map</a>
         </article>
         <article class="dev-way dev-way-agents">
             <h2><a href="#agents">Build with an agent</a></h2>
@@ -86,7 +86,7 @@
         </article>
         <article class="dev-way dev-way-self-host">
             <h2><a href="#self-host">Host it yourself</a></h2>
-            <p>Open source under AGPL-3.0. One Docker container behind Caddy, with HTTPS set up for you and no analytics.</p>
+            <p>Open source under AGPL-3.0. One Docker container behind Caddy, with HTTPS set up for you.</p>
             <figure class="term">
 <div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the commands"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
 <pre><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>docker compose up -d --build</span><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>storymaps init --site storymaps.yourcompany.com</span></pre>
@@ -159,8 +159,8 @@
         <div class="dev-split dev-wrap">
             <div class="dev-copy">
                 <h2>Run it on your own server</h2>
-                <p>Storymaps.io is an open source user story mapping tool, under AGPL-3.0. It's one Docker container behind Caddy, with HTTPS set up for you, and a self-hosted copy sends no analytics. The CLI works with it the same way: give it your site once.</p>
-                <ul class="dev-facts"><li>AGPL-3.0</li><li>One container</li><li>No analytics</li></ul>
+                <p>Storymaps.io is an open source user story mapping tool, under AGPL-3.0. It's one Docker container behind Caddy, with HTTPS set up for you. The CLI works with it the same way: give it your site once.</p>
+                <ul class="dev-facts"><li>AGPL-3.0</li><li>One container</li><li>HTTPS included</li></ul>
                 <a class="dev-link" href="https://github.com/jackgleeson/storymaps.io#self-hosting" rel="noopener">Self-hosting guide on GitHub</a>
                 <a class="dev-link" href="/docs/cli/use-the-cli-with-your-own-server">Use the CLI with your own server</a>
             </div>
