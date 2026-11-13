@@ -1056,11 +1056,10 @@ body.welcome-visible .gh-star {
     content: '';
     position: absolute;
     top: 0;
-    left: 6px;
-    right: 6px;
+    left: 0;
+    right: 0;
     height: 2px;
     background: var(--color-teal);
-    border-radius: 0 0 2px 2px;
 }
 
 /* Partials tab icon */
