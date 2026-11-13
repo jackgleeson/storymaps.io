@@ -125,12 +125,13 @@ describe('Linear import', () => {
       return [200, { data: { issues: { nodes: [
         node('ENG-1', { state: { type: 'started' }, estimate: 0, project: { id: 'p1', name: 'Shop', url: 'u' }, children: { nodes: [{ id: 'id-ENG-2' }] } }),
         node('ENG-2', { state: { type: 'completed' }, parent: { id: 'id-ENG-1', identifier: 'ENG-1' }, project: { id: 'p1', name: 'Shop', url: 'u' }, labels: { nodes: [{ name: 'web' }] } }),
-        node('ENG-3', { state: { type: 'cancelled' } }),
+        node('ENG-3', { state: { type: 'canceled' } }),
+        node('ENG-4', { state: { type: 'cancelled' } }),
       ], pageInfo: { hasNextPage: false } } } }];
     };
     const { done } = await call('/api/import/linear', body);
     assert.equal(done.teamName, 'Engineering');
-    assert.deepEqual(done.issues.map(i => [i.identifier, i.status]), [['ENG-1', 'in-progress'], ['ENG-2', 'done'], ['ENG-3', 'done']]);
+    assert.deepEqual(done.issues.map(i => [i.identifier, i.status]), [['ENG-1', 'in-progress'], ['ENG-2', 'done'], ['ENG-3', 'done'], ['ENG-4', 'done']]);
     assert.equal(done.issues[0].points, 0);
     assert.equal(done.issues[0].hasChildren, true);
     assert.equal(done.issues[1].parentIdentifier, 'ENG-1');

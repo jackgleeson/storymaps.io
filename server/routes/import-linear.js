@@ -38,7 +38,8 @@ export default function register(ctx) {
     };
 
     const linearStatusToStorymaps = (type) => {
-      if (type === 'completed' || type === 'cancelled') return 'done';
+      // Linear spells it canceled; cancelled is kept in case that ever changes
+      if (type === 'completed' || type === 'canceled' || type === 'cancelled') return 'done';
       if (type === 'started') return 'in-progress';
       return 'planned';
     };
