@@ -2,7 +2,7 @@
 // Rendering and state mutations
 
 import { el, escHtml, DEFAULT_CARD_COLORS, CARD_COLORS, STATUS_OPTIONS, generateId } from '/src/core/constants.js';
-import { createColumnCard, createStoryCard, createStoryColumn, createSliceContainer, createBackboneRow, createEmptyBackboneRow, createPhantomStep, PHANTOM_BUFFER, renderLegend as uiRenderLegend, getAllTagsInMap, createPartialMapRef, createPartialMapRefCell, renderPartialsList as uiRenderPartialsList, patchCard } from '/src/ui/ui.js';
+import { createColumnCard, createStoryCard, createStoryColumn, createSliceContainer, createBackboneRow, createEmptyBackboneRow, createPhantomStep, PHANTOM_BUFFER, renderLegend as uiRenderLegend, getAllTagsInMap, markLegendSwatch, createPartialMapRef, createPartialMapRefCell, renderPartialsList as uiRenderPartialsList, patchCard } from '/src/ui/ui.js';
 import { partialMapEditState } from '/src/core/state.js';
 import { showAlert, showConfirm, showPrompt } from '/src/core/modals.js';
 import { quoted } from '/src/core/log.js';
@@ -985,6 +985,7 @@ export const updateSelectionUI = () => {
         Object.entries(CARD_COLORS).forEach(([name, hex]) => {
             const swatch = el('button', 'selection-toolbar-color-swatch', { title: name });
             swatch.style.backgroundColor = hex;
+            markLegendSwatch(swatch, name, hex);
             if (commonColor === hex) swatch.classList.add('swatch-active');
             swatch.addEventListener('click', () => { bulkChangeColor(hex); colorDropdown.classList.remove('visible'); });
             colorDropdown.appendChild(swatch);

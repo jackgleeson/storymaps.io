@@ -45,6 +45,33 @@ test('Delete Card with a story and a step selected deletes only the story', asyn
   await expect(page.locator('.step-placeholder:not(.phantom-step)')).toHaveCount(0);
 });
 
+test('colour swatches show the first letter of the legend name for their colour', async ({ page }) => {
+  await page.goto('/new');
+  const card = page.locator('.slice-container .story-card').first();
+  let menu = await openOptions(page, card);
+  await expect(menu.locator('.color-swatch[title="Questions (lime)"]')).toHaveText('Q');
+  await expect(menu.locator('.color-swatch[title="Tasks (yellow)"]')).toHaveText('T');
+  await expect(menu.locator('.color-swatch[title="Edge cases (rose)"]')).toHaveText('E');
+  // A colour with no legend entry stays plain
+  await expect(menu.locator('.color-swatch[title="red"]')).toHaveText('');
+  await page.mouse.click(5, 790);
+
+  // Renaming the legend entry changes the letter
+  if (!(await page.locator('#legendPanel').isVisible())) await page.locator('#legendToggle').click();
+  const label = page.locator('.legend-label').nth(2);
+  await label.fill('Risks');
+  await label.press('Enter');
+  menu = await openOptions(page, card);
+  await expect(menu.locator('.color-swatch[title="Risks (lime)"]')).toHaveText('R');
+  await page.mouse.click(5, 790);
+
+  // The bulk colour panel shows the letters too
+  const box = await card.boundingBox();
+  await card.click({ position: { x: box.width / 2, y: box.height - 4 } });
+  await page.locator('.selection-toolbar-color').click();
+  await expect(page.locator('.selection-toolbar-color-swatch[title="Risks (lime)"]')).toHaveText('R');
+});
+
 test('0 story points are saved', async ({ page, createMap, pullMap }) => {
   const id = await createMap();
   await openMap(page, id);

@@ -4,7 +4,7 @@
 import { dom } from '/src/ui/dom.js';
 import { state } from '/src/core/state.js';
 import { el, CARD_COLORS, DEFAULT_CARD_COLORS, STATUS_OPTIONS } from '/src/core/constants.js';
-import { getAllTagsInMap } from '/src/ui/ui.js';
+import { getAllTagsInMap, markLegendSwatch } from '/src/ui/ui.js';
 
 let searchDebounceTimer = null;
 const filterState = { statuses: new Set(), colors: new Set(), tags: new Set() };
@@ -186,6 +186,7 @@ const populateFilterPanel = () => {
         const swatch = el('button', 'filter-color-swatch', { title: name });
         swatch.style.backgroundColor = hex;
         if (!inUse) { swatch.classList.add('filter-disabled'); swatch.disabled = true; }
+        else markLegendSwatch(swatch, name, hex);
         if (filterState.colors.has(hex.toLowerCase())) swatch.classList.add('selected');
         swatch.addEventListener('click', () => {
             const lc = hex.toLowerCase();

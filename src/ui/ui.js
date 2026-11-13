@@ -81,6 +81,22 @@ const _getEditingPartialColIds = () => {
 };
 
 // Collect all unique tags used across the entire map
+// A colour swatch shows the first letter of the legend name for its colour, such as Q for Questions,
+// and names the legend entry in its tooltip, so it's easier to pick the right colour for a card
+export const markLegendSwatch = (swatch, name, hex) => {
+    const label = _state?.legend?.find(e => e.color?.toLowerCase() === hex.toLowerCase() && e.label?.trim())?.label.trim();
+    swatch.dataset.legendName = name;
+    swatch.dataset.legendColor = hex;
+    swatch.textContent = label ? [...label][0].toUpperCase() : '';
+    swatch.title = label ? `${label} (${name})` : name;
+    swatch.classList.toggle('swatch-initial', !!label);
+};
+
+// Card menus are built when the story map is drawn, so a renamed legend entry updates the swatches already there
+const refreshLegendSwatches = () => {
+    document.querySelectorAll('[data-legend-color]').forEach(s => markLegendSwatch(s, s.dataset.legendName, s.dataset.legendColor));
+};
+
 export const getAllTagsInMap = () => {
     const tags = new Set();
     _state.columns.forEach(c => (c.tags || []).forEach(t => tags.add(t)));
@@ -459,6 +475,7 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
         const swatch = el('button', 'color-swatch', { title: name });
         swatch.style.backgroundColor = hex;
         swatch.dataset.color = hex.toLowerCase();
+        markLegendSwatch(swatch, name, hex);
         if (itemColor === hex.toLowerCase()) swatch.classList.add('selected');
         swatch.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -1632,6 +1649,7 @@ export const renderLegend = () => {
                     entry.label = input.value;
                     _logEvent?.('Updated legend label');
                     _saveToStorage();
+                    refreshLegendSwatches();
                 }
             });
         }

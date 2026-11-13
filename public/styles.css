@@ -3799,6 +3799,23 @@ html.dark-mode .slice-container.slice-spotlight-land {
     transform: scale(1.1);
 }
 
+/* The first letter of the legend name for the colour (src/ui/ui.js). The colours are all light, so the letter is dark in both themes */
+.swatch-initial {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    color: #1e293b;
+}
+
+.selection-toolbar-color-swatch.swatch-initial {
+    font-size: 13px;
+}
+
 .color-swatch.selected {
     border-color: var(--color-text-primary);
 }
