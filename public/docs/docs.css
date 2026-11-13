@@ -664,12 +664,27 @@ html.dark-mode .course-start { background: rgba(45, 212, 191, 0.15); color: var(
 .course-row.not-yet { background-image: none; }
 .course-row.not-yet .course-note { filter: saturate(0.5); opacity: 0.7; }
 
+/* The same footer as the app home page */
 .docs-footer {
-    display: flex; gap: 22px; justify-content: center; padding: 28px 24px 36px;
-    border-top: 1px solid var(--border); font-size: 14px;
+    display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 16px 48px 24px;
+    border-top: 1px solid var(--border); font-size: 13px; line-height: 1.5; color: var(--muted);
 }
-.docs-footer a { color: var(--muted); text-decoration: none; }
-.docs-footer a:hover { color: var(--heading); }
+.docs-footer .footer-main { display: flex; justify-content: center; align-items: center; gap: 16px; }
+.docs-footer .footer-text { text-align: center; }
+.docs-footer .footer-support { display: flex; align-items: center; }
+.docs-footer a { color: var(--link); text-decoration: none; }
+.docs-footer a:hover { text-decoration: underline; }
+.docs-footer .bmc-btn { display: inline-flex; align-items: center; justify-content: center; background-color: #FFDD00; border-radius: 8px; padding: 6px 10px; }
+.docs-footer .bmc-btn:hover { opacity: 0.85; }
+.docs-footer .bmc-btn svg { height: 32px; width: auto; }
+.docs-footer .footer-legal { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.docs-footer .footer-legal a { color: var(--muted); }
+.docs-footer .footer-legal a:hover { color: var(--link); }
+.docs-footer .footer-dot { color: var(--divider); }
+@media (max-width: 640px) {
+    .docs-footer { padding-left: 16px; padding-right: 16px; }
+    .docs-footer .footer-main { flex-direction: column; gap: 10px; }
+}
 .docs-guide .docs-footer { display: none; }
 
 /* Narrower screens: contents list goes, then the sidebar becomes a drawer */
