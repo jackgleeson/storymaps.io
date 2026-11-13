@@ -20,7 +20,7 @@
     <meta name="twitter:description" content="How the Storymaps CLI answers its own questions with no terminal, the --yes and --force options, and STORYMAPS_PASSWORD for locked story maps in scripts and CI.">
     <meta name="twitter:image" content="https://storymaps.io/resources/screenshot.png">
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://storymaps.io/docs"},{"@type":"ListItem","position":2,"name":"CLI","item":"https://storymaps.io/docs/cli"},{"@type":"ListItem","position":3,"name":"Use the CLI in scripts and CI","item":"https://storymaps.io/docs/cli/use-the-cli-in-scripts-and-ci"}]}</script>
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Use the story map CLI in scripts and CI","description":"How the Storymaps CLI answers its own questions with no terminal, the --yes and --force options, and STORYMAPS_PASSWORD for locked story maps in scripts and CI.","url":"https://storymaps.io/docs/cli/use-the-cli-in-scripts-and-ci","inLanguage":"en","dateModified":"2026-11-12","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Use the story map CLI in scripts and CI","description":"How the Storymaps CLI answers its own questions with no terminal, the --yes and --force options, and STORYMAPS_PASSWORD for locked story maps in scripts and CI.","url":"https://storymaps.io/docs/cli/use-the-cli-in-scripts-and-ci","inLanguage":"en","dateModified":"2026-11-13","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/fonts.css">
     <script>
@@ -32,7 +32,7 @@
         } catch(e) {}
     })();
     </script>
-    <link rel="stylesheet" href="/docs/docs.css?v=66c38581">
+    <link rel="stylesheet" href="/docs/docs.css?v=d5b2a1a4">
     <script src="/docs/docs.js?v=9eb8da2a" defer></script>
 </head>
 <body class="docs-guide docs-cli">
@@ -137,7 +137,7 @@
         <article class="docs-article">
             <div class="crumbs-row"><nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/docs">Docs</a></li><li><a href="/docs/cli">CLI</a></li><li><a href="/docs/cli#reference">Reference</a></li></ol></nav></div>
             <h1>Use the CLI in scripts and CI</h1>
-            <p class="byline"><span>1 min read</span></p>
+            <p class="byline"><span>2 min read</span></p>
             <details class="toc-mobile"><summary>On this page</summary><nav><a href="#questions">Questions</a>
             <a href="#passwords">Passwords</a>
             <a href="#lock-a-release-from-ci">Lock a release from CI</a></nav></details>
@@ -157,7 +157,7 @@
 </figure>
 <h2 id="passwords">Passwords</h2>
 <p>Passwords are never options, as options end up in shell history and agent logs. They come from one of three places:</p>
-<ol class="steps"><li><span class="num">1</span><span><strong>Typed</strong> in a terminal.</span></li><li><span class="num">2</span><span><strong>Remembered</strong> on this computer after <code>storymaps unlock</code> or <code>storymaps project unlock --maps</code>. Unlock once yourself, and an agent can push without ever seeing the password.</span></li><li><span class="num">3</span><span><strong><code>STORYMAPS_PASSWORD</code></strong>, an environment variable, for scripts and CI. Set it from the secrets of the pipeline.</span></li></ol>
+<ol class="steps"><li><span class="num">1</span><span><strong>Typed</strong> in a terminal.</span></li><li><span class="num">2</span><span><strong>Remembered</strong> on this computer after <code>storymaps unlock</code> or <code>storymaps project unlock --maps</code>. Only a hash of the password is saved, never the password. Unlock once yourself, and an agent can push without ever seeing it.</span></li><li><span class="num">3</span><span><strong><code>STORYMAPS_PASSWORD</code></strong>, an environment variable, for scripts and CI. Set it from the secrets of the pipeline.</span></li></ol>
 <p>With none of them, a command stops before it changes anything:</p>
 <figure class="term">
 <div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
