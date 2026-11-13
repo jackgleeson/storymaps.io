@@ -89,6 +89,7 @@ export const markLegendSwatch = (swatch, name, hex) => {
     swatch.dataset.legendColor = hex;
     swatch.textContent = label ? [...label][0].toUpperCase() : '';
     swatch.title = label ? `${label} (${name})` : name;
+    if (swatch.hasAttribute('aria-label')) swatch.setAttribute('aria-label', swatch.title);
     swatch.classList.toggle('swatch-initial', !!label);
 };
 
@@ -1835,6 +1836,7 @@ const showLegendColorPicker = (entry, anchorEl) => {
     Object.entries(CARD_COLORS).forEach(([name, hex]) => {
         const swatch = el('button', 'color-swatch', { title: name });
         swatch.style.backgroundColor = hex;
+        markLegendSwatch(swatch, name, hex);
         if (entry.color?.toLowerCase() === hex.toLowerCase()) swatch.classList.add('selected');
         swatch.addEventListener('click', (e) => {
             e.stopPropagation();

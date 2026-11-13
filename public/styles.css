@@ -3816,6 +3816,10 @@ html.dark-mode .slice-container.slice-spotlight-land {
     font-size: 13px;
 }
 
+.card-expand-swatch.swatch-initial {
+    font-size: 10px;
+}
+
 .color-swatch.selected {
     border-color: var(--color-text-primary);
 }

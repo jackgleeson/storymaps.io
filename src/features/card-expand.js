@@ -6,7 +6,7 @@ import { state, pushUndo } from '/src/core/state.js';
 import { isMapEditable } from '/src/core/lock.js';
 import * as log from '/src/core/log.js';
 import { CARD_COLORS, STATUS_OPTIONS, el, isValidUrl } from '/src/core/constants.js';
-import { createPointsInput, createTagEditor, patchCardForItem, sliceClosedLabel } from '/src/ui/ui.js';
+import { createPointsInput, createTagEditor, markLegendSwatch, patchCardForItem, sliceClosedLabel } from '/src/ui/ui.js';
 import { STORY_LINES, addLines, enterAction } from '/src/core/story-lines.js';
 
 let _deps = {};
@@ -208,6 +208,7 @@ const buildColourField = (item, editable, onChange) => {
     const swatches = Object.entries(CARD_COLORS).map(([name, hex]) => {
         const swatch = el('button', 'card-expand-swatch', { title: name, ariaLabel: name, dataColor: hex.toLowerCase() });
         swatch.style.backgroundColor = hex;
+        markLegendSwatch(swatch, name, hex);
         swatch.addEventListener('click', () => {
             if (item.color?.toLowerCase() === swatch.dataset.color) return;
             pushUndo();

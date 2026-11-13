@@ -70,6 +70,18 @@ test('colour swatches show the first letter of the legend name for their colour'
   await card.click({ position: { x: box.width / 2, y: box.height - 4 } });
   await page.locator('.selection-toolbar-color').click();
   await expect(page.locator('.selection-toolbar-color-swatch[title="Risks (lime)"]')).toHaveText('R');
+  await page.keyboard.press('Escape');
+
+  // So do the expanded card and the legend's own colour picker
+  await card.hover();
+  await card.locator('.btn-expand').click();
+  const expanded = page.locator('.card-expand-swatch[title="Risks (lime)"]');
+  if (!(await expanded.isVisible())) await page.locator('.card-expand-summary').click();
+  await expect(expanded).toHaveText('R');
+  await expect(expanded).toHaveAttribute('aria-label', 'Risks (lime)');
+  await page.keyboard.press('Escape');
+  await page.locator('.legend-swatch').first().click();
+  await expect(page.locator('.legend-color-picker .color-swatch[title="Risks (lime)"]')).toHaveText('R');
 });
 
 test('0 story points are saved', async ({ page, createMap, pullMap }) => {
