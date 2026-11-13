@@ -467,6 +467,9 @@ describe('pages and files', () => {
     const robots = await (await fetch(`${base}/robots.txt`)).text();
     assert.ok(!/\.(yaml|json|csv)/.test(robots), 'robots.txt leaves the format links open');
     assert.match(robots, /Disallow: \/api\//);
+    // Only the page that starts a new map in a project is closed, not a map whose ID begins with "new"
+    assert.ok(!/^Disallow: \/p\/\*\/new$/m.test(robots), 'a project map with an ID like new12abc stays open');
+    assert.match(robots, /^Disallow: \/p\/\*\/new\$$/m);
 
     const id = await createMap();
     for (const ext of ['yaml', 'json', 'csv']) {

@@ -2,7 +2,8 @@ User-agent: *
 Disallow: /new$
 Disallow: /new?
 Disallow: /sample/
-Disallow: /p/*/new
+Disallow: /p/*/new$
+Disallow: /p/*/new?
 Disallow: /api/
 Allow: /
 
