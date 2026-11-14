@@ -11445,7 +11445,7 @@ body.in-project .project-bar {
     background: none;
     color: var(--color-text-secondary);
     font-family: inherit;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
 }
