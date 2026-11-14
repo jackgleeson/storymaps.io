@@ -16,7 +16,7 @@ import { closeSearch } from '/src/features/search.js';
 import * as projects from '/src/features/projects.js';
 import * as recentMaps from '/src/features/recent-maps.js';
 import * as bookmarkNudge from '/src/features/bookmark-nudge.js';
-import { MAX_PROJECT_MAPS } from '/src/core/project-links.js';
+import { MAX_PROJECT_MAPS, projectPath } from '/src/core/project-links.js';
 
 let _deps = {};
 
@@ -226,6 +226,34 @@ export const newMap = async () => {
 
     await _deps.createYjsDoc(mapId);
     _deps.subscribeToMap(mapId);
+    _deps.saveToStorage();
+};
+
+// A new map from the Add map panel of a project, made in the page, as a copy is. Loading
+// /p/<project>/new instead would end full screen, as any page load does. Beside a lesson the page
+// stays as it is, so the new map still ticks the tasks of the lesson around it.
+export const newMapInProject = async (projectId) => {
+    const problem = await projects.roomForNewMap(projectId);
+    if (problem) {
+        await showAlert(problem.message);
+        return;
+    }
+    _deps.saveToStorage();
+    destroyYjs();
+    state.mapId = null;
+    initState();
+    dom.boardName.value = state.name;
+    _deps.render();
+    requestAnimationFrame(zoomToFit);
+
+    const mapId = await _deps.newMapId();
+    state.mapId = mapId;
+    projects.expectNew(projectId, mapId);
+    history.pushState({ mapId }, '', projectPath(projectId, mapId));
+
+    await _deps.createYjsDoc(mapId);
+    _deps.subscribeToMap(mapId);
+    await projects.joinNew(projectId);
     _deps.saveToStorage();
 };
 

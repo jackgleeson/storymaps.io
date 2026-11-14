@@ -202,6 +202,34 @@ test('switching tabs keeps full screen, opening the map in the page', async ({ p
   expect(await page.evaluate(() => !!document.fullscreenElement)).toBe(true);
 });
 
+test('New map in a project keeps full screen, making the map in the page', async ({ page, createMap, pullMap }) => {
+  const a = await createMap(map('Ordering', 'Browse', 'Pay'));
+  await openMap(page, a, 2);
+  await startProject(page);
+  await page.evaluate(() => { window.samePage = true; });
+  await page.locator('#toggleFullscreenBtn').click();
+  await expect.poll(() => page.evaluate(() => !!document.fullscreenElement)).toBe(true);
+
+  await page.locator('#projectAddBtn').click();
+  await panel(page).getByRole('button', { name: 'New map' }).click();
+  await expect(tabs(page)).toHaveText(['Ordering', 'Untitled map']);
+  await expect(tabs(page).nth(1)).toHaveAttribute('aria-current', 'page');
+  await expect(panel(page)).toBeHidden();
+  expect(await page.evaluate(() => window.samePage), 'no new page was loaded').toBe(true);
+  expect(await page.evaluate(() => !!document.fullscreenElement), 'still in full screen').toBe(true);
+  await expect(page.locator('#toggleFullscreenBtn')).toHaveClass(/active/);
+
+  // The new map has only its starter cards, and the one it was made from is untouched
+  const texts = () => page.locator('#storyMap textarea').evaluateAll(els => els.map(e => e.value).filter(Boolean));
+  expect(await texts()).toEqual(['User Type', 'New Activity', 'New Step', 'New Task or Detail']);
+  expect(await pullContent(pullMap, a)).toMatchObject({ name: 'Ordering', steps: [{ name: 'Browse' }, { name: 'Pay' }] });
+
+  // Back returns to the first map
+  await page.goBack();
+  await expect(page.locator('.step .step-text').first()).toHaveValue('Browse');
+  await expect(tabs(page).nth(0)).toHaveAttribute('aria-current', 'page');
+});
+
 test('a map opened from the tab of a locked map can still make partials', async ({ page, createMap, request }) => {
   const [a, b] = [await createMap(map('Ordering', 'Browse', 'Pay')), await createMap(map('Loyalty', 'Join', 'Redeem'))];
   await openMap(page, a, 2);
@@ -289,7 +317,6 @@ test('a map made with New map beside a lesson still reports to the lesson', asyn
   await startProject(page);
   await page.locator('#projectAddBtn').click();
   await panel(page).getByRole('button', { name: 'New map' }).click();
-  // The lesson flag is read as the new page loads, and the app tidies the address after
   await expect(page).toHaveURL(/\/p\/[a-z0-9]{8}\/[a-z0-9]+$/);
   await page.locator('#boardName').fill('Barista Screen');
   await page.locator('#boardName').blur();

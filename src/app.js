@@ -345,7 +345,7 @@ const initEventListeners = () => {
         closeMainMenu();
         newMap();
     });
-    projects.initListeners({ openMap: openMapInPage });
+    projects.initListeners({ openMap: openMapInPage, newMap: welcome.newMapInProject });
     recentMaps.initListeners();
     bookmarkNudge.initListeners();
     lesson.init(state, { renderAndSave });

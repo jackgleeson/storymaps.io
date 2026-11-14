@@ -505,8 +505,12 @@ const buildAdd = () => {
         return [heading, full, done];
     }
     const newBtn = el('button', 'project-panel-primary', { type: 'button', text: 'New map' });
-    // Keeps ?lesson, so a practice story map made here still ticks the tasks of the lesson around it
-    newBtn.addEventListener('click', () => window.location.assign(projectPath(_project.id, 'new') + location.search));
+    // Made in the page rather than by loading /p/<project>/new, so full screen stays on
+    newBtn.addEventListener('click', () => {
+        const projectId = _project.id;
+        closePanel({ restoreFocus: false });
+        _newMap(projectId);
+    });
     const label = el('label', 'project-panel-label', { htmlFor: 'projectLinkInput', text: 'Or paste the link to a map you have' });
     const input = el('input', 'project-panel-input', { id: 'projectLinkInput', type: 'text', placeholder: `${location.host}/...`, autocomplete: 'off', spellcheck: false });
     const addBtn = el('button', 'project-panel-secondary', { type: 'button', text: 'Add' });
@@ -1093,6 +1097,14 @@ export const projectLink = () => _project ? `${location.origin}/p/${encodeURICom
 // The project shown around the open map, or null
 export const current = () => _project ? { id: _project.id, name: _project.name, mapCount: _project.maps.length, locked: isReadOnly() } : null;
 
+// A new map on its way into a project shows on the end of the tabs while the server adds it, so
+// the tabs don't drop out and come back. joinNew confirms it, or takes it off again.
+export const expectNew = (projectId, mapId) => {
+    const project = readCache(projectId);
+    if (!project || project.maps.some(m => m.id === mapId)) return;
+    writeCache(projectId, { ...project, maps: [...project.maps, { id: mapId, name: '' }] });
+};
+
 // A new map made from the add box of a project (/p/<project>/new) joins that project at the end.
 // A copy of a map in a project joins it straight after the original.
 export const joinNew = async (projectId, after) => {
@@ -1105,7 +1117,11 @@ export const joinNew = async (projectId, after) => {
         setAddress(projectPath(projectId, _mapId));
         apply(projectId, seq, project);
     } catch (err) {
+        const cached = readCache(projectId);
+        if (cached) writeCache(projectId, { ...cached, maps: cached.maps.filter(m => m.id !== _mapId) });
         _projectId = null;
+        _project = null;
+        setAddress(`/${encodeURIComponent(_mapId)}`);
         render();
         showAlert(`This map was created, but it couldn't be added to the project: ${err.message}`);
     }
@@ -1118,10 +1134,13 @@ export const openFromMenu = () => {
 };
 
 // openMap(mapId) opens a map in the page, as back and forward do
+// newMap(projectId) makes a new map in the project, in the page
 let _openMap = null;
+let _newMap = null;
 
-export const initListeners = ({ openMap } = {}) => {
+export const initListeners = ({ openMap, newMap } = {}) => {
     _openMap = openMap;
+    _newMap = newMap;
     dom.projectAddBtn.addEventListener('click', () => {
         const kind = _project ? 'add' : 'start';
         if (_panel === kind) closePanel();
