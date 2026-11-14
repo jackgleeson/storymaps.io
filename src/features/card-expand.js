@@ -466,6 +466,25 @@ const stopWatchingEditors = () => {
     dom.cardExpandChips.querySelectorAll('button').forEach(chip => { chip.disabled = false; });
 };
 
+// What sits behind an open card. While a card is open none of it takes focus, so Tab can't land
+// on it. Safari's Tab skips buttons unless Option is held, so it leaves a card from a text box
+// where the Tab handler below doesn't expect it; this covers that too.
+const behindCard = () => [document.querySelector('.header'), dom.projectBar, dom.storyMapWrapper, dom.controlsRight].filter(Boolean);
+const setBehindInert = (inert) => behindCard().forEach(part => { part.inert = inert; });
+
+// Tab past the last control in the open card goes to the first, and Shift+Tab the other way
+const keepTabInCard = (e) => {
+    if (e.key !== 'Tab' || e.ctrlKey || e.metaKey) return;
+    const stops = [...dom.cardExpandModal.querySelectorAll('button, input, textarea, a[href]')]
+        .filter(stop => !stop.disabled && stop.tabIndex >= 0 && stop.getClientRects().length > 0);
+    if (!stops.length) return;
+    const from = stops.indexOf(document.activeElement);
+    const leaving = e.shiftKey ? from <= 0 : from === -1 || from === stops.length - 1;
+    if (!leaving) return;
+    e.preventDefault();
+    stops.at(e.shiftKey ? -1 : 0).focus();
+};
+
 // focus: false leaves the title unfocused, so a card opened from a link doesn't bring up a phone keyboard
 export const openExpandModal = (item, { readOnly = false, focus = true } = {}) => {
     // If a previous close is still waiting for its popstate, absorb it now
@@ -484,6 +503,7 @@ export const openExpandModal = (item, { readOnly = false, focus = true } = {}) =
     renderPlace(item);
     renderFooter(openCard, editable);
     watchEditors();
+    setBehindInert(true);
     dom.cardExpandModal.classList.add('visible');
     requestAnimationFrame(() => {
         autoResizeExpandName();
@@ -502,6 +522,7 @@ export const closeExpandModal = () => {
     // tap something unfocusable like the close button or backdrop, so blur it here to save it first.
     if (dom.cardExpandModal.contains(document.activeElement)) document.activeElement.blur();
     dom.cardExpandModal.classList.remove('visible');
+    setBehindInert(false);
     stopWatchingEditors();
     _expandedItem = null;
     _deps.renderAndSave();
@@ -557,6 +578,8 @@ export const initListeners = () => {
         if (action.insert === undefined) body.setSelectionRange(action.caret, action.caret);
         else editBody(action);
     });
+
+    dom.cardExpandModal.addEventListener('keydown', keepTabInCard);
 
     document.getElementById('cardExpandModalClose')?.addEventListener('click', closeExpandModal);
     dom.cardExpandModal.addEventListener('click', (e) => {

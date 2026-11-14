@@ -169,3 +169,32 @@ test('a link in the closed footer is blue, and underlined only on hover', async 
   await link.hover();
   expect((await style()).line).toBe('underline');
 });
+
+test('Tab stays in the open card', async ({ page, createMap }) => {
+  await openMap(page, await createMap());
+  await openCard(page.locator('.slice-container .story-card').first());
+  const modal = page.locator('#cardExpandModal');
+  const focused = () => page.evaluate(() => document.activeElement.id || document.activeElement.className.split(' ')[0]);
+  await expect(page.locator('#cardExpandName')).toBeFocused();
+
+  // Forward from the title, through the last control and round to the first
+  const seen = [];
+  for (let i = 0; i < 8; i++) {
+    await page.keyboard.press('Tab');
+    seen.push(await focused());
+    await expect(modal.locator(':focus')).toHaveCount(1);
+  }
+  expect(seen.slice(4)).toEqual(['card-expand-toggle', 'cardExpandCopyLink', 'cardExpandModalClose', 'cardExpandName']);
+
+  // And back the other way from the first control
+  await page.locator('#cardExpandCopyLink').focus();
+  await page.keyboard.press('Shift+Tab');
+  expect(await focused()).toBe('card-expand-toggle');
+
+  // The map behind takes no focus while the card is open, and does again once it closes
+  const behind = () => page.evaluate(() => ['.header', '#storyMapWrapper', '#controlsRight'].map(s => document.querySelector(s).inert));
+  expect(await behind()).toEqual([true, true, true]);
+  await page.keyboard.press('Escape');
+  await expect(modal).toBeHidden();
+  expect(await behind()).toEqual([false, false, false]);
+});
