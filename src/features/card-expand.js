@@ -415,7 +415,7 @@ const holderOf = (field) => {
         if (clientId === _awareness.clientID) continue;
         if (other.editing?.card !== _expandedItem.id || other.editing.field !== field) continue;
         if (_claimed === field && clientId > _awareness.clientID) continue;
-        if (!holder || clientId < holder.clientId) holder = { clientId, name: other.user?.name };
+        if (!holder || clientId < holder.clientId) holder = { clientId, name: other.user?.name, colour: other.user?.color };
     }
     return holder;
 };
@@ -432,17 +432,22 @@ const claim = (field) => {
 
 const showEditors = () => {
     if (!_expandedItem || !_editable) return;
-    const notes = [];
+    // One pill per box someone is in, with a dot in the colour of that person's pointer
+    const pills = [];
     for (const [field, { box, label }] of Object.entries(TEXT_FIELDS)) {
         const holder = holderOf(field);
         box().readOnly = !!holder;
         if (!holder) continue;
         if (_claimed === field) release();
         const name = holder.name && holder.name !== 'guest' ? holder.name : 'Someone';
-        notes.push(`${name} is editing the ${label}`);
+        const dot = el('span', 'card-expand-editing-dot');
+        if (holder.colour) dot.style.backgroundColor = holder.colour;
+        const pill = el('span', 'card-expand-editing-pill');
+        pill.append(dot, `${name} is editing the ${label}`);
+        pills.push(pill);
     }
-    dom.cardExpandEditing.textContent = notes.join('. ');
-    dom.cardExpandEditing.hidden = notes.length === 0;
+    dom.cardExpandEditing.replaceChildren(...pills);
+    dom.cardExpandEditing.hidden = pills.length === 0;
     dom.cardExpandChips.querySelectorAll('button').forEach(chip => { chip.disabled = dom.cardExpandBody.readOnly; });
 };
 

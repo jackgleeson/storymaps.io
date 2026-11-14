@@ -7373,12 +7373,34 @@ html.dark-mode .connection-notice.is-online::before {
     color: var(--card-placeholder);
 }
 
-/* Who else is typing in the title or the description */
+/* Who else is typing in the title or the description, a small pill for each */
 .card-expand-editing {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
     flex-shrink: 0;
     margin-bottom: 8px;
-    font-size: 12px;
+}
+
+.card-expand-editing-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 1px 8px 1px 6px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.08);
     color: var(--card-muted);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.6;
+}
+
+.card-expand-editing-dot {
+    flex-shrink: 0;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
 }
 
 .card-expand-editing[hidden] {
