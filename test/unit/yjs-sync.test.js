@@ -66,6 +66,9 @@ const send = (from, to) => {
   to.yjs.syncFromYjs();
 };
 const exchange = (a, b) => { send(a, b); send(b, a); };
+// Deliver a change the way the connection does, leaving the client to read it
+const receive = (from, to) => Y.applyUpdate(to.doc, Y.encodeStateAsUpdate(from.doc, Y.encodeStateVector(to.doc)), 'remote');
+const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const storyNames = (client, sliceIdx = 0) => {
   const cols = client.state.columns;
@@ -345,23 +348,84 @@ describe('two people editing the same map', () => {
   });
 
   test('a change from the other person renders at once, and changes within 100ms render together after', async () => {
-    const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-    const receive = (from, to) => Y.applyUpdate(to.doc, Y.encodeStateAsUpdate(from.doc, Y.encodeStateVector(to.doc)), 'remote');
     const { a, b } = await twoClients();
     await wait(150); // let the render from receiving the map finish
 
     a.state.name = 'First';
     a.yjs.syncToYjs();
     receive(a, b);
-    assert.equal(b.state.name, 'First', 'rendered at once');
+    assert.equal(b.state.name, 'First');
     const renders = b.renders;
 
     a.state.name = 'Second';
     a.yjs.syncToYjs();
     receive(a, b);
-    assert.equal(b.state.name, 'First', 'held back');
+    assert.equal(b.state.name, 'Second', 'in memory at once');
+    assert.equal(b.renders, renders, 'drawing held back');
     await wait(150);
-    assert.equal(b.state.name, 'Second', 'rendered after the pause');
     assert.equal(b.renders, renders + 1);
+  });
+
+  test('a save straight after two quick changes from the other person keeps both', async () => {
+    const { a, b } = await twoClients();
+    await wait(150);
+    const cardOf = (client) => client.state.slices[0].stories[client.state.columns[0].id][0];
+
+    cardOf(a).body = 'First';
+    a.yjs.syncToYjs();
+    receive(a, b);
+    cardOf(a).body = 'First and second';
+    a.yjs.syncToYjs();
+    receive(a, b);
+
+    // Before the second change is drawn, the second person renames the map
+    b.state.name = 'Renamed';
+    b.yjs.syncToYjs();
+    exchange(a, b);
+    assert.equal(cardOf(a).body, 'First and second');
+    assert.equal(cardOf(b).body, 'First and second');
+    assert.equal(a.state.name, 'Renamed');
+  });
+
+  test('a change from the other person keeps the card and slice objects the map already had', async () => {
+    const { a, b } = await twoClients();
+    const column = b.state.columns[0];
+    const slice = b.state.slices[0];
+    const list = slice.stories[column.id];
+    const card = list[0];
+
+    const theirs = a.state.slices[0].stories[a.state.columns[0].id];
+    theirs[0].name = 'Renamed by the other person';
+    theirs.push({ id: 'new-card', name: 'Added by the other person' });
+    a.yjs.syncToYjs();
+    send(a, b);
+
+    assert.equal(b.state.columns[0], column);
+    assert.equal(b.state.slices[0], slice);
+    assert.equal(b.state.slices[0].stories[column.id], list);
+    assert.equal(list[0], card);
+    assert.equal(card.name, 'Renamed by the other person');
+    assert.equal(list.at(-1).name, 'Added by the other person');
+
+    // An edit through the object held from before the change still saves
+    card.body = 'Typed by the second person';
+    b.yjs.syncToYjs();
+    send(b, a);
+    assert.equal(theirs[0].body, 'Typed by the second person');
+    assert.equal(theirs[0].name, 'Renamed by the other person');
+  });
+
+  test('a card the other person moves to another step is the same object in its new place', async () => {
+    const { a, b } = await twoClients(fullMap());
+    const [from, to] = b.state.columns.map(c => c.id);
+    const card = b.state.slices[0].stories[from][0];
+
+    const stories = a.state.slices[0].stories;
+    stories[a.state.columns[1].id].push(stories[a.state.columns[0].id].shift());
+    a.yjs.syncToYjs();
+    send(a, b);
+
+    assert.equal(b.state.slices[0].stories[to].at(-1), card);
+    assert.ok(!b.state.slices[0].stories[from].includes(card));
   });
 });

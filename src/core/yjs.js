@@ -20,7 +20,7 @@ let ydoc = null;
 let ymap = null;
 export let isSyncingFromRemote = false;
 let _remoteRenderTimer = null;
-let _hasNewRemoteEvents = false;
+let _remoteRenderDue = false;
 let lastSyncedHash = null;
 
 const stateHash = () => JSON.stringify([
@@ -243,8 +243,52 @@ const readBackboneRowFromYjs = (yRow) => {
     return cardMap;
 };
 
+const isPlainObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
+
+// Every object with an ID under value, by ID
+const collectById = (value, found = new Map()) => {
+    if (Array.isArray(value)) value.forEach(item => collectById(item, found));
+    else if (isPlainObject(value)) {
+        if (value.id != null && !found.has(value.id)) found.set(value.id, value);
+        Object.values(value).forEach(child => collectById(child, found));
+    }
+    return found;
+};
+
+// Make what the map had (existing) equal to what was just read (fresh), keeping the objects and
+// lists it already had. The cards and slices on screen hold on to those objects, and so does a
+// card that is open, so an edit made before the map is next drawn still lands on the map. An
+// object with an ID is reused wherever it now is, once; a second copy gets a new object.
+const keepObjects = (existing, fresh, byId) => {
+    if (Array.isArray(fresh)) {
+        const items = fresh.map(item => keepObjects(undefined, item, byId));
+        if (!Array.isArray(existing)) return items;
+        existing.length = 0;
+        existing.push(...items);
+        return existing;
+    }
+    if (!isPlainObject(fresh)) return fresh;
+    let kept = null;
+    if (fresh.id != null) {
+        kept = byId.get(fresh.id) || null;
+        byId.delete(fresh.id);
+    } else if (isPlainObject(existing) && existing.id == null) {
+        kept = existing;
+    }
+    kept ||= {};
+    for (const key of Object.keys(kept)) {
+        if (!(key in fresh)) delete kept[key];
+    }
+    for (const key of Object.keys(fresh)) kept[key] = keepObjects(kept[key], fresh[key], byId);
+    return kept;
+};
+
+const KEPT_KEYS = ['columns', 'users', 'activities', 'slices', 'legend', 'partialMaps'];
+
 export const syncFromYjs = () => {
     if (!ymap) return;
+
+    const before = Object.fromEntries(KEPT_KEYS.map(key => [key, _state[key]]));
 
     const name = ymap.get('name');
     if (name !== undefined) _state.name = name;
@@ -367,7 +411,11 @@ export const syncFromYjs = () => {
 
     if (_dom.boardName) _dom.boardName.value = _state.name;
 
-    // Every card is a new object now, so anything holding on to one has to find it again
+    const reread = KEPT_KEYS.filter(key => _state[key] !== before[key]);
+    const byId = collectById(reread.map(key => before[key]));
+    for (const key of reread) _state[key] = keepObjects(before[key], _state[key], byId);
+
+    // A card that moved or was deleted may be a different object now, or gone
     _onSync?.();
 
     const newHash = stateHash();
@@ -602,34 +650,30 @@ export const createYjsDoc = async (mapId) => {
     ydoc = new Y.Doc();
     ymap = ydoc.getMap('storymap');
 
-    // Observe remote ymap changes → update state + re-render (leading+trailing throttle)
+    // A change from someone else goes into the map in memory at once, so the next save from this
+    // browser writes only what this person changed. If it waited, that save would put back the old
+    // values of everything not yet read. Only drawing waits: the first change draws at once, and
+    // changes in the 100ms after it draw together.
     ymap.observeDeep((events) => {
         const isRemote = events.some(e => e.transaction.origin !== null && e.transaction.origin !== 'local');
-        if (isRemote) {
-            if (!_remoteRenderTimer) {
-                // First event: render immediately for responsiveness
-                isSyncingFromRemote = true;
-                try {
-                    const changed = syncFromYjs();
-                    if (changed) { if (_setPreserveToolbar) _setPreserveToolbar(true); _render(); }
-                } finally { isSyncingFromRemote = false; }
-                _hasNewRemoteEvents = false;
-            } else {
-                _hasNewRemoteEvents = true;
-            }
-            // Schedule trailing render - resets on each event
-            clearTimeout(_remoteRenderTimer);
-            _remoteRenderTimer = setTimeout(() => {
-                _remoteRenderTimer = null;
-                if (!_hasNewRemoteEvents) return;
-                _hasNewRemoteEvents = false;
-                isSyncingFromRemote = true;
-                try {
-                    const changed = syncFromYjs();
-                    if (changed) { if (_setPreserveToolbar) _setPreserveToolbar(true); _render(); }
-                } finally { isSyncingFromRemote = false; }
-            }, 100);
-        }
+        if (!isRemote) return;
+        const read = ({ draw }) => {
+            isSyncingFromRemote = true;
+            try {
+                if (syncFromYjs()) _remoteRenderDue = true;
+                if (draw && _remoteRenderDue) {
+                    _remoteRenderDue = false;
+                    if (_setPreserveToolbar) _setPreserveToolbar(true);
+                    _render();
+                }
+            } finally { isSyncingFromRemote = false; }
+        };
+        read({ draw: !_remoteRenderTimer });
+        clearTimeout(_remoteRenderTimer);
+        _remoteRenderTimer = setTimeout(() => {
+            _remoteRenderTimer = null;
+            if (_remoteRenderDue) read({ draw: true });
+        }, 100);
     });
 
     // Connect via WebSocket
@@ -666,7 +710,7 @@ export const destroyYjs = () => {
         clearTimeout(_remoteRenderTimer);
         _remoteRenderTimer = null;
     }
-    _hasNewRemoteEvents = false;
+    _remoteRenderDue = false;
     _connectionStatus?.unbind();
     if (provider) {
         provider.destroy();

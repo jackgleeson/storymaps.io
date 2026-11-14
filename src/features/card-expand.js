@@ -18,9 +18,10 @@ export const init = (deps) => { _deps = deps; };
 let _expandedItem = null;
 let _editable = false;
 let _footerExpanded = false;
+let _footerShown = '';
 
-// A change from someone else rebuilds every card object in the map, so the footer fields read and
-// write the open card through this stand-in, which always points at the card now in the map
+// A card someone else moves becomes a new object in the map, so the footer fields read and write
+// the open card through this stand-in, which always points at the card now in the map
 const openCard = new Proxy({}, {
     get: (_, key) => _expandedItem?.[key],
     set: (_, key, value) => {
@@ -287,10 +288,15 @@ const buildSummary = (item, expand) => {
 // Status, points, tags, link and colour, the same properties as the card's ... menu. An editable
 // card shows them collapsed into one line every time it opens. A locked map shows only the values
 // that are set, and no footer if none are.
+const FOOTER_VALUES = ['status', 'points', 'tags', 'url', 'color'];
+const footerValues = (item) => JSON.stringify(FOOTER_VALUES.map(key => item[key] ?? null));
+
 const renderFooter = (item, editable, { expanded = false } = {}) => {
     const footer = dom.cardExpandFooter;
     footer.innerHTML = '';
+    _footerShown = footerValues(item);
     const onChange = () => {
+        _footerShown = footerValues(item);
         patchCardForItem(item);
         _deps.saveToStorage();
     };
@@ -353,15 +359,12 @@ const showText = (field, text, resize) => {
     resize();
 };
 
-const FOOTER_VALUES = ['status', 'points', 'tags', 'url', 'color'];
-
 // Called after every change from someone else. Point the open card at the card now in the map, so
 // typing keeps saving, and show what they changed. If they deleted the card, close it.
 export const refreshFromRemote = () => {
     if (!_expandedItem) return;
     const before = _expandedItem;
     const card = findCard(before.id);
-    if (card === before) return;
     if (!card) {
         // Not now: this runs part way through reading the change, and closing draws the map
         setTimeout(() => {
@@ -377,7 +380,7 @@ export const refreshFromRemote = () => {
     setModalColour(card.color);
     dom.cardExpandChips.hidden = !_editable || !isSliceCard(card);
     renderPlace(card);
-    if (FOOTER_VALUES.some(key => JSON.stringify(before[key] ?? null) !== JSON.stringify(card[key] ?? null))) refreshFooter();
+    if (footerValues(card) !== _footerShown) refreshFooter();
 };
 
 // While one person is typing in the title or the description, everyone else with the card open

@@ -156,3 +156,42 @@ test('an open card closes when someone else deletes it', async ({ page, createMa
   await expect(page.locator('#cardExpandModal')).toBeHidden();
   await expect(page.locator('#appToast')).toHaveText('Someone else deleted this card');
 });
+
+test('a change made straight after someone else types keeps what they typed', async ({ page, createMap, openSecondTab, pullMap }) => {
+  const id = await createMap();
+  const other = await openSecondTab();
+  await openMap(page, id);
+  await openMap(other, id);
+
+  // The second person adds a card while the first person's typing is still arriving
+  await openCard(page);
+  await page.locator('#cardExpandBody').click();
+  await page.keyboard.type('Before. ');
+  await addCard(other, 'Unrelated');
+  await page.keyboard.type('After.');
+
+  await expect.poll(async () => (await firstCard(pullMap, id)).body).toBe('Before. After.');
+  await expect.poll(() => cardNames(page)).toContain('Unrelated');
+});
+
+test('two people typing card titles on the map at once both keep their text', async ({ page, createMap, openSecondTab, pullMap }) => {
+  const id = await createMap();
+  const other = await openSecondTab();
+  await openMap(page, id);
+  await openMap(other, id);
+  const title = (p, n) => p.locator('.slice-container .story-card').nth(n).locator('.story-text');
+
+  await title(page, 0).click();
+  await page.keyboard.press('End');
+  await title(other, 1).click();
+  await other.keyboard.press('End');
+  for (const letter of ' first person') {
+    await page.keyboard.type(letter);
+    await other.keyboard.type(letter.toUpperCase());
+  }
+
+  await expect.poll(async () => (await pullMap(id)).slices[0].stories[0].slice(0, 2).map(c => c.name))
+    .toEqual(['One first person', 'Two FIRST PERSON']);
+  await expect.poll(() => cardNames(page)).toEqual(['One first person', 'Two FIRST PERSON', 'Three']);
+  await expect.poll(() => cardNames(other)).toEqual(['One first person', 'Two FIRST PERSON', 'Three']);
+});
