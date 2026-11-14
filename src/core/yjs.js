@@ -11,6 +11,7 @@ let _dom = null;
 let _isMapEditable = null;
 let _render = null;
 let _setPreserveToolbar = null;
+let _onSync = null;
 
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
@@ -69,7 +70,7 @@ export const ensureSortable = () => {
 
 export const getIsSafari = () => isSafari;
 
-export const init = ({ state, notepad, log, connectionStatus, isMapEditable, render, setPreserveToolbar }) => {
+export const init = ({ state, notepad, log, connectionStatus, isMapEditable, render, setPreserveToolbar, onSync }) => {
     _state = state;
     _notepad = notepad;
     _log = log;
@@ -78,6 +79,7 @@ export const init = ({ state, notepad, log, connectionStatus, isMapEditable, ren
     _isMapEditable = isMapEditable;
     _render = render;
     _setPreserveToolbar = setPreserveToolbar;
+    _onSync = onSync;
 };
 
 export const getProvider = () => provider;
@@ -364,6 +366,9 @@ export const syncFromYjs = () => {
     _notepad.migrateLegacyNotes(ymap, ydoc.getText('notes'), _state);
 
     if (_dom.boardName) _dom.boardName.value = _state.name;
+
+    // Every card is a new object now, so anything holding on to one has to find it again
+    _onSync?.();
 
     const newHash = stateHash();
     if (newHash === lastSyncedHash) return false;

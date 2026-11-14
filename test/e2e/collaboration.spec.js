@@ -1,4 +1,4 @@
-import { test, expect, openMap, cardNames, addCard } from './fixtures.js';
+import { test, expect, openMap, cardNames, addCard, acceptDialog } from './fixtures.js';
 
 test('a card added by one person appears for the other', async ({ page, createMap, openSecondTab }) => {
   const id = await createMap();
@@ -64,4 +64,95 @@ test('one person with several tabs open counts once', async ({ page, createMap, 
   await expect(live).toHaveText('2');
   await expect(other.locator('#viewerLive')).toHaveText('2');
   await expect(other.locator('#viewerLive')).toHaveAttribute('data-tooltip', 'Tester (you)\nTester');
+});
+
+const openCard = async (page, n = 0) => {
+  const card = page.locator('.slice-container .story-card').nth(n);
+  await card.hover();
+  await card.locator('.btn-expand').click();
+  await expect(page.locator('#cardExpandBody')).toBeVisible();
+};
+const firstCard = async (pullMap, id) => (await pullMap(id)).slices[0].stories[0][0];
+
+test('typing in an open card still saves after someone else changes the map', async ({ page, createMap, openSecondTab, pullMap }) => {
+  const id = await createMap();
+  const other = await openSecondTab();
+  await openMap(page, id);
+  await openMap(other, id);
+
+  await openCard(page);
+  await addCard(other, 'Unrelated');
+  await expect.poll(() => cardNames(page)).toContain('Unrelated');
+  await page.locator('#cardExpandBody').click();
+  await page.keyboard.type('Typed after the change.');
+  await page.locator('#cardExpandName').click();
+  await page.keyboard.type(' too');
+
+  await expect.poll(() => firstCard(pullMap, id)).toMatchObject({ name: 'One too', body: 'Typed after the change.' });
+});
+
+test('an open card shows what someone else changes on it', async ({ page, createMap, openSecondTab, pullMap }) => {
+  const id = await createMap();
+  const other = await openSecondTab();
+  await openMap(page, id);
+  await openMap(other, id);
+
+  await openCard(page);
+  await openCard(other);
+  await other.locator('#cardExpandName').click();
+  await other.keyboard.type(' renamed');
+  await expect(page.locator('#cardExpandName')).toHaveValue('One renamed');
+
+  // What the first person types next goes on top of the new title, not over it
+  await page.locator('#cardExpandBody').click();
+  await page.keyboard.type('Details');
+  await expect(other.locator('#cardExpandBody')).toHaveValue('Details');
+  await expect.poll(() => firstCard(pullMap, id)).toMatchObject({ name: 'One renamed', body: 'Details' });
+});
+
+test('while one person types in the description, the other sees who and has to wait', async ({ page, createMap, openSecondTab, pullMap }) => {
+  const id = await createMap();
+  const other = await openSecondTab();
+  await openMap(page, id);
+  await openMap(other, id);
+
+  await openCard(page);
+  await openCard(other);
+  const note = other.locator('#cardExpandEditing');
+  await expect(note).toBeHidden();
+
+  await page.locator('#cardExpandBody').click();
+  await page.keyboard.type('From A. ');
+  await expect(note).toHaveText('Tester is editing the description');
+  await expect(other.locator('#cardExpandBody')).toHaveJSProperty('readOnly', true);
+  await expect(other.locator('#cardExpandBody')).toHaveValue('From A. ');
+  // The title is still free
+  await expect(other.locator('#cardExpandName')).toHaveJSProperty('readOnly', false);
+
+  // Leaving the description frees it
+  await page.locator('#cardExpandName').click();
+  await expect(note).toBeHidden();
+  await other.locator('#cardExpandBody').click();
+  await other.keyboard.press('End');
+  await other.keyboard.type('From B.');
+  await expect(page.locator('#cardExpandBody')).toHaveValue('From A. From B.');
+  await expect.poll(async () => (await firstCard(pullMap, id)).body).toBe('From A. From B.');
+});
+
+test('an open card closes when someone else deletes it', async ({ page, createMap, openSecondTab }) => {
+  const id = await createMap();
+  const other = await openSecondTab();
+  await openMap(page, id);
+  await openMap(other, id);
+
+  await openCard(page);
+  const card = other.locator('.slice-container .story-card').first();
+  await card.hover();
+  await card.locator('.btn-options').click();
+  await other.locator('.options-menu.visible .options-delete').click();
+  await acceptDialog(other);
+  await expect.poll(() => cardNames(other)).toEqual(['Two', 'Three']);
+
+  await expect(page.locator('#cardExpandModal')).toBeHidden();
+  await expect(page.locator('#appToast')).toHaveText('Someone else deleted this card');
 });

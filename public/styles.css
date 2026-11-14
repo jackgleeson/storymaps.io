@@ -7373,6 +7373,28 @@ html.dark-mode .connection-notice.is-online::before {
     color: var(--card-placeholder);
 }
 
+/* Who else is typing in the title or the description */
+.card-expand-editing {
+    flex-shrink: 0;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: var(--card-muted);
+}
+
+.card-expand-editing[hidden] {
+    display: none;
+}
+
+.card-expand-name:read-only,
+.card-expand-body:read-only {
+    cursor: default;
+}
+
+.card-expand-chip:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
 /* Story line chips between the title and the body. Fixed colours, like the footer, because the
    modal keeps its pastel card colour in dark mode. */
 .card-expand-chips {

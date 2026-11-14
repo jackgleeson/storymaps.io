@@ -5,6 +5,8 @@ import { dom } from '/src/ui/dom.js';
 import { state, pushUndo } from '/src/core/state.js';
 import { isMapEditable } from '/src/core/lock.js';
 import * as log from '/src/core/log.js';
+import { getProvider } from '/src/core/yjs.js';
+import { showToast } from '/src/core/modals.js';
 import { CARD_COLORS, STATUS_OPTIONS, el, isValidUrl } from '/src/core/constants.js';
 import { createPointsInput, createTagEditor, markLegendSwatch, patchCardForItem, sliceClosedLabel } from '/src/ui/ui.js';
 import { STORY_LINES, addLines, enterAction } from '/src/core/story-lines.js';
@@ -14,6 +16,31 @@ let _deps = {};
 export const init = (deps) => { _deps = deps; };
 
 let _expandedItem = null;
+let _editable = false;
+let _footerExpanded = false;
+
+// A change from someone else rebuilds every card object in the map, so the footer fields read and
+// write the open card through this stand-in, which always points at the card now in the map
+const openCard = new Proxy({}, {
+    get: (_, key) => _expandedItem?.[key],
+    set: (_, key, value) => {
+        if (_expandedItem) _expandedItem[key] = value;
+        return true;
+    }
+});
+
+// The card with this ID as the map has it now
+const findCard = (id) => {
+    const inMap = (cardMap) => Object.values(cardMap || {}).flat().find(card => card?.id === id);
+    const find = (map) => map.columns?.find(c => c.id === id) || inMap(map.users) || inMap(map.activities);
+    let card = find(state);
+    for (const slice of state.slices) card ||= inMap(slice.stories);
+    for (const pm of state.partialMaps) {
+        card ||= find(pm);
+        for (const stories of Object.values(pm.stories || {})) card ||= inMap(stories);
+    }
+    return card || null;
+};
 let _closingExpandViaBack = false;
 let _poppingExpandState = false;
 
@@ -260,7 +287,7 @@ const buildSummary = (item, expand) => {
 // Status, points, tags, link and colour, the same properties as the card's ... menu. An editable
 // card shows them collapsed into one line every time it opens. A locked map shows only the values
 // that are set, and no footer if none are.
-const renderFooter = (item, editable) => {
+const renderFooter = (item, editable, { expanded = false } = {}) => {
     const footer = dom.cardExpandFooter;
     footer.innerHTML = '';
     const onChange = () => {
@@ -289,14 +316,146 @@ const renderFooter = (item, editable) => {
         if (footer.contains(document.activeElement)) document.activeElement.blur();
         const toggle = buildSummary(item, expand);
         footer.replaceChildren(toggle.parentElement);
+        _footerExpanded = false;
         return toggle;
     };
-    const expand = () => {
+    const expand = ({ focus = true } = {}) => {
         footer.replaceChildren(fields, showLess);
-        fields.querySelector('button, input')?.focus();
+        _footerExpanded = true;
+        if (focus) fields.querySelector('button, input')?.focus();
     };
     showLess.addEventListener('click', () => collapse().focus());
-    collapse();
+    if (expanded) expand({ focus: false });
+    else collapse();
+};
+
+// Rebuild the footer with the values someone else changed, open if it was open. Whatever is being
+// typed into one of its boxes stays, with the cursor still in it.
+const refreshFooter = () => {
+    const footer = dom.cardExpandFooter;
+    const active = footer.contains(document.activeElement) && document.activeElement.tagName === 'INPUT' ? document.activeElement : null;
+    const typing = active && { box: active.classList[0], value: active.value };
+    renderFooter(openCard, _editable, { expanded: _footerExpanded });
+    const box = typing && footer.querySelector(`.${typing.box}`);
+    if (box) {
+        box.value = typing.value;
+        box.focus();
+    }
+};
+
+const showText = (field, text, resize) => {
+    const value = text || '';
+    if (field.value === value) return;
+    const focused = document.activeElement === field;
+    const { selectionStart, selectionEnd } = field;
+    field.value = value;
+    if (focused) field.setSelectionRange(Math.min(selectionStart, value.length), Math.min(selectionEnd, value.length));
+    resize();
+};
+
+const FOOTER_VALUES = ['status', 'points', 'tags', 'url', 'color'];
+
+// Called after every change from someone else. Point the open card at the card now in the map, so
+// typing keeps saving, and show what they changed. If they deleted the card, close it.
+export const refreshFromRemote = () => {
+    if (!_expandedItem) return;
+    const before = _expandedItem;
+    const card = findCard(before.id);
+    if (card === before) return;
+    if (!card) {
+        // Not now: this runs part way through reading the change, and closing draws the map
+        setTimeout(() => {
+            if (_expandedItem !== before) return;
+            closeExpandModal();
+            showToast('Someone else deleted this card');
+        });
+        return;
+    }
+    _expandedItem = card;
+    showText(dom.cardExpandName, card.name, autoResizeExpandName);
+    showText(dom.cardExpandBody, card.body, autoResizeExpandBody);
+    setModalColour(card.color);
+    dom.cardExpandChips.hidden = !_editable || !isSliceCard(card);
+    renderPlace(card);
+    if (FOOTER_VALUES.some(key => JSON.stringify(before[key] ?? null) !== JSON.stringify(card[key] ?? null))) refreshFooter();
+};
+
+// While one person is typing in the title or the description, everyone else with the card open
+// sees who it is and can't type in that box. Who is in which box travels with presence, between
+// the browsers on the map, and isn't stored.
+const TEXT_FIELDS = {
+    name: { box: () => dom.cardExpandName, label: 'title' },
+    body: { box: () => dom.cardExpandBody, label: 'description' }
+};
+const IDLE_MS = 30_000;
+let _claimed = null;
+let _idleTimer = null;
+let _awareness = null;
+
+const setClaim = (field) => {
+    if (_claimed === field) return;
+    _claimed = field;
+    _awareness?.setLocalStateField('editing', field ? { card: _expandedItem.id, field } : null);
+};
+
+const release = () => {
+    clearTimeout(_idleTimer);
+    setClaim(null);
+};
+
+// Someone else in this box of this card. If two people start in the same moment, the lower
+// client ID keeps the box.
+const holderOf = (field) => {
+    if (!_awareness || !_expandedItem) return null;
+    let holder = null;
+    for (const [clientId, other] of _awareness.getStates()) {
+        if (clientId === _awareness.clientID) continue;
+        if (other.editing?.card !== _expandedItem.id || other.editing.field !== field) continue;
+        if (_claimed === field && clientId > _awareness.clientID) continue;
+        if (!holder || clientId < holder.clientId) holder = { clientId, name: other.user?.name };
+    }
+    return holder;
+};
+
+// Typing takes the box unless someone has it. Opening a card puts the cursor in the title, so the
+// cursor alone doesn't. Someone who stops typing for 30 seconds gives the box up, so a card left
+// open doesn't keep everyone else out.
+const claim = (field) => {
+    if (!_editable || !_expandedItem || holderOf(field)) return;
+    setClaim(field);
+    clearTimeout(_idleTimer);
+    _idleTimer = setTimeout(release, IDLE_MS);
+};
+
+const showEditors = () => {
+    if (!_expandedItem || !_editable) return;
+    const notes = [];
+    for (const [field, { box, label }] of Object.entries(TEXT_FIELDS)) {
+        const holder = holderOf(field);
+        box().readOnly = !!holder;
+        if (!holder) continue;
+        if (_claimed === field) release();
+        const name = holder.name && holder.name !== 'guest' ? holder.name : 'Someone';
+        notes.push(`${name} is editing the ${label}`);
+    }
+    dom.cardExpandEditing.textContent = notes.join('. ');
+    dom.cardExpandEditing.hidden = notes.length === 0;
+    dom.cardExpandChips.querySelectorAll('button').forEach(chip => { chip.disabled = dom.cardExpandBody.readOnly; });
+};
+
+const watchEditors = () => {
+    _awareness?.off('change', showEditors);
+    _awareness = getProvider()?.awareness || null;
+    _awareness?.on('change', showEditors);
+    showEditors();
+};
+
+const stopWatchingEditors = () => {
+    release();
+    _awareness?.off('change', showEditors);
+    _awareness = null;
+    dom.cardExpandEditing.hidden = true;
+    dom.cardExpandChips.querySelectorAll('button').forEach(chip => { chip.disabled = false; });
 };
 
 // focus: false leaves the title unfocused, so a card opened from a link doesn't bring up a phone keyboard
@@ -307,6 +466,7 @@ export const openExpandModal = (item, { readOnly = false, focus = true } = {}) =
     }
     _expandedItem = item;
     const editable = !readOnly && isMapEditable();
+    _editable = editable;
     dom.cardExpandName.value = item.name || '';
     dom.cardExpandBody.value = item.body || '';
     dom.cardExpandName.readOnly = !editable;
@@ -314,7 +474,8 @@ export const openExpandModal = (item, { readOnly = false, focus = true } = {}) =
     setModalColour(item.color);
     dom.cardExpandChips.hidden = !editable || !isSliceCard(item);
     renderPlace(item);
-    renderFooter(item, editable);
+    renderFooter(openCard, editable);
+    watchEditors();
     dom.cardExpandModal.classList.add('visible');
     requestAnimationFrame(() => {
         autoResizeExpandName();
@@ -333,6 +494,7 @@ export const closeExpandModal = () => {
     // tap something unfocusable like the close button or backdrop, so blur it here to save it first.
     if (dom.cardExpandModal.contains(document.activeElement)) document.activeElement.blur();
     dom.cardExpandModal.classList.remove('visible');
+    stopWatchingEditors();
     _expandedItem = null;
     _deps.renderAndSave();
     // Pop the history entry we pushed on open, unless we got here via back button
@@ -365,6 +527,11 @@ export const initListeners = () => {
         autoResizeExpandBody();
         _deps.saveToStorage();
     });
+
+    for (const [field, { box }] of Object.entries(TEXT_FIELDS)) {
+        box().addEventListener('input', () => claim(field));
+        box().addEventListener('blur', () => { if (_claimed === field) release(); });
+    }
 
     dom.cardExpandChips.addEventListener('click', (e) => {
         const chip = e.target.closest('[data-lines]');

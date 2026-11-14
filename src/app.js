@@ -1663,6 +1663,7 @@ yjs.init({
     isMapEditable,
     render,
     setPreserveToolbar,
+    onSync: () => cardExpand.refreshFromRemote(),
 });
 
 // Wire tour module
