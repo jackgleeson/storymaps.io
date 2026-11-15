@@ -284,25 +284,27 @@ const positionTooltip = (rect) => {
     };
 
     // A guide can ask for the right-hand side, so the tooltip stays clear of what is below the
-    // highlight. Beside it when there is room; otherwise below or above, at its right-hand end.
+    // highlight. Beside it when there is room. Otherwise above it, at its right-hand end, where
+    // a story map is usually empty, and below only when there is no room above.
     const onRight = _options.placement === 'right';
     if (onRight && toRight()) return;
     const x = onRight ? spotRight - ttRect.width : spotCenterX - ttRect.width / 2;
 
-    // Try below
-    if (spotBottom + TOOLTIP_GAP + ttRect.height + MARGIN < vh) {
+    const below = () => {
+        if (spotBottom + TOOLTIP_GAP + ttRect.height + MARGIN >= vh) return false;
         tt.style.top = `${spotBottom + TOOLTIP_GAP}px`;
         tt.style.left = `${clampX(x, ttRect.width, vw)}px`;
         if (!onRight) tt.setAttribute('data-arrow', 'top');
-        return;
-    }
-    // Try above
-    if (spotTop - TOOLTIP_GAP - ttRect.height - MARGIN > 0) {
+        return true;
+    };
+    const above = () => {
+        if (spotTop - TOOLTIP_GAP - ttRect.height - MARGIN <= 0) return false;
         tt.style.top = `${spotTop - TOOLTIP_GAP - ttRect.height}px`;
         tt.style.left = `${clampX(x, ttRect.width, vw)}px`;
         if (!onRight) tt.setAttribute('data-arrow', 'bottom');
-        return;
-    }
+        return true;
+    };
+    if (onRight ? above() || below() : below() || above()) return;
     // Try right
     if (toRight()) return;
     // Fall back to left
