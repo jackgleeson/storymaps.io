@@ -73,6 +73,28 @@ describe('Jira import', () => {
     assert.deepEqual([other.key, other.summary, other.stories.map(s => [s.key, s.type])], [null, 'No epic', [['SHOP-3', 'Bug']]]);
   });
 
+  test('a description keeps its line breaks, links and mentions', async () => {
+    const description = { type: 'doc', content: [
+      { type: 'paragraph', content: [{ type: 'text', text: 'Pick a size.' }] },
+      { type: 'paragraph', content: [
+        { type: 'text', text: 'Slice: MVP' }, { type: 'hardBreak' },
+        { type: 'text', text: 'Step: Customize Drink' }, { type: 'hardBreak' },
+        { type: 'text', text: 'Story map: ' },
+        { type: 'text', text: 'https://storymaps.io/abc#card-1', marks: [{ type: 'link', attrs: { href: 'https://storymaps.io/abc#card-1' } }] },
+      ] },
+      { type: 'paragraph', content: [
+        { type: 'text', text: 'See ' }, { type: 'inlineCard', attrs: { url: 'https://example.com/spec' } },
+        { type: 'text', text: ' from ' }, { type: 'mention', attrs: { id: '1', text: '@Sam' } },
+      ] },
+    ] };
+    respond = (url) => (new URL(url).searchParams.get('jql').includes('issuetype = Epic')
+      ? [200, { issues: [] }]
+      : [200, { issues: [issue('SHOP-2', { summary: 'Choose size', issuetype: { name: 'Story' }, description })] }]);
+    const { done } = await call('/api/import/jira', body);
+    assert.equal(done.epics[0].stories[0].description,
+      'Pick a size.\nSlice: MVP\nStep: Customize Drink\nStory map: https://storymaps.io/abc#card-1\nSee https://example.com/spec from @Sam');
+  });
+
   test('calls the Jira API for the project with basic auth', async () => {
     respond = () => [200, { issues: [] }];
     await call('/api/import/jira', body);

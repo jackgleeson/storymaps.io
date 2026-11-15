@@ -4,6 +4,10 @@ import { validateExternalUrl, sendSSE, fetchWithTimeout, safeJson } from '../htt
 const adfToPlainText = (node, depth = 0) => {
   if (!node || depth > 20) return '';
   if (node.type === 'text') return node.text || '';
+  // A line break inside a paragraph, and the inline pieces that carry their text as attributes
+  if (node.type === 'hardBreak') return '\n';
+  if (node.type === 'inlineCard') return node.attrs?.url || '';
+  if (node.type === 'mention' || node.type === 'emoji') return node.attrs?.text || node.attrs?.shortName || '';
   if (!Array.isArray(node.content)) return '';
   const parts = node.content.slice(0, 500).map(c => adfToPlainText(c, depth + 1));
   if (node.type === 'paragraph' || node.type === 'heading' || node.type === 'bulletList' || node.type === 'orderedList') {
