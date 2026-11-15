@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User story mapping for Linear - Storymaps.io docs</title>
-    <meta name="description" content="Turn a Linear team into a story map, through the Linear API or a CSV export, and send the steps and cards back to Linear as parent issues and sub-issues.">
+    <meta name="description" content="Turn a Linear team into a story map, through the Linear API or a CSV export, and send the cards back to Linear as issues labelled with their slice and step.">
     <link rel="canonical" href="https://storymaps.io/docs/user-story-mapping-for-linear">
     <meta property="og:title" content="User story mapping for Linear - Storymaps.io docs">
-    <meta property="og:description" content="Turn a Linear team into a story map, through the Linear API or a CSV export, and send the steps and cards back to Linear as parent issues and sub-issues.">
+    <meta property="og:description" content="Turn a Linear team into a story map, through the Linear API or a CSV export, and send the cards back to Linear as issues labelled with their slice and step.">
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://storymaps.io/docs/user-story-mapping-for-linear">
     <meta property="og:image" content="https://storymaps.io/resources/screenshot.png">
@@ -17,10 +17,10 @@
     <meta property="og:site_name" content="Storymaps.io">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="User story mapping for Linear - Storymaps.io docs">
-    <meta name="twitter:description" content="Turn a Linear team into a story map, through the Linear API or a CSV export, and send the steps and cards back to Linear as parent issues and sub-issues.">
+    <meta name="twitter:description" content="Turn a Linear team into a story map, through the Linear API or a CSV export, and send the cards back to Linear as issues labelled with their slice and step.">
     <meta name="twitter:image" content="https://storymaps.io/resources/screenshot.png">
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://storymaps.io/docs"},{"@type":"ListItem","position":2,"name":"User story mapping for Linear","item":"https://storymaps.io/docs/user-story-mapping-for-linear"}]}</script>
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"User story mapping for Linear","description":"Turn a Linear team into a story map, through the Linear API or a CSV export, and send the steps and cards back to Linear as parent issues and sub-issues.","url":"https://storymaps.io/docs/user-story-mapping-for-linear","inLanguage":"en","dateModified":"2026-11-10","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"User story mapping for Linear","description":"Turn a Linear team into a story map, through the Linear API or a CSV export, and send the cards back to Linear as issues labelled with their slice and step.","url":"https://storymaps.io/docs/user-story-mapping-for-linear","inLanguage":"en","dateModified":"2026-11-14","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/fonts.css">
     <script>
@@ -184,7 +184,7 @@
         <article class="docs-article">
             <div class="crumbs-row"><nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/docs">Docs</a></li><li><a href="/docs#connect-your-tools">Connect your tools</a></li></ol></nav></div>
             <h1>User story mapping for Linear</h1>
-            <p class="byline"><span>3 min read</span></p>
+            <p class="byline"><span>4 min read</span></p>
             <details class="toc-mobile"><summary>On this page</summary><nav><a href="#import-through-the-api">Import through the API</a>
             <a href="#import-a-csv-file">Import a CSV file</a>
             <a href="#review-the-import">Review the import</a>
@@ -206,22 +206,27 @@
 <ol class="steps"><li><span class="num">1</span><span>In Linear, export your issues as CSV. The import dialog shows the way: Settings &gt; Export &gt; Export CSV.</span></li><li><span class="num">2</span><span>In the story map, choose <strong>Menu → Import → Linear → Linear CSV</strong>.</span></li><li><span class="num">3</span><span>Drop the file in, or click to pick it.</span></li><li><span class="num">4</span><span>Click <strong>Continue</strong>.</span></li></ol>
 <p>The file needs a <strong>Title</strong> column. Issues from a CSV don't link back to Linear.</p>
 <h2 id="review-the-import">Review the import</h2>
-<p><strong>Review Import</strong> lists every group with its issues. Untick anything you don't want, or click <strong>Deselect all</strong> and tick what you do. The count at the bottom shows what's going in.</p>
+<p><strong>Review Import</strong> lists every card that will be made: each group, then its issues, and last the issues that belong to no group.</p>
 <p><strong>Tag by</strong> picks how the issues group:</p>
-<ul><li><strong>Group by projects</strong> makes each project a group, with its issues under it. Issues with no project go in <strong>Other (no project)</strong>. Parent issues aren't imported.</li><li><strong>Group by parent issues</strong> makes each parent issue a group, with its sub-issues under it. Issues with no parent go in <strong>Other (no parent issue)</strong>.</li></ul>
+<ul><li><strong>Group by projects</strong> makes each project a group, with its issues under it. Parent issues aren't imported.</li><li><strong>Group by parent issues</strong> makes each parent issue a group, with its sub-issues under it.</li></ul>
 <p>It starts on projects when there are two or more, and on parent issues otherwise.</p>
+<p>Untick any row to leave it out. Untick a group and its issues go with it. <strong>Status</strong> ticks or unticks every issue with that status, and the box at the top of the list ticks or unticks everything. The count at the bottom shows what's going in.</p>
 <p>Importing into an open story map gives you a choice:</p>
 <ul><li><strong>Add to existing map</strong> puts the imported cards to the right of what's there.</li><li><strong>Replace map</strong> swaps the whole story map for the import, and asks first.</li></ul>
 <p>Either way, a backup is taken before anything changes. Click <strong>Import to Map</strong> to finish.</p>
 <h2 id="what-you-get-on-the-story-map">What you get on the story map</h2>
-<p>The cards land in a slice called <strong>IMPORTED: Projects &amp; issues</strong>, or <strong>IMPORTED: Parent issues &amp; sub-issues</strong>, with an empty <strong>MVP</strong> slice above it and a blank backbone.</p>
-<ul><li><strong>Groups</strong> become lime green cards, tagged <strong>project-01</strong> or <strong>parent-01</strong> and so on.</li><li><strong>Issues</strong> under a group become cards tagged with it, such as <strong>project-01-task</strong>, plus their Linear labels.</li><li><strong>Descriptions</strong> go in the body of the card.</li><li><strong>Statuses</strong> become done, in progress or planned.</li><li><strong>Estimates</strong> become the points on the card.</li><li><strong>Links</strong> open the issue or project in Linear.</li></ul>
-<p>The cards fill up to eight columns from left to right, so a group and its issues won't share a column. The tags keep them together: <a href="/docs/search-and-filter-a-story-map" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>search</span> and filter</a> by <strong>project-01</strong> to see one group at a time.</p>
+<p>The cards land in one slice called <strong>Imported</strong>, under a blank backbone.</p>
+<ul><li><strong>Groups</strong> become lime green cards. A parent issue is tagged with its own ID, such as <strong>ENG-12</strong>, and a project is tagged <strong>project-01</strong>, <strong>project-02</strong> and so on. Each one carries the details of the group, so you don't need Linear open while you arrange the story map. Delete the ones you don't need.</li><li><strong>Issues</strong> under a group become cards tagged to match it, plus their Linear labels. Issues in no group get no tag.</li><li><strong>Descriptions</strong> go in the body of the card.</li><li><strong>Statuses</strong> become done, in progress or planned.</li><li><strong>Estimates</strong> become the points on the card.</li><li><strong>Links</strong> open the issue or project in Linear.</li></ul>
+<p>The legend names the two colours, such as <strong>Project</strong> and <strong>Issue</strong>.</p>
+<p>The cards fill up to eight columns from left to right, each group followed by its issues. The tags keep them together: <a href="/docs/search-and-filter-a-story-map" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>search</span> and filter</a> by <strong>project-01</strong> to see one group at a time.</p>
 <div class="tip tip-tip"><p><strong>Tip.</strong> Now make it a story map. Name the users, activities and steps, then drag each card under the step it belongs to. <a href="/docs/define-the-story-map-backbone" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Define</span> the story map backbone</a> shows how.</p></div>
 <h2 id="export-to-linear">Export to Linear</h2>
-<p>Linear export goes through the API. Choose <strong>Menu → Export → Linear → Linear API</strong>:</p>
-<ol class="steps"><li><span class="num">1</span><span>Under <strong>Releases</strong>, tick the slices to send.</span></li><li><span class="num">2</span><span>Under <strong>Status</strong>, tick the statuses to send.</span></li><li><span class="num">3</span><span>Each step becomes a parent issue, named after the step, with its cards as sub-issues. Rename a parent issue, add a description, or untick anything to leave out.</span></li><li><span class="num">4</span><span>Click <strong>Step 2: Credentials →</strong>.</span></li><li><span class="num">5</span><span>Paste an <strong>API Key</strong> and fill in the <strong>Team Key</strong>.</span></li><li><span class="num">6</span><span>Click <strong>Export to Linear</strong>.</span></li></ol>
-<p>A card body becomes the description of its sub-issue, and card points become its estimate. Statuses don't carry over. The progress list links to every issue as it's made. One export takes up to 200 parent issues and 2,000 sub-issues.</p>
+<p>Linear export goes through the API. Every card becomes one issue. No parent issues are made: the story map keeps the structure, and each issue carries its slice and step as labels.</p>
+<p>Choose <strong>Menu → Export → Linear → Linear API</strong>:</p>
+<ol class="steps"><li><span class="num">1</span><span>Under <strong>Releases</strong>, tick the slices to send.</span></li><li><span class="num">2</span><span>Under <strong>Status</strong>, tick the statuses to send.</span></li><li><span class="num">3</span><span>Check <strong>What each card becomes</strong>. It shows one card and the issue it turns into.</span></li><li><span class="num">4</span><span>Under <strong>Labels</strong>, untick any you don't want: <strong>Slice name</strong>, <strong>Step name</strong> or <strong>Card tags</strong>.</span></li><li><span class="num">5</span><span>Open <strong>Choose cards</strong> to untick single cards.</span></li><li><span class="num">6</span><span>Click <strong>Next: connect to Linear</strong>.</span></li><li><span class="num">7</span><span>Paste an <strong>API Key</strong> and fill in the <strong>Team Key</strong>.</span></li><li><span class="num">8</span><span>Click <strong>Export to Linear</strong>.</span></li></ol>
+<p>Labels are lower case with hyphens, so a card under Browse Menu in the MVP slice is labelled <strong>browse-menu</strong> and <strong>mvp</strong>. The export uses labels the team already has and makes the missing ones in the team.</p>
+<p>The description of each issue is the card body, then the slice, the step and a link back to the card. Card points become the estimate. Planned cards go to the first unstarted status of the team, cards in progress to the first started one, and done cards to the first completed one. The rest start where Linear puts new issues.</p>
+<p>The progress list links to every issue as it's made. One export takes up to 2,000 cards.</p>
             <nav class="pager" aria-label="Previous and next">
                 <a class="prev" href="/docs/user-story-mapping-for-phabricator"><span>Previous</span>User story mapping for Phabricator</a>
                 <span></span>
