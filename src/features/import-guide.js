@@ -96,7 +96,7 @@ export const fitBackbone = (map) => {
 // The steps to show, for a story map that needs these parts
 export const guideSteps = (needs) => {
     const count = needs.cards === 1 ? '1 imported card is' : `${needs.cards} imported cards are`;
-    const first = `Your ${count} safe in the <strong>${IMPORTED_SLICE}</strong> slice. Before you move any, build the backbone they will hang from. `
+    const first = `Your ${count} safe in the <strong>${IMPORTED_SLICE}</strong> slice. Before you move any, build the backbone: who it's for, what they're trying to do and the steps they take. `
         + `If you don't know what a backbone is, <a href="${BACKBONE_DOCS}" target="_blank" rel="noopener">catch up here</a>.<br><br>`;
     const backbone = [
         needs.user && {
