@@ -127,6 +127,16 @@ test('one map can be removed, and a map that no longer exists leaves the list', 
   await expect(rows(page)).toHaveText(['Ordering']);
 });
 
+test('a link that is the wrong shape for a story map goes straight to the home page', async ({ page }) => {
+  // Longer than a map ID, as when a word is typed straight after one. The server refuses to
+  // connect to it, and the page used to wait ten seconds on "Loading map..." before giving up.
+  for (const path of ['/zvto0y32link', '/abc1234', '/privacy']) {
+    await page.goto(path);
+    await expect(page.locator('#welcomeNewBtn'), path).toBeVisible({ timeout: 3000 });
+    await expect(page.locator('#loadingIndicator'), path).toBeHidden();
+  }
+});
+
 test('naming a map shows the bookmark reminder once for that map', async ({ page, context, createMap }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   const [a, b, c] = [await createMap(map('Ordering')), await createMap(map('Loyalty')), await createMap(map('Barista'))];

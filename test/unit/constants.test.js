@@ -1,7 +1,7 @@
 import { describe, test } from 'node:test';
 import { strict as assert } from 'node:assert';
 import {
-  generateId, isValidUrl, normalizePoints, normalizeSliceGoal, normalizeSliceDate, copySliceDetails, escHtml, shiftSliceDates,
+  generateId, isMapId, isValidUrl, normalizePoints, normalizeSliceGoal, normalizeSliceDate, copySliceDetails, escHtml, shiftSliceDates,
 } from '../../src/core/constants.js';
 
 describe('generateId', () => {
@@ -12,6 +12,18 @@ describe('generateId', () => {
   test('does not repeat', () => {
     const ids = Array.from({ length: 1000 }, generateId);
     assert.equal(new Set(ids).size, ids.length);
+  });
+});
+
+describe('isMapId', () => {
+  test('takes every ID the app makes', () => {
+    for (let i = 0; i < 200; i++) assert.ok(isMapId(generateId()));
+  });
+
+  test('refuses anything of another shape, such as a longer link or a page name', () => {
+    for (const id of ['zvto0y32link', 'abc1234', 'ABC12345', 'abc-1234', 'new', 'tour', 'privacy', '', null, undefined, 12345678]) {
+      assert.equal(isMapId(id), false, String(id));
+    }
   });
 });
 

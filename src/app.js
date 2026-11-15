@@ -4,7 +4,7 @@
 import * as notepad from '/src/features/notepad.js';
 import * as connectionStatus from '/src/features/connection-status.js';
 import * as log from '/src/core/log.js';
-import { generateId, el, CARD_COLORS } from '/src/core/constants.js';
+import { generateId, el, CARD_COLORS, isMapId } from '/src/core/constants.js';
 import { state, init as stateInit, initState, clearMapContent, hasContent, pushUndo, undo, redo, updateUndoRedoButtons, clearUndoHistory, createStory, createSlice, selection, clearSelection } from '/src/core/state.js';
 import { serialize, deserialize } from '/src/core/serialization.js';
 import * as navigation from '/src/ui/navigation.js';
@@ -1550,6 +1550,12 @@ const openMapInPage = async (mapId) => {
 
 const loadMapById = async (mapId) => {
     destroyYjs();
+
+    // The server refuses a connection for anything that isn't shaped like a map ID, and the page
+    // would sit on "Loading map..." until that timed out. Say straight away that there's no map.
+    // Only the map part of a link gets here: /new, /tour, samples and the project part of a
+    // project link are dealt with before this.
+    if (mapId && !isMapId(mapId)) return false;
 
     if (mapId) {
         clearMapContent();

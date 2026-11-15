@@ -11,6 +11,10 @@ export const generateId = () => {
     return num.toString(36).slice(-8).padStart(8, '0');
 };
 
+// Every map ID is 8 lowercase letters and digits, and the server takes no other shape. A link
+// with anything else after the slash, such as /abc12345link, can't be a map.
+export const isMapId = (id) => typeof id === 'string' && /^[a-z0-9]{8}$/.test(id);
+
 export const isValidUrl = (url) => {
     if (!url) return false;
     try {
