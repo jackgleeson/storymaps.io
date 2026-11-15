@@ -20,7 +20,7 @@
     <meta name="twitter:description" content="Turn a Linear team into a story map, through the Linear API or a CSV export, and send the cards back to Linear as issues labelled with their slice and step.">
     <meta name="twitter:image" content="https://storymaps.io/resources/screenshot.png">
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://storymaps.io/docs"},{"@type":"ListItem","position":2,"name":"User story mapping for Linear","item":"https://storymaps.io/docs/user-story-mapping-for-linear"}]}</script>
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"User story mapping for Linear","description":"Turn a Linear team into a story map, through the Linear API or a CSV export, and send the cards back to Linear as issues labelled with their slice and step.","url":"https://storymaps.io/docs/user-story-mapping-for-linear","inLanguage":"en","dateModified":"2026-11-14","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"User story mapping for Linear","description":"Turn a Linear team into a story map, through the Linear API or a CSV export, and send the cards back to Linear as issues labelled with their slice and step.","url":"https://storymaps.io/docs/user-story-mapping-for-linear","inLanguage":"en","dateModified":"2026-11-15","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/fonts.css">
     <script>
@@ -208,6 +208,13 @@
 <p>The file needs a <strong>Title</strong> column. Issues from a CSV don't link back to Linear.</p>
 <h2 id="review-the-import">Review the import</h2>
 <p><strong>Review Import</strong> lists every card that will be made: each group, then its issues, and last the issues that belong to no group.</p>
+<figure class="shot" style="max-width: 1374px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/user-story-mapping-for-linear-review.png?v=a031fd7d" alt="The review list, grouped by project." width="916" height="641" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-linear-review-dark.png?v=e057c10f" alt="The review list, grouped by project." width="916" height="641" loading="lazy">
+</div>
+<figcaption>The review list, grouped by project.</figcaption>
+</figure>
 <p><strong>Tag by</strong> picks how the issues group:</p>
 <ul><li><strong>Group by projects</strong> makes each project a group, with its issues under it. Parent issues aren't imported.</li><li><strong>Group by parent issues</strong> makes each parent issue a group, with its sub-issues under it.</li></ul>
 <p>It starts on projects when there are two or more, and on parent issues otherwise.</p>
@@ -223,12 +230,33 @@
 <h2 id="build-the-backbone-first">Build the backbone first</h2>
 <p>When the import finishes, a short guide lights one thing at a time:</p>
 <ol class="steps"><li><span class="num">1</span><span>Name the user: who the product is for.</span></li><li><span class="num">2</span><span>Name the activity: what they are trying to do.</span></li><li><span class="num">3</span><span>Name the steps they take, from left to right. Enter moves to the next step, and adds another after the last. Press Enter on an empty step when the journey is done.</span></li><li><span class="num">4</span><span>Drag each card up out of <strong>Imported</strong> into a slice, under the step it belongs to. Select several cards to move them together.</span></li></ol>
+<figure class="shot" style="max-width: 1920px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/import-guide-first-step.png?v=7e0889eb" alt="The guide starts with who the product is for. Everything else is dimmed." width="1280" height="800" loading="lazy">
+<img class="only-dark" src="/docs/img/import-guide-first-step-dark.png?v=7e0889eb" alt="The guide starts with who the product is for. Everything else is dimmed." width="1280" height="800" loading="lazy">
+</div>
+<figcaption>The guide starts with who the product is for. Everything else is dimmed.</figcaption>
+</figure>
 <p>The backbone ends up with exactly the steps you named. Steps left blank are taken away, and the imported cards are dealt again under the ones that are left.</p>
 <p>The zoom buttons work while the guide is open. <strong>Skip the guide</strong> closes it, and a part of the backbone that already has a name is left out. Delete the <strong>Imported</strong> slice when it's empty. <a href="/docs/define-the-story-map-backbone" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Define</span> the story map backbone</a> has more.</p>
+<figure class="shot" style="max-width: 1920px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/import-guide-place-cards.png?v=1f21974a" alt="The backbone is named, and the imported cards sit underneath it." width="1280" height="800" loading="lazy">
+<img class="only-dark" src="/docs/img/import-guide-place-cards-dark.png?v=1f21974a" alt="The backbone is named, and the imported cards sit underneath it." width="1280" height="800" loading="lazy">
+</div>
+<figcaption>The backbone is named, and the imported cards sit underneath it.</figcaption>
+</figure>
 <h2 id="export-to-linear">Export to Linear</h2>
 <p>Linear export goes through the API. Every card becomes one issue. No parent issues are made: the story map keeps the structure, and each issue carries its slice and step as labels.</p>
 <p>Choose <strong>Menu → Export → Linear → Linear API</strong>:</p>
 <ol class="steps"><li><span class="num">1</span><span>Under <strong>Releases</strong>, tick the slices to send.</span></li><li><span class="num">2</span><span>Under <strong>Status</strong>, tick the statuses to send.</span></li><li><span class="num">3</span><span>Check <strong>What each card becomes</strong>. It shows one card and the issue it turns into.</span></li><li><span class="num">4</span><span>Under <strong>Labels</strong>, untick any you don't want: <strong>Slice name</strong>, <strong>Step name</strong> or <strong>Card tags</strong>.</span></li><li><span class="num">5</span><span>Open <strong>Choose cards</strong> to untick single cards.</span></li><li><span class="num">6</span><span>Click <strong>Next: connect to Linear</strong>.</span></li><li><span class="num">7</span><span>Paste an <strong>API Key</strong> and fill in the <strong>Team Key</strong>.</span></li><li><span class="num">8</span><span>Click <strong>Export to Linear</strong>.</span></li></ol>
+<figure class="shot" style="max-width: 1374px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/user-story-mapping-for-linear-export.png?v=c637ba9f" alt="The export window shows one card and the issue it becomes in Linear." width="916" height="671" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-linear-export-dark.png?v=407ef3e8" alt="The export window shows one card and the issue it becomes in Linear." width="916" height="671" loading="lazy">
+</div>
+<figcaption>The export window shows one card and the issue it becomes in Linear.</figcaption>
+</figure>
 <p>Labels are lower case with hyphens, so a card under Browse Menu in the MVP slice is labelled <strong>browse-menu</strong> and <strong>mvp</strong>. The export uses labels the team already has and makes the missing ones in the team.</p>
 <p>The description of each issue is the card body, then the slice, the step and a link back to the card. Card points become the estimate. Planned cards go to the first unstarted status of the team, cards in progress to the first started one, and done cards to the first completed one. The rest start where Linear puts new issues.</p>
 <p>The progress list links to every issue as it's made. One export takes up to 2,000 cards.</p>

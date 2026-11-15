@@ -500,5 +500,55 @@
     "width": 311,
     "height": 383,
     "callouts": []
+  },
+  "user-story-mapping-for-jira/review": {
+    "width": 916,
+    "height": 641,
+    "callouts": []
+  },
+  "user-story-mapping-for-jira/export": {
+    "width": 916,
+    "height": 781,
+    "callouts": []
+  },
+  "import-guide/first-step": {
+    "width": 1280,
+    "height": 800,
+    "callouts": []
+  },
+  "import-guide/place-cards": {
+    "width": 1280,
+    "height": 800,
+    "callouts": []
+  },
+  "user-story-mapping-for-linear/review": {
+    "width": 916,
+    "height": 641,
+    "callouts": []
+  },
+  "user-story-mapping-for-linear/export": {
+    "width": 916,
+    "height": 671,
+    "callouts": []
+  },
+  "user-story-mapping-for-asana/review": {
+    "width": 916,
+    "height": 641,
+    "callouts": []
+  },
+  "user-story-mapping-for-asana/export": {
+    "width": 916,
+    "height": 743,
+    "callouts": []
+  },
+  "user-story-mapping-for-phabricator/review": {
+    "width": 916,
+    "height": 641,
+    "callouts": []
+  },
+  "user-story-mapping-for-phabricator/export": {
+    "width": 916,
+    "height": 593,
+    "callouts": []
   }
 }
