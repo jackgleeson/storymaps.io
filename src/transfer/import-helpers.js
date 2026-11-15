@@ -229,7 +229,8 @@ export const renderImportPreview = (epics, projectKey, domRefs, updateCountFn, o
 
     const addRow = (data, { group = false, tag = null, epic = null } = {}) => {
         const el = document.createElement('label');
-        el.className = 'import-row' + (group ? ' import-row-group' : '') + (data._included ? '' : ' excluded');
+        // Only an issue that belongs to a group sits indented under it
+        el.className = 'import-row' + (group ? ' import-row-group' : '') + (epic ? ' import-row-child' : '') + (data._included ? '' : ' excluded');
         el.dataset.status = statusOf(data);
 
         const checkbox = document.createElement('input');

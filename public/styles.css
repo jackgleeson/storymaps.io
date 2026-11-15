@@ -12721,7 +12721,7 @@ html.dark-mode .import-preview-header {
     min-width: 0;
 }
 
-.import-table.has-groups .import-row:not(.import-row-group):not(.import-row-head) .import-row-summary {
+.import-row-child .import-row-summary {
     padding-left: 20px;
 }
 

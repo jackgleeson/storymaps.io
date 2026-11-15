@@ -44,6 +44,10 @@ test('Jira import reviews epics and issues in one list and brings epics in as co
   await expect(review.locator('.import-row-group .import-row-name')).toHaveText(['Ordering: browse the menu, customise a drink and build an order', 'Payments']);
   await expect(rows.nth(1).locator('.import-tag')).toHaveText('COFFEE-3');
   await expect(rows.nth(5).locator('.import-tag')).toHaveCount(0);
+  // An issue sits indented under its epic; one with no epic lines up with the epics
+  const left = async (row) => (await row.locator('.import-row-swatch').boundingBox()).x;
+  expect(await left(rows.nth(1))).toBeGreaterThan(await left(rows.nth(0)));
+  expect(await left(rows.nth(5))).toBe(await left(rows.nth(0)));
   await expect(rows.nth(0).locator('.import-row-status')).toHaveText('In Progress');
   await expect(rows.nth(2).locator('.import-row-status')).toHaveText('To Do');
 
