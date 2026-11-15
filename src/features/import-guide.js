@@ -31,10 +31,10 @@ export const backboneNeeds = (map) => {
 
 const STEP_FIELDS = '.steps-row .step:not(.phantom-step) .step-text';
 
-// A big import is fitted to the window, which leaves the cards too small to type on, and the
-// story map holds still during a guide. So the backbone is shown big enough to type on, from
-// the start of the story map, and the last step fits everything to the window again to show
-// the pile.
+// A big import is fitted to the window, which leaves the cards too small to type on. So the
+// backbone is shown big enough to type on, from the start of the story map, and the last step
+// fits everything to the window again to show the pile. The zoom buttons stay in reach
+// throughout, for anyone who wants it bigger or smaller.
 const show = (zoom) => () => {
     zoom();
     tour.reposition();

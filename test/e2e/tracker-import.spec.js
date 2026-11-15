@@ -195,7 +195,14 @@ test('after an import, a guide builds the backbone before any card is moved', as
   await expect(page.locator('.users-row .story-card .btn-expand').first()).toBeHidden();
   await page.locator('.users-row .story-card').first().dblclick({ position: { x: 6, y: 6 }, force: true });
   await expect(page.locator('#cardExpandModal')).toBeHidden();
-  await expect(page.locator('.controls-right')).toBeHidden();
+  await expect(page.locator('.panel-tabs')).toBeHidden();
+  // The zoom buttons stay in reach, and the highlight follows the card when the zoom changes
+  const before = await page.locator('#tourSpotlight').boundingBox();
+  await page.locator('#zoomIn').click();
+  await expect.poll(async () => (await page.locator('#tourSpotlight').boundingBox()).width).toBeGreaterThan(before.width);
+  const lit = await page.locator('#tourSpotlight').boundingBox();
+  const card = await page.locator('.users-row .story-card').first().boundingBox();
+  expect(Math.abs(lit.x + lit.width / 2 - (card.x + card.width / 2))).toBeLessThan(3);
   await page.locator('.users-row .story-card .story-text').first().click();
   await page.keyboard.type('Customer');
   await page.keyboard.press('Enter');
@@ -218,7 +225,7 @@ test('after an import, a guide builds the backbone before any card is moved', as
   await expect(guide(page).locator('.tour-btn-next')).toHaveText(/Got it/);
   await guide(page).locator('.tour-btn-next').click();
   await expect(guide(page)).toBeHidden();
-  await expect(page.locator('.controls-right')).toBeVisible();
+  await expect(page.locator('.panel-tabs')).toBeVisible();
   await expect(page.locator('.selection-toolbar')).toBeHidden();
 
   expect(await stepNamesOf(page)).toEqual(['Browse menu', 'Pay', '', '', '', '']);

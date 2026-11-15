@@ -543,7 +543,34 @@ const onSliceControlClick = (e) => {
 
 const onWheel = (e) => {
     if (!_active) return;
+    // A guide that asks for typing leaves the story map free to scroll and zoom: the highlight follows
+    if (_options.typing) return;
     e.preventDefault();
+};
+
+// In such a guide the story map can be zoomed, with the zoom buttons or the wheel, and scrolled.
+// Zooming changes the style of the story map and scrolling moves it, so watch for both and move
+// the highlight and tooltip to match.
+let _followFrame = null;
+let _zoomWatcher = null;
+const follow = () => {
+    if (_followFrame) return;
+    _followFrame = requestAnimationFrame(() => {
+        _followFrame = null;
+        if (_active) positionCurrentStep();
+    });
+};
+const startFollowing = () => {
+    _zoomWatcher = new MutationObserver(follow);
+    _zoomWatcher.observe($('storyMap'), { attributes: true, attributeFilter: ['style'] });
+    $('storyMapWrapper')?.addEventListener('scroll', follow);
+};
+const stopFollowing = () => {
+    _zoomWatcher?.disconnect();
+    _zoomWatcher = null;
+    $('storyMapWrapper')?.removeEventListener('scroll', follow);
+    cancelAnimationFrame(_followFrame);
+    _followFrame = null;
 };
 
 // One finger would scroll the story map out from under the highlight and two would zoom it, so it
@@ -612,6 +639,7 @@ export const runSteps = (steps, options = {}) => {
     window.addEventListener('touchmove', onTouchMove, { passive: false, capture: true });
     $('storyMapWrapper')?.addEventListener('scroll', onMapScroll);
     window.addEventListener('resize', onResize);
+    if (options.typing) startFollowing();
 
     buildProgressDots();
     renderStep();
@@ -637,6 +665,7 @@ export const endTour = () => {
     window.removeEventListener('wheel', onWheel);
     window.removeEventListener('touchmove', onTouchMove, { capture: true });
     $('storyMapWrapper')?.removeEventListener('scroll', onMapScroll);
+    stopFollowing();
     _heldScroll = null;
     window.removeEventListener('resize', onResize);
 

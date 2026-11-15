@@ -10688,6 +10688,14 @@ body.tour-typing .controls-right {
     visibility: hidden;
 }
 
+/* The zoom buttons stay, and work: a big import is small on the screen */
+@media (min-width: 601px) and (pointer: fine) {
+    body.tour-typing .controls-right .zoom-controls {
+        visibility: visible;
+        pointer-events: auto;
+    }
+}
+
 /* Disable slice gutter controls during tour so adding, reordering or closing slices can't distort the steps */
 body.tour-active .btn-add-slice,
 body.tour-active .slice-drag-handle,

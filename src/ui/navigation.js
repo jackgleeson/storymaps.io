@@ -212,9 +212,12 @@ export const zoomToFit = () => {
 
 // Big enough to type on, scrolled back to the start of the story map: full size when the steps
 // fit the window at that size, a little smaller when that brings them all into view, and never
-// as small as a wide story map gets when it is fitted to the window
+// as small as a wide story map gets when it is fitted to the window. Does nothing when the
+// story map is already at least that big.
 const TYPING_ZOOM_MIN = 0.85;
 export const zoomForTyping = () => {
+    // Already big enough, perhaps because someone zoomed in: leave it as they set it
+    if (zoomLevel >= TYPING_ZOOM_MIN) return;
     const wrapper = _dom.storyMapWrapper;
     const stepsWidth = 80 + _state.columns.length * 190;
     const fit = Math.floor(((wrapper.clientWidth - 68) / stepsWidth) * 20) / 20;
