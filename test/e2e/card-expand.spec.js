@@ -11,8 +11,53 @@ test('the expanded card title is one line high, and grows when the title wraps',
   const lineHeight = await title.evaluate(t => parseFloat(getComputedStyle(t).lineHeight));
   await expect.poll(() => title.evaluate(t => t.offsetHeight)).toBeLessThan(lineHeight * 1.5);
 
-  await title.fill('A long card title that keeps going until it has to wrap onto a second line of the expanded card');
+  // Longer than can be typed, as a title from an import can be
+  await title.evaluate((box) => {
+    box.value = 'A long card title that keeps going until it has to wrap onto a second line of the expanded card';
+    box.dispatchEvent(new Event('input', { bubbles: true }));
+  });
   await expect.poll(() => title.evaluate(t => t.offsetHeight)).toBeGreaterThan(lineHeight * 1.5);
+});
+
+test('a title typed in the expanded card stops at the same length as on the map', async ({ page, createMap }) => {
+  await openMap(page, await createMap());
+  const card = page.locator('.slice-container .story-card').first();
+  await card.hover();
+  await card.locator('.btn-expand').click();
+  const title = page.locator('#cardExpandName');
+
+  // Typed or pasted, it stops at 38 characters, and the box flashes when there's no room left
+  await title.click();
+  await title.press('ControlOrMeta+a');
+  await page.keyboard.insertText('Choose the target tenant, as an admin I want to pick the right one');
+  await expect(title).toHaveValue('Choose the target tenant, as an admin ');
+  await page.keyboard.press('x');
+  await expect(title).toHaveClass(/limit-hit/);
+  await expect(title).toHaveValue('Choose the target tenant, as an admin ');
+  await page.keyboard.press('Escape');
+  await expect(card.locator('textarea.story-text')).toHaveValue('Choose the target tenant, as an admin ');
+});
+
+test('a longer title from an import shows in full in the expanded card, and can be shortened', async ({ page, createMap }) => {
+  const long = 'Choose the target tenant, as an admin I want to pick the right one';
+  await openMap(page, await createMap());
+  const card = page.locator('.slice-container .story-card').first();
+  // As a file or the CLI would bring it in: the card on the map holds what it is given
+  await card.locator('textarea.story-text').evaluate((box, value) => {
+    box.value = value;
+    box.dispatchEvent(new Event('input', { bubbles: true }));
+  }, long);
+  await card.hover();
+  await card.locator('.btn-expand').click();
+  const title = page.locator('#cardExpandName');
+  await expect(title).toHaveValue(long);
+
+  await title.click();
+  await title.press('End');
+  await title.press('Backspace');
+  await expect(title).toHaveValue(long.slice(0, -1));
+  await page.keyboard.press('x');
+  await expect(title).toHaveValue(long.slice(0, -1));
 });
 
 const openCard = async (card) => {

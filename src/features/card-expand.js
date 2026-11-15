@@ -7,7 +7,7 @@ import { isMapEditable } from '/src/core/lock.js';
 import * as log from '/src/core/log.js';
 import { getProvider } from '/src/core/yjs.js';
 import { showToast } from '/src/core/modals.js';
-import { CARD_COLORS, STATUS_OPTIONS, el, isValidUrl } from '/src/core/constants.js';
+import { CARD_COLORS, STATUS_OPTIONS, TITLE_MAX_LENGTH, el, isValidUrl } from '/src/core/constants.js';
 import { createPointsInput, createTagEditor, markLegendSwatch, patchCardForItem, sliceClosedLabel } from '/src/ui/ui.js';
 import { STORY_LINES, addLines, enterAction } from '/src/core/story-lines.js';
 
@@ -543,6 +543,17 @@ export const closeExpandViaBack = () => {
 };
 
 export const initListeners = () => {
+    // The same limit as the title on the card, so a title is the same length wherever it's typed.
+    // The rest belongs in the body underneath. A longer title from before the limit, or from an
+    // import, still shows in full here, and can be shortened but not added to.
+    dom.cardExpandName.maxLength = TITLE_MAX_LENGTH;
+    dom.cardExpandName.addEventListener('keydown', (e) => {
+        if (dom.cardExpandName.value.length < TITLE_MAX_LENGTH || dom.cardExpandName.readOnly) return;
+        if (e.ctrlKey || e.metaKey || e.altKey || (e.key.length !== 1 && e.key !== 'Enter')) return;
+        dom.cardExpandName.classList.add('limit-hit');
+        setTimeout(() => dom.cardExpandName.classList.remove('limit-hit'), 400);
+    });
+
     dom.cardExpandName.addEventListener('input', () => {
         if (!_expandedItem) return;
         _expandedItem.name = dom.cardExpandName.value;

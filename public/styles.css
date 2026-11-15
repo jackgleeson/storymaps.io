@@ -2882,7 +2882,8 @@ body.dragging-cards input {
 }
 
 .story-text.limit-hit,
-.step-text.limit-hit {
+.step-text.limit-hit,
+.card-expand-name.limit-hit {
     animation: shake 0.3s ease;
     box-shadow: 0 0 0 1.5px rgba(239, 68, 68, 0.5);
     border-radius: 2px;
