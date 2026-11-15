@@ -691,5 +691,24 @@
         "y": 80.9
       }
     ]
+  },
+  "find-your-story-maps/share-map": {
+    "width": 210,
+    "height": 185,
+    "callouts": []
+  },
+  "find-your-story-maps/share-project": {
+    "width": 210,
+    "height": 217,
+    "callouts": [
+      {
+        "x": 80.2,
+        "y": 36.9
+      },
+      {
+        "x": 80.2,
+        "y": 51.6
+      }
+    ]
   }
 }
