@@ -326,8 +326,10 @@ export const hasContent = () => {
     return false;
 };
 
+// Asked before an import replaces a story map that has something on it. The server makes a
+// backup first unless one it already keeps matches the story map, so the question says so.
 export const confirmOverwrite = async () => {
-    return !hasContent() || await showConfirm('This will replace your current story map. Continue?');
+    return !hasContent() || await showConfirm('This will replace your current story map. Continue?\n\nIf a backup of it doesn\'t already exist, an automatic one will be created, so you can undo the import from Menu → Backups.');
 };
 
 export const createColumn = (name = '', color = null, url = null, hidden = false, status = null, points = null, tags = [], body = '') => ({ id: generateId(), name, body, color, url, hidden, status, points, tags });

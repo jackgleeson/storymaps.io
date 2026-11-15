@@ -146,7 +146,7 @@ const restoreBackup = async (backupId) => {
         await showAlert('Cannot restore while the map is locked.');
         return;
     }
-    if (!await showConfirm('Restore this backup? A safety backup of the current state will be created first.')) return;
+    if (!await showConfirm('Restore this backup?\n\nIf a backup of the story map as it is now doesn\'t already exist, an automatic one will be created first, so you can undo the restore.')) return;
     try {
         // Create safety backup
         await fetch(`/api/backups/${state.mapId}`, {
