@@ -134,10 +134,13 @@ const renderList = () => {
         const link = el('a', `recent-row recent-row-${e.kind}`, { href: entryPath(e) });
         link.append(...entryParts(e, now));
         const remove = el('button', 'recent-remove', { type: 'button', html: ICONS.cross, title: 'Remove from this list', ariaLabel: `Remove ${label(e)} from recent maps` });
-        remove.addEventListener('click', () => {
+        remove.addEventListener('click', async () => {
             // Keep the keyboard in the list, on the row that takes this one's place
             const row = remove.closest('li');
             const next = (row.nextElementSibling || row.previousElementSibling)?.querySelector('a').getAttribute('href');
+            // The cross sits beside the row, so it asks first in case it was clicked by accident
+            const what = e.kind === 'project' ? 'project' : 'map';
+            if (!await showConfirm(`Remove "${label(e)}" from recent maps?\n\nThe ${what} isn't deleted, and still opens from its link.`)) return;
             removeFromList(e);
             if (next) _pop?.querySelector(`a[href="${CSS.escape(next)}"]`)?.focus();
         });

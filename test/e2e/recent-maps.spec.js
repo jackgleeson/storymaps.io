@@ -101,7 +101,16 @@ test('one map can be removed, and a map that no longer exists leaves the list', 
   await page.goto('/');
   await homeLine(page).click();
   await list(page).locator('.recent-item').filter({ hasText: 'Loyalty' }).hover();
+  // The cross asks first. Cancel keeps the map in the list, and the list stays open.
   await list(page).getByRole('button', { name: 'Remove Loyalty from recent maps' }).click();
+  const dialog = page.locator('.dialog-modal');
+  await expect(page.locator('.dialog-message')).toContainText('Remove "Loyalty" from recent maps?');
+  await dialog.getByRole('button', { name: 'Cancel' }).click();
+  await expect(dialog).toBeHidden();
+  await expect(rows(page)).toHaveText(['Loyalty', 'Ordering']);
+
+  await list(page).getByRole('button', { name: 'Remove Loyalty from recent maps' }).click();
+  expect(await acceptDialog(page)).toContain("The map isn't deleted, and still opens from its link.");
   await expect(rows(page)).toHaveText(['Ordering']);
 
   // A link to a map the server doesn't have. A new ID each run, as opening one leaves it known to
