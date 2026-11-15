@@ -13,6 +13,8 @@ import * as tour from '/src/features/tour.js';
 import { zoomToFit, zoomForTyping } from '/src/ui/navigation.js';
 
 export const IMPORTED_SLICE = 'Imported';
+// The page that shows the parts of a story map, for people who arrive from a tracker without the idea
+const BACKBONE_DOCS = '/docs/what-is-a-user-story-map';
 
 // What the story map already has. A part of the backbone that is named needs no step.
 export const backboneNeeds = (map) => {
@@ -51,7 +53,8 @@ const sliceContainers = () => {
 // The steps to show, for a story map that needs these parts
 export const guideSteps = (needs) => {
     const count = needs.cards === 1 ? '1 imported card is' : `${needs.cards} imported cards are`;
-    const first = `Your ${count} safe in the <strong>${IMPORTED_SLICE}</strong> slice. Before you move any, build the backbone they will hang from.<br><br>`;
+    const first = `Your ${count} safe in the <strong>${IMPORTED_SLICE}</strong> slice. Before you move any, build the backbone they will hang from. `
+        + `If you don't know what a backbone is, <a href="${BACKBONE_DOCS}" target="_blank" rel="noopener">catch up here</a>.<br><br>`;
     const backbone = [
         needs.user && {
             target: '.users-row .story-card',

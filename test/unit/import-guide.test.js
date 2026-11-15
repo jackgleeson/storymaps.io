@@ -27,6 +27,9 @@ describe('the guide after a tracker import', () => {
     const [first, second] = guideSteps(backboneNeeds(imported()));
     assert.match(first.body, /^Your 2 imported cards are safe in the <strong>Imported<\/strong> slice\. Before you move any, build the backbone/);
     assert.doesNotMatch(second.body, /imported cards are safe/);
+    // and links to the docs for anyone who doesn't know what a backbone is, in a new tab so the guide stays
+    assert.match(first.body, /If you don't know what a backbone is, <a href="\/docs\/what-is-a-user-story-map" target="_blank" rel="noopener">catch up here<\/a>\./);
+    assert.doesNotMatch(second.body, /catch up here/);
     assert.match(guideSteps(backboneNeeds(imported({ pile: ['One'] })))[0].body, /^Your 1 imported card is safe/);
   });
 

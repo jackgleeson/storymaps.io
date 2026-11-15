@@ -176,6 +176,9 @@ test('after an import, a guide builds the backbone before any card is moved', as
   // Who it's for: the red card is lit and ready to type in
   await expect(guide(page).locator('.tour-tooltip-title')).toHaveText('Who is it for?');
   await expect(guide(page).locator('.tour-tooltip-body')).toContainText('Your 6 imported cards are safe in the Imported slice');
+  const docsLink = guide(page).locator('.tour-tooltip-body a', { hasText: 'catch up here' });
+  await expect(docsLink).toHaveAttribute('href', '/docs/what-is-a-user-story-map');
+  await expect(docsLink).toHaveAttribute('target', '_blank');
   await expect(guide(page).locator('.tour-progress-dot')).toHaveCount(4);
   await expect(page.locator('.users-row .story-card .story-text').first()).toBeFocused();
   // The tooltip sits to the right of the lit card, clear of the rows below it
@@ -188,6 +191,10 @@ test('after an import, a guide builds the backbone before any card is moved', as
   await page.locator('.steps-row .step').nth(1).click({ modifiers: ['Shift'], position: { x: 6, y: 20 }, force: true });
   await expect(page.locator('.selection-toolbar')).toBeHidden();
   await expect(page.locator('.steps-row .step .btn-options').first()).toBeHidden();
+  await page.locator('.users-row .story-card').first().hover();
+  await expect(page.locator('.users-row .story-card .btn-expand').first()).toBeHidden();
+  await page.locator('.users-row .story-card').first().dblclick({ position: { x: 6, y: 6 }, force: true });
+  await expect(page.locator('#cardExpandModal')).toBeHidden();
   await expect(page.locator('.controls-right')).toBeHidden();
   await page.locator('.users-row .story-card .story-text').first().click();
   await page.keyboard.type('Customer');

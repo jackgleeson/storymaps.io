@@ -487,6 +487,8 @@ const keepTabInCard = (e) => {
 
 // focus: false leaves the title unfocused, so a card opened from a link doesn't bring up a phone keyboard
 export const openExpandModal = (item, { readOnly = false, focus = true } = {}) => {
+    // A guide that asks for typing lights the card itself: the big view of it stays shut
+    if (document.body.classList.contains('tour-typing')) return;
     // If a previous close is still waiting for its popstate, absorb it now
     if (_poppingExpandState) {
         _poppingExpandState = false;

@@ -10522,6 +10522,17 @@ html.dark-mode .import-preview-header {
     font-weight: 600;
 }
 
+.tour-tooltip-body a {
+    color: #0f766e;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.tour-tooltip-body a:hover {
+    color: #115e59;
+}
+
 /* Progress dots */
 .tour-tooltip-progress {
     display: flex;
@@ -10663,7 +10674,8 @@ body.tour-active .controls-right {
     pointer-events: none;
 }
 
-/* A guide that asks for typing lights a card to type on: its menu and the selection bar stay out of the way */
+/* A guide that asks for typing lights a card to type on: its menu, its big view and the selection bar stay out of the way */
+body.tour-typing .btn-expand,
 body.tour-typing .btn-options,
 body.tour-typing .options-menu,
 body.tour-typing .selection-toolbar,
