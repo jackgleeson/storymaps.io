@@ -121,3 +121,39 @@ test('Asana import treats a task with subtasks as a group and leaves the others 
   await expect(rows.locator('.import-tag')).toHaveText(['parent-01', 'parent-01']);
   await expect(page.locator('#asanaImportCount')).toHaveText('Importing 3 cards: 1 parent task and 2 tasks');
 });
+
+test('tracker details are remembered in the browser for next time, but never the API token', async ({ page, createMap }) => {
+  await openMap(page, await createMap());
+  await page.locator('#menuBtn').click();
+  await page.locator('#importSubmenuTrigger').click();
+  await page.locator('#importSubmenu [data-integration="jira"]').click();
+  await page.locator('#importJiraBtn').click();
+  await page.locator('#jiraImportInstanceUrl').fill('acme.atlassian.net');
+  await page.locator('#jiraImportProjectKey').fill('SHOP');
+  await page.locator('#jiraImportEmail').fill('me@example.com');
+  await page.locator('#jiraImportToken').fill('secret-token');
+
+  const saved = await page.evaluate(() => localStorage.getItem('trackerDetails'));
+  expect(JSON.parse(saved)).toEqual({ 'jira.instanceUrl': 'acme.atlassian.net', 'jira.projectKey': 'SHOP', 'jira.email': 'me@example.com' });
+  expect(await page.evaluate(() => JSON.stringify(localStorage))).not.toContain('secret-token');
+
+  // After a reload the details are back, in the import and the export windows, and the token is not
+  await page.reload();
+  await page.locator('.slice-container').first().waitFor();
+  await expect(page.locator('#jiraImportInstanceUrl')).toHaveValue('acme.atlassian.net');
+  await expect(page.locator('#jiraImportProjectKey')).toHaveValue('SHOP');
+  await expect(page.locator('#jiraImportEmail')).toHaveValue('me@example.com');
+  await expect(page.locator('#jiraImportToken')).toHaveValue('');
+  await expect(page.locator('#jiraProxyInstanceUrl')).toHaveValue('acme.atlassian.net');
+  await expect(page.locator('#jiraProxyEmail')).toHaveValue('me@example.com');
+  await expect(page.locator('#jiraCsvInstanceUrl')).toHaveValue('acme.atlassian.net');
+  await expect(page.locator('#jiraProxyToken')).toHaveValue('');
+
+  // Emptying a field forgets it
+  await page.locator('#menuBtn').click();
+  await page.locator('#importSubmenuTrigger').click();
+  await page.locator('#importSubmenu [data-integration="jira"]').click();
+  await page.locator('#importJiraBtn').click();
+  await page.locator('#jiraImportEmail').fill('');
+  expect(JSON.parse(await page.evaluate(() => localStorage.getItem('trackerDetails')))).toEqual({ 'jira.instanceUrl': 'acme.atlassian.net', 'jira.projectKey': 'SHOP' });
+});

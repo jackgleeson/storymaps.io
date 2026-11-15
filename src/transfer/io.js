@@ -15,6 +15,7 @@ import * as yjs from '/src/core/yjs.js';
 import * as log from '/src/core/log.js';
 import * as exportsMod from '/src/transfer/exports.js';
 import { legendToAdd } from '/src/transfer/import-helpers.js';
+import { initTrackerDetails } from '/src/transfer/tracker-details.js';
 import * as jiraImportsMod from '/src/transfer/jira-imports.js';
 import * as asanaImportsMod from '/src/transfer/asana-imports.js';
 import * as phabImportsMod from '/src/transfer/phabricator-imports.js';
@@ -26,6 +27,7 @@ export const init = (deps) => {
     _deps = deps;
 
     exportsMod.init({ sanitizeFilename });
+    initTrackerDetails();
 
     const onImportComplete = async (data, { mode = 'replace' } = {}) => {
         const isFromWelcome = !state.mapId;

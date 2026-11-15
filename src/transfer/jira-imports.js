@@ -58,7 +58,6 @@ export const hideJiraImportModal = () => {
     // Clear CSV state
     dom.jiraCsvFileInput.value = '';
     dom.jiraCsvFileInput._droppedFile = null;
-    dom.jiraCsvInstanceUrl.value = '';
     dom.jiraCsvValidationError.classList.add('hidden');
     dom.jiraCsvImportParseBtn.disabled = true;
     dom.jiraCsvDropzone.querySelector('span').textContent = 'Drop .csv file here or click to browse';
@@ -365,7 +364,6 @@ export const showJiraCsvImportModal = () => {
     dom.jiraImportStage2.classList.add('hidden');
     dom.jiraImportTitle.textContent = 'Import from Jira CSV';
     dom.jiraCsvFileInput.value = '';
-    dom.jiraCsvInstanceUrl.value = '';
     dom.jiraCsvValidationError.classList.add('hidden');
     dom.jiraCsvImportParseBtn.disabled = true;
     dom.jiraCsvDropzone.querySelector('span').textContent = 'Drop .csv file here or click to browse';

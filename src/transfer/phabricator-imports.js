@@ -73,10 +73,8 @@ export const showPhabCsvImportModal = () => {
 
 export const hidePhabImportModal = () => {
     dom.phabImportModal.classList.remove('visible');
-    // Clear API credentials
-    if (dom.phabImportInstanceUrl) dom.phabImportInstanceUrl.value = '';
+    // Clear the API token. The site address and tags are remembered for next time.
     if (dom.phabImportToken) dom.phabImportToken.value = '';
-    if (dom.phabImportProjectTags) dom.phabImportProjectTags.value = '';
     // Clear CSV state
     dom.phabCsvFileInput.value = '';
     dom.phabCsvFileInput._droppedFile = null;
