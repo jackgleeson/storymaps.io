@@ -82,10 +82,10 @@ describe('buildStorymapFromImport', () => {
     assert.equal(map.steps.length, 2);
   });
 
-  test('puts every card in a slice called Imported, under an empty MVP slice, with a user, an activity and a legend', () => {
+  test('puts every card in a slice called Imported, under an empty slice with no name, with a user, an activity and a legend', () => {
     const map = buildStorymapFromImport([epic('A-1', 'E', [story('A-2', 'S')])], 'Shop', buildUrl);
     assert.equal(map.name, 'Shop Import');
-    assert.deepEqual(map.slices.map(s => s.name), ['MVP', 'Imported']);
+    assert.deepEqual(map.slices.map(s => s.name), ['', 'Imported']);
     assert.deepEqual(map.slices[0].stories, [[], []]);
     assert.equal(map.users[0].length, 1);
     assert.equal(map.activities[0].length, 1);

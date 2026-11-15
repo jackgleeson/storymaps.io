@@ -311,7 +311,8 @@ const GROUP_COLOR = CARD_COLORS.lime;
 const ITEM_COLOR = CARD_COLORS.yellow;
 
 // Every group and issue that is ticked becomes a card, in a slice called Imported, with an
-// empty MVP slice above it to drag the first release into. A group's
+// empty slice above it to drag the first release into. That slice has no name: the first
+// release is theirs to name, and not everyone calls it an MVP. A group's
 // card comes first, in its own colour, then its issues, tagged to match. Issues that belong to
 // no group come last, with no tag. The legend says which colour is which.
 export const buildStorymapFromImport = (epics, projectName, buildUrlFn, opts = {}) => {
@@ -370,7 +371,7 @@ export const buildStorymapFromImport = (epics, projectName, buildUrlFn, opts = {
         users,
         activities,
         slices: [
-            { name: 'MVP', stories: Array.from({ length: cols }, () => []) },
+            { name: '', stories: Array.from({ length: cols }, () => []) },
             { name: 'Imported', stories: grid },
         ],
         ...(groupCards > 0 && { legend: [

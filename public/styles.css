@@ -10674,6 +10674,11 @@ body.tour-active .controls-right {
     pointer-events: none;
 }
 
+/* The last step of a guide leaves the app free to use: the tooltip waits in a corner, under any window the app opens */
+.tour-tooltip.tour-tooltip-free {
+    z-index: 1500;
+}
+
 /* A guide that asks for typing lights a card to type on: its menu, its big view and the selection bar stay out of the way */
 body.tour-typing .btn-expand,
 body.tour-typing .btn-options,

@@ -345,6 +345,18 @@ const updateProgressDots = () => {
 const positionCurrentStep = () => {
     const step = _steps[_step];
 
+    if (step.free) {
+        // Top right, under the header: clear of the backbone, which starts at the left
+        const tt = tooltip();
+        tt.removeAttribute('data-arrow');
+        const header = document.querySelector('.header')?.getBoundingClientRect();
+        const width = tt.getBoundingClientRect().width;
+        tt.style.top = `${Math.max(MARGIN, (header?.bottom ?? 0) + MARGIN)}px`;
+        tt.style.left = `${Math.max(MARGIN, window.innerWidth - width - MARGIN * 2)}px`;
+        _heldScroll = null;
+        return;
+    }
+
     // Scroll target into view if needed
     let rects = resolveTargetRects(step.target);
 
@@ -387,6 +399,19 @@ const positionCurrentStep = () => {
     _heldScroll = step.holdScroll && wrapper ? { left: wrapper.scrollLeft, top: wrapper.scrollTop - $('storyMap').offsetTop } : null;
 };
 
+// A free step explains what to do next and gets out of the way: nothing is dimmed or lit, the
+// story map and everything on it work as usual, and the tooltip waits in a corner, under any
+// window the app opens. Used for the last step of a guide, where the work begins.
+const isFree = () => !!_steps[_step]?.free;
+const setFree = (free) => {
+    document.body.classList.toggle('tour-active', !free);
+    document.body.classList.toggle('tour-typing', !free && !!_options.typing);
+    backdrop().classList.toggle('visible', !free);
+    spotlight().classList.toggle('visible', !free);
+    tooltip().classList.toggle('tour-tooltip-free', free);
+    if (free) document.querySelectorAll('.tour-spotlight-extra').forEach(el => el.remove());
+};
+
 const renderStep = () => {
     const step = _steps[_step];
     const tt = tooltip();
@@ -416,6 +441,7 @@ const renderStep = () => {
     }
 
     updateProgressDots();
+    setFree(!!step.free);
 
     // Run onEnter hook before positioning (it may change the DOM)
     step.onEnter?.();
@@ -431,7 +457,7 @@ const renderStep = () => {
 const leaveField = () => {
     const active = document.activeElement;
     if (active && $('storyMap')?.contains(active)) active.blur();
-    if (_options.typing) _clearSelection?.();
+    if (_options.typing && !isFree()) _clearSelection?.();
 };
 
 const resolveTargetRects = (target) => {
@@ -504,8 +530,18 @@ const onTypingKey = (e) => {
     } else if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
         e.stopPropagation();
-        const fields = _steps[_step].fields ? [...document.querySelectorAll(_steps[_step].fields)] : [];
-        const nextField = fields[fields.indexOf(e.target) + 1];
+        const step = _steps[_step];
+        const fieldsNow = () => (step.fields ? [...document.querySelectorAll(step.fields)] : []);
+        const at = fieldsNow().indexOf(e.target);
+        // Enter on an empty field means there is no more to add: move on
+        if (at === -1 || !e.target.value.trim()) return next();
+        let nextField = fieldsNow()[at + 1];
+        // After the last field, a step can add another, so the list is as long as it needs to be
+        if (!nextField && step.addField) {
+            e.target.blur();
+            step.addField();
+            nextField = fieldsNow()[at + 1];
+        }
         if (!nextField) return next();
         // The next field may be off the edge of the screen: bring it in, and the highlight with it
         nextField.scrollIntoView({ block: 'nearest', inline: 'nearest' });
@@ -515,7 +551,7 @@ const onTypingKey = (e) => {
 };
 
 const onKeyDown = (e) => {
-    if (!_active) return;
+    if (!_active || isFree()) return;
     if (_options.typing && e.target.matches?.('textarea, input')) return onTypingKey(e);
     if (e.key === 'ArrowRight' || e.key === 'Enter') {
         e.preventDefault();
@@ -534,7 +570,7 @@ const onKeyDown = (e) => {
 
 // CSS blocks pointer clicks on slice gutter controls; this also blocks keyboard activation
 const onSliceControlClick = (e) => {
-    if (!_active) return;
+    if (!_active || isFree()) return;
     if (e.target.closest?.('.btn-add-slice, .btn-slice-menu')) {
         e.preventDefault();
         e.stopPropagation();
@@ -544,7 +580,7 @@ const onSliceControlClick = (e) => {
 const onWheel = (e) => {
     if (!_active) return;
     // A guide that asks for typing leaves the story map free to scroll and zoom: the highlight follows
-    if (_options.typing) return;
+    if (_options.typing || isFree()) return;
     e.preventDefault();
 };
 
@@ -576,7 +612,7 @@ const stopFollowing = () => {
 // One finger would scroll the story map out from under the highlight and two would zoom it, so it
 // holds still, as it does for the wheel. Cards can still be dragged, so only a pinch is stopped here.
 const onTouchMove = (e) => {
-    if (!_active || tooltip().contains(e.target)) return;
+    if (!_active || isFree() || tooltip().contains(e.target)) return;
     e.preventDefault();
     if (e.touches.length > 1) e.stopPropagation();
 };
@@ -649,10 +685,12 @@ export const endTour = () => {
     if (!_active) return;
     leaveField();
     _steps[_step].onLeave?.();
+    const endedFree = isFree();
     _active = false;
     if (_options.markCompleted) localStorage.setItem('tourCompleted', 'true');
-    _clearSelection?.();
+    if (!endedFree) _clearSelection?.();
     document.body.classList.remove('tour-active', 'tour-typing');
+    tooltip().classList.remove('tour-tooltip-free');
     backdrop().classList.remove('visible', 'tour-backdrop-dim');
     backdrop().style.clipPath = '';
     backdrop().style.opacity = '';
@@ -675,8 +713,9 @@ export const endTour = () => {
     }
 
     // The steps scroll the story map to each part in turn. Fit it to the window again, which
-    // scrolls back to where it opened, so the tour ends on the whole story map.
-    _zoomToFit?.();
+    // scrolls back to where it opened, so the tour ends on the whole story map. A free step
+    // leaves people working, so the view stays as they have it.
+    if (!endedFree) _zoomToFit?.();
 
     const onEnd = _options.onEnd;
     _steps = STEPS;

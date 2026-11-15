@@ -8,13 +8,14 @@
 // import from any of them, by API or by file. To use it, call start() once the imported cards
 // are on the story map.
 
-import { state } from '/src/core/state.js';
+import { state, createColumn, pushUndo } from '/src/core/state.js';
+import { CARD_COLORS } from '/src/core/constants.js';
 import * as tour from '/src/features/tour.js';
 import { zoomToFit, zoomForTyping } from '/src/ui/navigation.js';
 
 export const IMPORTED_SLICE = 'Imported';
-// The page that shows the parts of a story map, for people who arrive from a tracker without the idea
-const BACKBONE_DOCS = '/docs/what-is-a-user-story-map';
+// The guide to the backbone, for people who arrive from a tracker without the idea
+const BACKBONE_DOCS = '/docs/define-the-story-map-backbone';
 
 // What the story map already has. A part of the backbone that is named needs no step.
 export const backboneNeeds = (map) => {
@@ -30,6 +31,7 @@ export const backboneNeeds = (map) => {
 };
 
 const STEP_FIELDS = '.steps-row .step:not(.phantom-step) .step-text';
+let _renderAndSave = null;   // redraws and saves the story map after the guide changes it
 
 // A big import is fitted to the window, which leaves the cards too small to type on. So the
 // backbone is shown big enough to type on, from the start of the story map, and the last step
@@ -40,14 +42,55 @@ const show = (zoom) => () => {
     tour.reposition();
 };
 
-// The slices the cards move between: the pile, and the release above it
-const sliceContainers = () => {
-    const pile = state.slices.find(slice => slice.name === IMPORTED_SLICE);
-    const containers = [...document.querySelectorAll('.slice-container')];
-    const pileEl = pile && document.querySelector(`.story-column[data-slice-id="${pile.id}"]`)?.closest('.slice-container');
-    if (!pileEl) return containers.slice(0, 2);
-    const above = containers[containers.indexOf(pileEl) - 1];
-    return above ? [above, pileEl] : [pileEl];
+const isStep = (column) => !column.hidden && !column.partialMapId;
+const hasName = (item) => !!(item.name || '').trim();
+
+// Add a blank step at the end of the backbone, so the journey can be as long as it needs to be
+export const addStep = (map) => {
+    const column = createColumn('', CARD_COLORS.green);
+    map.columns.push(column);
+    map.users[column.id] = [];
+    map.activities[column.id] = [];
+    map.slices.forEach(slice => { slice.stories[column.id] = []; });
+    return column;
+};
+
+// Make the backbone exactly the steps that were named. The import makes a column for every pile
+// of cards, so there are usually spare ones. The unnamed steps go, and the pile is dealt again
+// under the named ones, in the same order: where a card sits in the pile means nothing yet.
+// Anything else under an unnamed step moves to the first named one, so nothing is lost.
+// With no step named, or none spare, nothing changes. Returns whether anything did.
+export const fitBackbone = (map) => {
+    const steps = map.columns.filter(isStep);
+    const named = steps.filter(hasName);
+    const spare = steps.filter(step => !hasName(step));
+    if (!named.length || !spare.length) return false;
+    const first = named[0];
+
+    // The pile, read as it was dealt: along each row from the left, then the next row down
+    const pile = map.slices.find(slice => slice.name === IMPORTED_SLICE);
+    if (pile) {
+        const cells = steps.map(step => pile.stories[step.id] || []);
+        const rows = Math.max(0, ...cells.map(cell => cell.length));
+        const cards = [];
+        for (let row = 0; row < rows; row++) cells.forEach(cell => { if (cell[row]) cards.push(cell[row]); });
+        steps.forEach(step => { pile.stories[step.id] = []; });
+        cards.forEach((card, i) => pile.stories[named[i % named.length].id].push(card));
+    }
+
+    spare.forEach(step => {
+        // A user or an activity that was named under a spare step keeps its place at the start
+        [map.users, map.activities].forEach(row => {
+            (row[step.id] || []).filter(hasName).forEach(card => row[first.id].push(card));
+            delete row[step.id];
+        });
+        map.slices.forEach(slice => {
+            (slice.stories[step.id] || []).filter(hasName).forEach(card => slice.stories[first.id].push(card));
+            delete slice.stories[step.id];
+        });
+    });
+    map.columns = map.columns.filter(column => !spare.includes(column));
+    return true;
 };
 
 // The steps to show, for a story map that needs these parts
@@ -78,16 +121,28 @@ export const guideSteps = (needs) => {
             focus: STEP_FIELDS,
             fields: STEP_FIELDS,
             onEnter: show(zoomForTyping),
+            // Enter on the last step adds another; moving on keeps only the steps that were named
+            addField: () => {
+                addStep(state);
+                _renderAndSave?.();
+            },
+            onLeave: () => {
+                const steps = state.columns.filter(isStep);
+                if (!steps.some(hasName) || steps.every(hasName)) return;
+                pushUndo();
+                fitBackbone(state);
+                _renderAndSave?.();
+            },
             title: 'What steps do they take?',
-            body: 'Name the green cards from left to right, in the order the user takes them, such as <strong>Browse menu</strong>, <strong>Pay</strong>, <strong>Collect order</strong>. Enter moves to the next one. Leave any spare steps blank.',
+            body: 'Name the green cards from left to right, in the order the user takes them, such as <strong>Browse menu</strong>, <strong>Pay</strong>, <strong>Collect order</strong>. Enter moves to the next one, and adds another after the last. Steps you leave blank are taken away when you move on.',
             icon: '\u{1F9ED}',
         },
     ].filter(Boolean);
     if (backbone.length) backbone[0] = { ...backbone[0], body: first + backbone[0].body };
 
+    // The last step dims nothing: this is where the work starts, so cards can be dragged, opened and selected
     return [...backbone, {
-        target: sliceContainers,
-        clipRight: '.step:not(.phantom-step)',
+        free: true,
         onEnter: show(zoomToFit),
         title: 'Now place the cards',
         body: `${backbone.length ? 'That is the backbone, so every card has somewhere to go. ' : 'The backbone is already here, so every card has somewhere to go. '}`
@@ -101,7 +156,8 @@ const dialogOpen = () => !!document.querySelector('.modal-overlay.visible');
 // Start the guide for the story map that is open. Does nothing when no imported cards are
 // waiting, or while the tour or another guide is running. A dialog that opens with the story
 // map, such as the one that asks for a name, goes first: the guide waits for it to close.
-export const start = () => {
+export const start = ({ renderAndSave } = {}) => {
+    _renderAndSave = renderAndSave || null;
     const mapId = state.mapId;
     if (!backboneNeeds(state).cards || tour.isActive()) return;
     let tries = 0;

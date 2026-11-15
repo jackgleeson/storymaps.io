@@ -53,7 +53,9 @@ export const init = (deps) => {
             }
 
             if (isAppend) {
-                appendImport(data);
+                // A story map that is already open has its own slices: it needs no empty one for a first release
+                const isEmpty = (slice) => !slice.name && slice.stories.every(cards => !cards.length);
+                appendImport({ ...data, slices: data.slices.filter(slice => !isEmpty(slice)) });
                 // Legend entries are saved by ID, like cards
                 state.legend.push(...legendToAdd(data.legend, state.legend).map(entry => ({ id: generateId(), ...entry })));
             } else {
@@ -68,7 +70,7 @@ export const init = (deps) => {
                 _deps.subscribeToMap(state.mapId);
             }
             // Every tracker import ends here, so the guide follows all of them
-            importGuide.start();
+            importGuide.start({ renderAndSave: _deps.renderAndSave });
         } catch (e) {
             console.error('Import failed', e);
             await showAlert('Failed to import: Invalid data format');
