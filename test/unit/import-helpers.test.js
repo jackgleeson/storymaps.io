@@ -12,7 +12,7 @@ const story = (key, summary, extra = {}) => ({ key, summary, _included: true, ..
 const loose = (stories) => ({ key: null, summary: 'No epic', _included: true, stories });
 
 // Every card in the Imported slice, by column, then read left to right
-const columns = (map) => map.slices[0].stories;
+const columns = (map) => map.slices[1].stories;
 const cards = (map) => {
   const cols = columns(map);
   const rows = Math.max(...cols.map(col => col.length));
@@ -82,10 +82,11 @@ describe('buildStorymapFromImport', () => {
     assert.equal(map.steps.length, 2);
   });
 
-  test('puts every card in one slice called Imported, with a user, an activity and a legend', () => {
+  test('puts every card in a slice called Imported, under an empty MVP slice, with a user, an activity and a legend', () => {
     const map = buildStorymapFromImport([epic('A-1', 'E', [story('A-2', 'S')])], 'Shop', buildUrl);
     assert.equal(map.name, 'Shop Import');
-    assert.deepEqual(map.slices.map(s => s.name), ['Imported']);
+    assert.deepEqual(map.slices.map(s => s.name), ['MVP', 'Imported']);
+    assert.deepEqual(map.slices[0].stories, [[], []]);
     assert.equal(map.users[0].length, 1);
     assert.equal(map.activities[0].length, 1);
     assert.deepEqual(map.legend, [{ color: CARD_COLORS.lime, label: 'Epic' }, { color: CARD_COLORS.yellow, label: 'Issue' }]);
@@ -101,7 +102,7 @@ describe('buildStorymapFromImport', () => {
     const map = buildStorymapFromImport([epic('A-1', 'E', [story('A-2', 'S')])], 'Shop', buildUrl);
     deserialize(map);
     assert.equal(state.columns.length, 2);
-    assert.equal(state.slices.length, 1);
+    assert.equal(state.slices.length, 2);
     assert.deepEqual(state.legend.map(e => e.label), ['Epic', 'Issue']);
   });
 

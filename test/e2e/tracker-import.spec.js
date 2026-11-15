@@ -1,7 +1,7 @@
 import { test, expect, openMap, acceptDialog } from './fixtures.js';
 
-// Tracker imports: the review step lists one row per card, and the cards land in one slice
-// called Imported. A group (an epic, a parent task) is a card in its own colour.
+// Tracker imports: the review step lists one row per card, and the cards land in a slice
+// called Imported, under an empty MVP slice. A group (an epic, a parent task) is a card in its own colour.
 
 const LIME = 'rgb(190, 242, 100)';
 const YELLOW = 'rgb(254, 240, 138)';
@@ -35,7 +35,7 @@ test('Jira import reviews epics and issues in one list and brings epics in as co
   await importCsv(page, 'jira', 'jira', 'jira.csv', jiraCsv);
 
   const review = page.locator('#jiraImportStage2');
-  await expect(review.locator('.import-intro')).toHaveText('Found 2 epics and 4 issues in COFFEE. Each one becomes a card, in one slice called Imported, ready to arrange into steps and slices.');
+  await expect(review.locator('.import-intro')).toHaveText('Found 2 epics and 4 issues in COFFEE. Each one becomes a card, in a slice called Imported, ready to arrange into steps and slices.');
   await expect(page.locator('#jiraImportCount')).toHaveText('Importing 6 cards: 2 epics and 4 issues');
 
   // Epics first, each followed by its issues; issues with no epic come last, with no tag
@@ -71,7 +71,8 @@ test('Jira import reviews epics and issues in one list and brings epics in as co
     ['Photo on each drink', YELLOW],
   ]);
   const map = await pullMap(id);
-  expect(map.slices.map(slice => slice.name)).toEqual(['Imported']);
+  expect(map.slices.map(slice => slice.name)).toEqual(['MVP', 'Imported']);
+  expect(map.slices[0].stories.flat()).toEqual([]);
   expect(map.legend.map(entry => entry.label)).toEqual(['Epic', 'Issue']);
   const text = JSON.stringify(map);
   expect(text).toContain('"tags":["COFFEE-3","frontend"]');

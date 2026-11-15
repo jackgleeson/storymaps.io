@@ -123,7 +123,7 @@ export const renderImportPreview = (epics, projectKey, domRefs, updateCountFn, o
         : `Found <strong>${items.length}</strong> ${plural(items.length, words.item)}`;
     const intro = document.createElement('p');
     intro.className = 'import-intro';
-    intro.innerHTML = `${found} in <strong>${escHtml(projectKey)}</strong>. Each one becomes a card, in one slice called Imported, ready to arrange into steps and slices.`;
+    intro.innerHTML = `${found} in <strong>${escHtml(projectKey)}</strong>. Each one becomes a card, in a slice called Imported, ready to arrange into steps and slices.`;
     header.append(intro);
 
     const filters = document.createElement('div');
@@ -310,7 +310,8 @@ export const updateImportCount = (epics, countEl, opts = {}) => {
 const GROUP_COLOR = CARD_COLORS.lime;
 const ITEM_COLOR = CARD_COLORS.yellow;
 
-// Every group and issue that is ticked becomes a card, in one slice called Imported. A group's
+// Every group and issue that is ticked becomes a card, in a slice called Imported, with an
+// empty MVP slice above it to drag the first release into. A group's
 // card comes first, in its own colour, then its issues, tagged to match. Issues that belong to
 // no group come last, with no tag. The legend says which colour is which.
 export const buildStorymapFromImport = (epics, projectName, buildUrlFn, opts = {}) => {
@@ -368,7 +369,10 @@ export const buildStorymapFromImport = (epics, projectName, buildUrlFn, opts = {
         steps,
         users,
         activities,
-        slices: [{ name: 'Imported', stories: grid }],
+        slices: [
+            { name: 'MVP', stories: Array.from({ length: cols }, () => []) },
+            { name: 'Imported', stories: grid },
+        ],
         ...(groupCards > 0 && { legend: [
             { color: GROUP_COLOR, label: capital(words.group[0]) },
             { color: ITEM_COLOR, label: capital(words.item[0]) },
