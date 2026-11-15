@@ -261,7 +261,16 @@
 <figcaption>The backbone is named, and the imported cards sit underneath it.</figcaption>
 </figure>
 <h2 id="export-to-asana">Export to Asana</h2>
-<p>Choose <strong>Menu → Export → Asana</strong>, then <strong>Asana CSV</strong> or <strong>Asana API</strong>. Every card becomes one task. No parent tasks, subtasks or sections are made: the story map keeps the structure, and each task carries its slice and step.</p>
+<p>Every card becomes one task. No parent tasks, subtasks or sections are made: the story map keeps the structure, and each task carries its slice and step.</p>
+<figure class="shot" style="max-width: 375px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/user-story-mapping-for-asana-export-menu.png?v=1a9d8e12" alt="The Asana options in the Export menu." width="250" height="242" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-export-menu-dark.png?v=9457bee4" alt="The Asana options in the Export menu." width="250" height="242" loading="lazy"><span class="callout" style="left: 8.8%; top: 74.2%">1</span><span class="callout" style="left: 8.8%; top: 87%">2</span>
+</div>
+<figcaption>The Asana options in the Export menu.</figcaption>
+</figure>
+<ol class="steps"><li><span class="num">1</span><span><strong>Asana CSV</strong> downloads a file for you to import in Asana.</span></li><li><span class="num">2</span><span><strong>Asana API</strong> creates the tasks in Asana for you.</span></li></ol>
+<p>Choose <strong>Menu → Export → Asana</strong>, then one of them. Both start the same way:</p>
 <ol class="steps"><li><span class="num">1</span><span>Under <strong>Releases</strong>, tick the slices to send.</span></li><li><span class="num">2</span><span>Under <strong>Status</strong>, tick the statuses to send.</span></li><li><span class="num">3</span><span>Check <strong>What each card becomes</strong>. It shows one card and the task it turns into.</span></li><li><span class="num">4</span><span>Untick what you don't want to send with each task: <strong>Slice name</strong>, <strong>Step name</strong> or <strong>Card tags</strong>.</span></li><li><span class="num">5</span><span>Open <strong>Choose cards</strong> to untick single cards.</span></li></ol>
 <figure class="shot" style="max-width: 1314px">
 <div class="shot-pic">
@@ -282,13 +291,13 @@
 </figure>
 <p>Asana can't import tags from a file, so the slice, the step and the tags each go in a column of their own: <strong>Slice</strong>, <strong>Step</strong> and <strong>Tags</strong>. Asana turns each column into a custom field in the project.</p>
 <h3 id="asana-api">Asana API</h3>
-<ol class="steps"><li><span class="num">1</span><span>Click <strong>Next: connect to Asana</strong>.</span></li><li><span class="num">2</span><span>Paste a <strong>Personal Access Token</strong> and the <strong>Project Page URL</strong>.</span></li><li><span class="num">3</span><span>Click <strong>Export to Asana</strong>.</span></li></ol>
+<ol class="steps"><li><span class="num">1</span><span>Click <strong>Connect to Asana</strong>.</span></li><li><span class="num">2</span><span>Paste a <strong>Personal Access Token</strong> and the <strong>Project Page URL</strong>.</span></li><li><span class="num">3</span><span>Click <strong>Export to Asana</strong>.</span></li></ol>
 <figure class="shot" style="max-width: 1374px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-asana-export-api.png?v=6e10179b" alt="The Asana API window after Next: connect to Asana." width="916" height="494" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-export-api-dark.png?v=dce9a068" alt="The Asana API window after Next: connect to Asana." width="916" height="494" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-asana-export-api.png?v=6e10179b" alt="The Asana API window after you click Connect to Asana." width="916" height="494" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-export-api-dark.png?v=dce9a068" alt="The Asana API window after you click Connect to Asana." width="916" height="494" loading="lazy">
 </div>
-<figcaption>The Asana API window after Next: connect to Asana.</figcaption>
+<figcaption>The Asana API window after you click Connect to Asana.</figcaption>
 </figure>
 <p>The slice, the step and the card tags become Asana tags, lower case with hyphens, such as <strong>mvp</strong> and <strong>browse-menu</strong>. The export uses tags the workspace already has and makes the missing ones.</p>
 <p>The progress list links to every task as it's made. Cards marked done are created complete. One export takes up to 2,000 cards.</p>

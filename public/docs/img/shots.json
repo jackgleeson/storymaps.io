@@ -625,5 +625,57 @@
     "width": 916,
     "height": 494,
     "callouts": []
+  },
+  "user-story-mapping-for-jira/export-menu": {
+    "width": 250,
+    "height": 242,
+    "callouts": [
+      {
+        "x": 8.8,
+        "y": 74.2
+      },
+      {
+        "x": 8.8,
+        "y": 87
+      }
+    ]
+  },
+  "user-story-mapping-for-asana/export-menu": {
+    "width": 250,
+    "height": 242,
+    "callouts": [
+      {
+        "x": 8.8,
+        "y": 74.2
+      },
+      {
+        "x": 8.8,
+        "y": 87
+      }
+    ]
+  },
+  "user-story-mapping-for-phabricator/export-menu": {
+    "width": 251,
+    "height": 242,
+    "callouts": [
+      {
+        "x": 8.7,
+        "y": 74.2
+      },
+      {
+        "x": 8.7,
+        "y": 87
+      }
+    ]
+  },
+  "user-story-mapping-for-linear/export-menu": {
+    "width": 250,
+    "height": 211,
+    "callouts": [
+      {
+        "x": 8.8,
+        "y": 85.1
+      }
+    ]
   }
 }

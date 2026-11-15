@@ -261,22 +261,30 @@
 <figcaption>The backbone is named, and the imported cards sit underneath it.</figcaption>
 </figure>
 <h2 id="export-to-linear">Export to Linear</h2>
-<p>Linear export goes through the API. Every card becomes one issue. No parent issues are made: the story map keeps the structure, and each issue carries its slice and step as labels.</p>
+<p>Every card becomes one issue. No parent issues are made: the story map keeps the structure, and each issue carries its slice and step as labels.</p>
+<figure class="shot" style="max-width: 375px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/user-story-mapping-for-linear-export-menu.png?v=c2b09023" alt="The Linear option in the Export menu." width="250" height="211" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-linear-export-menu-dark.png?v=27b6fa05" alt="The Linear option in the Export menu." width="250" height="211" loading="lazy"><span class="callout" style="left: 8.8%; top: 85.1%">1</span>
+</div>
+<figcaption>The Linear option in the Export menu.</figcaption>
+</figure>
+<ol class="steps"><li><span class="num">1</span><span><strong>Linear API</strong> creates the issues in Linear for you. Linear has no file export from here.</span></li></ol>
 <p>Choose <strong>Menu → Export → Linear → Linear API</strong>:</p>
-<ol class="steps"><li><span class="num">1</span><span>Under <strong>Releases</strong>, tick the slices to send.</span></li><li><span class="num">2</span><span>Under <strong>Status</strong>, tick the statuses to send.</span></li><li><span class="num">3</span><span>Check <strong>What each card becomes</strong>. It shows one card and the issue it turns into.</span></li><li><span class="num">4</span><span>Under <strong>Labels</strong>, untick any you don't want: <strong>Slice name</strong>, <strong>Step name</strong> or <strong>Card tags</strong>.</span></li><li><span class="num">5</span><span>Open <strong>Choose cards</strong> to untick single cards.</span></li><li><span class="num">6</span><span>Click <strong>Next: connect to Linear</strong>.</span></li><li><span class="num">7</span><span>Paste an <strong>API Key</strong> and fill in the <strong>Team Key</strong>.</span></li><li><span class="num">8</span><span>Click <strong>Export to Linear</strong>.</span></li></ol>
+<ol class="steps"><li><span class="num">1</span><span>Under <strong>Releases</strong>, tick the slices to send.</span></li><li><span class="num">2</span><span>Under <strong>Status</strong>, tick the statuses to send.</span></li><li><span class="num">3</span><span>Check <strong>What each card becomes</strong>. It shows one card and the issue it turns into.</span></li><li><span class="num">4</span><span>Under <strong>Labels</strong>, untick any you don't want: <strong>Slice name</strong>, <strong>Step name</strong> or <strong>Card tags</strong>.</span></li><li><span class="num">5</span><span>Open <strong>Choose cards</strong> to untick single cards.</span></li><li><span class="num">6</span><span>Click <strong>Connect to Linear</strong>.</span></li><li><span class="num">7</span><span>Paste an <strong>API Key</strong> and fill in the <strong>Team Key</strong>.</span></li><li><span class="num">8</span><span>Click <strong>Export to Linear</strong>.</span></li></ol>
 <figure class="shot" style="max-width: 1374px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-linear-export.png?v=c637ba9f" alt="The Linear export window shows one card and the issue it becomes." width="916" height="671" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-linear-export-dark.png?v=407ef3e8" alt="The Linear export window shows one card and the issue it becomes." width="916" height="671" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-linear-export.png?v=21b1f220" alt="The Linear export window shows one card and the issue it becomes." width="916" height="671" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-linear-export-dark.png?v=acbe50c8" alt="The Linear export window shows one card and the issue it becomes." width="916" height="671" loading="lazy">
 </div>
 <figcaption>The Linear export window shows one card and the issue it becomes.</figcaption>
 </figure>
 <figure class="shot" style="max-width: 1374px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-linear-export-api.png?v=b5b1aa98" alt="After Next: connect to Linear, the API key and team key." width="916" height="494" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-linear-export-api-dark.png?v=bf0b9e9c" alt="After Next: connect to Linear, the API key and team key." width="916" height="494" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-linear-export-api.png?v=b5b1aa98" alt="The window after you click Connect to Linear." width="916" height="494" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-linear-export-api-dark.png?v=bf0b9e9c" alt="The window after you click Connect to Linear." width="916" height="494" loading="lazy">
 </div>
-<figcaption>After Next: connect to Linear, the API key and team key.</figcaption>
+<figcaption>The window after you click Connect to Linear.</figcaption>
 </figure>
 <p>Labels are lower case with hyphens, so a card under Browse Menu in the MVP slice is labelled <strong>browse-menu</strong> and <strong>mvp</strong>. The export uses labels the team already has and makes the missing ones in the team.</p>
 <p>The description of each issue is the card body, then the slice, the step and a link back to the card. Card points become the estimate. Planned cards go to the first unstarted status of the team, cards in progress to the first started one, and done cards to the first completed one. The rest start where Linear puts new issues.</p>
