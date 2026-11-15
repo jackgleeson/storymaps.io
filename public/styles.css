@@ -882,7 +882,6 @@ body.welcome-visible .gh-star {
     color: #57606a;
 }
 
-
 .btn:disabled {
     opacity: 0.4;
     cursor: not-allowed;
@@ -1415,10 +1414,6 @@ html.dark-mode .map-stats-slice-count.map-stats-closed {
     min-height: min(600px, calc(100dvh - 220px));
 }
 
-/* Legend: tablet */
-@media (max-width: 900px) {
-}
-
 /* Legend & Notes: mobile */
 @media (max-width: 600px) {
     .controls-right {
@@ -1698,7 +1693,6 @@ html.dark-mode .map-stats-slice-count.map-stats-closed {
     color: var(--color-text-secondary);
 }
 
-
 /* Story Map Container */
 /* Opening another map in the page: the board fades out, and back in once the map fits the screen */
 .story-map-wrapper.map-fading .story-map {
@@ -1957,7 +1951,6 @@ html.safari .map-body {
     box-shadow: 0 1px 4px rgba(20, 184, 166, 0.5);
     z-index: 1;
 }
-
 
 /* Partial Map Reference Cell (collapsed view in slice rows) */
 .partial-map-ref-cell {
@@ -3715,7 +3708,6 @@ html.dark-mode .slice-container.slice-spotlight-land {
     opacity: 0 !important;
 }
 
-
 .step.menu-open,
 .story-card.menu-open {
     z-index: 50;
@@ -3990,7 +3982,6 @@ html.dark-mode .slice-container.slice-spotlight-land {
     min-width: 0;
 }
 
-
 mark.highlight {
     color: #333;
     background: none;
@@ -4229,7 +4220,6 @@ html.dark-mode mark.highlight::after {
     transform: none;
 }
 
-
 .welcome-samples {
     display: flex;
     flex-direction: column;
@@ -4314,7 +4304,6 @@ html.dark-mode mark.highlight::after {
 
 .btn-sample-green { background: var(--color-bg-surface); border-color: #e5e7eb; }
 .btn-sample-green::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: #86efac; margin-right: 8px; flex-shrink: 0; }
-
 
 /* Bottom section — learn more */
 .welcome-bottom {
@@ -4503,7 +4492,6 @@ html.dark-mode mark.highlight::after {
     body.welcome-visible .community-link {
         display: none;
     }
-
 
     body.welcome-visible {
         height: auto;
@@ -4976,7 +4964,6 @@ html.dark-mode mark.highlight::after {
     .active-mappers {
         display: none !important;
     }
-
 
     .welcome-screen {
         scrollbar-width: none;
@@ -5592,11 +5579,6 @@ html.dark-mode mark.highlight::after {
     }
 }
 
-/* Jira Export Modal */
-.jira-export-modal {
-    max-width: 900px;
-}
-
 .jira-export-help-link {
     font-size: 13px;
     font-weight: 400;
@@ -5606,34 +5588,6 @@ html.dark-mode mark.highlight::after {
 
 .jira-export-help-link:hover {
     text-decoration: underline;
-}
-
-.jira-export-modal-body {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    max-height: 70vh;
-    overflow-y: auto;
-}
-
-.jira-csv-warning {
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    color: #991b1b;
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 13px;
-    line-height: 1.5;
-}
-
-.jira-csv-warning a {
-    color: #991b1b;
-    font-weight: 600;
-    text-decoration: underline;
-}
-
-.jira-csv-warning a:hover {
-    color: #7f1d1d;
 }
 
 .jira-export-section {
@@ -5666,107 +5620,15 @@ html.dark-mode mark.highlight::after {
     border-color: var(--color-teal);
 }
 
-.jira-space-name {
-    width: 180px;
-}
-
-.jira-space-key {
-    width: 100px;
-    text-transform: uppercase;
-}
-
-.jira-project-type {
-    width: 110px;
-    cursor: pointer;
-    background: var(--color-bg-surface);
-}
-
 .jira-project-input:focus {
     outline: none;
     border-color: var(--color-teal);
-}
-
-.jira-export-filters {
-    display: flex;
-    gap: 32px;
-    flex-wrap: wrap;
-}
-
-.jira-export-filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.jira-export-statuses {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.jira-export-section-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    margin: 0;
-}
-
-.jira-export-count {
-    font-weight: 400;
-    color: var(--color-text-secondary);
-    font-size: 13px;
 }
 
 .jira-export-section-desc {
     font-size: 13px;
     color: var(--color-text-secondary);
     margin: 0;
-}
-
-/* Slice checkboxes */
-.jira-export-slices {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.jira-slice-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: #f3f4f6;
-    border: 1px solid var(--color-border-medium);
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.jira-slice-checkbox:hover {
-    background: #e5e7eb;
-}
-
-.jira-slice-checkbox.checked {
-    background: #dbeafe;
-    border-color: #3b82f6;
-}
-
-.jira-slice-checkbox input {
-    margin: 0;
-    cursor: pointer;
-    accent-color: #3b82f6;
-}
-
-.jira-slice-name {
-    font-size: 13px;
-    color: var(--color-text-primary);
-    font-weight: 500;
-}
-
-.jira-slice-count {
-    color: var(--color-text-secondary);
-    font-size: 12px;
-    margin-left: 2px;
 }
 
 /* Status mapping */
@@ -5800,191 +5662,6 @@ html.dark-mode mark.highlight::after {
 .jira-status-input:focus {
     outline: none;
     border-color: var(--color-teal);
-}
-
-/* Epics list */
-.jira-export-epics {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.jira-export-epic {
-    background: var(--color-bg-surface-alt);
-    border: 1px solid var(--color-border-medium);
-    border-radius: 8px;
-    padding: 16px;
-    transition: opacity 0.15s ease;
-}
-
-.jira-export-epic.excluded {
-    opacity: 0.5;
-}
-
-.jira-export-epic-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
-}
-
-.jira-export-epic-checkbox {
-    margin: 0;
-    cursor: pointer;
-    accent-color: #3b82f6;
-    width: 18px;
-    height: 18px;
-}
-
-.jira-export-epic-name {
-    flex: 1;
-    padding: 8px 12px;
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--color-text-primary);
-    background: var(--color-bg-surface);
-}
-
-.jira-export-epic-name:focus {
-    outline: none;
-    border-color: var(--color-teal);
-}
-
-.jira-export-epic-type {
-    padding: 8px 12px;
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    font-size: 13px;
-    color: var(--color-text-primary);
-    background: var(--color-bg-surface);
-    cursor: pointer;
-}
-
-.jira-export-epic-type:focus {
-    outline: none;
-    border-color: var(--color-teal);
-}
-
-.jira-export-epic-description {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    font-family: inherit;
-    font-size: 13px;
-    color: var(--color-text-primary);
-    background: var(--color-bg-surface);
-    resize: vertical;
-    min-height: 60px;
-    margin-bottom: 12px;
-}
-
-.jira-export-epic-description:focus {
-    outline: none;
-    border-color: var(--color-teal);
-}
-
-.jira-export-epic-description::placeholder {
-    color: var(--color-text-faint);
-}
-
-.jira-export-tasks {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    padding-left: 12px;
-    border-left: 2px solid var(--color-border-medium);
-    margin-left: 8px;
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.jira-export-task {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    padding: 4px 0;
-    cursor: pointer;
-    transition: opacity 0.15s ease;
-}
-
-.jira-export-task:hover .jira-export-task-name {
-    color: #000;
-}
-
-.jira-export-task.excluded {
-    opacity: 0.5;
-}
-
-.jira-export-task-checkbox {
-    flex-shrink: 0;
-    margin: 0;
-    cursor: pointer;
-    accent-color: #3b82f6;
-}
-
-.jira-export-task-name {
-    flex: 1;
-    color: var(--color-text-primary);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.jira-export-task-status {
-    font-size: 11px;
-    padding: 2px 6px;
-    border-radius: 3px;
-    margin-left: 6px;
-}
-
-.jira-export-task-status.done {
-    background: #dcfce7;
-    color: #166534;
-}
-
-.jira-export-task-status.in-progress {
-    background: #fef3c7;
-    color: #92400e;
-}
-
-.jira-export-task-status.blocked {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-.jira-export-task-status.planned {
-    background: #e5e7eb;
-    color: #4b5563;
-}
-
-.jira-export-task-status.none {
-    background: #f3f4f6;
-    color: #6b7280;
-}
-
-.jira-export-task-count {
-    font-size: 12px;
-    color: var(--color-text-faint);
-    font-style: italic;
-    padding: 2px 0;
-}
-
-.jira-export-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    padding-top: 12px;
-    border-top: 1px solid var(--color-border-medium);
-    position: sticky;
-    bottom: -24px;
-    background: var(--color-bg-surface);
-    margin: 0 -24px -24px;
-    padding: 16px 24px;
 }
 
 /* API Export Modals (Phabricator, Jira API, Asana API, Asana CSV) */
@@ -6041,12 +5718,6 @@ html.dark-mode mark.highlight::after {
     margin-top: 0;
 }
 
-.export-count {
-    font-weight: 400;
-    color: var(--color-text-secondary);
-    font-size: 13px;
-}
-
 .export-slices {
     display: flex;
     flex-wrap: wrap;
@@ -6090,157 +5761,6 @@ html.dark-mode mark.highlight::after {
     color: var(--color-text-secondary);
     font-size: 12px;
     margin-left: 2px;
-}
-
-.export-epics {
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-.export-epic {
-    background: var(--color-bg-surface-alt);
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 12px;
-    margin-bottom: 12px;
-}
-
-.export-epic.excluded {
-    opacity: 0.5;
-}
-
-.export-epic-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 8px;
-}
-
-.export-epic-checkbox {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-    accent-color: #3b82f6;
-}
-
-.export-epic-name {
-    flex: 1;
-    padding: 6px 10px;
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.export-epic-name:focus {
-    outline: none;
-    border-color: var(--color-teal);
-}
-
-.export-epic-type {
-    padding: 6px 10px;
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    font-size: 13px;
-    background: var(--color-bg-surface);
-    cursor: pointer;
-}
-
-.export-epic-type:focus {
-    outline: none;
-    border-color: var(--color-teal);
-}
-
-.export-epic-description {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    font-size: 13px;
-    resize: vertical;
-    min-height: 40px;
-    font-family: inherit;
-    margin-bottom: 8px;
-}
-
-.export-epic-description:focus {
-    outline: none;
-    border-color: var(--color-teal);
-}
-
-.export-epic-description::placeholder {
-    color: var(--color-text-faint);
-}
-
-.export-tasks {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding-left: 30px;
-}
-
-.export-task {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 8px;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.export-task:hover .export-task-name {
-    color: #000;
-}
-
-.export-task.excluded {
-    opacity: 0.5;
-}
-
-.export-task-checkbox {
-    width: 14px;
-    height: 14px;
-    cursor: pointer;
-    accent-color: #3b82f6;
-}
-
-.export-task-name {
-    flex: 1;
-    font-size: 13px;
-    color: var(--color-text-primary);
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.export-task-status {
-    font-size: 11px;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-weight: 500;
-}
-
-.export-task-status.done {
-    background: #dcfce7;
-    color: #166534;
-}
-
-.export-task-status.in-progress {
-    background: #dbeafe;
-    color: #1e40af;
-}
-
-.export-task-status.blocked {
-    background: #fee2e2;
-    color: #991b1b;
-}
-
-.export-task-status.planned {
-    background: #e5e7eb;
-    color: #4b5563;
-}
-
-.export-task-status.none {
-    background: #f3f4f6;
-    color: #6b7280;
 }
 
 .export-actions {
@@ -6403,7 +5923,6 @@ html.dark-mode mark.highlight::after {
     outline: none;
     border-color: var(--color-teal);
 }
-
 
 .export-code-block {
     position: relative;
@@ -7941,7 +7460,6 @@ body.read-only-mode .empty-backbone-column {
     cursor: default;
 }
 
-
 /* Mobile adjustments for lock */
 @media (max-width: 600px) {
     .read-only-banner {
@@ -8517,8 +8035,6 @@ body.read-only-mode .story-card.card-selected {
     white-space: nowrap;
     line-height: 1.5;
 }
-
-
 
 /* =============================================================================
    Filter panel
@@ -10030,33 +9546,13 @@ html.dark-mode .export-divider span {
 }
 
 /* Export filename input */
-html.dark-mode .export-filename,
-html.dark-mode .jira-export-epic-name,
-html.dark-mode .jira-export-epic-type,
-html.dark-mode .jira-export-epic-description,
-html.dark-mode .export-epic-name,
-html.dark-mode .export-epic-type,
-html.dark-mode .export-epic-description {
+html.dark-mode .export-filename {
     background: var(--color-bg-surface);
     color: var(--color-text-primary);
     border-color: var(--color-border);
-}
-
-/* Jira export epic rows */
-html.dark-mode .jira-export-epic,
-html.dark-mode .export-epic {
-    background: var(--color-bg-surface-alt);
-    border-color: var(--color-border);
-}
-
-/* Jira project type select */
-html.dark-mode .jira-project-type {
-    background: var(--color-bg-surface);
-    color: var(--color-text-primary);
 }
 
 /* Export/import actions bar */
-html.dark-mode .jira-export-actions,
 html.dark-mode .export-actions {
     background: var(--color-bg-surface);
     border-top-color: var(--color-border);
@@ -10069,31 +9565,16 @@ html.dark-mode .jira-status-input {
     color: var(--color-text-primary);
     border-color: var(--color-border);
 }
-html.dark-mode .jira-slice-checkbox,
 html.dark-mode .export-slice-checkbox {
     background: #1e293b;
     border-color: var(--color-border);
 }
-html.dark-mode .jira-slice-checkbox:hover,
 html.dark-mode .export-slice-checkbox:hover {
     background: #334155;
 }
-html.dark-mode .jira-slice-checkbox.checked,
 html.dark-mode .export-slice-checkbox.checked {
     background: #1e3a5f;
     border-color: #3b82f6;
-}
-html.dark-mode .jira-export-task:hover .jira-export-task-name,
-html.dark-mode .export-task:hover .export-task-name {
-    color: #f1f5f9;
-}
-html.dark-mode .jira-csv-warning {
-    background: var(--color-bg-surface-alt);
-    border-color: var(--color-border);
-    color: var(--color-text-secondary);
-}
-html.dark-mode .jira-csv-warning a {
-    color: var(--color-text-secondary);
 }
 html.dark-mode .jira-export-help-link {
     color: #93c5fd;
@@ -10825,11 +10306,6 @@ html.dark-mode .export-done-summary.has-failures .done-detail { color: #f59e0b; 
     color: var(--color-text-primary);
     margin: 0;
 }
-.import-status-filters .import-status-pills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
 
 .import-preview-header {
     background: #f0fdf4;
@@ -10840,15 +10316,6 @@ html.dark-mode .export-done-summary.has-failures .done-detail { color: #f59e0b; 
     font-size: 14px;
     color: #166534;
 }
-.import-toggle-all {
-    color: inherit;
-    opacity: 0.7;
-    font-size: 13px;
-    margin-left: 8px;
-    text-decoration: underline;
-    cursor: pointer;
-}
-.import-toggle-all:hover { opacity: 1; }
 
 html.dark-mode .import-preview-header {
     background: rgba(16, 185, 129, 0.1);
@@ -10862,146 +10329,6 @@ html.dark-mode .import-preview-header {
     border: 1px solid var(--color-border-medium);
     border-radius: var(--border-radius);
     padding: 8px;
-}
-
-.import-epic {
-    margin-bottom: 4px;
-}
-
-.import-epic-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 8px;
-    border-radius: var(--border-radius-sm);
-    cursor: pointer;
-    user-select: none;
-}
-
-.import-epic-header:hover {
-    background: var(--color-hover-bg);
-}
-
-.import-epic-header input[type="checkbox"] {
-    flex-shrink: 0;
-}
-
-.import-epic.excluded .import-epic-header {
-    opacity: 0.5;
-}
-
-.import-epic-toggle {
-    flex-shrink: 0;
-    width: 16px;
-    text-align: center;
-    font-size: 10px;
-    color: var(--color-text-muted);
-    transition: transform 0.15s;
-}
-
-.import-epic.expanded .import-epic-toggle {
-    transform: rotate(90deg);
-}
-
-.import-issue-key {
-    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-    font-size: 11px;
-    background: var(--color-bg-elevated);
-    padding: 2px 6px;
-    border-radius: 3px;
-    color: var(--color-text-secondary);
-    flex-shrink: 0;
-}
-
-.import-epic-name {
-    font-weight: 600;
-    font-size: 13px;
-    color: var(--color-text-primary);
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.import-story-count {
-    font-size: 11px;
-    color: var(--color-text-muted);
-    flex-shrink: 0;
-}
-
-.import-stories {
-    display: none;
-    padding-left: 24px;
-}
-
-.import-epic.expanded .import-stories {
-    display: block;
-}
-
-.import-story {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 8px;
-    font-size: 13px;
-    border-radius: var(--border-radius-sm);
-}
-
-.import-story:hover {
-    background: var(--color-hover-bg);
-}
-
-.import-story.excluded {
-    opacity: 0.5;
-}
-
-.import-story-name {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    color: var(--color-text-primary);
-}
-
-.import-status-badge {
-    font-size: 10px;
-    padding: 1px 6px;
-    border-radius: 3px;
-    font-weight: 600;
-    text-transform: uppercase;
-    flex-shrink: 0;
-}
-
-.import-status-badge.planned {
-    background: #dbeafe;
-    color: #1e40af;
-}
-
-.import-status-badge.in-progress {
-    background: #fef3c7;
-    color: #92400e;
-}
-
-.import-status-badge.done {
-    background: #d1fae5;
-    color: #065f46;
-}
-
-html.dark-mode .import-status-badge.planned {
-    background: rgba(59, 130, 246, 0.2);
-    color: #93c5fd;
-}
-
-html.dark-mode .import-status-badge.in-progress {
-    background: rgba(245, 158, 11, 0.2);
-    color: #fbbf24;
-}
-
-html.dark-mode .import-status-badge.done {
-    background: rgba(16, 185, 129, 0.2);
-    color: #6ee7b7;
 }
 
 .import-points-badge {
@@ -11018,6 +10345,7 @@ html.dark-mode .import-status-badge.done {
     font-size: 13px;
     color: var(--color-text-secondary);
     flex: 1;
+    align-self: center;
     text-align: center;
 }
 
@@ -12461,7 +11789,6 @@ html.dark-mode .project-lock-choice:has(input:checked) {
         font-size: 13px;
     }
 
-
     .project-panel-icon,
     .project-panel-remove {
         min-width: 40px;
@@ -12873,4 +12200,618 @@ html.dark-mode .bookmark-nudge-button:hover {
     .recent-pop {
         display: none;
     }
+}
+
+/* ==================== Tracker exports: one issue per card ==================== */
+
+.export-choose {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+[data-export-stage]:not(.hidden) {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.export-choose .export-section-title,
+.export-example-section .export-section-title {
+    margin: 0;
+}
+
+.export-empty-note {
+    color: var(--color-text-secondary);
+    font-size: 13px;
+}
+
+/* One card on the story map, and the issue it becomes */
+.export-example-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.export-example-section:empty {
+    display: none;
+}
+
+.export-example {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 20px;
+    border: 1px solid var(--color-border-medium);
+    border-radius: 8px;
+    background: var(--color-bg-surface-alt);
+}
+
+.export-example-side {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.export-example-from {
+    flex: 1 1 220px;
+}
+
+.export-example-to {
+    flex: 2 1 360px;
+}
+
+.export-example-heading {
+    margin: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+
+.export-example-arrow {
+    flex: none;
+    align-self: center;
+    color: var(--color-text-secondary);
+}
+
+.export-example-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px;
+    border-radius: 2px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    color: #1a1a1a;
+    font-size: 14px;
+}
+
+.export-example-card p,
+.export-example-issue p {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.export-example-name {
+    font-weight: 600;
+}
+
+.export-example-where {
+    font-size: 12px;
+}
+
+.export-example-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.export-example-tag {
+    padding: 0 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+}
+
+.export-example-issue {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 16px;
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--color-text-primary);
+}
+
+.export-example-type,
+.export-example-labels-title,
+.export-example-none {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+}
+
+.export-example-labels {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+
+.export-example-labels-title {
+    margin-right: 4px;
+}
+
+.export-example-description {
+    padding-top: 10px;
+    border-top: 1px solid var(--color-border-subtle);
+    font-size: 13px;
+}
+
+.export-example-description .export-example-body {
+    margin-bottom: 6px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    white-space: pre-line;
+}
+
+.export-example-description a {
+    color: #0052cc;
+}
+
+/* Labels: the slice, the step and the card's own tags */
+.export-label {
+    flex: none;
+    max-width: 100%;
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    line-height: 1.5;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.export-label-slice {
+    background: #ccfbf1;
+    color: #115e59;
+}
+
+.export-label-step {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.export-label-tag {
+    padding: 0 8px;
+    background: #fff;
+    border: 1px solid #94a3b8;
+    color: #334155;
+}
+
+.export-label-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+}
+
+.export-label-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 28px;
+    font-size: 14px;
+    color: var(--color-text-primary);
+    cursor: pointer;
+}
+
+.export-label-option input {
+    margin: 0;
+    width: 16px;
+    height: 16px;
+    accent-color: #3b82f6;
+    cursor: pointer;
+}
+
+.export-label-note {
+    margin: 0;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+}
+
+/* The card list and the Jira status names, closed until they're wanted */
+.export-disclosure {
+    border: 1px solid var(--color-border-medium);
+    border-radius: 8px;
+    background: var(--color-bg-surface-alt);
+}
+
+.export-disclosure-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 44px;
+    padding: 0 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    cursor: pointer;
+    list-style: none;
+    border-radius: 8px;
+}
+
+.export-disclosure-summary::-webkit-details-marker {
+    display: none;
+}
+
+.export-disclosure-summary:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+.export-disclosure-count {
+    font-weight: 400;
+    color: var(--color-text-secondary);
+}
+
+.export-disclosure-arrow {
+    flex: none;
+    transition: transform 0.15s ease;
+}
+
+.export-disclosure[open] .export-disclosure-arrow {
+    transform: rotate(180deg);
+}
+
+.export-disclosure-body {
+    padding: 4px 16px 16px;
+}
+
+.export-cards {
+    max-height: 320px;
+    overflow-y: auto;
+    border-top: 1px solid var(--color-border-medium);
+    border-radius: 0 0 8px 8px;
+}
+
+.export-cards-empty {
+    margin: 0;
+    padding: 16px;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+}
+
+.export-card-row {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 5fr) minmax(0, 6fr) 110px;
+    gap: 12px;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--color-border-subtle);
+    background: var(--color-bg-surface);
+    font-size: 13px;
+    color: var(--color-text-primary);
+    cursor: pointer;
+}
+
+.export-card-row:last-child {
+    border-bottom: none;
+}
+
+.export-card-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    min-height: 0;
+    padding: 8px 16px;
+    background: var(--color-bg-surface-alt);
+    border-bottom: 1px solid var(--color-border-medium);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    cursor: default;
+}
+
+.export-card-row input {
+    margin: 0;
+    width: 16px;
+    height: 16px;
+    accent-color: #3b82f6;
+    cursor: pointer;
+}
+
+.export-card-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.export-card-labels {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 4px;
+    overflow: hidden;
+}
+
+.export-card-status {
+    color: var(--color-text-secondary);
+}
+
+.export-card-row.excluded .export-card-name,
+.export-card-row.excluded .export-card-labels,
+.export-card-row.excluded .export-card-status {
+    opacity: 0.45;
+}
+
+/* Footer: how many issues, then the buttons */
+.export-actions.export-actions-split {
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.export-footer-count {
+    margin: 0;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+}
+
+.export-actions-buttons {
+    display: flex;
+    gap: 12px;
+    margin-left: auto;
+}
+
+.jira-status-label {
+    cursor: default;
+}
+
+.export-progress-item .item-note {
+    font-family: inherit;
+    color: var(--color-text-secondary);
+}
+
+@media (max-width: 600px) {
+    .export-example-arrow {
+        transform: rotate(90deg);
+        margin: 0 auto;
+    }
+
+    .export-card-row {
+        grid-template-columns: 28px minmax(0, 1fr) 90px;
+    }
+
+    .export-card-labels,
+    .export-card-head span:nth-child(3) {
+        display: none;
+    }
+}
+
+html.dark-mode .export-label-slice {
+    background: #134e4a;
+    color: #99f6e4;
+}
+
+html.dark-mode .export-label-step {
+    background: #334155;
+    color: #e2e8f0;
+}
+
+html.dark-mode .export-label-tag {
+    background: transparent;
+    border-color: #64748b;
+    color: #cbd5e1;
+}
+
+html.dark-mode .export-example-description a {
+    color: #93c5fd;
+}
+
+/* ==================== Tracker imports: the review step ==================== */
+
+.import-preview-header {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 0;
+    margin-bottom: 16px;
+    background: none;
+    border: none;
+    color: var(--color-text-primary);
+}
+
+html.dark-mode .import-preview-header {
+    background: none;
+    border: none;
+    color: var(--color-text-primary);
+}
+
+.import-intro,
+.import-note {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.import-note {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+}
+
+.import-preview-header .export-section-title {
+    margin: 0;
+}
+
+.import-preview {
+    padding: 0;
+    background: var(--color-bg-surface-alt);
+}
+
+.import-row {
+    display: grid;
+    grid-template-columns: 28px 84px minmax(0, 1fr) 96px;
+    gap: 12px;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--color-border-subtle);
+    background: var(--color-bg-surface);
+    font-size: 13px;
+    color: var(--color-text-primary);
+    cursor: pointer;
+}
+
+.import-table.has-groups .import-row {
+    grid-template-columns: 28px 84px minmax(0, 1fr) 110px 96px;
+}
+
+.import-table:not(.has-groups) .import-row-tag,
+.import-table:not(.has-groups) .import-row-head span:nth-child(4) {
+    display: none;
+}
+
+.import-row:last-child {
+    border-bottom: none;
+}
+
+.import-row-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    min-height: 0;
+    padding: 8px 16px;
+    background: var(--color-bg-surface-alt);
+    border-bottom: 1px solid var(--color-border-medium);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    cursor: default;
+}
+
+.import-row input {
+    margin: 0;
+    width: 16px;
+    height: 16px;
+    accent-color: #3b82f6;
+    cursor: pointer;
+}
+
+.import-row-group {
+    background: #f7fee7;
+}
+
+.import-row-key {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1d4ed8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.import-row-summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.import-table.has-groups .import-row:not(.import-row-group):not(.import-row-head) .import-row-summary {
+    padding-left: 20px;
+}
+
+.import-row-swatch {
+    flex: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    background: #fef08a;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+
+.import-row-group .import-row-swatch {
+    background: #bef264;
+}
+
+.import-row-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.import-row-group .import-row-name {
+    font-weight: 600;
+}
+
+.import-row-tag {
+    display: flex;
+    overflow: hidden;
+}
+
+.import-tag {
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: #ede9fe;
+    color: #4c1d95;
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.import-row-status {
+    color: var(--color-text-secondary);
+}
+
+.import-row.excluded .import-row-key,
+.import-row.excluded .import-row-summary,
+.import-row.excluded .import-row-tag,
+.import-row.excluded .import-row-status {
+    opacity: 0.45;
+}
+
+@media (max-width: 600px) {
+    .import-row,
+    .import-table.has-groups .import-row {
+        grid-template-columns: 28px minmax(0, 1fr) 84px;
+    }
+
+    .import-row-key,
+    .import-row-tag,
+    .import-row-head span:nth-child(2),
+    .import-row-head span:nth-child(4) {
+        display: none;
+    }
+}
+
+html.dark-mode .import-row-group {
+    background: rgba(132, 204, 22, 0.1);
+}
+
+html.dark-mode .import-row-key {
+    color: #93c5fd;
+}
+
+html.dark-mode .import-tag {
+    background: rgba(139, 92, 246, 0.25);
+    color: #ddd6fe;
+}
+
+/* Jira CSV: the project fields wrap on a narrow screen */
+.jira-project-row {
+    flex-wrap: wrap;
+}
+
+.jira-project-row .jira-project-input {
+    flex: 1 1 140px;
+    min-width: 0;
+}
+
+.jira-project-row select.jira-project-input {
+    flex: 0 1 auto;
 }

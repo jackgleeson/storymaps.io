@@ -153,14 +153,14 @@ export const fetchFromJira = async () => {
             if (data.phase === 'epics') {
                 addLine(`Fetching epics... ${data.fetched}`);
             } else if (data.phase === 'stories') {
-                addLine(`Fetching stories... ${data.fetched}`);
+                addLine(`Fetching issues... ${data.fetched}`);
             }
         },
         (data) => {
             // done event
             dom.jiraImportProgressBar.classList.remove('indeterminate');
             dom.jiraImportProgressBar.style.width = '100%';
-            addLine(`Found ${data.epicCount} epics, ${data.storyCount} stories`, 'success');
+            addLine(`Found ${data.epicCount} epics, ${data.storyCount} issues`, 'success');
             jiraImportState.epics = data.epics || [];
             jiraImportState.projectKey = data.projectKey || projectKey;
             jiraImportState.fetching = false;
@@ -204,7 +204,10 @@ const jiraPreviewDomRefs = () => ({
     preview: dom.jiraImportPreview
 });
 
-const jiraUpdateCount = () => updateImportCount(jiraImportState.epics, dom.jiraImportCount);
+// Jira's own words for the groups, the cards and the first status
+const jiraWords = { group: ['epic', 'epics'], item: ['issue', 'issues'], entityName: 'epic', statusNames: { planned: 'To Do' } };
+
+const jiraUpdateCount = () => updateImportCount(jiraImportState.epics, dom.jiraImportCount, jiraWords);
 
 const showJiraImportStage2 = () => {
     dom.jiraImportStage1.classList.add('hidden');
@@ -218,7 +221,7 @@ const showJiraImportStage2 = () => {
     } else {
         dom.jiraImportMode.classList.add('hidden');
     }
-    renderImportPreview(jiraImportState.epics, jiraImportState.projectKey, jiraPreviewDomRefs(), jiraUpdateCount);
+    renderImportPreview(jiraImportState.epics, jiraImportState.projectKey, jiraPreviewDomRefs(), jiraUpdateCount, jiraWords);
     jiraUpdateCount();
 };
 
@@ -242,7 +245,8 @@ const jiraDataToStorymap = () => {
     return buildStorymapFromImport(
         jiraImportState.epics,
         jiraImportState.projectKey,
-        (key) => (origin && key) ? `${origin}/browse/${key}` : ''
+        (key) => (origin && key) ? `${origin}/browse/${key}` : '',
+        jiraWords
     );
 };
 
@@ -289,7 +293,8 @@ export const parseJiraCsv = (csvText) => {
 
         const key = row[iKey].trim();
         const summary = row[iSummary].trim();
-        const type = (row[iType] || '').trim().toLowerCase();
+        const typeName = (row[iType] || '').trim();
+        const type = typeName.toLowerCase();
         const status = iStatus !== -1 ? row[iStatus]?.trim() : '';
         const description = iDesc !== -1 ? row[iDesc]?.trim() : '';
         const points = iPoints !== -1 ? parseFloat(row[iPoints]) : NaN;
@@ -303,7 +308,7 @@ export const parseJiraCsv = (csvText) => {
         }
 
         const item = {
-            key, summary, type, status: mapJiraCsvStatus(status),
+            key, summary, type, typeName, status: mapJiraCsvStatus(status),
             description: description || undefined,
             points: isNaN(points) ? undefined : points,
             labels: iLabels.map(i => (row[i] || '').trim()).filter(Boolean),
@@ -323,6 +328,7 @@ export const parseJiraCsv = (csvText) => {
         const story = {
             key: item.key,
             summary: item.summary,
+            type: item.typeName || undefined,
             status: item.status,
             description: item.description,
             points: item.points != null ? item.points : undefined,
@@ -338,9 +344,9 @@ export const parseJiraCsv = (csvText) => {
 
     const epics = [...epicMap.values()];
 
-    // Orphans go into "Other" pseudo-epic
+    // Issues with no epic go in a group of their own, with no key
     if (orphans.length > 0) {
-        epics.push({ key: null, summary: 'Other (no parent epic)', stories: orphans });
+        epics.push({ key: null, summary: 'No epic', stories: orphans });
     }
 
     return { epics, projectKey };

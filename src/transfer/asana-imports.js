@@ -3,7 +3,7 @@
 
 import { state } from '/src/core/state.js';
 import { showConfirm } from '/src/core/modals.js';
-import { extractAsanaProjectGid } from '/src/transfer/exports.js';
+import { extractAsanaProjectGid } from '/src/transfer/export-issues.js';
 import {
     readSSE, verifyConnection,
     renderImportPreview, updateImportCount, buildStorymapFromImport
@@ -66,8 +66,8 @@ const regroupAsanaData = () => {
         }
         if (unsectioned.length) {
             epics.push({
-                key: '_unsectioned',
-                summary: '(No section)',
+                key: null,
+                summary: 'No section',
                 stories: unsectioned.map(t => ({
                     key: t.key,
                     summary: t.summary,
@@ -78,8 +78,13 @@ const regroupAsanaData = () => {
         }
         asanaImportState.epics = epics;
     } else {
-        // Default: group by tasks & subtasks
-        asanaImportState.epics = rawTasks;
+        // Default: a task with subtasks is a group; a task with none belongs to nothing
+        const asStory = (t) => ({ key: t.key, summary: t.summary, description: t.description, status: t.status });
+        const loose = rawTasks.filter(t => !t.stories.length);
+        asanaImportState.epics = [
+            ...rawTasks.filter(t => t.stories.length),
+            ...(loose.length ? [{ key: null, summary: 'No parent task', stories: loose.map(asStory) }] : []),
+        ];
     }
 };
 
@@ -263,8 +268,8 @@ const asanaPreviewDomRefs = () => ({
 });
 
 const asanaMappingLabels = () => asanaImportState.mappingMode === 'sections'
-    ? { groupLabel: asanaImportState.epics.length !== 1 ? 'sections' : 'section', itemLabel: asanaImportState.epics.reduce((n, e) => n + e.stories.length, 0) !== 1 ? 'tasks' : 'task' }
-    : {};
+    ? { group: ['section', 'sections'], item: ['task', 'tasks'], entityName: 'section' }
+    : { group: ['parent task', 'parent tasks'], item: ['task', 'tasks'], entityName: 'parent' };
 
 const asanaUpdateCount = () => updateImportCount(asanaImportState.epics, dom.asanaImportCount, asanaMappingLabels());
 
@@ -310,14 +315,13 @@ export const handleAsanaMappingModeChange = (value) => {
 // ==================== Confirm Import ====================
 
 export const confirmAsanaImport = () => {
-    const isSections = asanaImportState.mappingMode === 'sections';
-    const sliceLabel = isSections ? 'IMPORTED: Sections & tasks' : 'IMPORTED: Epics & stories';
-    const entityName = isSections ? 'section' : 'epic';
+    // Sections have no page of their own to link to
+    const sectionGids = new Set(asanaImportState.sections.map(section => section.gid));
     const data = buildStorymapFromImport(
         asanaImportState.epics,
         asanaImportState.projectKey,
-        (key) => (key && /^\d+$/.test(key)) ? `https://app.asana.com/0/0/${key}` : '',
-        { sliceLabel, entityName }
+        (key) => (key && /^\d+$/.test(key) && !sectionGids.has(key)) ? `https://app.asana.com/0/0/${key}` : '',
+        asanaMappingLabels()
     );
     if (data.steps.length === 0) return;
     const mode = dom.asanaImportMode?.querySelector('input:checked')?.value || 'replace';

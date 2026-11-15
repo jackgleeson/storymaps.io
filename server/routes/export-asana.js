@@ -1,4 +1,5 @@
 import { sendSSE, fetchWithTimeout, safeJson } from '../http-helpers.js';
+import { cleanIssues, invalidIssues, createEach, errorText, uniqueLabels } from '../export-issues.js';
 
 export default function register(ctx) {
   const { route } = ctx;
@@ -39,10 +40,10 @@ export default function register(ctx) {
       res.end(JSON.stringify({ error: 'Rate limit exceeded. Try again in a minute.' }));
       return;
     }
-    const { token: asanaToken, projectGid, createSections, items } = body;
-    if (!asanaToken || !projectGid || !Array.isArray(items)) {
+    const { token: asanaToken, projectGid } = body;
+    if (!asanaToken || !projectGid) {
       res.writeHead(400, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Missing required fields: token, projectGid, items' }));
+      res.end(JSON.stringify({ error: 'Missing required fields: token, projectGid' }));
       return;
     }
     if (!/^\d+$/.test(projectGid)) {
@@ -50,93 +51,50 @@ export default function register(ctx) {
       res.end(JSON.stringify({ error: 'Invalid projectGid. Must be numeric.' }));
       return;
     }
-    const totalSubtasks = items.reduce((n, it) => n + (it.subtasks?.length || 0), 0);
-    if (items.length > 200 || totalSubtasks > 2000) {
-      res.writeHead(400, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Too many items. Max 200 items and 2000 subtasks.' }));
-      return;
-    }
+    const issues = cleanIssues(body.issues);
+    if (!issues) return invalidIssues(res);
     res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' });
     const baseUrl = 'https://app.asana.com/api/1.0';
-    const headers = { 'Authorization': `Bearer ${asanaToken}`, 'Content-Type': 'application/json' };
-    let created = 0, failed = 0;
-    for (const item of items) {
-      let sectionGid = null;
-      if (createSections) {
-        sendSSE(res, 'progress', { type: 'section', name: item.name, status: 'creating' });
-        try {
-          const secRes = await fetchWithTimeout(`${baseUrl}/projects/${projectGid}/sections`, {
-            method: 'POST', headers,
-            body: JSON.stringify({ data: { name: item.name } })
-          });
-          const secData = await safeJson(secRes);
-          if (secData.errors) {
-            sendSSE(res, 'progress', { type: 'section', name: item.name, status: 'error', error: secData.errors });
-          } else {
-            sectionGid = secData.data.gid;
-            sendSSE(res, 'progress', { type: 'section', name: item.name, status: 'created' });
-          }
-        } catch (e) {
-          sendSSE(res, 'progress', { type: 'section', name: item.name, status: 'error', error: e.message });
-        }
-      }
-      sendSSE(res, 'progress', { type: 'task', name: item.name, status: 'creating' });
-      let taskData;
+    const headers = { 'Authorization': `Bearer ${asanaToken}`, 'Content-Type': 'application/json', 'Accept': 'application/json' };
+    const asana = async (method, path, data) => {
+      const r = await fetchWithTimeout(`${baseUrl}${path}`, { method, headers, ...(data && { body: JSON.stringify({ data }) }) });
+      const json = await safeJson(r);
+      if (json.errors) throw new Error(errorText(json.errors[0]?.message || json.errors));
+      return json.data;
+    };
+
+    // Labels are Asana tags, which belong to the workspace the project is in. Use a tag with
+    // the same name when there is one, and make the rest. A tag that can't be found or made
+    // is left off; the task is still created.
+    const tagGids = new Map();
+    const wanted = uniqueLabels(issues);
+    if (wanted.length) {
+      sendSSE(res, 'progress', { type: 'labels', status: 'creating', count: wanted.length });
+      let workspace;
       try {
-        const taskBody = {
-          data: {
-            name: item.name,
-            notes: item.notes || 'Imported from Storymaps.io',
-            projects: [projectGid],
-            completed: item.completed || false
-          }
-        };
-        if (sectionGid) {
-          taskBody.data.memberships = [{ project: projectGid, section: sectionGid }];
-        }
-        const taskRes = await fetchWithTimeout(`${baseUrl}/tasks`, { method: 'POST', headers, body: JSON.stringify(taskBody) });
-        taskData = await safeJson(taskRes);
+        workspace = (await asana('GET', `/projects/${projectGid}?opt_fields=workspace`)).workspace?.gid;
       } catch (e) {
-        sendSSE(res, 'progress', { type: 'task', name: item.name, status: 'error', error: e.message });
-        failed += 1 + (item.subtasks?.length || 0); // its subtasks can't be created either
-        continue;
+        sendSSE(res, 'done', { created: 0, failed: 0, error: errorText(e.message) });
+        res.end();
+        return;
       }
-      if (taskData.errors) {
-        sendSSE(res, 'progress', { type: 'task', name: item.name, status: 'error', error: taskData.errors });
-        failed += 1 + (item.subtasks?.length || 0);
-        continue;
-      }
-      const parentGid = taskData.data.gid;
-      sendSSE(res, 'progress', { type: 'task', name: item.name, status: 'created', gid: parentGid });
-      created++;
-      for (const sub of (item.subtasks || [])) {
-        sendSSE(res, 'progress', { type: 'subtask', name: sub.name, parent: parentGid, status: 'creating' });
+      for (const name of workspace ? wanted : []) {
         try {
-          const subRes = await fetchWithTimeout(`${baseUrl}/tasks/${parentGid}/subtasks`, {
-            method: 'POST', headers,
-            body: JSON.stringify({
-              data: {
-                name: sub.name,
-                notes: sub.notes || 'Imported from Storymaps.io',
-                completed: sub.completed || false
-              }
-            })
-          });
-          const subData = await safeJson(subRes);
-          if (subData.errors) {
-            sendSSE(res, 'progress', { type: 'subtask', name: sub.name, status: 'error', error: subData.errors });
-            failed++;
-          } else {
-            sendSSE(res, 'progress', { type: 'subtask', name: sub.name, status: 'created', gid: subData.data.gid });
-            created++;
-          }
-        } catch (e) {
-          sendSSE(res, 'progress', { type: 'subtask', name: sub.name, status: 'error', error: e.message });
-          failed++;
-        }
+          const found = await asana('GET', `/workspaces/${workspace}/typeahead?resource_type=tag&count=20&opt_fields=name&query=${encodeURIComponent(name)}`);
+          const tag = (found || []).find(t => (t.name || '').toLowerCase() === name.toLowerCase())
+            || await asana('POST', `/workspaces/${workspace}/tags`, { name });
+          if (tag?.gid) tagGids.set(name, tag.gid);
+        } catch { /* left off */ }
       }
     }
-    sendSSE(res, 'done', { created, failed });
-    res.end();
+
+    await createEach(res, issues, async (issue) => {
+      const data = { name: issue.title, notes: issue.description, projects: [projectGid], completed: issue.status === 'done' };
+      const tags = issue.labels.map(name => tagGids.get(name)).filter(Boolean);
+      if (tags.length) data.tags = tags;
+      const task = await asana('POST', '/tasks', data);
+      const missing = issue.labels.length - tags.length;
+      return { gid: task.gid, ...(missing > 0 && { note: `${missing} tag${missing === 1 ? '' : 's'} left off` }) };
+    });
   });
 }

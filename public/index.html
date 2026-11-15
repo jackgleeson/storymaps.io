@@ -746,105 +746,287 @@
         </div>
     </div>
 
+    <!-- Tracker exports. One issue per card; the first stage of each is built by src/transfer/exports.js -->
     <div class="modal-overlay" id="jiraExportModal">
-        <div class="modal jira-export-modal">
+        <div class="modal api-export-modal">
             <div class="modal-header">
                 <h2>Export to Jira CSV <a href="https://support.atlassian.com/jira-cloud-administration/docs/import-data-from-a-csv-file/" target="_blank" rel="noopener" class="jira-export-help-link">(How to import)</a></h2>
-                <button class="modal-close" id="jiraExportModalClose">&times;</button>
+                <button class="modal-close" data-export="close" aria-label="Close">&times;</button>
             </div>
-            <div class="modal-body jira-export-modal-body">
-                <!-- Warning Notice -->
-                <div class="jira-csv-warning">
-                    <strong>⚠️ Limitation:</strong> Jira CSV imports currently do not support automatically linking Epics to Stories due to a <a href="https://community.atlassian.com/forums/Jira-questions/Trouble-importing-csv/qaq-p/2960795" target="_blank" rel="noopener">bug in Jira</a>. If Epic-Story linking is required, use the <strong>API</strong> export option instead.
-                </div>
-                <!-- Project Settings -->
-                <div class="jira-export-section">
-                    <div class="jira-project-row">
-                        <label for="jiraProjectName" class="jira-project-label">Project Name</label>
-                        <input type="text" class="jira-project-input" id="jiraProjectName" placeholder="e.g. My Project" spellcheck="false">
-                        <label for="jiraProjectKey" class="jira-project-label">Project Key</label>
-                        <input type="text" class="jira-project-input jira-project-key" id="jiraProjectKey" placeholder="e.g. PROJ" spellcheck="false">
-                        <label for="jiraProjectType" class="jira-project-label">Project Type</label>
-                        <select class="jira-project-input" id="jiraProjectType">
-                            <option value="software">Software</option>
-                            <option value="business">Business</option>
-                        </select>
+            <div class="modal-body api-export-modal-body">
+                <div class="export-stage" data-export-stage="1">
+                    <div class="jira-export-section">
+                        <div class="jira-project-row">
+                            <label for="jiraProjectName" class="jira-project-label">Project Name</label>
+                            <input type="text" class="jira-project-input" id="jiraProjectName" placeholder="e.g. My Project" spellcheck="false">
+                            <label for="jiraProjectKey" class="jira-project-label">Project Key</label>
+                            <input type="text" class="jira-project-input jira-project-key" id="jiraProjectKey" placeholder="e.g. PROJ" spellcheck="false">
+                            <label for="jiraProjectType" class="jira-project-label">Project Type</label>
+                            <select class="jira-project-input" id="jiraProjectType">
+                                <option value="software">Software</option>
+                                <option value="business">Business</option>
+                            </select>
+                        </div>
+                        <p class="jira-export-section-desc">Required to import into an existing Jira project. Leave blank to choose during import.</p>
                     </div>
-                    <p class="jira-export-section-desc">Required to import into an existing Jira project. Leave blank to choose during import.</p>
+                    <div class="export-choose" data-export="choose"></div>
+                    <details class="export-disclosure">
+                        <summary class="export-disclosure-summary"><span>Jira status names <span class="export-disclosure-count">(for workflows that don't use To Do, In Progress and Done)</span></span><svg class="export-disclosure-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+                        <div class="export-disclosure-body">
+                            <div class="jira-export-status-mapping">
+                                <div class="jira-status-row">
+                                    <label class="jira-status-label" for="jiraStatusNone">No Status</label>
+                                    <input type="text" class="jira-status-input" id="jiraStatusNone" value="To Do" placeholder="Jira status">
+                                </div>
+                                <div class="jira-status-row">
+                                    <label class="jira-status-label" for="jiraStatusPlanned">Planned</label>
+                                    <input type="text" class="jira-status-input" id="jiraStatusPlanned" value="To Do" placeholder="Jira status">
+                                </div>
+                                <div class="jira-status-row">
+                                    <label class="jira-status-label" for="jiraStatusInProgress">In Progress</label>
+                                    <input type="text" class="jira-status-input" id="jiraStatusInProgress" value="In Progress" placeholder="Jira status">
+                                </div>
+                                <div class="jira-status-row">
+                                    <label class="jira-status-label" for="jiraStatusBlocked">Blocked</label>
+                                    <input type="text" class="jira-status-input" id="jiraStatusBlocked" value="To Do" placeholder="Jira status">
+                                </div>
+                                <div class="jira-status-row">
+                                    <label class="jira-status-label" for="jiraStatusDone">Done</label>
+                                    <input type="text" class="jira-status-input" id="jiraStatusDone" value="Done" placeholder="Jira status">
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+                    <div class="export-actions export-actions-split">
+                        <p class="export-footer-count" data-export="count"></p>
+                        <div class="export-actions-buttons">
+                            <button class="btn btn-secondary" data-export="cancel">Cancel</button>
+                            <button class="btn" id="jiraExportDownload" data-export="next">Download CSV</button>
+                        </div>
+                    </div>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <!-- Global Settings -->
-                <div class="jira-export-filters">
-                    <div class="jira-export-filter-group">
-                        <h3 class="jira-export-section-title">Releases</h3>
-                        <div class="jira-export-slices" id="jiraExportSlices">
-                            <!-- Slice checkboxes populated here -->
-                        </div>
-                    </div>
-                    <div class="jira-export-filter-group">
-                        <h3 class="jira-export-section-title">Status</h3>
-                        <div class="jira-export-statuses" id="jiraExportStatuses">
-                            <label class="export-slice-checkbox checked">
-                                <input type="checkbox" id="jiraFilterNone" checked>
-                                <span class="export-slice-name">No Status</span>
-                            </label>
-                            <label class="export-slice-checkbox checked">
-                                <input type="checkbox" id="jiraFilterPlanned" checked>
-                                <span class="export-slice-name">Planned</span>
-                            </label>
-                            <label class="export-slice-checkbox checked">
-                                <input type="checkbox" id="jiraFilterInProgress" checked>
-                                <span class="export-slice-name">In Progress</span>
-                            </label>
-                            <label class="export-slice-checkbox checked">
-                                <input type="checkbox" id="jiraFilterBlocked" checked>
-                                <span class="export-slice-name">Blocked</span>
-                            </label>
-                            <label class="export-slice-checkbox checked">
-                                <input type="checkbox" id="jiraFilterDone" checked>
-                                <span class="export-slice-name">Done</span>
-                            </label>
+    <div class="modal-overlay" id="jiraProxyExportModal">
+        <div class="modal api-export-modal">
+            <div class="modal-header">
+                <h2>Export to Jira</h2>
+                <button class="modal-close" data-export="close" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body api-export-modal-body">
+                <div class="export-stage" data-export-stage="1">
+                    <div class="export-choose" data-export="choose"></div>
+                    <div class="export-actions export-actions-split">
+                        <p class="export-footer-count" data-export="count"></p>
+                        <div class="export-actions-buttons">
+                            <button class="btn btn-secondary" data-export="cancel">Cancel</button>
+                            <button class="btn" data-export="next">Next: connect to Jira</button>
                         </div>
                     </div>
                 </div>
+                <div class="export-stage hidden" data-export-stage="2">
+                    <div class="export-summary" data-export="summary"></div>
+                    <div class="export-instructions">
+                        <div class="export-step">
+                            <div class="export-step-header">
+                                <span class="export-step-number">1</span>
+                                <span class="export-step-title">Enter your Jira details</span>
+                            </div>
+                            <div class="export-step-content">
+                                <div class="export-fields-row">
+                                    <div class="export-field">
+                                        <label class="export-field-label">Jira Instance URL</label>
+                                        <input type="text" id="jiraProxyInstanceUrl" class="export-field-input" placeholder="your-team.atlassian.net" spellcheck="false">
+                                    </div>
+                                    <div class="export-field" style="flex: 0 0 120px;">
+                                        <label class="export-field-label">Project Key</label>
+                                        <input type="text" id="jiraProxyProjectKey" class="export-field-input" placeholder="PROJ" spellcheck="false" style="text-transform: uppercase;">
+                                    </div>
+                                </div>
+                                <div class="export-fields-row">
+                                    <div class="export-field">
+                                        <label class="export-field-label">Email</label>
+                                        <input type="email" id="jiraProxyEmail" class="export-field-input" placeholder="you@company.com" spellcheck="false">
+                                    </div>
+                                    <div class="export-field">
+                                        <label class="export-field-label">API Token <span class="export-token-help">- <a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank" rel="noopener">Get token</a></span></label>
+                                        <input type="password" id="jiraProxyToken" class="export-field-input" placeholder="your-api-token" spellcheck="false" autocomplete="off">
+                                    </div>
+                                </div>
+                                <div class="export-info-banner">
+                                    <svg class="export-info-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+                                    <span>We don't store or log your credentials. They're sent directly to Jira and discarded after your session</span>
+                                </div>
+                                <div class="export-verify-row">
+                                    <button class="btn-verify" data-export="verify"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Verify Connection</button>
+                                    <span class="export-verify-status" data-export="verify-status">Optional - test before exporting</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="export-progress hidden" data-export="progress">
+                        <div class="export-progress-bar-container"><div class="export-progress-bar" data-export="progress-bar"></div></div>
+                        <div class="export-progress-items" data-export="progress-items"></div>
+                        <div class="export-progress-summary" data-export="progress-summary"></div>
+                    </div>
+                    <div class="export-actions">
+                        <button class="btn btn-secondary" data-export="back">Back to cards</button>
+                        <button class="btn" id="jiraProxyExportRun" data-export="run">Export to Jira</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                <div class="jira-export-section">
-                    <h3 class="jira-export-section-title">Status Mapping</h3>
-                    <div class="jira-export-status-mapping">
-                        <div class="jira-status-row">
-                            <span class="jira-status-label">No Status →</span>
-                            <input type="text" class="jira-status-input" id="jiraStatusNone" value="To Do" placeholder="Jira status">
-                        </div>
-                        <div class="jira-status-row">
-                            <span class="jira-status-label">Planned →</span>
-                            <input type="text" class="jira-status-input" id="jiraStatusPlanned" value="To Do" placeholder="Jira status">
-                        </div>
-                        <div class="jira-status-row">
-                            <span class="jira-status-label">In Progress →</span>
-                            <input type="text" class="jira-status-input" id="jiraStatusInProgress" value="In Progress" placeholder="Jira status">
-                        </div>
-                        <div class="jira-status-row">
-                            <span class="jira-status-label">Blocked →</span>
-                            <input type="text" class="jira-status-input" id="jiraStatusBlocked" value="To Do" placeholder="Jira status">
-                        </div>
-                        <div class="jira-status-row">
-                            <span class="jira-status-label">Done →</span>
-                            <input type="text" class="jira-status-input" id="jiraStatusDone" value="Done" placeholder="Jira status">
+    <div class="modal-overlay" id="asanaCsvExportModal">
+        <div class="modal api-export-modal">
+            <div class="modal-header">
+                <h2>Export to Asana CSV</h2>
+                <button class="modal-close" data-export="close" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body api-export-modal-body">
+                <div class="export-stage" data-export-stage="1">
+                    <div class="export-info-banner">
+                        <svg class="export-info-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+                        <span>Import via your Asana project: click the project name dropdown, then <strong>Import</strong>, then <strong>CSV</strong></span>
+                    </div>
+                    <div class="export-choose" data-export="choose"></div>
+                    <div class="export-actions export-actions-split">
+                        <p class="export-footer-count" data-export="count"></p>
+                        <div class="export-actions-buttons">
+                            <button class="btn btn-secondary" data-export="cancel">Cancel</button>
+                            <button class="btn" id="asanaCsvExportDownload" data-export="next">Download CSV</button>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <!-- Epics Section -->
-                <div class="jira-export-section">
-                    <h3 class="jira-export-section-title">Epics & Tasks <span class="jira-export-count" id="jiraExportCount"></span></h3>
-                    <div class="jira-export-epics" id="jiraExportEpics">
-                        <!-- Epics will be populated here -->
+    <div class="modal-overlay" id="asanaProxyExportModal">
+        <div class="modal api-export-modal">
+            <div class="modal-header">
+                <h2>Export to Asana</h2>
+                <button class="modal-close" data-export="close" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body api-export-modal-body">
+                <div class="export-stage" data-export-stage="1">
+                    <div class="export-choose" data-export="choose"></div>
+                    <div class="export-actions export-actions-split">
+                        <p class="export-footer-count" data-export="count"></p>
+                        <div class="export-actions-buttons">
+                            <button class="btn btn-secondary" data-export="cancel">Cancel</button>
+                            <button class="btn" data-export="next">Next: connect to Asana</button>
+                        </div>
                     </div>
                 </div>
+                <div class="export-stage hidden" data-export-stage="2">
+                    <div class="export-summary" data-export="summary"></div>
+                    <div class="export-instructions">
+                        <div class="export-step">
+                            <div class="export-step-header">
+                                <span class="export-step-number">1</span>
+                                <span class="export-step-title">Enter your Asana details</span>
+                            </div>
+                            <div class="export-step-content">
+                                <div class="export-fields-row">
+                                    <div class="export-field">
+                                        <label class="export-field-label">Personal Access Token <span class="export-token-help">- <a href="https://app.asana.com/0/my-apps" target="_blank" rel="noopener">Get token</a></span></label>
+                                        <input type="password" id="asanaProxyApiToken" class="export-field-input" placeholder="1/12345:abcdef..." spellcheck="false" autocomplete="off">
+                                    </div>
+                                    <div class="export-field">
+                                        <label class="export-field-label">Project Page URL</label>
+                                        <input type="text" id="asanaProxyProjectUrl" class="export-field-input" placeholder="https://app.asana.com/1/.../project/1234567890/list/..." spellcheck="false">
+                                    </div>
+                                </div>
+                                <div class="export-info-banner">
+                                    <svg class="export-info-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+                                    <span>We don't store or log your token. It's sent directly to Asana and discarded after your session</span>
+                                </div>
+                                <div class="export-verify-row">
+                                    <button class="btn-verify" data-export="verify"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Verify Connection</button>
+                                    <span class="export-verify-status" data-export="verify-status">Optional - test before exporting</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="export-progress hidden" data-export="progress">
+                        <div class="export-progress-bar-container"><div class="export-progress-bar" data-export="progress-bar"></div></div>
+                        <div class="export-progress-items" data-export="progress-items"></div>
+                        <div class="export-progress-summary" data-export="progress-summary"></div>
+                    </div>
+                    <div class="export-actions">
+                        <button class="btn btn-secondary" data-export="back">Back to cards</button>
+                        <button class="btn" id="asanaProxyExportRun" data-export="run">Export to Asana</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                <div class="jira-export-actions">
-                    <button class="btn btn-secondary" id="jiraExportCancel">Cancel</button>
-                    <button class="btn" id="jiraExportDownload">Download CSV</button>
+    <div class="modal-overlay" id="phabProxyExportModal">
+        <div class="modal api-export-modal">
+            <div class="modal-header">
+                <h2>Export to Phabricator</h2>
+                <button class="modal-close" data-export="close" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body api-export-modal-body">
+                <div class="export-stage" data-export-stage="1">
+                    <div class="export-choose" data-export="choose"></div>
+                    <div class="export-actions export-actions-split">
+                        <p class="export-footer-count" data-export="count"></p>
+                        <div class="export-actions-buttons">
+                            <button class="btn btn-secondary" data-export="cancel">Cancel</button>
+                            <button class="btn" data-export="next">Next: connect to Phabricator</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="export-stage hidden" data-export-stage="2">
+                    <div class="export-summary" data-export="summary"></div>
+                    <div class="export-instructions">
+                        <div class="export-step">
+                            <div class="export-step-header">
+                                <span class="export-step-number">1</span>
+                                <span class="export-step-title">Enter your Phabricator details</span>
+                            </div>
+                            <div class="export-step-content">
+                                <div class="export-fields-row">
+                                    <div class="export-field">
+                                        <label class="export-field-label">Instance URL</label>
+                                        <input type="text" id="phabProxyInstanceUrl" class="export-field-input" placeholder="phabricator.example.com" spellcheck="false">
+                                    </div>
+                                    <div class="export-field">
+                                        <label class="export-field-label">API Token <span class="export-token-help">- <a href="#" id="phabProxyTokenHelpLink">How do I get this?</a></span></label>
+                                        <input type="password" id="phabProxyApiToken" class="export-field-input" placeholder="api-abc123..." spellcheck="false" autocomplete="off">
+                                    </div>
+                                </div>
+                                <div class="export-field export-field-tags">
+                                    <label class="export-field-label">Project Tags <span class="export-field-recommended">(recommended)</span></label>
+                                    <input type="text" id="phabProxyTags" class="export-field-input" placeholder="project-tag, another-tag" spellcheck="false">
+                                    <span class="export-field-hint">Added to every task. Use the slug from the project's /tag/ URL, or type the name with spaces (comma-separated)</span>
+                                </div>
+                                <div class="export-info-banner">
+                                    <svg class="export-info-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
+                                    <span>We don't store or log your API token. It's sent directly to Phabricator and discarded after your session</span>
+                                </div>
+                                <div class="export-verify-row">
+                                    <button class="btn-verify" data-export="verify"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Verify Connection</button>
+                                    <span class="export-verify-status" data-export="verify-status">Optional - test before exporting</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="export-progress hidden" data-export="progress">
+                        <div class="export-progress-bar-container"><div class="export-progress-bar" data-export="progress-bar"></div></div>
+                        <div class="export-progress-items" data-export="progress-items"></div>
+                        <div class="export-progress-summary" data-export="progress-summary"></div>
+                    </div>
+                    <div class="export-actions">
+                        <button class="btn btn-secondary" data-export="back">Back to cards</button>
+                        <button class="btn" id="phabProxyExportRun" data-export="run">Export to Phabricator</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -853,63 +1035,21 @@
     <div class="modal-overlay" id="phabExportModal">
         <div class="modal api-export-modal">
             <div class="modal-header">
-                <h2 id="phabExportTitle">Export to Phabricator</h2>
-                <button class="modal-close" id="phabExportModalClose">&times;</button>
+                <h2>Export to Phabricator from the console</h2>
+                <button class="modal-close" data-export="close" aria-label="Close">&times;</button>
             </div>
             <div class="modal-body api-export-modal-body">
-                <!-- Stage 1: Selection -->
-                <div class="export-stage" id="phabStage1">
-                    <!-- Filters -->
-                    <div class="export-filters">
-                        <div class="export-filter-group">
-                            <h3 class="export-section-title">Releases</h3>
-                            <div class="export-slices" id="phabExportSlices">
-                                <!-- Slice checkboxes populated here -->
-                            </div>
+                <div class="export-stage" data-export-stage="1">
+                    <div class="export-choose" data-export="choose"></div>
+                    <div class="export-actions export-actions-split">
+                        <p class="export-footer-count" data-export="count"></p>
+                        <div class="export-actions-buttons">
+                            <button class="btn btn-secondary" data-export="cancel">Cancel</button>
+                            <button class="btn" data-export="next">Next: get the code</button>
                         </div>
-                        <div class="export-filter-group">
-                            <h3 class="export-section-title">Status</h3>
-                            <div class="export-statuses" id="phabExportStatuses">
-                                <label class="export-slice-checkbox checked">
-                                    <input type="checkbox" id="phabFilterNone" checked>
-                                    <span class="export-slice-name">No Status</span>
-                                </label>
-                                <label class="export-slice-checkbox checked">
-                                    <input type="checkbox" id="phabFilterPlanned" checked>
-                                    <span class="export-slice-name">Planned</span>
-                                </label>
-                                <label class="export-slice-checkbox checked">
-                                    <input type="checkbox" id="phabFilterInProgress" checked>
-                                    <span class="export-slice-name">In Progress</span>
-                                </label>
-                                <label class="export-slice-checkbox checked">
-                                    <input type="checkbox" id="phabFilterBlocked" checked>
-                                    <span class="export-slice-name">Blocked</span>
-                                </label>
-                                <label class="export-slice-checkbox checked">
-                                    <input type="checkbox" id="phabFilterDone" checked>
-                                    <span class="export-slice-name">Done</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Epics Section -->
-                    <div class="export-section">
-                        <h3 class="export-section-title">Epics & Tasks <span class="export-count" id="phabExportCount"></span></h3>
-                        <div class="export-epics" id="phabExportEpics">
-                            <!-- Epics will be populated here -->
-                        </div>
-                    </div>
-
-                    <div class="export-actions">
-                        <button class="btn btn-secondary" id="phabExportCancel">Cancel</button>
-                        <button class="btn" id="phabExportNext">Step 2: Import →</button>
                     </div>
                 </div>
-
-                <!-- Stage 2: Instructions -->
-                <div class="export-stage hidden" id="phabStage2">
+                <div class="export-stage hidden" data-export-stage="2">
                     <div class="export-instructions">
                         <div class="export-step">
                             <div class="export-step-header">
@@ -923,14 +1063,14 @@
                                         <input type="text" id="phabInstanceUrl" class="export-field-input" placeholder="phabricator.example.com" spellcheck="false">
                                     </div>
                                     <div class="export-field">
-                                        <label class="export-field-label">API Token <span class="export-token-help">— <a href="#" id="phabTokenHelpLink">How do I get this?</a></span></label>
+                                        <label class="export-field-label">API Token <span class="export-token-help">- <a href="#" id="phabTokenHelpLink">How do I get this?</a></span></label>
                                         <input type="text" id="phabApiToken" class="export-field-input" placeholder="api-abc123..." spellcheck="false" autocomplete="off">
                                     </div>
                                 </div>
                                 <div class="export-field export-field-tags">
                                     <label class="export-field-label">Project Tags <span class="export-field-recommended">(recommended)</span></label>
                                     <input type="text" id="phabTags" class="export-field-input" placeholder="project-tag, another-tag" spellcheck="false">
-                                    <span class="export-field-hint">Use the slug from the project's /tag/ URL, or type the name with spaces (comma-separated)</span>
+                                    <span class="export-field-hint">Added to every task. Use the slug from the project's /tag/ URL, or type the name with spaces (comma-separated)</span>
                                 </div>
                                 <div class="export-info-banner">
                                     <svg class="export-info-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
@@ -965,552 +1105,33 @@
                     </div>
 
                     <div class="export-actions">
-                        <button class="btn btn-secondary" id="phabExportBack">← Step 1: Select Tasks</button>
-                        <button class="btn" id="phabExportDone">Done</button>
+                        <button class="btn btn-secondary" data-export="back">Back to cards</button>
+                        <button class="btn" id="phabExportDone" data-export="done">Done</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Jira API Export Modal -->
-    <div class="modal-overlay" id="jiraApiExportModal">
-        <div class="modal api-export-modal">
-            <div class="modal-header">
-                <h2 id="jiraApiExportTitle">Export to Jira</h2>
-                <button class="modal-close" id="jiraApiExportModalClose">&times;</button>
-            </div>
-            <div class="modal-body api-export-modal-body">
-                <!-- Stage 1: Selection -->
-                <div class="export-stage" id="jiraApiStage1">
-                    <!-- Filters -->
-                    <div class="export-filters">
-                        <div class="export-filter-group">
-                            <h3 class="export-section-title">Releases</h3>
-                            <div class="export-slices" id="jiraApiExportSlices">
-                                <!-- Slice checkboxes populated here -->
-                            </div>
-                        </div>
-                        <div class="export-filter-group">
-                            <h3 class="export-section-title">Status</h3>
-                            <div class="export-statuses" id="jiraApiExportStatuses">
-                                <label class="export-slice-checkbox checked">
-                                    <input type="checkbox" id="jiraApiFilterNone" checked>
-                                    <span class="export-slice-name">No Status</span>
-                                </label>
-                                <label class="export-slice-checkbox checked">
-                                    <input type="checkbox" id="jiraApiFilterPlanned" checked>
-                                    <span class="export-slice-name">Planned</span>
-                                </label>
-                                <label class="export-slice-checkbox checked">
-                                    <input type="checkbox" id="jiraApiFilterInProgress" checked>
-                                    <span class="export-slice-name">In Progress</span>
-                                </label>
-                                <label class="export-slice-checkbox checked">
-                                    <input type="checkbox" id="jiraApiFilterDone" checked>
-                                    <span class="export-slice-name">Done</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Epics Section -->
-                    <div class="export-section">
-                        <h3 class="export-section-title">Epics & Stories <span class="export-count" id="jiraApiExportCount"></span></h3>
-                        <div class="export-epics" id="jiraApiExportEpics">
-                            <!-- Epics will be populated here -->
-                        </div>
-                    </div>
-
-                    <div class="export-actions">
-                        <button class="btn btn-secondary" id="jiraApiExportCancel">Cancel</button>
-                        <button class="btn" id="jiraApiExportNext">Step 2: Import →</button>
-                    </div>
-                </div>
-
-                <!-- Stage 2: Instructions -->
-                <div class="export-stage hidden" id="jiraApiStage2">
-                    <div class="export-instructions">
-                        <div class="export-step">
-                            <div class="export-step-header">
-                                <span class="export-step-number">1</span>
-                                <span class="export-step-title">Enter your Jira details</span>
-                            </div>
-                            <div class="export-step-content">
-                                <div class="export-fields-row">
-                                    <div class="export-field">
-                                        <label class="export-field-label">Email</label>
-                                        <input type="email" id="jiraApiEmail" class="export-field-input" placeholder="you@company.com" spellcheck="false">
-                                    </div>
-                                    <div class="export-field">
-                                        <label class="export-field-label">API Token <span class="export-token-help">— <a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank" rel="noopener">Get token</a></span></label>
-                                        <input type="text" id="jiraApiToken" class="export-field-input" placeholder="your-api-token" spellcheck="false" autocomplete="off">
-                                    </div>
-                                </div>
-                                <div class="export-fields-row">
-                                    <div class="export-field">
-                                        <label class="export-field-label">Project Key</label>
-                                        <input type="text" id="jiraApiProjectKey" class="export-field-input" placeholder="PROJ" spellcheck="false" style="width: 120px; text-transform: uppercase;">
-                                    </div>
-                                </div>
-                                <div class="export-info-banner">
-                                    <svg class="export-info-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
-                                    <span>Your credentials are never stored or sent to our servers</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="export-step">
-                            <div class="export-step-header">
-                                <span class="export-step-number">2</span>
-                                <span class="export-step-title">Paste temporary import function into browser console</span>
-                            </div>
-                            <p class="export-step-desc">Open your Jira project, open DevTools (<span class="devtools-instructions"></span>), go to <strong>Console</strong>, paste this code and press Enter:</p>
-                            <div class="export-code-block">
-                                <pre id="jiraApiImportFunction"></pre>
-                                <button class="btn btn-secondary export-copy-btn" id="jiraApiCopyFunction">Copy</button>
-                            </div>
-                        </div>
-
-                        <div class="export-step">
-                            <div class="export-step-header">
-                                <span class="export-step-number">3</span>
-                                <span class="export-step-title">Run the import</span>
-                            </div>
-                            <p class="export-step-desc">Still in the console, paste this code and press Enter:</p>
-                            <div class="export-code-block">
-                                <pre id="jiraApiImportCall"></pre>
-                                <button class="btn btn-secondary export-copy-btn" id="jiraApiCopyCall">Copy</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="export-actions">
-                        <button class="btn btn-secondary" id="jiraApiExportBack">← Step 1: Select Tasks</button>
-                        <button class="btn" id="jiraApiExportDone">Done</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Asana Export Modal -->
-    <div class="modal-overlay" id="asanaExportModal">
-        <div class="modal api-export-modal">
-            <div class="modal-header">
-                <h2 id="asanaExportTitle">Export to Asana</h2>
-                <button class="modal-close" id="asanaExportModalClose">&times;</button>
-            </div>
-            <div class="modal-body api-export-modal-body">
-                <!-- Stage 1: Selection -->
-                <div class="export-stage" id="asanaStage1">
-                    <!-- Filters -->
-                    <div class="export-filters">
-                        <div class="export-filter-group">
-                            <h3 class="export-section-title">Releases</h3>
-                            <div class="export-slices" id="asanaExportSlices">
-                                <!-- Slice checkboxes populated here -->
-                            </div>
-                        </div>
-                        <div class="export-filter-group">
-                            <h3 class="export-section-title">Status</h3>
-                            <div class="export-statuses" id="asanaExportStatuses">
-                                <label class="export-slice-checkbox checked">
-                                    <input type="checkbox" id="asanaFilterNone" checked>
-                                    <span class="export-slice-name">No Status</span>
-                                </label>
-                                <label class="export-slice-checkbox checked">
-                                    <input type="checkbox" id="asanaFilterPlanned" checked>
-                                    <span class="export-slice-name">Planned</span>
-                                </label>
-                                <label class="export-slice-checkbox checked">
-                                    <input type="checkbox" id="asanaFilterInProgress" checked>
-                                    <span class="export-slice-name">In Progress</span>
-                                </label>
-                                <label class="export-slice-checkbox checked">
-                                    <input type="checkbox" id="asanaFilterDone" checked>
-                                    <span class="export-slice-name">Done</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <label class="export-slice-checkbox" style="margin-top: 8px;">
-                        <input type="checkbox" id="asanaCreateSections">
-                        <span class="export-slice-name">Also create Asana sections for parent tasks?</span>
-                    </label>
-
-                    <!-- Epics Section -->
-                    <div class="export-section">
-                        <h3 class="export-section-title">Parent Tasks & Subtasks <span class="export-count" id="asanaExportCount"></span></h3>
-                        <div class="export-epics" id="asanaExportEpics">
-                            <!-- Epics will be populated here -->
-                        </div>
-                    </div>
-
-                    <div class="export-actions">
-                        <button class="btn btn-secondary" id="asanaExportCancel">Cancel</button>
-                        <button class="btn" id="asanaExportNext">Step 2: Import →</button>
-                    </div>
-                </div>
-
-                <!-- Stage 2: Instructions -->
-                <div class="export-stage hidden" id="asanaStage2">
-                    <div class="export-instructions">
-                        <div class="export-step">
-                            <div class="export-step-header">
-                                <span class="export-step-number">1</span>
-                                <span class="export-step-title">Enter your Asana details</span>
-                            </div>
-                            <div class="export-step-content">
-                                <div class="export-fields-row">
-                                    <div class="export-field">
-                                        <label class="export-field-label">Personal Access Token <span class="export-token-help">— <a href="https://app.asana.com/0/my-apps" target="_blank" rel="noopener">Get token</a></span></label>
-                                        <input type="text" id="asanaApiToken" class="export-field-input" placeholder="1/12345:abcdef..." spellcheck="false" autocomplete="off">
-                                    </div>
-                                    <div class="export-field">
-                                        <label class="export-field-label">Project Page URL</label>
-                                        <input type="text" id="asanaProjectUrl" class="export-field-input" placeholder="https://app.asana.com/1/.../project/1234567890/list/..." spellcheck="false">
-                                    </div>
-                                </div>
-                                <div class="export-info-banner">
-                                    <svg class="export-info-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
-                                    <span>Your token is never stored or sent to our servers</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="export-step">
-                            <div class="export-step-header">
-                                <span class="export-step-number">2</span>
-                                <span class="export-step-title">Paste temporary import function into browser console</span>
-                            </div>
-                            <p class="export-step-desc">Open <strong>app.asana.com</strong>, open DevTools (<span class="devtools-instructions"></span>), go to <strong>Console</strong>, paste this code and press Enter:</p>
-                            <div class="export-code-block">
-                                <pre id="asanaImportFunction"></pre>
-                                <button class="btn btn-secondary export-copy-btn" id="asanaCopyFunction">Copy</button>
-                            </div>
-                        </div>
-
-                        <div class="export-step">
-                            <div class="export-step-header">
-                                <span class="export-step-number">3</span>
-                                <span class="export-step-title">Run the import</span>
-                            </div>
-                            <p class="export-step-desc">Still in the console, paste this code and press Enter:</p>
-                            <div class="export-code-block">
-                                <pre id="asanaImportCall"></pre>
-                                <button class="btn btn-secondary export-copy-btn" id="asanaCopyCall">Copy</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="export-actions">
-                        <button class="btn btn-secondary" id="asanaExportBack">← Step 1: Select Tasks</button>
-                        <button class="btn" id="asanaExportDone">Done</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Jira Proxy Export Modal -->
-    <div class="modal-overlay" id="jiraProxyExportModal">
-        <div class="modal api-export-modal">
-            <div class="modal-header">
-                <h2 id="jiraProxyExportTitle">Export to Jira</h2>
-                <button class="modal-close" id="jiraProxyExportModalClose">&times;</button>
-            </div>
-            <div class="modal-body api-export-modal-body">
-                <!-- Stage 1: Selection -->
-                <div class="export-stage" id="jiraProxyStage1">
-                    <div class="export-filters">
-                        <div class="export-filter-group">
-                            <h3 class="export-section-title">Releases</h3>
-                            <div class="export-slices" id="jiraProxyExportSlices"></div>
-                        </div>
-                        <div class="export-filter-group">
-                            <h3 class="export-section-title">Status</h3>
-                            <div class="export-statuses">
-                                <label class="export-slice-checkbox checked"><input type="checkbox" id="jiraProxyFilterNone" checked><span class="export-slice-name">No Status</span></label>
-                                <label class="export-slice-checkbox checked"><input type="checkbox" id="jiraProxyFilterPlanned" checked><span class="export-slice-name">Planned</span></label>
-                                <label class="export-slice-checkbox checked"><input type="checkbox" id="jiraProxyFilterInProgress" checked><span class="export-slice-name">In Progress</span></label>
-                                <label class="export-slice-checkbox checked"><input type="checkbox" id="jiraProxyFilterBlocked" checked><span class="export-slice-name">Blocked</span></label>
-                                <label class="export-slice-checkbox checked"><input type="checkbox" id="jiraProxyFilterDone" checked><span class="export-slice-name">Done</span></label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="export-section">
-                        <h3 class="export-section-title">Epics & Stories <span class="export-count" id="jiraProxyExportCount"></span></h3>
-                        <div class="export-epics" id="jiraProxyExportEpics"></div>
-                    </div>
-                    <div class="export-actions">
-                        <button class="btn btn-secondary" id="jiraProxyExportCancel">Cancel</button>
-                        <button class="btn" id="jiraProxyExportNext">Step 2: Credentials →</button>
-                    </div>
-                </div>
-                <!-- Stage 2: Credentials + Export -->
-                <div class="export-stage hidden" id="jiraProxyStage2">
-                    <div class="export-summary" id="jiraProxySummary"></div>
-                    <div class="export-instructions">
-                        <div class="export-step">
-                            <div class="export-step-header">
-                                <span class="export-step-number">1</span>
-                                <span class="export-step-title">Enter your Jira details</span>
-                            </div>
-                            <div class="export-step-content">
-                                <div class="export-fields-row">
-                                    <div class="export-field">
-                                        <label class="export-field-label">Jira Instance URL</label>
-                                        <input type="text" id="jiraProxyInstanceUrl" class="export-field-input" placeholder="your-team.atlassian.net" spellcheck="false">
-                                    </div>
-                                    <div class="export-field" style="flex: 0 0 120px;">
-                                        <label class="export-field-label">Project Key</label>
-                                        <input type="text" id="jiraProxyProjectKey" class="export-field-input" placeholder="PROJ" spellcheck="false" style="text-transform: uppercase;">
-                                    </div>
-                                </div>
-                                <div class="export-fields-row">
-                                    <div class="export-field">
-                                        <label class="export-field-label">Email</label>
-                                        <input type="email" id="jiraProxyEmail" class="export-field-input" placeholder="you@company.com" spellcheck="false">
-                                    </div>
-                                    <div class="export-field">
-                                        <label class="export-field-label">API Token <span class="export-token-help">— <a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank" rel="noopener">Get token</a></span></label>
-                                        <input type="password" id="jiraProxyToken" class="export-field-input" placeholder="your-api-token" spellcheck="false" autocomplete="off">
-                                    </div>
-                                </div>
-                                <div class="export-info-banner">
-                                    <svg class="export-info-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
-                                    <span>We don't store or log your credentials. They're sent directly to Jira and discarded after your session</span>
-                                </div>
-                                <div class="export-verify-row">
-                                    <button class="btn-verify" id="jiraProxyVerifyBtn"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Verify Connection</button>
-                                    <span class="export-verify-status" id="jiraProxyVerifyStatus">Optional - test before exporting</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="export-progress hidden" id="jiraProxyProgress">
-                        <div class="export-progress-bar-container"><div class="export-progress-bar" id="jiraProxyProgressBar"></div></div>
-                        <div class="export-progress-items" id="jiraProxyProgressItems"></div>
-                        <div class="export-progress-summary" id="jiraProxyProgressSummary"></div>
-                    </div>
-                    <div class="export-actions">
-                        <button class="btn btn-secondary" id="jiraProxyExportBack">← Step 1: Select Stories</button>
-                        <button class="btn" id="jiraProxyExportRun">Export to Jira</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Phabricator Proxy Export Modal -->
-    <div class="modal-overlay" id="phabProxyExportModal">
-        <div class="modal api-export-modal">
-            <div class="modal-header">
-                <h2 id="phabProxyExportTitle">Export to Phabricator</h2>
-                <button class="modal-close" id="phabProxyExportModalClose">&times;</button>
-            </div>
-            <div class="modal-body api-export-modal-body">
-                <!-- Stage 1: Selection -->
-                <div class="export-stage" id="phabProxyStage1">
-                    <div class="export-filters">
-                        <div class="export-filter-group">
-                            <h3 class="export-section-title">Releases</h3>
-                            <div class="export-slices" id="phabProxyExportSlices"></div>
-                        </div>
-                        <div class="export-filter-group">
-                            <h3 class="export-section-title">Status</h3>
-                            <div class="export-statuses">
-                                <label class="export-slice-checkbox checked"><input type="checkbox" id="phabProxyFilterNone" checked><span class="export-slice-name">No Status</span></label>
-                                <label class="export-slice-checkbox checked"><input type="checkbox" id="phabProxyFilterPlanned" checked><span class="export-slice-name">Planned</span></label>
-                                <label class="export-slice-checkbox checked"><input type="checkbox" id="phabProxyFilterInProgress" checked><span class="export-slice-name">In Progress</span></label>
-                                <label class="export-slice-checkbox checked"><input type="checkbox" id="phabProxyFilterBlocked" checked><span class="export-slice-name">Blocked</span></label>
-                                <label class="export-slice-checkbox checked"><input type="checkbox" id="phabProxyFilterDone" checked><span class="export-slice-name">Done</span></label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="export-section">
-                        <h3 class="export-section-title">Epics & Tasks <span class="export-count" id="phabProxyExportCount"></span></h3>
-                        <div class="export-epics" id="phabProxyExportEpics"></div>
-                    </div>
-                    <div class="export-actions">
-                        <button class="btn btn-secondary" id="phabProxyExportCancel">Cancel</button>
-                        <button class="btn" id="phabProxyExportNext">Step 2: Credentials →</button>
-                    </div>
-                </div>
-                <!-- Stage 2: Credentials + Export -->
-                <div class="export-stage hidden" id="phabProxyStage2">
-                    <div class="export-summary" id="phabProxySummary"></div>
-                    <div class="export-instructions">
-                        <div class="export-step">
-                            <div class="export-step-header">
-                                <span class="export-step-number">1</span>
-                                <span class="export-step-title">Enter your Phabricator details</span>
-                            </div>
-                            <div class="export-step-content">
-                                <div class="export-fields-row">
-                                    <div class="export-field">
-                                        <label class="export-field-label">Instance URL</label>
-                                        <input type="text" id="phabProxyInstanceUrl" class="export-field-input" placeholder="phabricator.example.com" spellcheck="false">
-                                    </div>
-                                    <div class="export-field">
-                                        <label class="export-field-label">API Token <span class="export-token-help">— <a href="#" id="phabProxyTokenHelpLink">How do I get this?</a></span></label>
-                                        <input type="password" id="phabProxyApiToken" class="export-field-input" placeholder="api-abc123..." spellcheck="false" autocomplete="off">
-                                    </div>
-                                </div>
-                                <div class="export-field export-field-tags">
-                                    <label class="export-field-label">Project Tags <span class="export-field-recommended">(recommended)</span></label>
-                                    <input type="text" id="phabProxyTags" class="export-field-input" placeholder="project-tag, another-tag" spellcheck="false">
-                                    <span class="export-field-hint">Use the slug from the project's /tag/ URL, or type the name with spaces (comma-separated)</span>
-                                </div>
-                                <div class="export-info-banner">
-                                    <svg class="export-info-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
-                                    <span>We don't store or log your API token. It's sent directly to Phabricator and discarded after your session</span>
-                                </div>
-                                <div class="export-verify-row">
-                                    <button class="btn-verify" id="phabProxyVerifyBtn"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Verify Connection</button>
-                                    <span class="export-verify-status" id="phabProxyVerifyStatus">Optional - test before exporting</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="export-progress hidden" id="phabProxyProgress">
-                        <div class="export-progress-bar-container"><div class="export-progress-bar" id="phabProxyProgressBar"></div></div>
-                        <div class="export-progress-items" id="phabProxyProgressItems"></div>
-                        <div class="export-progress-summary" id="phabProxyProgressSummary"></div>
-                    </div>
-                    <div class="export-actions">
-                        <button class="btn btn-secondary" id="phabProxyExportBack">← Step 1: Select Tasks</button>
-                        <button class="btn" id="phabProxyExportRun">Export to Phabricator</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Asana Proxy Export Modal -->
-    <div class="modal-overlay" id="asanaProxyExportModal">
-        <div class="modal api-export-modal">
-            <div class="modal-header">
-                <h2 id="asanaProxyExportTitle">Export to Asana</h2>
-                <button class="modal-close" id="asanaProxyExportModalClose">&times;</button>
-            </div>
-            <div class="modal-body api-export-modal-body">
-                <!-- Stage 1: Selection -->
-                <div class="export-stage" id="asanaProxyStage1">
-                    <div class="export-filters">
-                        <div class="export-filter-group">
-                            <h3 class="export-section-title">Releases</h3>
-                            <div class="export-slices" id="asanaProxyExportSlices"></div>
-                        </div>
-                        <div class="export-filter-group">
-                            <h3 class="export-section-title">Status</h3>
-                            <div class="export-statuses">
-                                <label class="export-slice-checkbox checked"><input type="checkbox" id="asanaProxyFilterNone" checked><span class="export-slice-name">No Status</span></label>
-                                <label class="export-slice-checkbox checked"><input type="checkbox" id="asanaProxyFilterPlanned" checked><span class="export-slice-name">Planned</span></label>
-                                <label class="export-slice-checkbox checked"><input type="checkbox" id="asanaProxyFilterInProgress" checked><span class="export-slice-name">In Progress</span></label>
-                                <label class="export-slice-checkbox checked"><input type="checkbox" id="asanaProxyFilterBlocked" checked><span class="export-slice-name">Blocked</span></label>
-                                <label class="export-slice-checkbox checked"><input type="checkbox" id="asanaProxyFilterDone" checked><span class="export-slice-name">Done</span></label>
-                            </div>
-                        </div>
-                    </div>
-                    <label class="export-slice-checkbox" style="margin-top: 8px;">
-                        <input type="checkbox" id="asanaProxyCreateSections">
-                        <span class="export-slice-name">Also create Asana sections for parent tasks?</span>
-                    </label>
-                    <div class="export-section">
-                        <h3 class="export-section-title">Parent Tasks & Subtasks <span class="export-count" id="asanaProxyExportCount"></span></h3>
-                        <div class="export-epics" id="asanaProxyExportEpics"></div>
-                    </div>
-                    <div class="export-actions">
-                        <button class="btn btn-secondary" id="asanaProxyExportCancel">Cancel</button>
-                        <button class="btn" id="asanaProxyExportNext">Step 2: Credentials →</button>
-                    </div>
-                </div>
-                <!-- Stage 2: Credentials + Export -->
-                <div class="export-stage hidden" id="asanaProxyStage2">
-                    <div class="export-summary" id="asanaProxySummary"></div>
-                    <div class="export-instructions">
-                        <div class="export-step">
-                            <div class="export-step-header">
-                                <span class="export-step-number">1</span>
-                                <span class="export-step-title">Enter your Asana details</span>
-                            </div>
-                            <div class="export-step-content">
-                                <div class="export-fields-row">
-                                    <div class="export-field">
-                                        <label class="export-field-label">Personal Access Token <span class="export-token-help">— <a href="https://app.asana.com/0/my-apps" target="_blank" rel="noopener">Get token</a></span></label>
-                                        <input type="password" id="asanaProxyApiToken" class="export-field-input" placeholder="1/12345:abcdef..." spellcheck="false" autocomplete="off">
-                                    </div>
-                                    <div class="export-field">
-                                        <label class="export-field-label">Project Page URL</label>
-                                        <input type="text" id="asanaProxyProjectUrl" class="export-field-input" placeholder="https://app.asana.com/1/.../project/1234567890/list/..." spellcheck="false">
-                                    </div>
-                                </div>
-                                <div class="export-info-banner">
-                                    <svg class="export-info-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
-                                    <span>We don't store or log your token. It's sent directly to Asana and discarded after your session</span>
-                                </div>
-                                <div class="export-verify-row">
-                                    <button class="btn-verify" id="asanaProxyVerifyBtn"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Verify Connection</button>
-                                    <span class="export-verify-status" id="asanaProxyVerifyStatus">Optional - test before exporting</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="export-progress hidden" id="asanaProxyProgress">
-                        <div class="export-progress-bar-container"><div class="export-progress-bar" id="asanaProxyProgressBar"></div></div>
-                        <div class="export-progress-items" id="asanaProxyProgressItems"></div>
-                        <div class="export-progress-summary" id="asanaProxyProgressSummary"></div>
-                    </div>
-                    <div class="export-actions">
-                        <button class="btn btn-secondary" id="asanaProxyExportBack">← Step 1: Select Tasks</button>
-                        <button class="btn" id="asanaProxyExportRun">Export to Asana</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Linear Proxy Export Modal -->
     <div class="modal-overlay" id="linearProxyExportModal">
         <div class="modal api-export-modal">
             <div class="modal-header">
-                <h2 id="linearProxyExportTitle">Export to Linear</h2>
-                <button class="modal-close" id="linearProxyExportModalClose">&times;</button>
+                <h2>Export to Linear</h2>
+                <button class="modal-close" data-export="close" aria-label="Close">&times;</button>
             </div>
             <div class="modal-body api-export-modal-body">
-                <!-- Stage 1: Selection -->
-                <div class="export-stage" id="linearProxyStage1">
-                    <div class="export-filters">
-                        <div class="export-filter-group">
-                            <h3 class="export-section-title">Releases</h3>
-                            <div class="export-slices" id="linearProxyExportSlices"></div>
+                <div class="export-stage" data-export-stage="1">
+                    <div class="export-choose" data-export="choose"></div>
+                    <div class="export-actions export-actions-split">
+                        <p class="export-footer-count" data-export="count"></p>
+                        <div class="export-actions-buttons">
+                            <button class="btn btn-secondary" data-export="cancel">Cancel</button>
+                            <button class="btn" data-export="next">Next: connect to Linear</button>
                         </div>
-                        <div class="export-filter-group">
-                            <h3 class="export-section-title">Status</h3>
-                            <div class="export-statuses">
-                                <label class="export-slice-checkbox checked"><input type="checkbox" id="linearProxyFilterNone" checked><span class="export-slice-name">No Status</span></label>
-                                <label class="export-slice-checkbox checked"><input type="checkbox" id="linearProxyFilterPlanned" checked><span class="export-slice-name">Planned</span></label>
-                                <label class="export-slice-checkbox checked"><input type="checkbox" id="linearProxyFilterInProgress" checked><span class="export-slice-name">In Progress</span></label>
-                                <label class="export-slice-checkbox checked"><input type="checkbox" id="linearProxyFilterBlocked" checked><span class="export-slice-name">Blocked</span></label>
-                                <label class="export-slice-checkbox checked"><input type="checkbox" id="linearProxyFilterDone" checked><span class="export-slice-name">Done</span></label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="export-section">
-                        <h3 class="export-section-title">Parent Issues & Sub-issues <span class="export-count" id="linearProxyExportCount"></span></h3>
-                        <div class="export-epics" id="linearProxyExportEpics"></div>
-                    </div>
-                    <div class="export-actions">
-                        <button class="btn btn-secondary" id="linearProxyExportCancel">Cancel</button>
-                        <button class="btn" id="linearProxyExportNext">Step 2: Credentials &#x2192;</button>
                     </div>
                 </div>
-                <!-- Stage 2: Credentials + Export -->
-                <div class="export-stage hidden" id="linearProxyStage2">
-                    <div class="export-summary" id="linearProxySummary"></div>
+                <div class="export-stage hidden" data-export-stage="2">
+                    <div class="export-summary" data-export="summary"></div>
                     <div class="export-instructions">
                         <div class="export-step">
                             <div class="export-step-header">
@@ -1533,84 +1154,21 @@
                                     <span>We don't store or log your API key. It's sent directly to Linear and discarded after your session</span>
                                 </div>
                                 <div class="export-verify-row">
-                                    <button class="btn-verify" id="linearProxyVerifyBtn"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Verify Connection</button>
-                                    <span class="export-verify-status" id="linearProxyVerifyStatus">Optional - test before exporting</span>
+                                    <button class="btn-verify" data-export="verify"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M13.5 4.5L6 12 2.5 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Verify Connection</button>
+                                    <span class="export-verify-status" data-export="verify-status">Optional - test before exporting</span>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="export-progress hidden" id="linearProxyProgress">
-                        <div class="export-progress-bar-container"><div class="export-progress-bar" id="linearProxyProgressBar"></div></div>
-                        <div class="export-progress-items" id="linearProxyProgressItems"></div>
-                        <div class="export-progress-summary" id="linearProxyProgressSummary"></div>
+                    <div class="export-progress hidden" data-export="progress">
+                        <div class="export-progress-bar-container"><div class="export-progress-bar" data-export="progress-bar"></div></div>
+                        <div class="export-progress-items" data-export="progress-items"></div>
+                        <div class="export-progress-summary" data-export="progress-summary"></div>
                     </div>
                     <div class="export-actions">
-                        <button class="btn btn-secondary" id="linearProxyExportBack">&larr; Step 1: Select Issues</button>
-                        <button class="btn" id="linearProxyExportRun">Export to Linear</button>
+                        <button class="btn btn-secondary" data-export="back">Back to cards</button>
+                        <button class="btn" id="linearProxyExportRun" data-export="run">Export to Linear</button>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Asana CSV Export Modal -->
-    <div class="modal-overlay" id="asanaCsvExportModal">
-        <div class="modal api-export-modal">
-            <div class="modal-header">
-                <h2>Export to Asana CSV</h2>
-                <button class="modal-close" id="asanaCsvExportModalClose">&times;</button>
-            </div>
-            <div class="modal-body api-export-modal-body">
-                <div class="export-info-banner">
-                    <svg class="export-info-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
-                    <span>Import via your Asana project: click the project name dropdown → <strong>Import</strong> → <strong>CSV</strong></span>
-                </div>
-
-                <div class="export-filters">
-                    <div class="export-filter-group">
-                        <h3 class="export-section-title">Releases</h3>
-                        <div class="export-slices" id="asanaCsvExportSlices"></div>
-                    </div>
-                    <div class="export-filter-group">
-                        <h3 class="export-section-title">Status</h3>
-                        <div class="export-statuses" id="asanaCsvExportStatuses">
-                            <label class="export-slice-checkbox checked">
-                                <input type="checkbox" id="asanaCsvFilterNone" checked>
-                                <span class="export-slice-name">No Status</span>
-                            </label>
-                            <label class="export-slice-checkbox checked">
-                                <input type="checkbox" id="asanaCsvFilterPlanned" checked>
-                                <span class="export-slice-name">Planned</span>
-                            </label>
-                            <label class="export-slice-checkbox checked">
-                                <input type="checkbox" id="asanaCsvFilterInProgress" checked>
-                                <span class="export-slice-name">In Progress</span>
-                            </label>
-                            <label class="export-slice-checkbox checked">
-                                <input type="checkbox" id="asanaCsvFilterBlocked" checked>
-                                <span class="export-slice-name">Blocked</span>
-                            </label>
-                            <label class="export-slice-checkbox checked">
-                                <input type="checkbox" id="asanaCsvFilterDone" checked>
-                                <span class="export-slice-name">Done</span>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <label class="export-slice-checkbox" style="margin-top: 8px;">
-                    <input type="checkbox" id="asanaCsvCreateSections">
-                    <span class="export-slice-name">Also create Asana sections for parent tasks?</span>
-                </label>
-
-                <div class="export-section">
-                    <h3 class="export-section-title">Parent Tasks & Subtasks <span class="export-count" id="asanaCsvExportCount"></span></h3>
-                    <div class="export-epics" id="asanaCsvExportEpics"></div>
-                </div>
-
-                <div class="export-actions">
-                    <button class="btn btn-secondary" id="asanaCsvExportCancel">Cancel</button>
-                    <button class="btn" id="asanaCsvExportDownload">Download CSV</button>
                 </div>
             </div>
         </div>

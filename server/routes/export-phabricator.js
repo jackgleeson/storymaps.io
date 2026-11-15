@@ -1,4 +1,5 @@
-import { validateExternalUrl, sendSSE, curlPost } from '../http-helpers.js';
+import { validateExternalUrl, curlPost } from '../http-helpers.js';
+import { cleanIssues, invalidIssues, createEach } from '../export-issues.js';
 
 export default function register(ctx) {
   const { route } = ctx;
@@ -43,18 +44,14 @@ export default function register(ctx) {
       res.end(JSON.stringify({ error: 'Rate limit exceeded. Try again in a minute.' }));
       return;
     }
-    const { instanceUrl, token: phabToken, tags, items } = body;
-    if (!instanceUrl || !phabToken || !Array.isArray(items)) {
+    const { instanceUrl, token: phabToken, tags } = body;
+    if (!instanceUrl || !phabToken) {
       res.writeHead(400, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Missing required fields: instanceUrl, token, items' }));
+      res.end(JSON.stringify({ error: 'Missing required fields: instanceUrl, token' }));
       return;
     }
-    const totalSubtasks = items.reduce((n, it) => n + (it.subtasks?.length || 0), 0);
-    if (items.length > 200 || totalSubtasks > 2000) {
-      res.writeHead(400, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Too many items. Max 200 items and 2000 subtasks.' }));
-      return;
-    }
+    const issues = cleanIssues(body.issues);
+    if (!issues) return invalidIssues(res);
     const origin = validateExternalUrl(instanceUrl);
     if (!origin) {
       res.writeHead(400, { 'Content-Type': 'application/json' });
@@ -63,80 +60,27 @@ export default function register(ctx) {
     }
     res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' });
     const apiUrl = `${origin}/api/maniphest.edit`;
-    const phabStatusMap = { none: 'open', planned: 'open', 'in-progress': 'progress', blocked: 'stalled', done: 'resolved' };
-    const userTags = Array.isArray(tags) ? tags : [];
-    let created = 0, failed = 0;
-    for (const item of items) {
-      sendSSE(res, 'progress', { type: 'task', title: item.title, status: 'creating' });
-      const txnParams = new URLSearchParams();
-      txnParams.set('api.token', phabToken);
+    const phabStatus = { none: 'open', planned: 'open', 'in-progress': 'progress', blocked: 'stalled', done: 'resolved' };
+    // Phabricator tags are projects that must already exist, so only the ones typed into the
+    // export window are added. The slice and the step are lines in the description.
+    const userTags = Array.isArray(tags) ? tags.filter(t => typeof t === 'string' && t).slice(0, 50) : [];
+    await createEach(res, issues, async (issue) => {
+      const txn = new URLSearchParams();
+      txn.set('api.token', phabToken);
       let i = 0;
-      txnParams.set(`transactions[${i}][type]`, 'title');
-      txnParams.set(`transactions[${i++}][value]`, item.title);
-      txnParams.set(`transactions[${i}][type]`, 'description');
-      txnParams.set(`transactions[${i++}][value]`, item.description || '');
-      if (item.status) {
-        txnParams.set(`transactions[${i}][type]`, 'status');
-        txnParams.set(`transactions[${i++}][value]`, phabStatusMap[item.status] || 'open');
+      txn.set(`transactions[${i}][type]`, 'title');
+      txn.set(`transactions[${i++}][value]`, issue.title);
+      txn.set(`transactions[${i}][type]`, 'description');
+      txn.set(`transactions[${i++}][value]`, issue.description);
+      txn.set(`transactions[${i}][type]`, 'status');
+      txn.set(`transactions[${i++}][value]`, phabStatus[issue.status]);
+      if (userTags.length) {
+        txn.set(`transactions[${i}][type]`, 'projects.add');
+        userTags.forEach((tag, j) => txn.set(`transactions[${i}][value][${j}]`, tag));
       }
-      const itemTags = item.type === 'epic' ? ['epic', ...userTags] : [...userTags];
-      if (itemTags.length) {
-        txnParams.set(`transactions[${i}][type]`, 'projects.add');
-        itemTags.forEach((tag, j) => txnParams.set(`transactions[${i}][value][${j}]`, tag));
-        i++;
-      }
-      let parentData;
-      try {
-        parentData = await curlPost(apiUrl, txnParams);
-      } catch (e) {
-        sendSSE(res, 'progress', { type: 'task', title: item.title, status: 'error', error: e.message });
-        failed += 1 + (item.subtasks?.length || 0); // its subtasks can't be created either
-        continue;
-      }
-      if (parentData.error_code) {
-        sendSSE(res, 'progress', { type: 'task', title: item.title, status: 'error', error: parentData.error_info });
-        failed += 1 + (item.subtasks?.length || 0);
-        continue;
-      }
-      const parentPhid = parentData.result.object.phid;
-      const parentId = parentData.result.object.id;
-      sendSSE(res, 'progress', { type: 'task', title: item.title, status: 'created', id: `T${parentId}` });
-      created++;
-      for (const sub of (item.subtasks || [])) {
-        sendSSE(res, 'progress', { type: 'subtask', title: sub.title, parent: `T${parentId}`, status: 'creating' });
-        try {
-          const subParams = new URLSearchParams();
-          subParams.set('api.token', phabToken);
-          let si = 0;
-          subParams.set(`transactions[${si}][type]`, 'title');
-          subParams.set(`transactions[${si++}][value]`, sub.title);
-          subParams.set(`transactions[${si}][type]`, 'description');
-          subParams.set(`transactions[${si++}][value]`, sub.description || '');
-          if (sub.status) {
-            subParams.set(`transactions[${si}][type]`, 'status');
-            subParams.set(`transactions[${si++}][value]`, phabStatusMap[sub.status] || 'open');
-          }
-          subParams.set(`transactions[${si}][type]`, 'parent');
-          subParams.set(`transactions[${si++}][value]`, parentPhid);
-          if (userTags.length) {
-            subParams.set(`transactions[${si}][type]`, 'projects.add');
-            userTags.forEach((tag, j) => subParams.set(`transactions[${si}][value][${j}]`, tag));
-          }
-          const subData = await curlPost(apiUrl, subParams);
-          if (subData.error_code) {
-            sendSSE(res, 'progress', { type: 'subtask', title: sub.title, status: 'error', error: subData.error_info });
-            failed++;
-          } else {
-            sendSSE(res, 'progress', { type: 'subtask', title: sub.title, status: 'created', id: `T${subData.result.object.id}` });
-            created++;
-          }
-        } catch (e) {
-          sendSSE(res, 'progress', { type: 'subtask', title: sub.title, status: 'error', error: e.message });
-          failed++;
-        }
-      }
-    }
-    sendSSE(res, 'done', { created, failed });
-    res.end();
+      const data = await curlPost(apiUrl, txn);
+      if (data.error_code) throw new Error(data.error_info || data.error_code);
+      return { id: `T${data.result.object.id}` };
+    });
   });
 }

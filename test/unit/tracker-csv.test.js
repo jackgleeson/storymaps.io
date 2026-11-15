@@ -27,8 +27,8 @@ describe('Jira CSV', () => {
     assert.equal(epics.length, 1);
     assert.equal(epics[0].summary, 'Checkout');
     assert.deepEqual(epics[0].stories, [
-      { key: 'SHOP-2', summary: 'Card payment', status: 'done', description: 'Visa, Mastercard', points: 3, labels: [] },
-      { key: 'SHOP-3', summary: 'Receipts', status: 'planned', description: undefined, points: undefined, labels: [] },
+      { key: 'SHOP-2', summary: 'Card payment', type: 'Story', status: 'done', description: 'Visa, Mastercard', points: 3, labels: [] },
+      { key: 'SHOP-3', summary: 'Receipts', type: 'Story', status: 'planned', description: undefined, points: undefined, labels: [] },
     ]);
   });
 
@@ -43,10 +43,10 @@ describe('Jira CSV', () => {
     assert.deepEqual(epics[0].stories[0].labels, ['payments', 'web']);
   });
 
-  test('stories without an epic go into an Other group', () => {
-    const { epics } = parseJiraCsv(csv(header, ['Loose', 'SHOP-9', 'Task', '', '', '', '', 'SHOP']));
-    assert.deepEqual(epics.map(e => [e.key, e.summary]), [[null, 'Other (no parent epic)']]);
-    assert.equal(epics[0].stories[0].summary, 'Loose');
+  test('issues without an epic go into a group with no key, and keep their type', () => {
+    const { epics } = parseJiraCsv(csv(header, ['Loose', 'SHOP-9', 'Task', '', '', '', '', 'SHOP'], ['Crash', 'SHOP-10', 'Bug', '', '', '', '', 'SHOP']));
+    assert.deepEqual(epics.map(e => [e.key, e.summary]), [[null, 'No epic']]);
+    assert.deepEqual(epics[0].stories.map(s => [s.summary, s.type]), [['Loose', 'Task'], ['Crash', 'Bug']]);
   });
 
   test('maps statuses', () => {
@@ -132,6 +132,7 @@ describe('Linear CSV', () => {
     assert.equal(teamKey, 'ENG');
     assert.deepEqual(projects.map(p => p.name), ['Shop']);
     const [parent, child] = issues;
+    assert.equal(child.projectId, projects[0].id, 'so issues can be grouped by project');
     assert.equal(parent.status, 'in-progress');
     assert.equal(parent.points, 5);
     assert.deepEqual(parent.labels, ['web', 'payments']);
@@ -172,11 +173,12 @@ describe('Phabricator CSV', () => {
     assert.deepEqual(epics.flatMap(e => e.stories).map(s => s.status), ['planned', 'planned', 'in-progress', 'done', 'done', 'done']);
   });
 
-  test('spreads tasks over at most 8 columns', () => {
+  test('a file has no parent tasks, so every task is in one group with no key', () => {
     const rows = Array.from({ length: 10 }, (_, i) => [String(i), '', `Task ${i}`, '', 'Open', '', '', '']);
     const { epics } = parsePhabricatorCsv(csv(header, ...rows));
-    assert.equal(epics.length, 8);
-    assert.deepEqual(epics[0].stories.map(s => s.summary), ['Task 0', 'Task 8']);
+    assert.equal(epics.length, 1);
+    assert.equal(epics[0].key, null);
+    assert.equal(epics[0].stories.length, 10);
   });
 
   test('needs a Title column', () => {

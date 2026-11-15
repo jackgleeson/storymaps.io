@@ -91,14 +91,16 @@ export default function register(ctx) {
     );
     if (!epics) { res.end(); return; }
 
-    // Phase 2: Fetch stories
+    // Phase 2: Fetch every other issue: stories, tasks, bugs and the rest. Subtasks are left
+    // out; they belong to an issue, not to an epic.
     sendSSE(res, 'progress', { phase: 'stories', fetched: 0 });
-    const stories = await fetchAllIssues(
-      `project = "${safeKey}" AND issuetype = Story ORDER BY rank ASC`,
-      'summary,description,status,parent,labels,priority,story_points,customfield_10016',
+    const others = await fetchAllIssues(
+      `project = "${safeKey}" AND issuetype != Epic ORDER BY rank ASC`,
+      'summary,description,status,parent,labels,priority,issuetype,story_points,customfield_10016',
       'stories'
     );
-    if (!stories) { res.end(); return; }
+    if (!others) { res.end(); return; }
+    const stories = others.filter(issue => !issue.fields.issuetype?.subtask);
 
     // Phase 3: Group stories under epics
     const epicMap = new Map();
@@ -122,6 +124,7 @@ export default function register(ctx) {
       const storyObj = {
         key: story.key,
         summary: story.fields.summary || '',
+        type: story.fields.issuetype?.name || 'Story',
         description: adfToPlainText(story.fields.description).trim(),
         status: jiraStatusToStorymaps(story.fields.status?.statusCategory?.key),
         labels: story.fields.labels || [],
@@ -137,7 +140,7 @@ export default function register(ctx) {
     if (orphanStories.length > 0) {
       epicList.push({
         key: null,
-        summary: 'Other',
+        summary: 'No epic',
         description: '',
         status: 'planned',
         labels: [],

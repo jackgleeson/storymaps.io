@@ -57,8 +57,6 @@ export const CLICKS = [
     ['#asanaProxyExportRun', 'export-asana'],
     ['#phabProxyExportRun', 'export-phabricator'],
     ['#linearProxyExportRun', 'export-linear'],
-    ['#jiraApiExportDone', 'export-jira-script'],
-    ['#asanaExportDone', 'export-asana-script'],
     ['#phabExportDone', 'export-phabricator-script'],
 
     // Keeping work

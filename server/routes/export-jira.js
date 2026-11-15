@@ -1,4 +1,5 @@
-import { validateExternalUrl, sendSSE, fetchWithTimeout, safeJson } from '../http-helpers.js';
+import { validateExternalUrl, fetchWithTimeout, safeJson } from '../http-helpers.js';
+import { cleanIssues, invalidIssues, createEach, errorText, toAdf } from '../export-issues.js';
 
 export default function register(ctx) {
   const { route } = ctx;
@@ -46,18 +47,14 @@ export default function register(ctx) {
       res.end(JSON.stringify({ error: 'Rate limit exceeded. Try again in a minute.' }));
       return;
     }
-    const { instanceUrl, email, token, projectKey, epics } = body;
-    if (!instanceUrl || !email || !token || !projectKey || !Array.isArray(epics)) {
+    const { instanceUrl, email, token, projectKey } = body;
+    if (!instanceUrl || !email || !token || !projectKey) {
       res.writeHead(400, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Missing required fields: instanceUrl, email, token, projectKey, epics' }));
+      res.end(JSON.stringify({ error: 'Missing required fields: instanceUrl, email, token, projectKey' }));
       return;
     }
-    const totalStories = epics.reduce((n, e) => n + (e.stories?.length || 0), 0);
-    if (epics.length > 200 || totalStories > 2000) {
-      res.writeHead(400, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Too many items. Max 200 epics and 2000 stories.' }));
-      return;
-    }
+    const issues = cleanIssues(body.issues);
+    if (!issues) return invalidIssues(res);
     if (!/^[A-Z0-9_]{1,50}$/i.test(projectKey)) {
       res.writeHead(400, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Invalid projectKey. Must be 1-50 alphanumeric/underscore characters.' }));
@@ -71,67 +68,60 @@ export default function register(ctx) {
     }
     res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' });
     const auth = Buffer.from(`${email}:${token}`).toString('base64');
-    const headers = { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' };
+    const headers = { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json', 'Accept': 'application/json' };
     const apiUrl = `${origin}/rest/api/3/issue`;
-    let created = 0, failed = 0;
-    for (const epic of epics) {
-      sendSSE(res, 'progress', { type: 'epic', summary: epic.summary, status: 'creating' });
-      let epicData;
+
+    // Some Jira projects have no Story work type, or keep Labels off the create screen. When
+    // Jira says so, carry on without, for this issue and the ones after it.
+    let issueType = 'Story';
+    let sendLabels = true;
+    const createIssue = async (issue) => {
+      for (let attempt = 0; attempt < 3; attempt++) {
+        const fields = { project: { key: projectKey }, summary: issue.title, issuetype: { name: issueType } };
+        const description = toAdf(issue.description);
+        if (description) fields.description = description;
+        if (sendLabels && issue.labels.length) fields.labels = issue.labels;
+        const r = await fetchWithTimeout(apiUrl, { method: 'POST', headers, body: JSON.stringify({ fields }) });
+        const data = await safeJson(r);
+        if (data.key) return data;
+        const errors = data.errors || {};
+        if (errors.issuetype && issueType === 'Story') { issueType = 'Task'; continue; }
+        if (errors.labels && sendLabels) { sendLabels = false; continue; }
+        throw new Error(errorText(Object.keys(errors).length ? errors : data.errorMessages?.length ? data.errorMessages : `HTTP ${r.status}`));
+      }
+      throw new Error('Jira would not create the issue');
+    };
+
+    // A new issue starts in the first status of the workflow. Cards that are in progress or
+    // done are moved on with a transition, found once and reused. Failing to move an issue
+    // does not fail the issue.
+    const CATEGORY = { 'in-progress': 'indeterminate', done: 'done' };
+    const NAME = { 'in-progress': /^in progress$/i, done: /^done$/i };
+    const transitionIds = {};
+    const moveIssue = async (key, status) => {
+      if (!CATEGORY[status]) return true;
+      const url = `${apiUrl}/${encodeURIComponent(key)}/transitions`;
       try {
-        const epicRes = await fetchWithTimeout(apiUrl, {
-          method: 'POST', headers,
-          body: JSON.stringify({
-            fields: {
-              project: { key: projectKey },
-              summary: epic.summary,
-              description: { type: 'doc', version: 1, content: [{ type: 'paragraph', content: [{ type: 'text', text: epic.description || 'Imported from Storymaps.io' }] }] },
-              issuetype: { name: 'Epic' }
-            }
-          })
-        });
-        epicData = await safeJson(epicRes);
-      } catch (e) {
-        sendSSE(res, 'progress', { type: 'epic', summary: epic.summary, status: 'error', error: e.message });
-        failed += 1 + (epic.stories?.length || 0); // its stories can't be created either
-        continue;
-      }
-      if (epicData.errors || epicData.errorMessages?.length) {
-        sendSSE(res, 'progress', { type: 'epic', summary: epic.summary, status: 'error', error: epicData.errors || epicData.errorMessages });
-        failed += 1 + (epic.stories?.length || 0);
-        continue;
-      }
-      sendSSE(res, 'progress', { type: 'epic', summary: epic.summary, status: 'created', key: epicData.key });
-      created++;
-      for (const story of (epic.stories || [])) {
-        sendSSE(res, 'progress', { type: 'story', summary: story.summary, parent: epicData.key, status: 'creating' });
-        try {
-          const storyRes = await fetchWithTimeout(apiUrl, {
-            method: 'POST', headers,
-            body: JSON.stringify({
-              fields: {
-                project: { key: projectKey },
-                summary: story.summary,
-                description: { type: 'doc', version: 1, content: [{ type: 'paragraph', content: [{ type: 'text', text: story.description || 'Imported from Storymaps.io' }] }] },
-                issuetype: { name: 'Story' },
-                parent: { key: epicData.key }
-              }
-            })
-          });
-          const storyData = await safeJson(storyRes);
-          if (storyData.errors || storyData.errorMessages?.length) {
-            sendSSE(res, 'progress', { type: 'story', summary: story.summary, status: 'error', error: storyData.errors || storyData.errorMessages });
-            failed++;
-          } else {
-            sendSSE(res, 'progress', { type: 'story', summary: story.summary, status: 'created', key: storyData.key });
-            created++;
-          }
-        } catch (e) {
-          sendSSE(res, 'progress', { type: 'story', summary: story.summary, status: 'error', error: e.message });
-          failed++;
+        if (!(status in transitionIds)) {
+          const data = await safeJson(await fetchWithTimeout(url, { method: 'GET', headers }));
+          const matches = (data.transitions || []).filter(t => t.to?.statusCategory?.key === CATEGORY[status]);
+          transitionIds[status] = (matches.find(t => NAME[status].test(t.to?.name || '')) || matches[0])?.id ?? null;
         }
+        if (!transitionIds[status]) return false;
+        const r = await fetchWithTimeout(url, { method: 'POST', headers, body: JSON.stringify({ transition: { id: transitionIds[status] } }) });
+        return r.status >= 200 && r.status < 300;
+      } catch {
+        return false;
       }
-    }
-    sendSSE(res, 'done', { created, failed });
-    res.end();
+    };
+
+    await createEach(res, issues, async (issue) => {
+      const data = await createIssue(issue);
+      const moved = await moveIssue(data.key, issue.status);
+      const notes = [];
+      if (!sendLabels && issue.labels.length) notes.push('no labels');
+      if (!moved) notes.push('status not set');
+      return { key: data.key, ...(notes.length && { note: notes.join(', ') }) };
+    });
   });
 }

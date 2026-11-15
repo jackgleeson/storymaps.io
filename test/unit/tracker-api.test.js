@@ -52,23 +52,25 @@ describe('Jira import', () => {
   const adf = (...paragraphs) => ({ type: 'doc', content: paragraphs.map(text => ({ type: 'paragraph', content: [{ type: 'text', text }] })) });
   const issue = (key, fields) => ({ key, fields: { summary: key, ...fields } });
 
-  test('fetches epics and stories and groups the stories under their epics', async () => {
+  test('fetches epics, then every other kind of issue, and groups the issues under their epics', async () => {
     respond = (url) => {
       const jql = new URL(url).searchParams.get('jql');
       if (jql.includes('issuetype = Epic')) return [200, { issues: [issue('SHOP-1', { summary: 'Checkout', description: adf('Paying', 'for things'), status: { statusCategory: { key: 'indeterminate' } } })] }];
+      assert.match(jql, /issuetype != Epic/);
       return [200, { issues: [
-        issue('SHOP-2', { summary: 'Card', parent: { key: 'SHOP-1' }, status: { statusCategory: { key: 'done' } }, customfield_10016: 3, labels: ['pay'] }),
-        issue('SHOP-3', { summary: 'Loose', status: { statusCategory: { key: 'new' } } }),
+        issue('SHOP-2', { summary: 'Card', issuetype: { name: 'Story' }, parent: { key: 'SHOP-1' }, status: { statusCategory: { key: 'done' } }, customfield_10016: 3, labels: ['pay'] }),
+        issue('SHOP-3', { summary: 'Loose', issuetype: { name: 'Bug' }, status: { statusCategory: { key: 'new' } } }),
+        issue('SHOP-4', { summary: 'Write the test', issuetype: { name: 'Subtask', subtask: true }, parent: { key: 'SHOP-2' } }),
       ] }];
     };
     const { done } = await call('/api/import/jira', body);
     assert.equal(done.epicCount, 2);
-    assert.equal(done.storyCount, 2);
+    assert.equal(done.storyCount, 2, 'subtasks are left out');
     const [checkout, other] = done.epics;
     assert.equal(checkout.description, 'Paying\nfor things');
     assert.equal(checkout.status, 'in-progress');
-    assert.deepEqual(checkout.stories.map(s => [s.key, s.status, s.points, s.labels]), [['SHOP-2', 'done', 3, ['pay']]]);
-    assert.deepEqual([other.key, other.summary, other.stories.map(s => s.key)], [null, 'Other', ['SHOP-3']]);
+    assert.deepEqual(checkout.stories.map(s => [s.key, s.type, s.status, s.points, s.labels]), [['SHOP-2', 'Story', 'done', 3, ['pay']]]);
+    assert.deepEqual([other.key, other.summary, other.stories.map(s => [s.key, s.type])], [null, 'No epic', [['SHOP-3', 'Bug']]]);
   });
 
   test('calls the Jira API for the project with basic auth', async () => {
@@ -82,7 +84,7 @@ describe('Jira import', () => {
   test('follows the next page token', async () => {
     respond = (url) => {
       const params = new URL(url).searchParams;
-      if (params.get('jql').includes('Epic')) return [200, { issues: [] }];
+      if (params.get('jql').includes('issuetype = Epic')) return [200, { issues: [] }];
       return params.get('nextPageToken')
         ? [200, { issues: [issue('S-2', {})] }]
         : [200, { issues: [issue('S-1', {})], nextPageToken: 'page2' }];

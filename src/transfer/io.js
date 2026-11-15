@@ -14,6 +14,7 @@ import { closeMainMenu, zoomToFit } from '/src/ui/navigation.js';
 import * as yjs from '/src/core/yjs.js';
 import * as log from '/src/core/log.js';
 import * as exportsMod from '/src/transfer/exports.js';
+import { legendToAdd } from '/src/transfer/import-helpers.js';
 import * as jiraImportsMod from '/src/transfer/jira-imports.js';
 import * as asanaImportsMod from '/src/transfer/asana-imports.js';
 import * as phabImportsMod from '/src/transfer/phabricator-imports.js';
@@ -50,6 +51,7 @@ export const init = (deps) => {
 
             if (isAppend) {
                 appendImport(data);
+                state.legend.push(...legendToAdd(data.legend, state.legend));
             } else {
                 deserialize(data);
             }

@@ -84,7 +84,7 @@ const regroupLinearData = () => {
 
         const epics = parentOrder.map(id => parentMap.get(id));
         if (orphans.length > 0) {
-            epics.push({ key: null, summary: 'Other (no parent issue)', stories: orphans });
+            epics.push({ key: null, summary: 'No parent issue', stories: orphans });
         }
         linearImportState.epics = epics;
     } else {
@@ -127,7 +127,7 @@ const regroupLinearData = () => {
 
         const epics = projectOrder.map(id => projectMap.get(id));
         if (noProject.length > 0) {
-            epics.push({ key: null, summary: 'Other (no project)', stories: noProject });
+            epics.push({ key: null, summary: 'No project', stories: noProject });
         }
         linearImportState.epics = epics;
     }
@@ -307,8 +307,8 @@ const linearPreviewDomRefs = () => ({
 });
 
 const linearMappingLabels = () => linearImportState.mappingMode === 'project'
-    ? { groupLabel: linearImportState.epics.length !== 1 ? 'projects' : 'project', itemLabel: linearImportState.epics.reduce((n, e) => n + e.stories.length, 0) !== 1 ? 'issues' : 'issue' }
-    : { groupLabel: linearImportState.epics.length !== 1 ? 'parent issues' : 'parent issue', itemLabel: linearImportState.epics.reduce((n, e) => n + e.stories.length, 0) !== 1 ? 'sub-issues' : 'sub-issue' };
+    ? { group: ['project', 'projects'], item: ['issue', 'issues'], entityName: 'project' }
+    : { group: ['parent issue', 'parent issues'], item: ['issue', 'issues'], entityName: 'parent' };
 
 const linearUpdateCount = () => updateImportCount(linearImportState.epics, dom.linearImportCount, linearMappingLabels());
 
@@ -350,10 +350,6 @@ export const handleLinearMappingModeChange = (value) => {
 // ==================== Confirm Import ====================
 
 export const confirmLinearImport = () => {
-    const isProject = linearImportState.mappingMode === 'project';
-    const sliceLabel = isProject ? 'IMPORTED: Projects & issues' : 'IMPORTED: Parent issues & sub-issues';
-    const entityName = isProject ? 'project' : 'parent';
-
     const buildUrlFn = (key) => {
         // key is an issue identifier like "JAC-5" or a project ID
         const issue = linearImportState.rawIssues.find(i => i.identifier === key);
@@ -367,7 +363,7 @@ export const confirmLinearImport = () => {
         linearImportState.epics,
         linearImportState.teamName,
         buildUrlFn,
-        { sliceLabel, entityName }
+        linearMappingLabels()
     );
     if (data.steps.length === 0) return;
     const mode = dom.linearImportMode?.querySelector('input:checked')?.value || 'replace';
@@ -441,6 +437,8 @@ export const parseLinearCsv = (csvText) => {
             status: mapLinearCsvStatus(status, completed),
             points: isNaN(estimate) ? undefined : estimate,
             labels: labelsRaw ? labelsRaw.split(',').map(l => l.trim()).filter(Boolean) : [],
+            // A file has no project IDs, so the name stands in for one
+            projectId: project || undefined,
             projectName: project || undefined,
             parentIdentifier: parentIssue || undefined,
             hasChildren: false // computed in second pass
