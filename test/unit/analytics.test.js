@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { arrivalHook, clickEvent, CLICKS } from '../../src/features/analytics.js';
+import { arrivalHook, clickEvent, CLICKS, installsCli } from '../../src/features/analytics.js';
 import { readFileSync } from 'node:fs';
 
 test('the first hit uses the address the visitor arrived on, without a slice or card link', () => {
@@ -36,6 +36,29 @@ test('a tracked button gives its event, and anything else gives nothing', () => 
   assert.equal(clickEvent(button('a.recent-menu-item')), 'recent-map-opened-menu');
   assert.equal(clickEvent(button('#somethingElse')), null);
   assert.equal(clickEvent({}), null, 'a click on something with no closest');
+});
+
+test('copying the command that installs the CLI counts, and copying any other command does not', () => {
+  // The Copy button sits in the same figure as the command it copies
+  const copyButton = (command) => {
+    const el = { closest: (s) => (s === '.code-copy' ? el : s === 'figure' ? { textContent: `Terminal Copy $ ${command}` } : null) };
+    return el;
+  };
+  assert.equal(clickEvent(copyButton('npm install -g storymaps')), 'cli-install-copied');
+  assert.equal(clickEvent(copyButton('storymaps pull abc12345')), null);
+  // Selecting the command and copying it by hand is recognised by the same text
+  assert.equal(installsCli('$ npm install -g storymaps'), true);
+  assert.equal(installsCli('npm install'), false);
+  assert.equal(installsCli(undefined), false);
+});
+
+test('the pages that tell people to install the CLI show the command with a Copy button', () => {
+  for (const file of ['developers.html', 'docs/cli.html', 'docs/cli/install-the-storymaps-cli.html']) {
+    const page = readFileSync(new URL(`../../public/${file}`, import.meta.url), 'utf-8');
+    const figure = page.split('<figure class="term">').find(part => part.includes('npm install -g storymaps'));
+    assert.ok(figure, `${file} shows the install command in a terminal`);
+    assert.match(figure, /class="code-copy"/, `${file} has a Copy button on it`);
+  }
 });
 
 test('home page imports and samples are named after the button', () => {

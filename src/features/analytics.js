@@ -1,10 +1,16 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
-// Page view counts and button clicks with Umami Cloud, on storymaps.io only. A self-hosted copy,
-// the dev server and the tests send nothing. Umami uses no cookies. All the tracking is in this file:
-// the app loads it, and so do the docs and site pages (public/docs/docs.js), for their page views.
+// Page view counts, button clicks and copies of the CLI install command with Umami Cloud, on
+// storymaps.io only. A self-hosted copy, the dev server and the tests send nothing. Umami uses no
+// cookies. All the tracking is in this file: the app loads it, and so do the docs and site pages
+// (public/docs/docs.js), for their page views and for the commands people copy from them.
 
 const WEBSITE_ID = '4c921c04-1a31-41cc-85b5-26b9e2e75451';
 const LIVE_HOSTNAME = 'storymaps.io';
+
+// The command that installs the CLI, wherever a page shows it
+const CLI_INSTALL = 'npm install -g storymaps';
+export const CLI_INSTALL_COPIED = 'cli-install-copied';
+export const installsCli = (text) => (text || '').includes(CLI_INSTALL);
 
 // The buttons to count: [selector, event name, text the button must start with]. These count
 // clicks, so an action someone cancels or that fails afterwards still counts. Only ever send the
@@ -64,6 +70,10 @@ export const CLICKS = [
     ['.backup-restore-btn', 'backup-restored'],
     ['#lockModalConfirm', 'map-locked', 'Lock Map'],
 
+    // Getting the CLI: the Copy button on the command that installs it, on the Developers page
+    // and the CLI docs. There is nothing to download, so copying that command is the nearest sign.
+    ['.code-copy', (el) => (installsCli(el.closest('figure')?.textContent) ? CLI_INSTALL_COPIED : null)],
+
     // Other
     ['.project-panel-primary', 'project-created', 'Create project'],
     ['#buildAiBtn', 'build-with-ai'],
@@ -85,8 +95,23 @@ export const clickEvent = (target) => {
 export const trackClicks = () => {
     document.addEventListener('click', (e) => {
         const name = clickEvent(e.target);
+        if (name === CLI_INSTALL_COPIED) _installCounted = Date.now();
         if (name) window.umami?.track(name);
     }, { capture: true });
+};
+
+// Many people select a command and copy it by hand instead of using the Copy button. That counts
+// too. Only the name of the event is sent, never what was copied.
+// Where the clipboard can't be written to directly, the Copy button copies through a selection,
+// which looks like a copy by hand. One just counted by its click isn't counted again.
+let _installCounted = 0;
+export const trackCopies = () => {
+    document.addEventListener('copy', () => {
+        if (!installsCli(String(document.getSelection?.() || ''))) return;
+        if (Date.now() - _installCounted < 1000) return;
+        _installCounted = Date.now();
+        window.umami?.track(CLI_INSTALL_COPIED);
+    });
 };
 
 // Samples, the tour and new maps swap the address for a new map as they open, often before the
@@ -115,4 +140,5 @@ export const loadAnalytics = () => {
     script.dataset.excludeHash = 'true';
     document.head.appendChild(script);
     trackClicks();
+    trackCopies();
 };
