@@ -641,6 +641,17 @@ describe('pages and files', () => {
     }
   });
 
+  test('sends the old address of a renamed docs page to its new one', async () => {
+    const old = '/docs/the-problem-with-big-documents-and-long-lists';
+    const now = '/docs/big-documents-and-long-lists';
+    for (const [from, to] of [[old, now], [`${old}/`, now], [`${old}.html`, now], [`${old}?a=1`, `${now}?a=1`]]) {
+      const res = await fetch(`${base}${from}`, { redirect: 'manual' });
+      assert.equal(res.status, 301, from);
+      assert.equal(res.headers.get('location'), to, from);
+    }
+    assert.equal((await fetch(`${base}${now}`, { redirect: 'manual' })).status, 200);
+  });
+
   test('keeps story maps and projects out of search results, and leaves the pages to find alone', async () => {
     for (const path of ['/abc12345', '/new', '/sample/recipe-app', '/p/abc12345', '/p/abc12345/def67890', '/docs/search.json']) {
       assert.equal((await fetch(`${base}${path}`)).headers.get('x-robots-tag'), 'noindex', path);

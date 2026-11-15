@@ -213,6 +213,10 @@ const PAGE_ROUTES = {
   '/developers': '/developers.html',
 };
 
+// Docs pages that were renamed, old address to new, written by the docs build. The old address
+// sends people on to the new one, so links and search results from before the rename still arrive.
+const MOVED_PAGES = await readFile(join(PUBLIC_DIR, 'docs', 'moved.json'), 'utf-8').then(JSON.parse).catch(() => ({}));
+
 // Text files say they're UTF-8, so a stylesheet's ✓ or › never shows as "âœ“"
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -307,6 +311,14 @@ const server = createServer(async (req, res) => {
   // Redirect /favicon.ico -> /favicon.svg (browsers request .ico for non-HTML pages)
   if (reqPath === '/favicon.ico') {
     res.writeHead(302, { 'Location': '/favicon.svg' });
+    res.end();
+    return;
+  }
+
+  // A docs page that was renamed: on to its new address, keeping anything after a ?
+  const movedTo = MOVED_PAGES[reqPath.replace(/\/+$/, '').replace(/\.html$/, '')];
+  if (movedTo) {
+    res.writeHead(301, { 'Location': movedTo + req.url.slice(reqPath.length) });
     res.end();
     return;
   }
