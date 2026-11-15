@@ -1,4 +1,4 @@
-import { test, expect, openMap, acceptDialog } from './fixtures.js';
+import { test, expect, openMap, acceptDialog, stepNames as stepNamesOf } from './fixtures.js';
 
 // Tracker imports: the review step lists one row per card, and the cards land in a slice
 // called Imported, under an empty MVP slice. A group (an epic, a parent task) is a card in its own colour.
@@ -157,4 +157,87 @@ test('tracker details are remembered in the browser for next time, but never the
   await page.locator('#importJiraBtn').click();
   await page.locator('#jiraImportEmail').fill('');
   expect(JSON.parse(await page.evaluate(() => localStorage.getItem('trackerDetails')))).toEqual({ 'jira.instanceUrl': 'acme.atlassian.net', 'jira.projectKey': 'SHOP' });
+});
+
+// After any tracker import a guide lights one thing at a time, like the tour: the backbone
+// first, then the cards.
+const guide = (page) => page.locator('#tourTooltip');
+
+test('after an import, a guide builds the backbone before any card is moved', async ({ page, createMap, pullMap }) => {
+  const id = await createMap();
+  await openMap(page, id);
+  // The test browser starts with the tour marked as taken
+  await page.evaluate(() => localStorage.removeItem('tourCompleted'));
+  await importCsv(page, 'jira', 'jira', 'jira.csv', jiraCsv);
+  await page.locator('#jiraImportStage2 #jiraImportMode label', { hasText: 'Replace map' }).click();
+  await page.locator('#jiraImportConfirmBtn').click();
+  await acceptDialog(page);
+
+  // Who it's for: the red card is lit and ready to type in
+  await expect(guide(page).locator('.tour-tooltip-title')).toHaveText('Who is it for?');
+  await expect(guide(page).locator('.tour-tooltip-body')).toContainText('Your 6 imported cards are safe in the Imported slice');
+  await expect(guide(page).locator('.tour-progress-dot')).toHaveCount(4);
+  await expect(page.locator('.users-row .story-card .story-text').first()).toBeFocused();
+  await page.keyboard.type('Customer');
+  await page.keyboard.press('Enter');
+
+  await expect(guide(page).locator('.tour-tooltip-title')).toHaveText('What are they trying to do?');
+  await expect(page.locator('.activities-row .story-card .story-text').first()).toBeFocused();
+  await page.keyboard.type('Order a coffee');
+  await page.keyboard.press('Enter');
+
+  // The steps: Enter moves along the row, and the arrow keys stay with the text
+  await expect(guide(page).locator('.tour-tooltip-title')).toHaveText('What steps do they take?');
+  await page.keyboard.type('Browse menu');
+  await page.keyboard.press('ArrowLeft');
+  await expect(guide(page).locator('.tour-tooltip-title')).toHaveText('What steps do they take?');
+  await page.keyboard.press('Enter');
+  await page.keyboard.type('Pay');
+  await guide(page).locator('.tour-btn-next').click();
+
+  await expect(guide(page).locator('.tour-tooltip-title')).toHaveText('Now place the cards');
+  await expect(guide(page).locator('.tour-btn-next')).toHaveText(/Got it/);
+  await guide(page).locator('.tour-btn-next').click();
+  await expect(guide(page)).toBeHidden();
+
+  expect(await stepNamesOf(page)).toEqual(['Browse menu', 'Pay', '', '', '', '']);
+  await expect.poll(async () => (await pullMap(id)).steps.slice(0, 2).map(step => step.name)).toEqual(['Browse menu', 'Pay']);
+  const map = await pullMap(id);
+  expect(map.users.flat().map(card => card.name)).toEqual(['Customer']);
+  expect(map.activities.flat().map(card => card.name)).toEqual(['Order a coffee']);
+  // It is not the tour, so it doesn't count as having taken it
+  expect(await page.evaluate(() => localStorage.getItem('tourCompleted'))).toBeNull();
+});
+
+test('added to a story map that has a backbone, the guide goes straight to the cards and the legend gains the epic colour', async ({ page, createMap, pullMap }) => {
+  const id = await createMap(`name: Has a backbone
+users:
+  - name: Customer
+    step: Browse
+activities:
+  - name: Order
+    step: Browse
+steps:
+  - Browse
+  - Pay
+slices:
+  - name: MVP
+    stories:
+      Browse:
+        - name: Drink list
+`);
+  await openMap(page, id, 2);
+  await importCsv(page, 'jira', 'jira', 'jira.csv', jiraCsv);
+  await page.locator('#jiraImportConfirmBtn').click();
+
+  await expect(guide(page).locator('.tour-tooltip-title')).toHaveText('Now place the cards');
+  await expect(guide(page).locator('.tour-tooltip-body')).toContainText('The backbone is already here');
+  await expect(guide(page).locator('.tour-progress-dot')).toHaveCount(1);
+  await page.keyboard.press('Escape');
+  await expect(guide(page)).toBeHidden();
+
+  await expect.poll(async () => (await pullMap(id)).slices.map(slice => slice.name)).toEqual(['MVP', 'Imported']);
+  const map = await pullMap(id);
+  expect(map.legend).toEqual([{ color: '#bef264', label: 'Epic' }]);
+  expect(map.steps.slice(0, 2).map(step => step.name)).toEqual(['Browse', 'Pay']);
 });

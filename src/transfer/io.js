@@ -3,7 +3,7 @@
 
 import { dom } from '/src/ui/dom.js';
 import { state, initState, pushUndo, confirmOverwrite } from '/src/core/state.js';
-import { el } from '/src/core/constants.js';
+import { el, generateId } from '/src/core/constants.js';
 import { serialize, deserialize, appendImport } from '/src/core/serialization.js';
 import { exportToYaml, importFromYaml } from '/src/transfer/yaml.js';
 import { parseLocation, withProject } from '/src/core/project-links.js';
@@ -16,6 +16,7 @@ import * as log from '/src/core/log.js';
 import * as exportsMod from '/src/transfer/exports.js';
 import { legendToAdd } from '/src/transfer/import-helpers.js';
 import { initTrackerDetails } from '/src/transfer/tracker-details.js';
+import * as importGuide from '/src/features/import-guide.js';
 import * as jiraImportsMod from '/src/transfer/jira-imports.js';
 import * as asanaImportsMod from '/src/transfer/asana-imports.js';
 import * as phabImportsMod from '/src/transfer/phabricator-imports.js';
@@ -53,7 +54,8 @@ export const init = (deps) => {
 
             if (isAppend) {
                 appendImport(data);
-                state.legend.push(...legendToAdd(data.legend, state.legend));
+                // Legend entries are saved by ID, like cards
+                state.legend.push(...legendToAdd(data.legend, state.legend).map(entry => ({ id: generateId(), ...entry })));
             } else {
                 deserialize(data);
             }
@@ -65,7 +67,10 @@ export const init = (deps) => {
             if (isFromWelcome) {
                 _deps.subscribeToMap(state.mapId);
             }
-        } catch {
+            // Every tracker import ends here, so the guide follows all of them
+            importGuide.start();
+        } catch (e) {
+            console.error('Import failed', e);
             await showAlert('Failed to import: Invalid data format');
         }
     };

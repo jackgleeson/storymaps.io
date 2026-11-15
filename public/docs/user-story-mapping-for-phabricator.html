@@ -184,11 +184,12 @@
         <article class="docs-article">
             <div class="crumbs-row"><nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/docs">Docs</a></li><li><a href="/docs#connect-your-tools">Connect your tools</a></li></ol></nav></div>
             <h1>User story mapping for Phabricator</h1>
-            <p class="byline"><span>4 min read</span></p>
+            <p class="byline"><span>5 min read</span></p>
             <details class="toc-mobile"><summary>On this page</summary><nav><a href="#import-through-the-api">Import through the API</a>
             <a href="#import-a-csv-file">Import a CSV file</a>
             <a href="#review-the-import">Review the import</a>
             <a href="#what-you-get-on-the-story-map">What you get on the story map</a>
+            <a href="#build-the-backbone-first">Build the backbone first</a>
             <a href="#export-to-phabricator">Export to Phabricator</a></nav></details>
 <p>Bring Phabricator tasks in, lay them out as a journey, then send the plan back. Parent tasks, subtasks, statuses and points all come with them, and every card links back to its task.</p>
 <figure class="shot" style="max-width: 375px">
@@ -219,7 +220,10 @@
 <ul><li><strong>Parent tasks</strong> become lime green cards, tagged with their own ID, such as <strong>T123</strong>. Delete the ones you don't need.</li><li><strong>Subtasks</strong> become cards tagged with the ID of their parent. Tasks with no parent get no tag.</li><li><strong>Descriptions</strong> go in the body of the card.</li><li><strong>Statuses</strong> become planned for open and stalled tasks, in progress for tasks in progress, and done for the rest, such as resolved, declined and invalid.</li><li><strong>Points</strong> become the points on the card. From a CSV, Final Story Points win over Points.</li><li><strong>Links</strong> open the task in Phabricator.</li></ul>
 <p>When there are parent tasks, the legend names the two colours, <strong>Parent task</strong> and <strong>Task</strong>.</p>
 <p>The cards fill up to eight columns from left to right, each parent task followed by its subtasks. The tags keep them together: <a href="/docs/search-and-filter-a-story-map" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>search</span> and filter</a> by <strong>T123</strong> to see one parent task at a time.</p>
-<div class="tip tip-tip"><p><strong>Tip.</strong> Now make it a story map. Name the users, activities and steps, then drag each card under the step it belongs to. <a href="/docs/define-the-story-map-backbone" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Define</span> the story map backbone</a> shows how.</p></div>
+<h2 id="build-the-backbone-first">Build the backbone first</h2>
+<p>When the import finishes, a short guide lights one thing at a time:</p>
+<ol class="steps"><li><span class="num">1</span><span>Name the user: who the product is for.</span></li><li><span class="num">2</span><span>Name the activity: what they are trying to do.</span></li><li><span class="num">3</span><span>Name the steps they take, from left to right. Press Enter to move to the next step.</span></li><li><span class="num">4</span><span>Drag each card up out of <strong>Imported</strong> into a slice, under the step it belongs to. Select several cards to move them together.</span></li></ol>
+<p>Delete the <strong>Imported</strong> slice when it's empty. <strong>Skip the guide</strong> closes it, and a part of the backbone that already has a name is left out. <a href="/docs/define-the-story-map-backbone" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Define</span> the story map backbone</a> has more.</p>
 <h2 id="export-to-phabricator">Export to Phabricator</h2>
 <p>Choose <strong>Menu → Export → Phab</strong>, then <strong>Phabricator API</strong> or <strong>Phabricator Console API</strong>. Every card becomes one task. No parent tasks or subtasks are made: the story map keeps the structure.</p>
 <ol class="steps"><li><span class="num">1</span><span>Under <strong>Releases</strong>, tick the slices to send.</span></li><li><span class="num">2</span><span>Under <strong>Status</strong>, tick the statuses to send.</span></li><li><span class="num">3</span><span>Check <strong>What each card becomes</strong>. It shows one card and the task it turns into.</span></li><li><span class="num">4</span><span>Open <strong>Choose cards</strong> to untick single cards.</span></li></ol>
@@ -242,6 +246,7 @@
             <a href="#import-a-csv-file">Import a CSV file</a>
             <a href="#review-the-import">Review the import</a>
             <a href="#what-you-get-on-the-story-map">What you get on the story map</a>
+            <a href="#build-the-backbone-first">Build the backbone first</a>
             <a href="#export-to-phabricator">Export to Phabricator</a>
         </nav>
     </main>

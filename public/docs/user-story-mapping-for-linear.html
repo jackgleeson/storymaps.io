@@ -189,6 +189,7 @@
             <a href="#import-a-csv-file">Import a CSV file</a>
             <a href="#review-the-import">Review the import</a>
             <a href="#what-you-get-on-the-story-map">What you get on the story map</a>
+            <a href="#build-the-backbone-first">Build the backbone first</a>
             <a href="#export-to-linear">Export to Linear</a></nav></details>
 <p>Bring a Linear backlog in, lay it out as a journey, then send the plan back. Projects, parent issues, statuses, estimates and labels all come with it.</p>
 <figure class="shot" style="max-width: 375px">
@@ -219,7 +220,10 @@
 <ul><li><strong>Groups</strong> become lime green cards. A parent issue is tagged with its own ID, such as <strong>ENG-12</strong>, and a project is tagged <strong>project-01</strong>, <strong>project-02</strong> and so on. Each one carries the details of the group, so you don't need Linear open while you arrange the story map. Delete the ones you don't need.</li><li><strong>Issues</strong> under a group become cards tagged to match it, plus their Linear labels. Issues in no group get no tag.</li><li><strong>Descriptions</strong> go in the body of the card.</li><li><strong>Statuses</strong> become done, in progress or planned.</li><li><strong>Estimates</strong> become the points on the card.</li><li><strong>Links</strong> open the issue or project in Linear.</li></ul>
 <p>The legend names the two colours, such as <strong>Project</strong> and <strong>Issue</strong>.</p>
 <p>The cards fill up to eight columns from left to right, each group followed by its issues. The tags keep them together: <a href="/docs/search-and-filter-a-story-map" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>search</span> and filter</a> by <strong>project-01</strong> to see one group at a time.</p>
-<div class="tip tip-tip"><p><strong>Tip.</strong> Now make it a story map. Name the users, activities and steps, then drag each card under the step it belongs to. <a href="/docs/define-the-story-map-backbone" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Define</span> the story map backbone</a> shows how.</p></div>
+<h2 id="build-the-backbone-first">Build the backbone first</h2>
+<p>When the import finishes, a short guide lights one thing at a time:</p>
+<ol class="steps"><li><span class="num">1</span><span>Name the user: who the product is for.</span></li><li><span class="num">2</span><span>Name the activity: what they are trying to do.</span></li><li><span class="num">3</span><span>Name the steps they take, from left to right. Press Enter to move to the next step.</span></li><li><span class="num">4</span><span>Drag each card up out of <strong>Imported</strong> into a slice, under the step it belongs to. Select several cards to move them together.</span></li></ol>
+<p>Delete the <strong>Imported</strong> slice when it's empty. <strong>Skip the guide</strong> closes it, and a part of the backbone that already has a name is left out. <a href="/docs/define-the-story-map-backbone" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Define</span> the story map backbone</a> has more.</p>
 <h2 id="export-to-linear">Export to Linear</h2>
 <p>Linear export goes through the API. Every card becomes one issue. No parent issues are made: the story map keeps the structure, and each issue carries its slice and step as labels.</p>
 <p>Choose <strong>Menu → Export → Linear → Linear API</strong>:</p>
@@ -238,6 +242,7 @@
             <a href="#import-a-csv-file">Import a CSV file</a>
             <a href="#review-the-import">Review the import</a>
             <a href="#what-you-get-on-the-story-map">What you get on the story map</a>
+            <a href="#build-the-backbone-first">Build the backbone first</a>
             <a href="#export-to-linear">Export to Linear</a>
         </nav>
     </main>

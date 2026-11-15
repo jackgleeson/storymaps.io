@@ -1,5 +1,7 @@
 // Storymaps.io - AGPL-3.0 - see LICENCE for details
 // Guided tour module - spotlight + tooltip walkthrough
+// The tour itself is the list of steps below. Other guides, such as the one after a tracker
+// import (import-guide.js), run their own steps through runSteps and look the same.
 
 let _zoomToFit = null;
 let _addSlice = null;
@@ -157,6 +159,8 @@ const STEPS = [
 
 let _active = false;
 let _step = 0;
+let _steps = STEPS;      // the steps being shown: the tour, or the steps of another guide
+let _options = {};       // how this run behaves, see runSteps
 let _wasDarkOnStart = false;
 let _heldScroll = null; // where the story map stays during a step that lets people drag cards
 const $ = (id) => document.getElementById(id);
@@ -308,7 +312,7 @@ const buildProgressDots = () => {
     const container = $('tourProgress');
     if (!container) return;
     container.innerHTML = '';
-    for (let i = 0; i < STEPS.length; i++) {
+    for (let i = 0; i < _steps.length; i++) {
         const dot = document.createElement('span');
         dot.className = 'tour-progress-dot';
         container.appendChild(dot);
@@ -329,7 +333,7 @@ const updateProgressDots = () => {
 // ---------------------------------------------------------------------------
 
 const positionCurrentStep = () => {
-    const step = STEPS[_step];
+    const step = _steps[_step];
 
     // Scroll target into view if needed
     let rects = resolveTargetRects(step.target);
@@ -374,7 +378,7 @@ const positionCurrentStep = () => {
 };
 
 const renderStep = () => {
-    const step = STEPS[_step];
+    const step = _steps[_step];
     const tt = tooltip();
 
     // Content transition - brief fade
@@ -393,8 +397,8 @@ const renderStep = () => {
 
     const nextBtn = tt.querySelector('.tour-btn-next');
     const arrow = nextBtn.querySelector('.tour-btn-next-arrow');
-    if (_step === STEPS.length - 1) {
-        nextBtn.firstChild.textContent = 'Finish ';
+    if (_step === _steps.length - 1) {
+        nextBtn.firstChild.textContent = `${_options.finishLabel || 'Finish'} `;
         if (arrow) arrow.style.display = 'none';
     } else {
         nextBtn.firstChild.textContent = 'Next ';
@@ -408,12 +412,22 @@ const renderStep = () => {
 
     positionCurrentStep();
 
+    // A step that asks for typing puts the cursor where the typing goes
+    if (step.focus) document.querySelector(step.focus)?.focus({ preventScroll: true });
+};
+
+// Typing in the highlighted part is saved when the cursor leaves it
+const leaveField = () => {
+    const active = document.activeElement;
+    if (active && $('storyMap')?.contains(active)) active.blur();
 };
 
 const resolveTargetRects = (target) => {
     if (!target) return null;
-    const selectors = Array.isArray(target) ? target : [target];
-    const elements = selectors.map(s => document.querySelector(s)).filter(Boolean);
+    // A target is a selector, a list of selectors, or a function that finds the elements
+    const elements = typeof target === 'function'
+        ? [].concat(target() || []).filter(Boolean)
+        : [].concat(target).map(s => document.querySelector(s)).filter(Boolean);
     if (elements.length === 0) return null;
 
     // Scroll the first element into view
@@ -441,8 +455,9 @@ const unionRect = (rects) => {
 // ---------------------------------------------------------------------------
 
 const next = () => {
-    if (_step < STEPS.length - 1) {
-        STEPS[_step].onLeave?.();
+    leaveField();
+    if (_step < _steps.length - 1) {
+        _steps[_step].onLeave?.();
         _step++;
         // Immediately clear stale highlight, as Safari may not repaint in the rAF
         spotlight().style.display = 'none';
@@ -455,8 +470,9 @@ const next = () => {
 };
 
 const back = () => {
+    leaveField();
     if (_step > 0) {
-        STEPS[_step].onLeave?.();
+        _steps[_step].onLeave?.();
         _step--;
         // Immediately clear stale highlight, as Safari may not repaint in the rAF
         spotlight().style.display = 'none';
@@ -466,8 +482,26 @@ const back = () => {
     }
 };
 
+// In a guide that asks for typing, the arrow keys belong to the text. Enter moves on: to the
+// next field of the step when it has several, such as the steps of a backbone, or to the next step.
+const onTypingKey = (e) => {
+    if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        endTour();
+    } else if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        e.stopPropagation();
+        const fields = _steps[_step].fields ? [...document.querySelectorAll(_steps[_step].fields)] : [];
+        const nextField = fields[fields.indexOf(e.target) + 1];
+        if (nextField) nextField.focus({ preventScroll: true });
+        else next();
+    }
+};
+
 const onKeyDown = (e) => {
     if (!_active) return;
+    if (_options.typing && e.target.matches?.('textarea, input')) return onTypingKey(e);
     if (e.key === 'ArrowRight' || e.key === 'Enter') {
         e.preventDefault();
         e.stopPropagation();
@@ -527,7 +561,18 @@ const onResize = () => {
 export const isActive = () => _active;
 export const isTourCompleted = () => localStorage.getItem('tourCompleted') === 'true';
 
-export const startTour = () => {
+export const startTour = () => runSteps(STEPS, { markCompleted: true });
+
+// Run a list of steps as a guide. Options:
+//   typing: people type into the highlighted part, so the keys belong to the text
+//   skipLabel, finishLabel: the words on the buttons
+//   markCompleted: count this as having taken the tour
+//   onEnd: called when the guide ends, however it ends
+export const runSteps = (steps, options = {}) => {
+    if (_active || !steps?.length) return;
+    _steps = steps;
+    _options = options;
+    tooltip().querySelector('.tour-btn-skip').textContent = options.skipLabel || 'Skip';
     _active = true;
     _step = 0;
     _wasDarkOnStart = document.documentElement.classList.contains('dark-mode');
@@ -551,9 +596,11 @@ export const startTour = () => {
 };
 
 export const endTour = () => {
-    STEPS[_step].onLeave?.();
+    if (!_active) return;
+    leaveField();
+    _steps[_step].onLeave?.();
     _active = false;
-    localStorage.setItem('tourCompleted', 'true');
+    if (_options.markCompleted) localStorage.setItem('tourCompleted', 'true');
     document.body.classList.remove('tour-active');
     backdrop().classList.remove('visible', 'tour-backdrop-dim');
     backdrop().style.clipPath = '';
@@ -578,6 +625,11 @@ export const endTour = () => {
     // The steps scroll the story map to each part in turn. Fit it to the window again, which
     // scrolls back to where it opened, so the tour ends on the whole story map.
     _zoomToFit?.();
+
+    const onEnd = _options.onEnd;
+    _steps = STEPS;
+    _options = {};
+    onEnd?.();
 };
 
 export const init = (config = {}) => {
