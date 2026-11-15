@@ -215,8 +215,73 @@ const checkYamlSize = (root) => {
     }
 };
 
+// In YAML, a # after a space starts a comment, so a title typed without quotes, such as
+// name: Price history (Gitea #12), is read as "Price history (Gitea" and the rest is lost
+// without a word. A colour typed as color: #fca5a5 is lost the same way. People and AI tools
+// writing a story map by hand often leave the quotes off, so before the YAML is read:
+// - a # with text straight after it (#12, #fca5a5) is kept, by putting the value in quotes
+// - a # followed by a space is left as the comment it most likely is, and noted as a warning,
+//   with its line, so whoever wrote it can add quotes if they meant it as text
+// Only the lines of text values are touched: the fields below, and plain list items such as
+// steps and tags. The lines of a longer value (a body written over several lines) are left alone.
+const TEXT_KEYS = new Set(['name', 'body', 'goal', 'label', 'note', 'step', 'color']);
+// A value that is already quoted, a block (| or >), a list or map on one line, or another YAML form
+const NOT_PLAIN = /^["'|>\[\]{}&*!%@`]/;
+
+// Where the real comment starts in a plain value, and whether a # before it is text to keep
+const readHashes = (value) => {
+    let keep = false;
+    for (let i = 0; i < value.length; i++) {
+        if (value[i] !== '#' || (i > 0 && !/\s/.test(value[i - 1]))) continue;
+        const next = value[i + 1];
+        if (next === undefined || /\s/.test(next)) return { keep, comment: i };
+        keep = true;
+    }
+    return { keep, comment: -1 };
+};
+
+export function keepHashes(yamlString) {
+    const warnings = [];
+    if (typeof yamlString !== 'string' || !yamlString.includes('#')) return { text: yamlString, warnings };
+    // Lines indented further than this belong to the value above them
+    let within = null;
+    const lines = yamlString.split('\n').map((line, index) => {
+        const [, spaces, dashes, rest] = line.match(/^( *)((?:- )*)(.*)$/);
+        if (!rest.trim() || (!dashes && rest.startsWith('#'))) return line;
+        if (within !== null) {
+            if (spaces.length > within) return line;
+            within = null;
+        }
+        const field = rest.match(/^([A-Za-z_][\w-]*):(?:(\s+)(.*))?$/);
+        if (!field && !dashes) {
+            // A step named with a number, such as "Pay #2:", with its cards underneath
+            const step = rest.match(/^(.*\S):\s*$/)?.[1];
+            if (!step || NOT_PLAIN.test(step)) return line;
+            const { keep, comment } = readHashes(step);
+            return keep && comment === -1 ? `${spaces}${JSON.stringify(step)}:` : line;
+        }
+        const key = field?.[1];
+        const value = (field ? field[3] ?? '' : rest).replace(/\s+$/, '');
+        if (!field && (/:\s/.test(value) || value.endsWith(':'))) return line;
+        const { keep, comment } = NOT_PLAIN.test(value) ? { keep: false, comment: -1 } : readHashes(value);
+        const text = (comment === -1 ? value : value.slice(0, comment)).trim();
+        if (text) within = field ? spaces.length + dashes.length : spaces.length;
+        if (field && !TEXT_KEYS.has(key)) return line;
+        if (!keep) {
+            if (comment > 0 && text) warnings.push({ line: index + 1, text: value.slice(comment).trim() });
+            return line;
+        }
+        const tail = comment === -1 ? '' : ` ${value.slice(comment)}`;
+        return `${spaces}${dashes}${field ? `${key}:${field[2]}` : ''}${JSON.stringify(text)}${tail}`;
+    });
+    return { text: lines.join('\n'), warnings };
+}
+
+// Read YAML the way the app does, keeping a # in a title that was typed without quotes
+export const loadYaml = (yamlString) => jsyaml.load(keepHashes(yamlString).text);
+
 export function importFromYaml(yamlString) {
-    const obj = jsyaml.load(yamlString);
+    const obj = loadYaml(yamlString);
     if (!obj || typeof obj !== 'object') throw new Error('Invalid YAML');
     checkYamlSize(obj);
     const validation = validateYaml(obj);

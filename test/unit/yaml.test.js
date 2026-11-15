@@ -1,7 +1,7 @@
 import { describe, test } from 'node:test';
 import { strict as assert } from 'node:assert';
 import jsyaml from '#js-yaml';
-import { exportToYaml, importFromYaml, validateYaml } from '../../src/transfer/yaml.js';
+import { exportToYaml, importFromYaml, validateYaml, keepHashes, loadYaml } from '../../src/transfer/yaml.js';
 import { samples, cardLayout } from '../fixtures.js';
 
 const MAP = 'name: Test\nsteps:\n  - Sign up\n';
@@ -212,6 +212,85 @@ describe('project key', () => {
       const result = validateYaml(jsyaml.load(`${MAP}project: ${bad}\n`));
       assert.ok(!result.valid, bad);
       assert.match(result.errors.join(), /project/);
+    }
+  });
+});
+
+describe('a # typed without quotes', () => {
+  const card = (yaml) => importFromYaml(`steps:\n  - Pay\nslices:\n  - name: MVP\n    stories:\n      Pay:\n${yaml}`).slices[0].stories[0][0];
+
+  test('a ticket number in a title is kept, where YAML alone would drop it as a comment', () => {
+    assert.equal(jsyaml.load('name: Price history (Gitea #12)').name, 'Price history (Gitea');
+    assert.equal(loadYaml('name: Price history (Gitea #12)').name, 'Price history (Gitea #12)');
+    assert.equal(card('        - name: Price history (Gitea #12)').name, 'Price history (Gitea #12)');
+  });
+
+  test('the same goes for a one-line body, a slice goal, a legend label and a colour', () => {
+    assert.equal(card('        - name: Pay\n          body: See #44 first').body, 'See #44 first');
+    assert.equal(card('        - name: Pay\n          color: #fca5a5').color, '#fca5a5');
+    const map = loadYaml('legend:\n  - color: #fef08a\n    label: Tasks #1\nslices:\n  - name: MVP\n    goal: Ship #12 first');
+    assert.deepEqual(map.legend, [{ color: '#fef08a', label: 'Tasks #1' }]);
+    assert.equal(map.slices[0].goal, 'Ship #12 first');
+  });
+
+  test('steps and tags written as list items keep theirs, and so does a step name over its cards', () => {
+    const map = importFromYaml('steps:\n  - Pay #2\n  - Confirm\nslices:\n  - name: MVP\n    stories:\n      Pay #2:\n        - name: Card\n          tags:\n            - #urgent\n            - 3rd-party');
+    assert.deepEqual(map.steps.map(s => s.name), ['Pay #2', 'Confirm']);
+    assert.deepEqual(map.slices[0].stories[0], [{ name: 'Card', tags: ['#urgent', '3rd-party'] }]);
+  });
+
+  test('a # followed by a space stays a comment, and is reported with its line', () => {
+    const { text, warnings } = keepHashes('name: Coffee App\nsteps:\n  - Pay # moved here\nslices:\n  - name: MVP # first release');
+    assert.deepEqual(jsyaml.load(text), { name: 'Coffee App', steps: ['Pay'], slices: [{ name: 'MVP' }] });
+    assert.deepEqual(warnings, [{ line: 3, text: '# moved here' }, { line: 5, text: '# first release' }]);
+  });
+
+  test('text is kept up to a comment that follows it', () => {
+    const { text, warnings } = keepHashes('name: Ship #12 first # then the rest');
+    assert.equal(jsyaml.load(text).name, 'Ship #12 first');
+    assert.deepEqual(warnings, []);
+  });
+
+  test('values that are already safe are left exactly as written', () => {
+    const yaml = [
+      '# A comment on its own line',
+      'name: "Quoted (Gitea #13)"',
+      "site: 'storymaps.io'",
+      'steps:',
+      '  - Pay',
+      '  - name: Confirm',
+      '    url: https://example.com/page#section',
+      'slices:',
+      '  - name: MVP',
+      '    stories:',
+      '      Pay:',
+      '        - name: Card',
+      '          body: >-',
+      '            See #44, and name: Not a field #55',
+      '            on a second line #66',
+      '          tags: [a, #b]',
+      '          points: 3 #estimate',
+      '        - name: Long title that carries on',
+      '            over a second line #77',
+      'notes: |-',
+      '  - Step "[0]" is #1 in the list',
+      '  name: still the notes #2',
+    ].join('\n');
+    assert.equal(keepHashes(yaml).text, yaml);
+    assert.deepEqual(keepHashes(yaml).warnings, []);
+  });
+
+  test('quotes and backslashes in a kept title come through unchanged', () => {
+    assert.equal(loadYaml('name: Say "hi" to C:\\temp #12').name, 'Say "hi" to C:\\temp #12');
+  });
+
+  test('a story map the app wrote reads the same with or without the check', () => {
+    const all = samples();
+    assert.ok(all.length > 5);
+    for (const { file, data } of all) {
+      const yaml = exportToYaml(data);
+      assert.equal(keepHashes(yaml).text, yaml, file);
+      assert.deepEqual(keepHashes(yaml).warnings, [], file);
     }
   });
 });
