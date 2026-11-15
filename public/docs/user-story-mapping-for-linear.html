@@ -202,18 +202,32 @@
 <ol class="steps"><li><span class="num">1</span><span><strong>Linear API</strong> fetches the issues of a team straight from Linear.</span></li><li><span class="num">2</span><span><strong>Linear CSV</strong> reads a CSV file exported from Linear.</span></li></ol>
 <h2 id="import-through-the-api">Import through the API</h2>
 <ol class="steps"><li><span class="num">1</span><span>Choose <strong>Menu → Import → Linear → Linear API</strong>, or click <strong>Linear</strong> on the home page.</span></li><li><span class="num">2</span><span>Paste an <strong>API Key</strong>. The <strong>Create key</strong> link opens the page in Linear where you make one.</span></li><li><span class="num">3</span><span>Fill in the <strong>Team Key</strong>, the letters before the number in an issue ID: <strong>JAC</strong> from JAC-5.</span></li><li><span class="num">4</span><span>Click <strong>Fetch from Linear</strong>. <strong>Verify Connection</strong> checks the details first, if you want to.</span></li></ol>
+<figure class="shot" style="max-width: 1374px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/user-story-mapping-for-linear-import-api.png?v=890f746d" alt="The Linear API window, filled in." width="916" height="459" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-linear-import-api-dark.png?v=a7ea0897" alt="The Linear API window, filled in." width="916" height="459" loading="lazy">
+</div>
+<figcaption>The Linear API window, filled in.</figcaption>
+</figure>
 <div class="tip tip-note"><p><strong>Note.</strong> Your credentials aren't stored or logged. They go straight to Linear. Your browser remembers the team key for next time, but never the API key.</p></div>
 <h2 id="import-a-csv-file">Import a CSV file</h2>
 <ol class="steps"><li><span class="num">1</span><span>In Linear, export your issues as CSV. The import dialog shows the way: Settings &gt; Export &gt; Export CSV.</span></li><li><span class="num">2</span><span>In the story map, choose <strong>Menu → Import → Linear → Linear CSV</strong>.</span></li><li><span class="num">3</span><span>Drop the file in, or click to pick it.</span></li><li><span class="num">4</span><span>Click <strong>Continue</strong>.</span></li></ol>
+<figure class="shot" style="max-width: 1374px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/user-story-mapping-for-linear-import-csv.png?v=a67f0155" alt="The Linear CSV window." width="916" height="392" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-linear-import-csv-dark.png?v=9da1a5e8" alt="The Linear CSV window." width="916" height="392" loading="lazy">
+</div>
+<figcaption>The Linear CSV window.</figcaption>
+</figure>
 <p>The file needs a <strong>Title</strong> column. Issues from a CSV don't link back to Linear.</p>
 <h2 id="review-the-import">Review the import</h2>
 <p><strong>Review Import</strong> lists every card that will be made: each group, then its issues, and last the issues that belong to no group.</p>
 <figure class="shot" style="max-width: 1374px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-linear-review.png?v=a031fd7d" alt="The review list, grouped by project." width="916" height="641" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-linear-review-dark.png?v=e057c10f" alt="The review list, grouped by project." width="916" height="641" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-linear-review.png?v=a031fd7d" alt="The review list, the same for the API and a CSV file. Here it is grouped by project." width="916" height="641" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-linear-review-dark.png?v=e057c10f" alt="The review list, the same for the API and a CSV file. Here it is grouped by project." width="916" height="641" loading="lazy">
 </div>
-<figcaption>The review list, grouped by project.</figcaption>
+<figcaption>The review list, the same for the API and a CSV file. Here it is grouped by project.</figcaption>
 </figure>
 <p><strong>Tag by</strong> picks how the issues group:</p>
 <ul><li><strong>Group by projects</strong> makes each project a group, with its issues under it. Parent issues aren't imported.</li><li><strong>Group by parent issues</strong> makes each parent issue a group, with its sub-issues under it.</li></ul>
@@ -252,10 +266,17 @@
 <ol class="steps"><li><span class="num">1</span><span>Under <strong>Releases</strong>, tick the slices to send.</span></li><li><span class="num">2</span><span>Under <strong>Status</strong>, tick the statuses to send.</span></li><li><span class="num">3</span><span>Check <strong>What each card becomes</strong>. It shows one card and the issue it turns into.</span></li><li><span class="num">4</span><span>Under <strong>Labels</strong>, untick any you don't want: <strong>Slice name</strong>, <strong>Step name</strong> or <strong>Card tags</strong>.</span></li><li><span class="num">5</span><span>Open <strong>Choose cards</strong> to untick single cards.</span></li><li><span class="num">6</span><span>Click <strong>Next: connect to Linear</strong>.</span></li><li><span class="num">7</span><span>Paste an <strong>API Key</strong> and fill in the <strong>Team Key</strong>.</span></li><li><span class="num">8</span><span>Click <strong>Export to Linear</strong>.</span></li></ol>
 <figure class="shot" style="max-width: 1374px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-linear-export.png?v=c637ba9f" alt="The export window shows one card and the issue it becomes in Linear." width="916" height="671" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-linear-export-dark.png?v=407ef3e8" alt="The export window shows one card and the issue it becomes in Linear." width="916" height="671" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-linear-export.png?v=c637ba9f" alt="The Linear export window shows one card and the issue it becomes." width="916" height="671" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-linear-export-dark.png?v=407ef3e8" alt="The Linear export window shows one card and the issue it becomes." width="916" height="671" loading="lazy">
 </div>
-<figcaption>The export window shows one card and the issue it becomes in Linear.</figcaption>
+<figcaption>The Linear export window shows one card and the issue it becomes.</figcaption>
+</figure>
+<figure class="shot" style="max-width: 1374px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/user-story-mapping-for-linear-export-api.png?v=b5b1aa98" alt="After Next: connect to Linear, the API key and team key." width="916" height="494" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-linear-export-api-dark.png?v=bf0b9e9c" alt="After Next: connect to Linear, the API key and team key." width="916" height="494" loading="lazy">
+</div>
+<figcaption>After Next: connect to Linear, the API key and team key.</figcaption>
 </figure>
 <p>Labels are lower case with hyphens, so a card under Browse Menu in the MVP slice is labelled <strong>browse-menu</strong> and <strong>mvp</strong>. The export uses labels the team already has and makes the missing ones in the team.</p>
 <p>The description of each issue is the card body, then the slice, the step and a link back to the card. Card points become the estimate. Planned cards go to the first unstarted status of the team, cards in progress to the first started one, and done cards to the first completed one. The rest start where Linear puts new issues.</p>

@@ -202,19 +202,33 @@
 <ol class="steps"><li><span class="num">1</span><span><strong>Phabricator API</strong> fetches the tasks straight from Phabricator.</span></li><li><span class="num">2</span><span><strong>Phabricator CSV</strong> reads a CSV file exported from Maniphest.</span></li></ol>
 <h2 id="import-through-the-api">Import through the API</h2>
 <ol class="steps"><li><span class="num">1</span><span>Choose <strong>Menu → Import → Phab → Phabricator API</strong>, or click <strong>Phabricator</strong> on the home page.</span></li><li><span class="num">2</span><span>Fill in the <strong>Instance URL</strong>, such as phabricator.example.com.</span></li><li><span class="num">3</span><span>Paste an <strong>API Token</strong>. <strong>How do I get this?</strong> shows where: click your profile picture, go to <strong>Settings</strong>, then <strong>Conduit API Tokens</strong>, then <strong>Generate Token</strong>.</span></li><li><span class="num">4</span><span>Add the <strong>Project Tags</strong> to import. Use the slug from the /tag/ URL of the project, or type the name with spaces, separated by commas.</span></li><li><span class="num">5</span><span>Click <strong>Fetch from Phabricator</strong>. <strong>Verify Connection</strong> checks the details first, if you want to.</span></li></ol>
+<figure class="shot" style="max-width: 1374px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/user-story-mapping-for-phabricator-import-api.png?v=9b8542df" alt="The Phabricator API window, filled in." width="916" height="495" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-phabricator-import-api-dark.png?v=1b40b1b3" alt="The Phabricator API window, filled in." width="916" height="495" loading="lazy">
+</div>
+<figcaption>The Phabricator API window, filled in.</figcaption>
+</figure>
 <p>A task with subtasks becomes a group, with its subtasks under it. Subtasks nested further down come in under the top-level task. Tasks with no parent and no subtasks come last.</p>
 <div class="tip tip-note"><p><strong>Note.</strong> Your API token isn't stored or logged. It goes straight to Phabricator. Your browser remembers the site and tags for next time, but never the API token.</p></div>
 <h2 id="import-a-csv-file">Import a CSV file</h2>
 <ol class="steps"><li><span class="num">1</span><span>In Phabricator, export the tasks as CSV. The import dialog shows the way: Maniphest &gt; select tasks &gt; Export as CSV.</span></li><li><span class="num">2</span><span>In the story map, choose <strong>Menu → Import → Phab → Phabricator CSV</strong>.</span></li><li><span class="num">3</span><span>Drop the file in, or click to pick it.</span></li><li><span class="num">4</span><span>Click <strong>Continue</strong>.</span></li></ol>
+<figure class="shot" style="max-width: 1374px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/user-story-mapping-for-phabricator-import-csv.png?v=a04ef968" alt="The Phabricator CSV window." width="916" height="392" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-phabricator-import-csv-dark.png?v=8b12fd0d" alt="The Phabricator CSV window." width="916" height="392" loading="lazy">
+</div>
+<figcaption>The Phabricator CSV window.</figcaption>
+</figure>
 <p>The file needs a <strong>Title</strong> column. A CSV doesn't say which task is the parent of which, so every task comes in on its own.</p>
 <h2 id="review-the-import">Review the import</h2>
 <p><strong>Review Import</strong> lists every card that will be made: each parent task, then its subtasks, and last the tasks with no parent.</p>
 <figure class="shot" style="max-width: 1374px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-phabricator-review.png?v=9b9a3370" alt="The review list. Resolved tasks start unticked." width="916" height="641" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-phabricator-review-dark.png?v=a16aa164" alt="The review list. Resolved tasks start unticked." width="916" height="641" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-phabricator-review.png?v=9b9a3370" alt="The review list, the same for the API and a CSV file. Resolved tasks start unticked." width="916" height="641" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-phabricator-review-dark.png?v=a16aa164" alt="The review list, the same for the API and a CSV file. Resolved tasks start unticked." width="916" height="641" loading="lazy">
 </div>
-<figcaption>The review list. Resolved tasks start unticked.</figcaption>
+<figcaption>The review list, the same for the API and a CSV file. Resolved tasks start unticked.</figcaption>
 </figure>
 <p>Untick any row to leave it out. Untick a parent task and its subtasks go with it. The box at the top of the list ticks or unticks everything.</p>
 <p><strong>Status</strong>, above the list, ticks or unticks every task with that status: <strong>Planned</strong>, <strong>In Progress</strong> and <strong>Done</strong>. Done tasks are left out to start with. Tick <strong>Done</strong> to bring them in.</p>
@@ -249,21 +263,35 @@
 <h2 id="export-to-phabricator">Export to Phabricator</h2>
 <p>Choose <strong>Menu → Export → Phab</strong>, then <strong>Phabricator API</strong> or <strong>Phabricator Console API</strong>. Every card becomes one task. No parent tasks or subtasks are made: the story map keeps the structure.</p>
 <ol class="steps"><li><span class="num">1</span><span>Under <strong>Releases</strong>, tick the slices to send.</span></li><li><span class="num">2</span><span>Under <strong>Status</strong>, tick the statuses to send.</span></li><li><span class="num">3</span><span>Check <strong>What each card becomes</strong>. It shows one card and the task it turns into.</span></li><li><span class="num">4</span><span>Open <strong>Choose cards</strong> to untick single cards.</span></li></ol>
-<figure class="shot" style="max-width: 1374px">
+<figure class="shot" style="max-width: 1314px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-phabricator-export.png?v=a7d4920d" alt="The export window shows one card and the task it becomes in Phabricator." width="916" height="593" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-phabricator-export-dark.png?v=495ecde0" alt="The export window shows one card and the task it becomes in Phabricator." width="916" height="593" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-phabricator-export.png?v=92814781" alt="This part is the same whichever way you export: one card and the task it becomes in Phabricator." width="876" height="421" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-phabricator-export-dark.png?v=918a11b1" alt="This part is the same whichever way you export: one card and the task it becomes in Phabricator." width="876" height="421" loading="lazy">
 </div>
-<figcaption>The export window shows one card and the task it becomes in Phabricator.</figcaption>
+<figcaption>This part is the same whichever way you export: one card and the task it becomes in Phabricator.</figcaption>
 </figure>
 <p>Phabricator tags are projects that must already exist, so the export makes none for the slice and the step. The description of each task says where the card sat instead: the card body, then the slice, the step, the card tags and a link back to the card.</p>
 <p>Statuses carry over: no status and planned become open, in progress becomes progress, blocked becomes stalled, and done becomes resolved.</p>
 <h3 id="phabricator-api">Phabricator API</h3>
 <ol class="steps"><li><span class="num">1</span><span>Click <strong>Next: connect to Phabricator</strong>.</span></li><li><span class="num">2</span><span>Fill in the <strong>Instance URL</strong> and <strong>API Token</strong>, and add <strong>Project Tags</strong> so the tasks land in the right projects. Every task gets them.</span></li><li><span class="num">3</span><span>Click <strong>Export to Phabricator</strong>.</span></li></ol>
+<figure class="shot" style="max-width: 1374px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/user-story-mapping-for-phabricator-export-api.png?v=8821b026" alt="The Phabricator API window after Next: connect to Phabricator." width="916" height="594" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-phabricator-export-api-dark.png?v=b3f6371c" alt="The Phabricator API window after Next: connect to Phabricator." width="916" height="594" loading="lazy">
+</div>
+<figcaption>The Phabricator API window after Next: connect to Phabricator.</figcaption>
+</figure>
 <p>The progress list links to every task as it's made. One export takes up to 2,000 cards.</p>
 <h3 id="phabricator-console-api">Phabricator Console API</h3>
 <p>The console export runs in your own browser, on your Phabricator site, so your API token never reaches Storymaps.io.</p>
 <ol class="steps"><li><span class="num">1</span><span>Click <strong>Next: get the code</strong>.</span></li><li><span class="num">2</span><span>Fill in the <strong>Instance URL</strong> and <strong>API Token</strong>, and add <strong>Project Tags</strong>.</span></li><li><span class="num">3</span><span>Open your Phabricator site, open the browser console, then paste the first piece of code and press Enter. <strong>Copy</strong> copies it.</span></li><li><span class="num">4</span><span>Paste the second piece of code in the same console and press Enter to create the tasks.</span></li></ol>
+<figure class="shot" style="max-width: 1374px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/user-story-mapping-for-phabricator-export-console.png?v=623df0fe" alt="The console window after Next: get the code." width="916" height="781" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-phabricator-export-console-dark.png?v=4376e03e" alt="The console window after Next: get the code." width="916" height="781" loading="lazy">
+</div>
+<figcaption>The console window after Next: get the code.</figcaption>
+</figure>
             <nav class="pager" aria-label="Previous and next">
                 <a class="prev" href="/docs/user-story-mapping-for-asana"><span>Previous</span>User story mapping for Asana</a>
                 <a class="next" href="/docs/user-story-mapping-for-linear"><span>Next</span>User story mapping for Linear</a>

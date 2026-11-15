@@ -202,19 +202,33 @@
 <ol class="steps"><li><span class="num">1</span><span><strong>Asana API</strong> fetches the project straight from Asana.</span></li><li><span class="num">2</span><span><strong>Asana CSV</strong> reads a CSV file exported from Asana.</span></li></ol>
 <h2 id="import-through-the-api">Import through the API</h2>
 <ol class="steps"><li><span class="num">1</span><span>Choose <strong>Menu → Import → Asana → Asana API</strong>, or click <strong>Asana</strong> on the home page.</span></li><li><span class="num">2</span><span>Paste a <strong>Personal Access Token</strong>. The <strong>Get token</strong> link opens the page in Asana where you make one.</span></li><li><span class="num">3</span><span>Paste the <strong>Project URL or GID</strong>, such as the link to the project list.</span></li><li><span class="num">4</span><span>Click <strong>Fetch from Asana</strong>. <strong>Verify Connection</strong> checks the details first, if you want to.</span></li></ol>
+<figure class="shot" style="max-width: 1374px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/user-story-mapping-for-asana-import-api.png?v=ec4a8bf9" alt="The Asana API window, filled in." width="916" height="459" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-import-api-dark.png?v=3958047c" alt="The Asana API window, filled in." width="916" height="459" loading="lazy">
+</div>
+<figcaption>The Asana API window, filled in.</figcaption>
+</figure>
 <p>The API brings in the sections, tasks and subtasks of the project.</p>
 <div class="tip tip-note"><p><strong>Note.</strong> Your credentials aren't stored or logged. They go straight to Asana. Your browser remembers the project for next time, but never the token.</p></div>
 <h2 id="import-a-csv-file">Import a CSV file</h2>
 <ol class="steps"><li><span class="num">1</span><span>In Asana, export the project as CSV. The import dialog shows the way: Project &gt; ... &gt; Export/Print &gt; CSV.</span></li><li><span class="num">2</span><span>In the story map, choose <strong>Menu → Import → Asana → Asana CSV</strong>.</span></li><li><span class="num">3</span><span>Drop the file in, or click to pick it.</span></li><li><span class="num">4</span><span>Click <strong>Continue</strong>.</span></li></ol>
+<figure class="shot" style="max-width: 1374px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/user-story-mapping-for-asana-import-csv.png?v=03fdc4b5" alt="The Asana CSV window." width="916" height="392" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-import-csv-dark.png?v=bd5117aa" alt="The Asana CSV window." width="916" height="392" loading="lazy">
+</div>
+<figcaption>The Asana CSV window.</figcaption>
+</figure>
 <p>The file needs a <strong>Name</strong> column. Subtasks come in under their parent task, matched by name.</p>
 <h2 id="review-the-import">Review the import</h2>
 <p><strong>Review Import</strong> lists every card that will be made: each group, then its tasks, and last the tasks that belong to no group.</p>
 <figure class="shot" style="max-width: 1374px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-asana-review.png?v=f479cfe8" alt="The review list: each parent task, then its subtasks." width="916" height="641" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-review-dark.png?v=b6e2cc24" alt="The review list: each parent task, then its subtasks." width="916" height="641" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-asana-review.png?v=f479cfe8" alt="The review list, the same for the API and a CSV file: each parent task, then its subtasks." width="916" height="641" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-review-dark.png?v=b6e2cc24" alt="The review list, the same for the API and a CSV file: each parent task, then its subtasks." width="916" height="641" loading="lazy">
 </div>
-<figcaption>The review list: each parent task, then its subtasks.</figcaption>
+<figcaption>The review list, the same for the API and a CSV file: each parent task, then its subtasks.</figcaption>
 </figure>
 <p>When the project has two or more sections, <strong>Tag by</strong> picks how the tasks group:</p>
 <ul><li><strong>Group by sections</strong> makes each section a group, with its tasks under it. Subtasks aren't imported.</li><li><strong>Group by tasks &amp; subtasks</strong> makes each task with subtasks a group, with its subtasks under it. Tasks with no subtasks come last.</li></ul>
@@ -249,19 +263,33 @@
 <h2 id="export-to-asana">Export to Asana</h2>
 <p>Choose <strong>Menu → Export → Asana</strong>, then <strong>Asana CSV</strong> or <strong>Asana API</strong>. Every card becomes one task. No parent tasks, subtasks or sections are made: the story map keeps the structure, and each task carries its slice and step.</p>
 <ol class="steps"><li><span class="num">1</span><span>Under <strong>Releases</strong>, tick the slices to send.</span></li><li><span class="num">2</span><span>Under <strong>Status</strong>, tick the statuses to send.</span></li><li><span class="num">3</span><span>Check <strong>What each card becomes</strong>. It shows one card and the task it turns into.</span></li><li><span class="num">4</span><span>Untick what you don't want to send with each task: <strong>Slice name</strong>, <strong>Step name</strong> or <strong>Card tags</strong>.</span></li><li><span class="num">5</span><span>Open <strong>Choose cards</strong> to untick single cards.</span></li></ol>
-<figure class="shot" style="max-width: 1374px">
+<figure class="shot" style="max-width: 1314px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-asana-export.png?v=116daa6e" alt="The export window shows one card and the task it becomes in Asana." width="916" height="743" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-export-dark.png?v=78b82385" alt="The export window shows one card and the task it becomes in Asana." width="916" height="743" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-asana-export.png?v=62795040" alt="This part is the same whichever way you export: one card and the task it becomes in Asana." width="876" height="523" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-export-dark.png?v=7763d126" alt="This part is the same whichever way you export: one card and the task it becomes in Asana." width="876" height="523" loading="lazy">
 </div>
-<figcaption>The export window shows one card and the task it becomes in Asana.</figcaption>
+<figcaption>This part is the same whichever way you export: one card and the task it becomes in Asana.</figcaption>
 </figure>
 <p>The description of each task is the card body, then the slice, the step and a link back to the card.</p>
 <h3 id="asana-csv">Asana CSV</h3>
 <p>Click <strong>Download CSV</strong>, then import the file into your Asana project. The dialog shows the way: click the project name dropdown, then Import, then CSV.</p>
+<figure class="shot" style="max-width: 1374px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/user-story-mapping-for-asana-export-csv.png?v=116daa6e" alt="The Asana CSV window, with Download CSV at the bottom." width="916" height="743" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-export-csv-dark.png?v=78b82385" alt="The Asana CSV window, with Download CSV at the bottom." width="916" height="743" loading="lazy">
+</div>
+<figcaption>The Asana CSV window, with Download CSV at the bottom.</figcaption>
+</figure>
 <p>Asana can't import tags from a file, so the slice, the step and the tags each go in a column of their own: <strong>Slice</strong>, <strong>Step</strong> and <strong>Tags</strong>. Asana turns each column into a custom field in the project.</p>
 <h3 id="asana-api">Asana API</h3>
 <ol class="steps"><li><span class="num">1</span><span>Click <strong>Next: connect to Asana</strong>.</span></li><li><span class="num">2</span><span>Paste a <strong>Personal Access Token</strong> and the <strong>Project Page URL</strong>.</span></li><li><span class="num">3</span><span>Click <strong>Export to Asana</strong>.</span></li></ol>
+<figure class="shot" style="max-width: 1374px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/user-story-mapping-for-asana-export-api.png?v=6e10179b" alt="The Asana API window after Next: connect to Asana." width="916" height="494" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-export-api-dark.png?v=dce9a068" alt="The Asana API window after Next: connect to Asana." width="916" height="494" loading="lazy">
+</div>
+<figcaption>The Asana API window after Next: connect to Asana.</figcaption>
+</figure>
 <p>The slice, the step and the card tags become Asana tags, lower case with hyphens, such as <strong>mvp</strong> and <strong>browse-menu</strong>. The export uses tags the workspace already has and makes the missing ones.</p>
 <p>The progress list links to every task as it's made. Cards marked done are created complete. One export takes up to 2,000 cards.</p>
             <nav class="pager" aria-label="Previous and next">

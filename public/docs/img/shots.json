@@ -507,8 +507,8 @@
     "callouts": []
   },
   "user-story-mapping-for-jira/export": {
-    "width": 916,
-    "height": 781,
+    "width": 876,
+    "height": 499,
     "callouts": []
   },
   "import-guide/first-step": {
@@ -537,8 +537,8 @@
     "callouts": []
   },
   "user-story-mapping-for-asana/export": {
-    "width": 916,
-    "height": 743,
+    "width": 876,
+    "height": 523,
     "callouts": []
   },
   "user-story-mapping-for-phabricator/review": {
@@ -547,8 +547,83 @@
     "callouts": []
   },
   "user-story-mapping-for-phabricator/export": {
+    "width": 876,
+    "height": 421,
+    "callouts": []
+  },
+  "user-story-mapping-for-jira/import-api": {
     "width": 916,
-    "height": 593,
+    "height": 459,
+    "callouts": []
+  },
+  "user-story-mapping-for-jira/import-csv": {
+    "width": 916,
+    "height": 529,
+    "callouts": []
+  },
+  "user-story-mapping-for-linear/import-api": {
+    "width": 916,
+    "height": 459,
+    "callouts": []
+  },
+  "user-story-mapping-for-linear/import-csv": {
+    "width": 916,
+    "height": 392,
+    "callouts": []
+  },
+  "user-story-mapping-for-asana/import-api": {
+    "width": 916,
+    "height": 459,
+    "callouts": []
+  },
+  "user-story-mapping-for-asana/import-csv": {
+    "width": 916,
+    "height": 392,
+    "callouts": []
+  },
+  "user-story-mapping-for-phabricator/import-api": {
+    "width": 916,
+    "height": 495,
+    "callouts": []
+  },
+  "user-story-mapping-for-phabricator/import-csv": {
+    "width": 916,
+    "height": 392,
+    "callouts": []
+  },
+  "user-story-mapping-for-jira/export-csv": {
+    "width": 916,
+    "height": 781,
+    "callouts": []
+  },
+  "user-story-mapping-for-jira/export-api": {
+    "width": 916,
+    "height": 558,
+    "callouts": []
+  },
+  "user-story-mapping-for-asana/export-csv": {
+    "width": 916,
+    "height": 743,
+    "callouts": []
+  },
+  "user-story-mapping-for-asana/export-api": {
+    "width": 916,
+    "height": 494,
+    "callouts": []
+  },
+  "user-story-mapping-for-phabricator/export-api": {
+    "width": 916,
+    "height": 594,
+    "callouts": []
+  },
+  "user-story-mapping-for-phabricator/export-console": {
+    "width": 916,
+    "height": 781,
+    "callouts": []
+  },
+  "user-story-mapping-for-linear/export-api": {
+    "width": 916,
+    "height": 494,
     "callouts": []
   }
 }

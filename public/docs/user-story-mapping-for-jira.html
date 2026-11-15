@@ -202,19 +202,33 @@
 <ol class="steps"><li><span class="num">1</span><span><strong>Jira API</strong> fetches the project straight from Jira.</span></li><li><span class="num">2</span><span><strong>Jira CSV</strong> reads a CSV file exported from Jira.</span></li></ol>
 <h2 id="import-through-the-api">Import through the API</h2>
 <ol class="steps"><li><span class="num">1</span><span>Choose <strong>Menu → Import → Jira → Jira API</strong>, or click <strong>Jira</strong> on the home page.</span></li><li><span class="num">2</span><span>Fill in the <strong>Jira Instance URL</strong>, such as your-team.atlassian.net, and the <strong>Project Key</strong>, such as PROJ.</span></li><li><span class="num">3</span><span>Add your <strong>Email</strong> and an <strong>API Token</strong>. The <strong>Get token</strong> link opens the page in Atlassian where you make one.</span></li><li><span class="num">4</span><span>Click <strong>Fetch from Jira</strong>. <strong>Verify Connection</strong> checks the details first, if you want to.</span></li></ol>
+<figure class="shot" style="max-width: 1374px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/user-story-mapping-for-jira-import-api.png?v=6e3bfa7a" alt="The Jira API window, filled in." width="916" height="459" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-jira-import-api-dark.png?v=7c3b3c3f" alt="The Jira API window, filled in." width="916" height="459" loading="lazy">
+</div>
+<figcaption>The Jira API window, filled in.</figcaption>
+</figure>
 <p>The API brings in the epics of the project, then every other issue, such as stories, tasks and bugs, in rank order. Subtasks are left out.</p>
 <div class="tip tip-note"><p><strong>Note.</strong> Your credentials aren't stored or logged. They go straight to Jira. Your browser remembers the site, project and email for next time, but never the API token.</p></div>
 <h2 id="import-a-csv-file">Import a CSV file</h2>
 <ol class="steps"><li><span class="num">1</span><span>In Jira, export the issues as CSV with all fields. The import dialog shows the way: Issues &gt; ... &gt; Export &gt; CSV (all fields).</span></li><li><span class="num">2</span><span>In the story map, choose <strong>Menu → Import → Jira → Jira CSV</strong>.</span></li><li><span class="num">3</span><span>Drop the file in, or click to pick it.</span></li><li><span class="num">4</span><span>Add your Jira instance URL if you want each card to link back to its issue.</span></li><li><span class="num">5</span><span>Click <strong>Continue</strong>.</span></li></ol>
+<figure class="shot" style="max-width: 1374px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/user-story-mapping-for-jira-import-csv.png?v=17ed18d7" alt="The Jira CSV window." width="916" height="529" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-jira-import-csv-dark.png?v=83921d2f" alt="The Jira CSV window." width="916" height="529" loading="lazy">
+</div>
+<figcaption>The Jira CSV window.</figcaption>
+</figure>
 <p>The file needs the <strong>Summary</strong>, <strong>Issue key</strong> and <strong>Issue Type</strong> columns. Every issue that isn't an epic comes in under its parent epic.</p>
 <h2 id="review-the-import">Review the import</h2>
 <p><strong>Review Import</strong> lists every card that will be made: each epic, then its issues, and last the issues with no epic.</p>
 <figure class="shot" style="max-width: 1374px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-jira-review.png?v=1a420354" alt="The review list: each epic, then its issues, with the tag they share." width="916" height="641" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-jira-review-dark.png?v=09edfdc2" alt="The review list: each epic, then its issues, with the tag they share." width="916" height="641" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-jira-review.png?v=1a420354" alt="The review list, the same for the API and a CSV file: each epic, then its issues, with the tag they share." width="916" height="641" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-jira-review-dark.png?v=09edfdc2" alt="The review list, the same for the API and a CSV file: each epic, then its issues, with the tag they share." width="916" height="641" loading="lazy">
 </div>
-<figcaption>The review list: each epic, then its issues, with the tag they share.</figcaption>
+<figcaption>The review list, the same for the API and a CSV file: each epic, then its issues, with the tag they share.</figcaption>
 </figure>
 <ul><li>Untick any row to leave it out. Untick an epic and its issues go with it.</li><li><strong>Issue type</strong> ticks or unticks every issue of one type. Untick <strong>Epic</strong> to bring in the issues without the epic cards.</li><li><strong>Status</strong> ticks or unticks every issue with that status.</li><li>The box at the top of the list ticks or unticks everything.</li></ul>
 <p>The count at the bottom shows what's going in.</p>
@@ -248,18 +262,32 @@
 <h2 id="export-to-jira">Export to Jira</h2>
 <p>Choose <strong>Menu → Export → Jira</strong>, then <strong>Jira CSV</strong> or <strong>Jira API</strong>. Every card becomes one story. No epics are made: the story map keeps the structure, and each story carries its slice and step as labels.</p>
 <ol class="steps"><li><span class="num">1</span><span>Under <strong>Releases</strong>, tick the slices to send.</span></li><li><span class="num">2</span><span>Under <strong>Status</strong>, tick the statuses to send.</span></li><li><span class="num">3</span><span>Check <strong>What each card becomes</strong>. It shows one card and the story it turns into.</span></li><li><span class="num">4</span><span>Under <strong>Labels</strong>, untick any you don't want: <strong>Slice name</strong>, <strong>Step name</strong> or <strong>Card tags</strong>.</span></li><li><span class="num">5</span><span>Open <strong>Choose cards</strong> to untick single cards.</span></li></ol>
-<figure class="shot" style="max-width: 1374px">
+<figure class="shot" style="max-width: 1314px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-jira-export.png?v=57b9eae5" alt="The export window shows one card and the story it becomes in Jira." width="916" height="781" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-jira-export-dark.png?v=71286ff3" alt="The export window shows one card and the story it becomes in Jira." width="916" height="781" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-jira-export.png?v=6c4c74c2" alt="This part is the same whichever way you export: one card and the story it becomes in Jira." width="876" height="499" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-jira-export-dark.png?v=3940f718" alt="This part is the same whichever way you export: one card and the story it becomes in Jira." width="876" height="499" loading="lazy">
 </div>
-<figcaption>The export window shows one card and the story it becomes in Jira.</figcaption>
+<figcaption>This part is the same whichever way you export: one card and the story it becomes in Jira.</figcaption>
 </figure>
 <p>Labels are lower case with hyphens, so a card under Browse Menu in the MVP slice is labelled <strong>browse-menu</strong> and <strong>mvp</strong>. The description of each story is the card body, then the slice, the step and a link back to the card.</p>
 <h3 id="jira-csv">Jira CSV</h3>
 <ol class="steps"><li><span class="num">1</span><span>Fill in the <strong>Project Name</strong>, <strong>Project Key</strong> and <strong>Project Type</strong> to import into an existing Jira project, or leave them blank to choose in Jira.</span></li><li><span class="num">2</span><span>Open <strong>Jira status names</strong> if your workflow has its own. To start with, no status, planned and blocked go out as To Do, in progress as In Progress, and done as Done.</span></li><li><span class="num">3</span><span>Click <strong>Download CSV</strong>, then import the file in Jira. The <strong>(How to import)</strong> link opens the Atlassian guide.</span></li></ol>
+<figure class="shot" style="max-width: 1374px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/user-story-mapping-for-jira-export-csv.png?v=57b9eae5" alt="The Jira CSV window, with the project fields at the top and Download CSV at the bottom." width="916" height="781" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-jira-export-csv-dark.png?v=71286ff3" alt="The Jira CSV window, with the project fields at the top and Download CSV at the bottom." width="916" height="781" loading="lazy">
+</div>
+<figcaption>The Jira CSV window, with the project fields at the top and Download CSV at the bottom.</figcaption>
+</figure>
 <h3 id="jira-api">Jira API</h3>
 <ol class="steps"><li><span class="num">1</span><span>Click <strong>Next: connect to Jira</strong>.</span></li><li><span class="num">2</span><span>Fill in the <strong>Jira Instance URL</strong>, <strong>Project Key</strong>, <strong>Email</strong> and <strong>API Token</strong>.</span></li><li><span class="num">3</span><span>Click <strong>Export to Jira</strong>.</span></li></ol>
+<figure class="shot" style="max-width: 1374px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/user-story-mapping-for-jira-export-api.png?v=235acdac" alt="The Jira API window after Next: connect to Jira." width="916" height="558" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-jira-export-api-dark.png?v=36e15d0c" alt="The Jira API window after Next: connect to Jira." width="916" height="558" loading="lazy">
+</div>
+<figcaption>The Jira API window after Next: connect to Jira.</figcaption>
+</figure>
 <p>The progress list links to every story as it's made. Cards that are in progress or done are moved to the matching Jira status. A project with no Story type gets tasks, and a project that doesn't take labels gets its stories without them. One export takes up to 2,000 cards.</p>
             <nav class="pager" aria-label="Previous and next">
                 <a class="prev" href="/docs/story-map-data-links"><span>Previous</span>Story map data links</a>
