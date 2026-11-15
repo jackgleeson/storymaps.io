@@ -178,6 +178,18 @@ test('after an import, a guide builds the backbone before any card is moved', as
   await expect(guide(page).locator('.tour-tooltip-body')).toContainText('Your 6 imported cards are safe in the Imported slice');
   await expect(guide(page).locator('.tour-progress-dot')).toHaveCount(4);
   await expect(page.locator('.users-row .story-card .story-text').first()).toBeFocused();
+  // The tooltip sits to the right of the lit card, clear of the rows below it
+  const cardBox = await page.locator('.users-row .story-card').first().boundingBox();
+  const tipBox = await guide(page).boundingBox();
+  expect(tipBox.x).toBeGreaterThanOrEqual(cardBox.x + cardBox.width);
+  // The cards are big enough to type on, however small the import was fitted
+  expect(parseInt(await page.locator('#zoomReset').textContent(), 10)).toBeGreaterThanOrEqual(85);
+  // The card menus, the selection bar and the side panel stay out of the way
+  await page.locator('.steps-row .step').nth(1).click({ modifiers: ['Shift'], position: { x: 6, y: 20 }, force: true });
+  await expect(page.locator('.selection-toolbar')).toBeHidden();
+  await expect(page.locator('.steps-row .step .btn-options').first()).toBeHidden();
+  await expect(page.locator('.controls-right')).toBeHidden();
+  await page.locator('.users-row .story-card .story-text').first().click();
   await page.keyboard.type('Customer');
   await page.keyboard.press('Enter');
 
@@ -199,6 +211,8 @@ test('after an import, a guide builds the backbone before any card is moved', as
   await expect(guide(page).locator('.tour-btn-next')).toHaveText(/Got it/);
   await guide(page).locator('.tour-btn-next').click();
   await expect(guide(page)).toBeHidden();
+  await expect(page.locator('.controls-right')).toBeVisible();
+  await expect(page.locator('.selection-toolbar')).toBeHidden();
 
   expect(await stepNamesOf(page)).toEqual(['Browse menu', 'Pay', '', '', '', '']);
   await expect.poll(async () => (await pullMap(id)).steps.slice(0, 2).map(step => step.name)).toEqual(['Browse menu', 'Pay']);

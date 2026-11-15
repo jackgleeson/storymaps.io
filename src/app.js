@@ -1388,6 +1388,11 @@ tour.init({
     renderAndSave,
     createStory,
     zoomToFit,
+    clearSelection: () => {
+        closeAllOptionsMenus();
+        clearSelection();
+        updateSelectionUI();
+    },
 });
 
 // Wire card-expand module

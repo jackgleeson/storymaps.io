@@ -4,6 +4,7 @@
 // import (import-guide.js), run their own steps through runSteps and look the same.
 
 let _zoomToFit = null;
+let _clearSelection = null;
 let _addSlice = null;
 let _deleteSlice = null;
 let _getState = null;
@@ -272,29 +273,38 @@ const positionTooltip = (rect) => {
     const spotH = rect.height + pad * 2;
     const spotCenterX = spotLeft + spotW / 2;
     const spotBottom = spotTop + spotH;
+    const spotRight = spotLeft + spotW;
+
+    const toRight = () => {
+        if (spotRight + TOOLTIP_GAP + ttRect.width + MARGIN >= vw) return false;
+        tt.style.left = `${spotRight + TOOLTIP_GAP}px`;
+        tt.style.top = `${clampY(spotTop + spotH / 2 - ttRect.height / 2, ttRect.height, vh)}px`;
+        tt.setAttribute('data-arrow', 'left');
+        return true;
+    };
+
+    // A guide can ask for the right-hand side, so the tooltip stays clear of what is below the
+    // highlight. Beside it when there is room; otherwise below or above, at its right-hand end.
+    const onRight = _options.placement === 'right';
+    if (onRight && toRight()) return;
+    const x = onRight ? spotRight - ttRect.width : spotCenterX - ttRect.width / 2;
 
     // Try below
     if (spotBottom + TOOLTIP_GAP + ttRect.height + MARGIN < vh) {
         tt.style.top = `${spotBottom + TOOLTIP_GAP}px`;
-        tt.style.left = `${clampX(spotCenterX - ttRect.width / 2, ttRect.width, vw)}px`;
-        tt.setAttribute('data-arrow', 'top');
+        tt.style.left = `${clampX(x, ttRect.width, vw)}px`;
+        if (!onRight) tt.setAttribute('data-arrow', 'top');
         return;
     }
     // Try above
     if (spotTop - TOOLTIP_GAP - ttRect.height - MARGIN > 0) {
         tt.style.top = `${spotTop - TOOLTIP_GAP - ttRect.height}px`;
-        tt.style.left = `${clampX(spotCenterX - ttRect.width / 2, ttRect.width, vw)}px`;
-        tt.setAttribute('data-arrow', 'bottom');
+        tt.style.left = `${clampX(x, ttRect.width, vw)}px`;
+        if (!onRight) tt.setAttribute('data-arrow', 'bottom');
         return;
     }
     // Try right
-    const spotRight = spotLeft + spotW;
-    if (spotRight + TOOLTIP_GAP + ttRect.width + MARGIN < vw) {
-        tt.style.left = `${spotRight + TOOLTIP_GAP}px`;
-        tt.style.top = `${clampY(spotTop + spotH / 2 - ttRect.height / 2, ttRect.height, vh)}px`;
-        tt.setAttribute('data-arrow', 'left');
-        return;
-    }
+    if (toRight()) return;
     // Fall back to left
     tt.style.left = `${Math.max(MARGIN, spotLeft - TOOLTIP_GAP - ttRect.width)}px`;
     tt.style.top = `${clampY(spotTop + spotH / 2 - ttRect.height / 2, ttRect.height, vh)}px`;
@@ -416,10 +426,12 @@ const renderStep = () => {
     if (step.focus) document.querySelector(step.focus)?.focus({ preventScroll: true });
 };
 
-// Typing in the highlighted part is saved when the cursor leaves it
+// Typing in the highlighted part is saved when the cursor leaves it. Anything selected or
+// opened along the way is put away too.
 const leaveField = () => {
     const active = document.activeElement;
     if (active && $('storyMap')?.contains(active)) active.blur();
+    if (_options.typing) _clearSelection?.();
 };
 
 const resolveTargetRects = (target) => {
@@ -494,8 +506,11 @@ const onTypingKey = (e) => {
         e.stopPropagation();
         const fields = _steps[_step].fields ? [...document.querySelectorAll(_steps[_step].fields)] : [];
         const nextField = fields[fields.indexOf(e.target) + 1];
-        if (nextField) nextField.focus({ preventScroll: true });
-        else next();
+        if (!nextField) return next();
+        // The next field may be off the edge of the screen: bring it in, and the highlight with it
+        nextField.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        nextField.focus({ preventScroll: true });
+        positionCurrentStep();
     }
 };
 
@@ -559,12 +574,16 @@ const onResize = () => {
 // ---------------------------------------------------------------------------
 
 export const isActive = () => _active;
+
+// Move the highlight and tooltip to where their target is now, after a guide zooms or scrolls
+export const reposition = () => { if (_active) positionCurrentStep(); };
 export const isTourCompleted = () => localStorage.getItem('tourCompleted') === 'true';
 
 export const startTour = () => runSteps(STEPS, { markCompleted: true });
 
 // Run a list of steps as a guide. Options:
 //   typing: people type into the highlighted part, so the keys belong to the text
+//   placement: 'right' puts the tooltip on the right-hand side of the highlight
 //   skipLabel, finishLabel: the words on the buttons
 //   markCompleted: count this as having taken the tour
 //   onEnd: called when the guide ends, however it ends
@@ -573,6 +592,9 @@ export const runSteps = (steps, options = {}) => {
     _steps = steps;
     _options = options;
     tooltip().querySelector('.tour-btn-skip').textContent = options.skipLabel || 'Skip';
+    // While people type into the story map, its menus and selection would only get in the way
+    document.body.classList.toggle('tour-typing', !!options.typing);
+    _clearSelection?.();
     _active = true;
     _step = 0;
     _wasDarkOnStart = document.documentElement.classList.contains('dark-mode');
@@ -601,7 +623,8 @@ export const endTour = () => {
     _steps[_step].onLeave?.();
     _active = false;
     if (_options.markCompleted) localStorage.setItem('tourCompleted', 'true');
-    document.body.classList.remove('tour-active');
+    _clearSelection?.();
+    document.body.classList.remove('tour-active', 'tour-typing');
     backdrop().classList.remove('visible', 'tour-backdrop-dim');
     backdrop().style.clipPath = '';
     backdrop().style.opacity = '';
@@ -639,6 +662,7 @@ export const init = (config = {}) => {
     _renderAndSave = config.renderAndSave || null;
     _createStory = config.createStory || null;
     _zoomToFit = config.zoomToFit || null;
+    _clearSelection = config.clearSelection || null;
 
     // Wire tooltip buttons
     const tt = tooltip();

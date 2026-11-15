@@ -10663,6 +10663,19 @@ body.tour-active .controls-right {
     pointer-events: none;
 }
 
+/* A guide that asks for typing lights a card to type on: its menu and the selection bar stay out of the way */
+body.tour-typing .btn-options,
+body.tour-typing .options-menu,
+body.tour-typing .selection-toolbar,
+body.tour-typing .canvas-context-menu {
+    display: none !important;
+}
+
+/* Nothing in the side panel is lit by such a guide, and it would sit on top of the cards being typed on */
+body.tour-typing .controls-right {
+    visibility: hidden;
+}
+
 /* Disable slice gutter controls during tour so adding, reordering or closing slices can't distort the steps */
 body.tour-active .btn-add-slice,
 body.tour-active .slice-drag-handle,

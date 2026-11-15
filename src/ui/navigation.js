@@ -210,6 +210,19 @@ export const zoomToFit = () => {
     lastWrapperWidth = wrapper.clientWidth;
 };
 
+// Big enough to type on, scrolled back to the start of the story map: full size when the steps
+// fit the window at that size, a little smaller when that brings them all into view, and never
+// as small as a wide story map gets when it is fitted to the window
+const TYPING_ZOOM_MIN = 0.85;
+export const zoomForTyping = () => {
+    const wrapper = _dom.storyMapWrapper;
+    const stepsWidth = 80 + _state.columns.length * 190;
+    const fit = Math.floor(((wrapper.clientWidth - 68) / stepsWidth) * 20) / 20;
+    zoomLevel = Math.max(TYPING_ZOOM_MIN, Math.min(1, fit));
+    updateZoom();
+    centerScroll();
+};
+
 // Scroll element into view with padding
 export const scrollElementIntoView = (element) => {
     if (!element) return;
@@ -699,6 +712,8 @@ export const initMarquee = () => {
         if (!_isMapEditable()) return;
         if (window.matchMedia('(pointer: coarse)').matches) return;
         if (e.target.closest(MARQUEE_SKIP_SELECTORS)) return;
+        // The tour and the guides light one part at a time: nothing gets selected by a stray drag
+        if (document.body.classList.contains('tour-active')) return;
 
         e.preventDefault();
         marqueeStartX = e.clientX;

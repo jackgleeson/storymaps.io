@@ -10,6 +10,7 @@
 
 import { state } from '/src/core/state.js';
 import * as tour from '/src/features/tour.js';
+import { zoomToFit, zoomForTyping } from '/src/ui/navigation.js';
 
 export const IMPORTED_SLICE = 'Imported';
 
@@ -27,6 +28,15 @@ export const backboneNeeds = (map) => {
 };
 
 const STEP_FIELDS = '.steps-row .step:not(.phantom-step) .step-text';
+
+// A big import is fitted to the window, which leaves the cards too small to type on, and the
+// story map holds still during a guide. So the backbone is shown big enough to type on, from
+// the start of the story map, and the last step fits everything to the window again to show
+// the pile.
+const show = (zoom) => () => {
+    zoom();
+    tour.reposition();
+};
 
 // The slices the cards move between: the pile, and the release above it
 const sliceContainers = () => {
@@ -46,6 +56,7 @@ export const guideSteps = (needs) => {
         needs.user && {
             target: '.users-row .story-card',
             focus: '.users-row .story-card .story-text',
+            onEnter: show(zoomForTyping),
             title: 'Who is it for?',
             body: 'Type a name on the red card, such as <strong>Customer</strong>.',
             icon: '\u{1F464}',
@@ -53,6 +64,7 @@ export const guideSteps = (needs) => {
         needs.activity && {
             target: '.activities-row .story-card',
             focus: '.activities-row .story-card .story-text',
+            onEnter: show(zoomForTyping),
             title: 'What are they trying to do?',
             body: 'Type it on the blue card, such as <strong>Order a coffee</strong>.',
             icon: '\u{1F3AF}',
@@ -62,6 +74,7 @@ export const guideSteps = (needs) => {
             clipRight: '.step:not(.phantom-step)',
             focus: STEP_FIELDS,
             fields: STEP_FIELDS,
+            onEnter: show(zoomForTyping),
             title: 'What steps do they take?',
             body: 'Name the green cards from left to right, in the order the user takes them, such as <strong>Browse menu</strong>, <strong>Pay</strong>, <strong>Collect order</strong>. Enter moves to the next one. Leave any spare steps blank.',
             icon: '\u{1F9ED}',
@@ -72,6 +85,7 @@ export const guideSteps = (needs) => {
     return [...backbone, {
         target: sliceContainers,
         clipRight: '.step:not(.phantom-step)',
+        onEnter: show(zoomToFit),
         title: 'Now place the cards',
         body: `${backbone.length ? 'That is the backbone, so every card has somewhere to go. ' : 'The backbone is already here, so every card has somewhere to go. '}`
             + `Drag each card up out of <strong>${IMPORTED_SLICE}</strong> into a release, under the step it belongs to. Select several to move them together.<br><br>When <strong>${IMPORTED_SLICE}</strong> is empty, delete it.`,
@@ -96,7 +110,7 @@ export const start = () => {
         }
         // Read the story map again: it may have changed while a dialog was open
         const needs = backboneNeeds(state);
-        if (needs.cards) tour.runSteps(guideSteps(needs), { typing: true, skipLabel: 'Skip the guide', finishLabel: 'Got it' });
+        if (needs.cards) tour.runSteps(guideSteps(needs), { typing: true, placement: 'right', skipLabel: 'Skip the guide', finishLabel: 'Got it' });
     };
     // The import has only just been drawn and fitted to the window; let that settle first
     setTimeout(begin, 400);
