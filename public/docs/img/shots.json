@@ -677,5 +677,19 @@
         "y": 85.1
       }
     ]
+  },
+  "run-a-user-story-mapping-session/team-tags": {
+    "width": 1043,
+    "height": 387,
+    "callouts": [
+      {
+        "x": 12.2,
+        "y": 31.2
+      },
+      {
+        "x": 86.2,
+        "y": 80.9
+      }
+    ]
   }
 }
