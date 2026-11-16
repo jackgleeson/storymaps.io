@@ -4,6 +4,16 @@ const tooltip = (page) => page.locator('#tourTooltip');
 const title = (page) => tooltip(page).locator('.tour-tooltip-title');
 const next = (page) => tooltip(page).locator('.tour-btn-next');
 
+// Next, then wait for the tour to reach the step after. The text changes a moment after the click,
+// so reading it straight away can give the step that was just left, and the count goes wrong.
+const dots = (page) => page.locator('#tourProgress .tour-progress-dot');
+const goNext = async (page) => {
+  const was = await page.locator('#tourProgress .tour-progress-dot.active').evaluate(d => [...d.parentNode.children].indexOf(d));
+  const last = was === await dots(page).count() - 1;
+  await next(page).click();
+  if (!last) await expect(dots(page).nth(was + 1)).toHaveClass(/active/);
+};
+
 test('the tour runs on the coffee app, adds a Later slice for a step, and leaves the story map as it found it', async ({ page }) => {
   await page.goto('/tour');
   await expect(page.locator('#boardName')).toHaveValue('Coffee App');
@@ -24,7 +34,7 @@ test('the tour runs on the coffee app, adds a Later slice for a step, and leaves
     }
     // Every step after the first two points at part of the story map, apart from the last
     if (i > 0 && i < steps - 1) await expect(page.locator('#tourSpotlight')).toBeVisible();
-    await next(page).click();
+    await goNext(page);
   }
 
   expect(seen).toContain('Users');
@@ -41,11 +51,7 @@ test('the tour runs on the coffee app, adds a Later slice for a step, and leaves
 test('cards dragged during the tour go back, even if the window resizes first', async ({ page }) => {
   await page.goto('/tour');
   await expect(title(page)).toHaveText('What is a story map?');
-  while (await title(page).textContent() !== 'A first release') {
-    const was = await page.locator('#tourProgress .tour-progress-dot.active').evaluate(d => [...d.parentNode.children].indexOf(d));
-    await next(page).click();
-    await expect(page.locator('#tourProgress .tour-progress-dot').nth(was + 1)).toHaveClass(/active/);
-  }
+  while (await title(page).textContent() !== 'A first release') await goNext(page);
   const cards = page.locator('.slice-container').first().locator('.story-column:nth-child(1) .story-card');
   const order = () => cards.evaluateAll(all => all.map(c => c.dataset.storyId));
   const before = await order();
@@ -74,7 +80,7 @@ test('the map stays under the highlight when the first release step hides the ad
   await page.setViewportSize({ width: 1800, height: 1100 });
   await page.goto('/tour');
   await expect(page.locator('#boardName')).toHaveValue('Coffee App');
-  while (await title(page).textContent() !== 'Release slices') await next(page).click();
+  while (await title(page).textContent() !== 'Release slices') await goNext(page);
 
   const top = (selector) => page.locator(selector).first().evaluate(el => el.getBoundingClientRect().top);
   await page.waitForTimeout(100);
