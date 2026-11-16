@@ -508,7 +508,7 @@
   },
   "user-story-mapping-for-jira/export": {
     "width": 876,
-    "height": 499,
+    "height": 565,
     "callouts": []
   },
   "import-guide/first-step": {
@@ -528,7 +528,7 @@
   },
   "user-story-mapping-for-linear/export": {
     "width": 916,
-    "height": 671,
+    "height": 737,
     "callouts": []
   },
   "user-story-mapping-for-asana/review": {
@@ -538,7 +538,7 @@
   },
   "user-story-mapping-for-asana/export": {
     "width": 876,
-    "height": 523,
+    "height": 589,
     "callouts": []
   },
   "user-story-mapping-for-phabricator/review": {
@@ -548,7 +548,7 @@
   },
   "user-story-mapping-for-phabricator/export": {
     "width": 876,
-    "height": 421,
+    "height": 487,
     "callouts": []
   },
   "user-story-mapping-for-jira/import-api": {
@@ -603,7 +603,7 @@
   },
   "user-story-mapping-for-asana/export-csv": {
     "width": 916,
-    "height": 743,
+    "height": 781,
     "callouts": []
   },
   "user-story-mapping-for-asana/export-api": {

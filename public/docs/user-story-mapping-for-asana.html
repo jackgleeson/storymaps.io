@@ -20,7 +20,7 @@
     <meta name="twitter:description" content="Turn an Asana project into a story map, through the Asana API or a CSV export, and send the cards back to Asana as tasks tagged with their slice and step.">
     <meta name="twitter:image" content="https://storymaps.io/resources/screenshot.png">
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://storymaps.io/docs"},{"@type":"ListItem","position":2,"name":"User story mapping for Asana","item":"https://storymaps.io/docs/user-story-mapping-for-asana"}]}</script>
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"User story mapping for Asana","description":"Turn an Asana project into a story map, through the Asana API or a CSV export, and send the cards back to Asana as tasks tagged with their slice and step.","url":"https://storymaps.io/docs/user-story-mapping-for-asana","inLanguage":"en","dateModified":"2026-11-15","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"User story mapping for Asana","description":"Turn an Asana project into a story map, through the Asana API or a CSV export, and send the cards back to Asana as tasks tagged with their slice and step.","url":"https://storymaps.io/docs/user-story-mapping-for-asana","inLanguage":"en","dateModified":"2026-11-16","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/fonts.css">
     <script>
@@ -270,11 +270,11 @@
 </figure>
 <ol class="steps"><li><span class="num">1</span><span><strong>Asana CSV</strong> downloads a file for you to import in Asana.</span></li><li><span class="num">2</span><span><strong>Asana API</strong> creates the tasks in Asana for you.</span></li></ol>
 <p>Choose <strong>Menu → Export → Asana</strong>, then one of them. Both start the same way:</p>
-<ol class="steps"><li><span class="num">1</span><span>Under <strong>Releases</strong>, tick the slices to send.</span></li><li><span class="num">2</span><span>Under <strong>Status</strong>, tick the statuses to send.</span></li><li><span class="num">3</span><span>Check <strong>What each card becomes</strong>. It shows one card and the task it turns into.</span></li><li><span class="num">4</span><span>Untick what you don't want to send with each task: <strong>Slice name</strong>, <strong>Step name</strong> or <strong>Card tags</strong>.</span></li><li><span class="num">5</span><span>Open <strong>Choose cards</strong> to untick single cards.</span></li></ol>
+<ol class="steps"><li><span class="num">1</span><span>Under <strong>Releases</strong>, tick the slices to send.</span></li><li><span class="num">2</span><span>Under <strong>Status</strong>, tick the statuses to send.</span></li><li><span class="num">3</span><span>Leave <strong>Export task cards only</strong> ticked to send the yellow task cards and any card with a status. Untick it to send cards of every colour, such as notes and questions.</span></li><li><span class="num">4</span><span>Check <strong>What each card becomes</strong>. It shows one card and the task it turns into.</span></li><li><span class="num">5</span><span>Untick what you don't want to send with each task: <strong>Slice name</strong>, <strong>Step name</strong> or <strong>Card tags</strong>.</span></li><li><span class="num">6</span><span>Open <strong>Choose cards</strong> to untick single cards.</span></li></ol>
 <figure class="shot" style="max-width: 1314px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-asana-export.png?v=62795040" alt="This part is the same whichever way you export: one card and the task it becomes in Asana." width="876" height="523" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-export-dark.png?v=7763d126" alt="This part is the same whichever way you export: one card and the task it becomes in Asana." width="876" height="523" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-asana-export.png?v=571fa87b" alt="This part is the same whichever way you export: one card and the task it becomes in Asana." width="876" height="589" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-export-dark.png?v=ba64200c" alt="This part is the same whichever way you export: one card and the task it becomes in Asana." width="876" height="589" loading="lazy">
 </div>
 <figcaption>This part is the same whichever way you export: one card and the task it becomes in Asana.</figcaption>
 </figure>
@@ -283,8 +283,8 @@
 <p>Click <strong>Download CSV</strong>, then import the file into your Asana project. The dialog shows the way: click the project name dropdown, then Import, then CSV.</p>
 <figure class="shot" style="max-width: 1374px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-asana-export-csv.png?v=116daa6e" alt="The Asana CSV window, with Download CSV at the bottom." width="916" height="743" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-export-csv-dark.png?v=78b82385" alt="The Asana CSV window, with Download CSV at the bottom." width="916" height="743" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-asana-export-csv.png?v=99395e4e" alt="The Asana CSV window, with Download CSV at the bottom." width="916" height="781" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-export-csv-dark.png?v=7f83256b" alt="The Asana CSV window, with Download CSV at the bottom." width="916" height="781" loading="lazy">
 </div>
 <figcaption>The Asana CSV window, with Download CSV at the bottom.</figcaption>
 </figure>
@@ -293,8 +293,8 @@
 <ol class="steps"><li><span class="num">1</span><span>Click <strong>Connect to Asana</strong>.</span></li><li><span class="num">2</span><span>Paste a <strong>Personal Access Token</strong> and the <strong>Project Page URL</strong>.</span></li><li><span class="num">3</span><span>Click <strong>Export to Asana</strong>.</span></li></ol>
 <figure class="shot" style="max-width: 1374px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-asana-export-api.png?v=6e10179b" alt="The Asana API window after you click Connect to Asana." width="916" height="494" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-export-api-dark.png?v=dce9a068" alt="The Asana API window after you click Connect to Asana." width="916" height="494" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-asana-export-api.png?v=2e8b1afa" alt="The Asana API window after you click Connect to Asana." width="916" height="494" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-export-api-dark.png?v=752c6efe" alt="The Asana API window after you click Connect to Asana." width="916" height="494" loading="lazy">
 </div>
 <figcaption>The Asana API window after you click Connect to Asana.</figcaption>
 </figure>
