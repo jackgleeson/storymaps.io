@@ -12447,6 +12447,17 @@ html.dark-mode .bookmark-nudge-button:hover {
     cursor: pointer;
 }
 
+.export-tasks-only {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 4px 0 14px;
+}
+
+.export-tasks-only-note {
+    font-size: 13px;
+    color: var(--color-text-secondary, #64748b);
+}
+
 .export-label-option input {
     margin: 0;
     width: 16px;

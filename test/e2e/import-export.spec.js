@@ -166,6 +166,21 @@ test('Jira CSV export shows what a card becomes and downloads one Story per card
   await expect(modal).toBeHidden();
 });
 
+test('an export starts with only the task cards, and one tick brings the rest in', async ({ page }) => {
+  // The coffee shop as it works today: 10 yellow cards, and 17 problems, opportunities and questions
+  await page.goto('/sample/type-now');
+  await expect(page.locator('#boardName')).toHaveValue('Coffee Shop Today');
+  await page.evaluate(() => document.getElementById('exportJiraProxyBtn').click());
+  const modal = page.locator('.modal-overlay.visible');
+  const tasksOnly = modal.locator('[data-export="tasks-only"]');
+  await expect(tasksOnly).toBeChecked();
+  await expect(modal.locator('.export-tasks-only')).toContainText('Leaves out 17 cards');
+  await expect(modal.locator('[data-export="count"]')).toHaveText('10 stories');
+
+  await tasksOnly.uncheck();
+  await expect(modal.locator('[data-export="count"]')).toHaveText('27 stories');
+});
+
 test('every tracker export lists blocked cards, and the Status filter can leave them out', async ({ page, createMap }) => {
   await openMap(page, await createMap(trackerMap), 2);
   const kinds = [

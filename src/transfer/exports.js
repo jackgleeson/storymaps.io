@@ -199,7 +199,23 @@ const buildChoose = (kind) => {
     const example = el('div', 'export-example-section');
     example.dataset.export = 'example';
 
-    container.append(filters, example);
+    container.append(filters);
+    // Only the task cards go across unless this is unticked: the yellow ones, and any other card
+    // with a status. It's left out when every card is a
+    // task card, or none is, since it would change nothing or leave nothing to export.
+    if (session.otherCards && session.taskCards) {
+        const tasksOnly = el('label', 'export-label-option export-tasks-only');
+        const checkbox = el('input', null, { type: 'checkbox', checked: session.tasksOnly });
+        checkbox.dataset.export = 'tasks-only';
+        checkbox.addEventListener('change', () => {
+            session.tasksOnly = checkbox.checked;
+            refresh(kind);
+        });
+        tasksOnly.append(checkbox, el('span', null, { text: 'Export task cards only' }),
+            el('span', 'export-tasks-only-note', { text: `Leaves out ${count(session.otherCards, ['card', 'cards'])} in other colours with no status, such as notes and questions` }));
+        container.append(tasksOnly);
+    }
+    container.append(example);
 
     if (k.labels) {
         const section = el('div', 'export-filter-group');
@@ -329,7 +345,7 @@ const renderCounts = (kind) => {
 // Work the card list out again after a filter or a label choice changes
 const refresh = (kind) => {
     const session = sessions[kind];
-    session.cards = collectCards(state, { sliceIds: session.sliceIds, statuses: session.statuses });
+    session.cards = collectCards(state, { sliceIds: session.sliceIds, statuses: session.statuses, tasksOnly: session.tasksOnly });
     renderExample(kind);
     renderCards(kind);
     renderCounts(kind);
@@ -342,9 +358,16 @@ const showStage = (kind, stage) => {
 };
 
 export const openExport = (kind) => {
+    const all = collectCards(state).length;
+    const taskCards = collectCards(state, { tasksOnly: true }).length;
     sessions[kind] = {
         sliceIds: new Set(state.slices.map(slice => slice.id)),
         statuses: new Set(STATUSES),
+        // Only the task cards to start with, so the notes and questions around them don't become
+        // tickets. A story map with no task cards exports everything.
+        taskCards,
+        otherCards: all - taskCards,
+        tasksOnly: taskCards > 0,
         excluded: new Set(),
         labelOptions: { slice: true, step: true, tags: true },
         cards: [],

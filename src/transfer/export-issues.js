@@ -11,8 +11,15 @@ export const STATUS_NAMES = { none: 'No Status', planned: 'Planned', 'in-progres
 // Jira labels can't hold spaces, so every label is lower case with hyphens, in every tracker
 export const labelSlug = (name) => String(name || '').trim().toLowerCase().replace(/\s+/g, '-');
 
-// Every named card in the slices, release by release, then step by step from the left
-export const collectCards = (state, { sliceIds = null, statuses = null } = {}) => {
+// A card with no colour of its own is a task card, which shows yellow. The other colours are for
+// whatever a team marks around the tasks, such as problems, questions and notes. A card of another
+// colour that has a status is being worked on too, so it counts as a task card.
+export const TASK_COLOR = '#fef08a';
+export const isTaskCard = (story) => (story.color || TASK_COLOR).toLowerCase() === TASK_COLOR || !!story.status;
+
+// Every named card in the slices, release by release, then step by step from the left.
+// "tasksOnly" leaves out the cards of any other colour, so they don't become tickets.
+export const collectCards = (state, { sliceIds = null, statuses = null, tasksOnly = false } = {}) => {
     const cards = [];
     state.slices.forEach(slice => {
         if (sliceIds && !sliceIds.has(slice.id)) return;
@@ -21,6 +28,7 @@ export const collectCards = (state, { sliceIds = null, statuses = null } = {}) =
                 if (!story.name.trim()) return;
                 const status = story.status || 'none';
                 if (statuses && !statuses.has(status)) return;
+                if (tasksOnly && !isTaskCard(story)) return;
                 cards.push({
                     id: story.id,
                     name: story.name.trim(),

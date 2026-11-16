@@ -1,7 +1,7 @@
 import { describe, test } from 'node:test';
 import { strict as assert } from 'node:assert';
 import {
-  labelSlug, collectCards, cardLabels, issueDescription, toIssue, jiraCsv, asanaCsv,
+  labelSlug, collectCards, isTaskCard, cardLabels, issueDescription, toIssue, jiraCsv, asanaCsv,
   phabConsoleFunction, phabConsoleCall, parsePhabTags, extractAsanaProjectGid,
 } from '/src/transfer/export-issues.js';
 import { parseCsv } from '/src/transfer/csv.js';
@@ -32,6 +32,24 @@ describe('collectCards', () => {
   test('keeps only the ticked releases and statuses', () => {
     assert.deepEqual(collectCards(map(), { sliceIds: new Set(['s2']) }).map(c => c.name), ['Photos', 'Loose end']);
     assert.deepEqual(collectCards(map(), { statuses: new Set(['done', 'none']) }).map(c => c.name), ['Drink list', 'Loose end']);
+  });
+});
+
+describe('task cards', () => {
+  test('a card is a task card when it is yellow, has no colour of its own, or has a status', () => {
+    assert.ok(isTaskCard(card('a', 'Plain')));
+    assert.ok(isTaskCard(card('b', 'Yellow', { color: '#FEF08A' })));
+    assert.ok(isTaskCard(card('c', 'Lime, in progress', { color: '#bef264', status: 'in-progress' })));
+    assert.equal(isTaskCard(card('d', 'A question', { color: '#bef264' })), false);
+    assert.equal(isTaskCard(card('e', 'A note', { color: '#a5f3fc', status: null })), false);
+  });
+
+  test('tasksOnly leaves out cards of other colours that have no status', () => {
+    const coloured = map();
+    coloured.slices[0].stories.c1.push(card('q', 'Do we need photos?', { color: '#bef264' }));
+    coloured.slices[1].stories.c1.push(card('n', 'Too slow on 3G', { color: '#fecdd3' }), card('w', 'Fix the queue', { color: '#fecdd3', status: 'planned' }));
+    assert.deepEqual(collectCards(coloured).map(c => c.name), ['Drink list', 'Do we need photos?', 'Card payment', 'Photos', 'Too slow on 3G', 'Fix the queue', 'Loose end']);
+    assert.deepEqual(collectCards(coloured, { tasksOnly: true }).map(c => c.name), ['Drink list', 'Card payment', 'Photos', 'Fix the queue', 'Loose end']);
   });
 });
 
