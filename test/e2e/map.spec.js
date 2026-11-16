@@ -135,3 +135,20 @@ test('Tab moves from one step to the next, left to right, without stopping on it
     await expect(steps.nth(next)).toBeFocused();
   }
 });
+
+test('a one-line title sits in the middle of its card at tablet width', async ({ page, createMap }) => {
+  // At this width a title is 12px with a 16.8px line, and its height measures as 17. Rounding the
+  // line down first made one line count as two, so the title sat in the top half of the card.
+  await page.setViewportSize({ width: 800, height: 1280 });
+  await openMap(page, await createMap());
+  const card = page.locator('.slice-container .story-card').first();
+  const title = card.locator('textarea.story-text');
+  await title.fill('Pay');
+  await expect(title).toHaveJSProperty('rows', 1);
+  const gap = await card.evaluate((el) => {
+    const box = el.getBoundingClientRect();
+    const text = el.querySelector('textarea').getBoundingClientRect();
+    return Math.abs((text.top - box.top) - (box.bottom - text.bottom));
+  });
+  expect(gap).toBeLessThanOrEqual(2);
+});

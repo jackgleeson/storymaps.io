@@ -687,10 +687,14 @@ export const createTextarea = (className, placeholder, value, onChange, onTextEd
             }
         });
 
+        // One row or two, by how many lines the title takes. The line height is often a fraction
+        // of a pixel (16.8px at tablet widths) while the measured height is a whole number (17),
+        // so the two are compared by rounding. Rounding the line height down first made one line
+        // look like more than one, and the title then sat in the top half of a two-row box.
         const autoResize = () => {
             textarea.rows = 1;
-            const lineHeight = parseInt(getComputedStyle(textarea).lineHeight) || 18;
-            const neededRows = Math.ceil(textarea.scrollHeight / lineHeight);
+            const lineHeight = parseFloat(getComputedStyle(textarea).lineHeight) || 18;
+            const neededRows = Math.round(textarea.scrollHeight / lineHeight);
             textarea.rows = Math.min(Math.max(neededRows, 1), 2);
         };
 
