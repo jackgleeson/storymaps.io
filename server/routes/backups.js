@@ -2,11 +2,15 @@ import { randomBytes } from 'node:crypto';
 
 const MAX_BACKUPS = 8;
 
+// Backups in time order, oldest first, which is the order the list is sent in. The CLI prints the
+// list backwards to show the newest first. Files written before backups were kept in time order
+// can hold an imported, older backup after a newer one, so the list is put in order when read too.
+export const oldestFirst = (backups) => [...backups]
+  .sort((a, b) => (Date.parse(a.timestamp) || 0) - (Date.parse(b.timestamp) || 0));
+
 // Keep the newest backups by time. Imported backups can be older than the ones already here,
 // such as the backup taken just before an import, so they mustn't push those out.
-const keepNewest = (backups) => backups
-  .sort((a, b) => (Date.parse(a.timestamp) || 0) - (Date.parse(b.timestamp) || 0))
-  .slice(-MAX_BACKUPS);
+const keepNewest = (backups) => oldestFirst(backups).slice(-MAX_BACKUPS);
 
 // An imported backup keeps only the fields the app reads, with each one the type it expects. A
 // time in the future would keep it newest for good and push out every real backup, so that
@@ -46,7 +50,7 @@ export default function register(ctx) {
     return true;
   };
   route('GET', '/api/backups/:mapId', async (req, res, { mapId }) => {
-    const backups = await ctx.readJson(ctx.getBackupFile(mapId), []);
+    const backups = oldestFirst(await ctx.readJson(ctx.getBackupFile(mapId), []));
     const meta = backups.map(b => ({
       id: b.id, timestamp: b.timestamp, note: b.note,
       mapName: b.mapName || '',

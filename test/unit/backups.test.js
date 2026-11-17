@@ -92,6 +92,12 @@ describe('backups', () => {
     assert.deepEqual(Object.keys(meta).sort(), ['cardCount', 'id', 'mapName', 'note', 'size', 'timestamp']);
   });
 
+  test('the list is oldest first, even from a file saved out of order', async () => {
+    // Files written before backups were kept in time order: an imported, older backup after a newer one
+    files.set('backups/abc12345.json', [backup('newer', '2026-09-15T15:52:35.333Z'), backup('older', '2026-09-15T09:31:52.597Z', { imported: true })]);
+    assert.deepEqual((await call('GET', '/api/backups/abc12345')).body.map(b => b.id), ['older', 'newer']);
+  });
+
   test('only the newest eight backups are kept', async () => {
     for (let i = 1; i <= 9; i++) {
       rename(`Map ${i}`);
