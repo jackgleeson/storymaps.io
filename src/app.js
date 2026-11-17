@@ -1175,6 +1175,15 @@ const initEventListeners = () => {
         document.querySelectorAll('.selection-toolbar-split-menu.visible').forEach(m => m.classList.remove('visible'));
     });
 
+    // A mouse click leaves the focus on the button, and the next key press (Shift to select cards,
+    // say) then draws the browser's focus outline on it. A click made with Enter or Space has
+    // detail 0, so keyboard users keep the focus where it is. Buttons in a dialog keep it too: the
+    // focus belongs inside an open dialog, and the project box puts it back on the button used.
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest?.('button');
+        if (btn && e.detail > 0 && document.activeElement === btn && !btn.closest('[role="dialog"], .modal')) btn.blur();
+    });
+
     document.addEventListener('keydown', (e) => {
         // The expanded card has its own buttons and fields, so map shortcuts (undo, delete
         // selection, pan) would act on the map behind it. Only Escape, to close it, gets through.
