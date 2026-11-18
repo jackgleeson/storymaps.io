@@ -902,6 +902,29 @@ body.welcome-visible .gh-star {
 }
 
 /* Hide scrollbar for Webkit (Chrome, Safari, Edge) */
+/* Dragging the mouse across the page selects no text. A drag that starts on a blank part of
+   the page used to sweep a text selection over the header and every card on the story map.
+   Text can still be selected where it is typed or read: in a card, a field or a dialog. */
+.header,
+.project-bar,
+.story-map-wrapper {
+    -webkit-user-select: none;
+    user-select: none;
+}
+.header input,
+.header textarea,
+.project-bar input,
+.project-panel,
+.story-map-wrapper input,
+.story-map-wrapper textarea,
+.story-map-wrapper [contenteditable],
+.story-map-wrapper .cm-editor,
+#logPanel,
+#notesPanel {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
 .story-map-wrapper::-webkit-scrollbar {
     display: none;
 }
