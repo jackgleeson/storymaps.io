@@ -20,7 +20,7 @@
     <meta name="twitter:description" content="Turn Phabricator tasks into a story map, through the Conduit API or a Maniphest CSV export, and send the cards back as tasks that say which slice and step they came from.">
     <meta name="twitter:image" content="https://storymaps.io/resources/screenshot.png">
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://storymaps.io/docs"},{"@type":"ListItem","position":2,"name":"User story mapping for Phabricator","item":"https://storymaps.io/docs/user-story-mapping-for-phabricator"}]}</script>
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"User story mapping for Phabricator","description":"Turn Phabricator tasks into a story map, through the Conduit API or a Maniphest CSV export, and send the cards back as tasks that say which slice and step they came from.","url":"https://storymaps.io/docs/user-story-mapping-for-phabricator","inLanguage":"en","dateModified":"2026-11-16","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"User story mapping for Phabricator","description":"Turn Phabricator tasks into a story map, through the Conduit API or a Maniphest CSV export, and send the cards back as tasks that say which slice and step they came from.","url":"https://storymaps.io/docs/user-story-mapping-for-phabricator","inLanguage":"en","dateModified":"2026-11-18","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/fonts.css">
     <script>
@@ -32,8 +32,8 @@
         } catch(e) {}
     })();
     </script>
-    <link rel="stylesheet" href="/docs/docs.css?v=d8e4cc50">
-    <script src="/docs/docs.js?v=9eb8da2a" defer></script>
+    <link rel="stylesheet" href="/docs/docs.css?v=89dde9d9">
+    <script src="/docs/docs.js?v=6c627eaa" defer></script>
 </head>
 <body class="docs-guide">
 <div class="site-header-wrap">
@@ -175,6 +175,7 @@
             <li><a href="/docs/user-story-mapping-for-asana">User story mapping for Asana</a></li>
             <li><a href="/docs/user-story-mapping-for-phabricator" class="on" aria-current="page">User story mapping for Phabricator</a></li>
             <li><a href="/docs/user-story-mapping-for-linear">User story mapping for Linear</a></li>
+            <li><a href="/docs/user-story-mapping-for-azure-devops">User story mapping for Azure DevOps</a></li>
         </ul>
     </details>
 </aside>
@@ -191,10 +192,10 @@
             <a href="#build-the-backbone-first">Build the backbone first</a>
             <a href="#export-to-phabricator">Export to Phabricator</a></nav></details>
 <p>Bring Phabricator tasks in, lay them out as a journey, then send the plan back. Parent tasks, subtasks, statuses and points all come with them, and every card links back to its task.</p>
-<figure class="shot" style="max-width: 375px">
+<figure class="shot" style="max-width: 450px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-phabricator-import-menu.png?v=03c35c5d" alt="The Phabricator options in the Import menu." width="250" height="242" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-phabricator-import-menu-dark.png?v=1a6f6d42" alt="The Phabricator options in the Import menu." width="250" height="242" loading="lazy"><span class="callout" style="left: 8.8%; top: 74.2%">1</span><span class="callout" style="left: 8.8%; top: 87%">2</span>
+<img class="only-light" src="/docs/img/user-story-mapping-for-phabricator-import-menu.png?v=85155862" alt="The Phabricator options in the Import menu." width="300" height="242" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-phabricator-import-menu-dark.png?v=193de05c" alt="The Phabricator options in the Import menu." width="300" height="242" loading="lazy"><span class="callout" style="left: 7.4%; top: 74.2%">1</span><span class="callout" style="left: 7.4%; top: 87%">2</span>
 </div>
 <figcaption>The Phabricator options in the Import menu.</figcaption>
 </figure>
@@ -224,17 +225,18 @@
 <p><strong>Review Import</strong> lists every card that will be made: each parent task, then its subtasks, and last the tasks with no parent.</p>
 <figure class="shot" style="max-width: 1374px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-phabricator-review.png?v=9b9a3370" alt="The review list, the same for the API and a CSV file. Resolved tasks start unticked." width="916" height="641" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-phabricator-review-dark.png?v=a16aa164" alt="The review list, the same for the API and a CSV file. Resolved tasks start unticked." width="916" height="641" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-phabricator-review.png?v=0857ca00" alt="The review list, the same for the API and a CSV file. Resolved tasks start unticked." width="916" height="641" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-phabricator-review-dark.png?v=435aa37c" alt="The review list, the same for the API and a CSV file. Resolved tasks start unticked." width="916" height="641" loading="lazy">
 </div>
 <figcaption>The review list, the same for the API and a CSV file. Resolved tasks start unticked.</figcaption>
 </figure>
 <p>Untick any row to leave it out. Untick a parent task and its subtasks go with it. The box at the top of the list ticks or unticks everything.</p>
 <p><strong>Status</strong>, above the list, ticks or unticks every task with that status: <strong>Planned</strong>, <strong>In Progress</strong> and <strong>Done</strong>. Done tasks are left out to start with. Tick <strong>Done</strong> to bring them in.</p>
 <p>The count at the bottom shows what's going in.</p>
-<p>Importing into an open story map gives you a choice:</p>
-<ul><li><strong>Add to existing map</strong> puts the imported cards to the right of what's there.</li><li><strong>Replace map</strong> swaps the whole story map for the import, and asks first.</li></ul>
-<p>Either way, a backup is taken before anything changes. Click <strong>Import to Map</strong> to finish.</p>
+<p>Importing into a story map you've worked on asks <strong>Where should the cards go?</strong></p>
+<ul><li><strong>Add to this story map</strong> puts the imported cards in a slice called <strong>Imported</strong>, under the steps you already have. If no step has a name yet, they go beside what's there.</li><li><strong>Replace this story map</strong> swaps the whole story map for the import, and asks first.</li></ul>
+<p>Either way, a backup is taken before anything changes. The button at the bottom names the one you chose: click <strong>Add to story map</strong> or <strong>Replace story map</strong> to finish.</p>
+<p>A new story map that nobody has worked on isn't asked. The import fills it, and the button reads <strong>Import to Map</strong>.</p>
 <h2 id="what-you-get-on-the-story-map">What you get on the story map</h2>
 <p>The cards land in a slice called <strong>Imported</strong>, under a blank backbone. A new story map also gets an empty slice above it, with no name, for your first release.</p>
 <ul><li><strong>Parent tasks</strong> become lime green cards, tagged with their own ID, such as <strong>T123</strong>. Delete the ones you don't need.</li><li><strong>Subtasks</strong> become cards tagged with the ID of their parent. Tasks with no parent get no tag.</li><li><strong>Descriptions</strong> go in the body of the card.</li><li><strong>Statuses</strong> become planned for open and stalled tasks, in progress for tasks in progress, and done for the rest, such as resolved, declined and invalid.</li><li><strong>Points</strong> become the points on the card. From a CSV, Final Story Points win over Points.</li><li><strong>Links</strong> open the task in Phabricator.</li></ul>
@@ -254,27 +256,27 @@
 <p>The zoom buttons work while the guide is open. <strong>Skip the guide</strong> closes it, and a part of the backbone that already has a name is left out. Delete the <strong>Imported</strong> slice when it's empty. <a href="/docs/define-the-story-map-backbone" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Define</span> the story map backbone</a> has more.</p>
 <figure class="shot" style="max-width: 1920px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/import-guide-place-cards.png?v=1f21974a" alt="The backbone is named, and the imported cards sit underneath it." width="1280" height="800" loading="lazy">
-<img class="only-dark" src="/docs/img/import-guide-place-cards-dark.png?v=1f21974a" alt="The backbone is named, and the imported cards sit underneath it." width="1280" height="800" loading="lazy">
+<img class="only-light" src="/docs/img/import-guide-place-cards.png?v=d1d2a1ad" alt="The backbone is named, and the imported cards sit underneath it." width="1280" height="800" loading="lazy">
+<img class="only-dark" src="/docs/img/import-guide-place-cards-dark.png?v=d1d2a1ad" alt="The backbone is named, and the imported cards sit underneath it." width="1280" height="800" loading="lazy">
 </div>
 <figcaption>The backbone is named, and the imported cards sit underneath it.</figcaption>
 </figure>
 <h2 id="export-to-phabricator">Export to Phabricator</h2>
 <p>Every card becomes one task. No parent tasks or subtasks are made: the story map keeps the structure.</p>
-<figure class="shot" style="max-width: 377px">
+<figure class="shot" style="max-width: 450px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-phabricator-export-menu.png?v=1403e52d" alt="The Phabricator options in the Export menu." width="251" height="242" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-phabricator-export-menu-dark.png?v=11b92fac" alt="The Phabricator options in the Export menu." width="251" height="242" loading="lazy"><span class="callout" style="left: 8.7%; top: 74.2%">1</span><span class="callout" style="left: 8.7%; top: 87%">2</span>
+<img class="only-light" src="/docs/img/user-story-mapping-for-phabricator-export-menu.png?v=aed4f45f" alt="The Phabricator options in the Export menu." width="300" height="242" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-phabricator-export-menu-dark.png?v=b003a25a" alt="The Phabricator options in the Export menu." width="300" height="242" loading="lazy"><span class="callout" style="left: 7.4%; top: 74.2%">1</span><span class="callout" style="left: 7.4%; top: 87%">2</span>
 </div>
 <figcaption>The Phabricator options in the Export menu.</figcaption>
 </figure>
 <ol class="steps"><li><span class="num">1</span><span><strong>Phabricator API</strong> creates the tasks in Phabricator for you.</span></li><li><span class="num">2</span><span><strong>Phabricator Console API</strong> gives you code to run on your own Phabricator site, for one that Storymaps.io can't reach.</span></li></ol>
 <p>Choose <strong>Menu → Export → Phab</strong>, then one of them. Both start the same way:</p>
-<ol class="steps"><li><span class="num">1</span><span>Under <strong>Releases</strong>, tick the slices to send.</span></li><li><span class="num">2</span><span>Under <strong>Status</strong>, tick the statuses to send.</span></li><li><span class="num">3</span><span>Leave <strong>Export task cards only</strong> ticked to send the yellow task cards and any card with a status. Untick it to send cards of every colour, such as notes and questions.</span></li><li><span class="num">4</span><span>Check <strong>What each card becomes</strong>. It shows one card and the task it turns into.</span></li><li><span class="num">5</span><span>Open <strong>Choose cards</strong> to untick single cards.</span></li></ol>
+<ol class="steps"><li><span class="num">1</span><span>Under <strong>Releases</strong>, tick the slices to send.</span></li><li><span class="num">2</span><span>Under <strong>Status</strong>, tick the statuses to send.</span></li><li><span class="num">3</span><span>Leave <strong>Export task cards only</strong> ticked to send the yellow task cards and any card with a status. Untick it to send cards of every colour, such as notes and questions.</span></li><li><span class="num">4</span><span>Open <strong>Choose cards</strong> to untick single cards.</span></li><li><span class="num">5</span><span>Check <strong>What each card becomes</strong>. It shows one card and the task it turns into.</span></li></ol>
 <figure class="shot" style="max-width: 1314px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-phabricator-export.png?v=9b09a787" alt="This part is the same whichever way you export: one card and the task it becomes in Phabricator." width="876" height="487" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-phabricator-export-dark.png?v=21d43647" alt="This part is the same whichever way you export: one card and the task it becomes in Phabricator." width="876" height="487" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-phabricator-export.png?v=2cc5a29a" alt="This part is the same whichever way you export: one card and the task it becomes in Phabricator." width="876" height="487" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-phabricator-export-dark.png?v=8482729f" alt="This part is the same whichever way you export: one card and the task it becomes in Phabricator." width="876" height="487" loading="lazy">
 </div>
 <figcaption>This part is the same whichever way you export: one card and the task it becomes in Phabricator.</figcaption>
 </figure>

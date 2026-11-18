@@ -20,7 +20,7 @@
     <meta name="twitter:description" content="Turn an Asana project into a story map, through the Asana API or a CSV export, and send the cards back to Asana as tasks tagged with their slice and step.">
     <meta name="twitter:image" content="https://storymaps.io/resources/screenshot.png">
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://storymaps.io/docs"},{"@type":"ListItem","position":2,"name":"User story mapping for Asana","item":"https://storymaps.io/docs/user-story-mapping-for-asana"}]}</script>
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"User story mapping for Asana","description":"Turn an Asana project into a story map, through the Asana API or a CSV export, and send the cards back to Asana as tasks tagged with their slice and step.","url":"https://storymaps.io/docs/user-story-mapping-for-asana","inLanguage":"en","dateModified":"2026-11-16","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"User story mapping for Asana","description":"Turn an Asana project into a story map, through the Asana API or a CSV export, and send the cards back to Asana as tasks tagged with their slice and step.","url":"https://storymaps.io/docs/user-story-mapping-for-asana","inLanguage":"en","dateModified":"2026-11-18","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/fonts.css">
     <script>
@@ -32,8 +32,8 @@
         } catch(e) {}
     })();
     </script>
-    <link rel="stylesheet" href="/docs/docs.css?v=d8e4cc50">
-    <script src="/docs/docs.js?v=9eb8da2a" defer></script>
+    <link rel="stylesheet" href="/docs/docs.css?v=89dde9d9">
+    <script src="/docs/docs.js?v=6c627eaa" defer></script>
 </head>
 <body class="docs-guide">
 <div class="site-header-wrap">
@@ -175,6 +175,7 @@
             <li><a href="/docs/user-story-mapping-for-asana" class="on" aria-current="page">User story mapping for Asana</a></li>
             <li><a href="/docs/user-story-mapping-for-phabricator">User story mapping for Phabricator</a></li>
             <li><a href="/docs/user-story-mapping-for-linear">User story mapping for Linear</a></li>
+            <li><a href="/docs/user-story-mapping-for-azure-devops">User story mapping for Azure DevOps</a></li>
         </ul>
     </details>
 </aside>
@@ -191,10 +192,10 @@
             <a href="#build-the-backbone-first">Build the backbone first</a>
             <a href="#export-to-asana">Export to Asana</a></nav></details>
 <p>Bring an Asana project in, lay it out as a journey, then send the plan back. Sections, tasks, subtasks and what's complete all come with it, and every card links back to its task.</p>
-<figure class="shot" style="max-width: 375px">
+<figure class="shot" style="max-width: 450px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-asana-import-menu.png?v=3cfa3484" alt="The Asana options in the Import menu." width="250" height="242" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-import-menu-dark.png?v=5792b257" alt="The Asana options in the Import menu." width="250" height="242" loading="lazy"><span class="callout" style="left: 8.8%; top: 74.2%">1</span><span class="callout" style="left: 8.8%; top: 87%">2</span>
+<img class="only-light" src="/docs/img/user-story-mapping-for-asana-import-menu.png?v=16235f28" alt="The Asana options in the Import menu." width="300" height="242" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-import-menu-dark.png?v=c7999aa0" alt="The Asana options in the Import menu." width="300" height="242" loading="lazy"><span class="callout" style="left: 7.4%; top: 74.2%">1</span><span class="callout" style="left: 7.4%; top: 87%">2</span>
 </div>
 <figcaption>The Asana options in the Import menu.</figcaption>
 </figure>
@@ -224,17 +225,18 @@
 <p><strong>Review Import</strong> lists every card that will be made: each group, then its tasks, and last the tasks that belong to no group.</p>
 <figure class="shot" style="max-width: 1374px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-asana-review.png?v=f479cfe8" alt="The review list, the same for the API and a CSV file: each parent task, then its subtasks." width="916" height="641" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-review-dark.png?v=b6e2cc24" alt="The review list, the same for the API and a CSV file: each parent task, then its subtasks." width="916" height="641" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-asana-review.png?v=da7c8df1" alt="The review list, the same for the API and a CSV file: each parent task, then its subtasks." width="916" height="641" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-review-dark.png?v=deb53e70" alt="The review list, the same for the API and a CSV file: each parent task, then its subtasks." width="916" height="641" loading="lazy">
 </div>
 <figcaption>The review list, the same for the API and a CSV file: each parent task, then its subtasks.</figcaption>
 </figure>
 <p>When the project has two or more sections, <strong>Tag by</strong> picks how the tasks group:</p>
 <ul><li><strong>Group by sections</strong> makes each section a group, with its tasks under it. Subtasks aren't imported.</li><li><strong>Group by tasks &amp; subtasks</strong> makes each task with subtasks a group, with its subtasks under it. Tasks with no subtasks come last.</li></ul>
 <p>Untick any row to leave it out. Untick a group and its tasks go with it. <strong>Status</strong> ticks or unticks every task with that status, and the box at the top of the list ticks or unticks everything. The count at the bottom shows what's going in.</p>
-<p>Importing into an open story map gives you a choice:</p>
-<ul><li><strong>Add to existing map</strong> puts the imported cards to the right of what's there.</li><li><strong>Replace map</strong> swaps the whole story map for the import, and asks first.</li></ul>
-<p>Either way, a backup is taken before anything changes. Click <strong>Import to Map</strong> to finish.</p>
+<p>Importing into a story map you've worked on asks <strong>Where should the cards go?</strong></p>
+<ul><li><strong>Add to this story map</strong> puts the imported cards in a slice called <strong>Imported</strong>, under the steps you already have. If no step has a name yet, they go beside what's there.</li><li><strong>Replace this story map</strong> swaps the whole story map for the import, and asks first.</li></ul>
+<p>Either way, a backup is taken before anything changes. The button at the bottom names the one you chose: click <strong>Add to story map</strong> or <strong>Replace story map</strong> to finish.</p>
+<p>A new story map that nobody has worked on isn't asked. The import fills it, and the button reads <strong>Import to Map</strong>.</p>
 <h2 id="what-you-get-on-the-story-map">What you get on the story map</h2>
 <p>The cards land in a slice called <strong>Imported</strong>, under a blank backbone. A new story map also gets an empty slice above it, with no name, for your first release.</p>
 <ul><li><strong>Groups</strong> become lime green cards, tagged <strong>section-01</strong> or <strong>parent-01</strong> and so on. Delete the ones you don't need.</li><li><strong>Tasks</strong> under a group become cards tagged to match it. Tasks in no group get no tag.</li><li><strong>Notes</strong> go in the body of the card.</li><li><strong>Complete</strong> tasks are marked done, and the rest planned.</li><li><strong>Links</strong> open the task in Asana.</li></ul>
@@ -254,41 +256,31 @@
 <p>The zoom buttons work while the guide is open. <strong>Skip the guide</strong> closes it, and a part of the backbone that already has a name is left out. Delete the <strong>Imported</strong> slice when it's empty. <a href="/docs/define-the-story-map-backbone" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Define</span> the story map backbone</a> has more.</p>
 <figure class="shot" style="max-width: 1920px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/import-guide-place-cards.png?v=1f21974a" alt="The backbone is named, and the imported cards sit underneath it." width="1280" height="800" loading="lazy">
-<img class="only-dark" src="/docs/img/import-guide-place-cards-dark.png?v=1f21974a" alt="The backbone is named, and the imported cards sit underneath it." width="1280" height="800" loading="lazy">
+<img class="only-light" src="/docs/img/import-guide-place-cards.png?v=d1d2a1ad" alt="The backbone is named, and the imported cards sit underneath it." width="1280" height="800" loading="lazy">
+<img class="only-dark" src="/docs/img/import-guide-place-cards-dark.png?v=d1d2a1ad" alt="The backbone is named, and the imported cards sit underneath it." width="1280" height="800" loading="lazy">
 </div>
 <figcaption>The backbone is named, and the imported cards sit underneath it.</figcaption>
 </figure>
 <h2 id="export-to-asana">Export to Asana</h2>
 <p>Every card becomes one task. No parent tasks, subtasks or sections are made: the story map keeps the structure, and each task carries its slice and step.</p>
-<figure class="shot" style="max-width: 375px">
+<figure class="shot" style="max-width: 450px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-asana-export-menu.png?v=1a9d8e12" alt="The Asana options in the Export menu." width="250" height="242" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-export-menu-dark.png?v=9457bee4" alt="The Asana options in the Export menu." width="250" height="242" loading="lazy"><span class="callout" style="left: 8.8%; top: 74.2%">1</span><span class="callout" style="left: 8.8%; top: 87%">2</span>
+<img class="only-light" src="/docs/img/user-story-mapping-for-asana-export-menu.png?v=23b17fd1" alt="The Asana options in the Export menu." width="300" height="242" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-export-menu-dark.png?v=be99ae99" alt="The Asana options in the Export menu." width="300" height="242" loading="lazy"><span class="callout" style="left: 7.4%; top: 74.2%">1</span><span class="callout" style="left: 7.4%; top: 87%">2</span>
 </div>
 <figcaption>The Asana options in the Export menu.</figcaption>
 </figure>
-<ol class="steps"><li><span class="num">1</span><span><strong>Asana CSV</strong> downloads a file for you to import in Asana.</span></li><li><span class="num">2</span><span><strong>Asana API</strong> creates the tasks in Asana for you.</span></li></ol>
+<ol class="steps"><li><span class="num">1</span><span><strong>Asana API</strong> creates the tasks in Asana for you.</span></li><li><span class="num">2</span><span><strong>Asana CSV</strong> downloads a file for you to import in Asana.</span></li></ol>
 <p>Choose <strong>Menu → Export → Asana</strong>, then one of them. Both start the same way:</p>
-<ol class="steps"><li><span class="num">1</span><span>Under <strong>Releases</strong>, tick the slices to send.</span></li><li><span class="num">2</span><span>Under <strong>Status</strong>, tick the statuses to send.</span></li><li><span class="num">3</span><span>Leave <strong>Export task cards only</strong> ticked to send the yellow task cards and any card with a status. Untick it to send cards of every colour, such as notes and questions.</span></li><li><span class="num">4</span><span>Check <strong>What each card becomes</strong>. It shows one card and the task it turns into.</span></li><li><span class="num">5</span><span>Untick what you don't want to send with each task: <strong>Slice name</strong>, <strong>Step name</strong> or <strong>Card tags</strong>.</span></li><li><span class="num">6</span><span>Open <strong>Choose cards</strong> to untick single cards.</span></li></ol>
+<ol class="steps"><li><span class="num">1</span><span>Under <strong>Releases</strong>, tick the slices to send.</span></li><li><span class="num">2</span><span>Under <strong>Status</strong>, tick the statuses to send.</span></li><li><span class="num">3</span><span>Leave <strong>Export task cards only</strong> ticked to send the yellow task cards and any card with a status. Untick it to send cards of every colour, such as notes and questions.</span></li><li><span class="num">4</span><span>Open <strong>Choose cards</strong> to untick single cards.</span></li><li><span class="num">5</span><span>Check <strong>What each card becomes</strong>. It shows one card and the task it turns into.</span></li><li><span class="num">6</span><span>Untick what you don't want to send with each task: <strong>Slice name</strong>, <strong>Step name</strong> or <strong>Card tags</strong>.</span></li></ol>
 <figure class="shot" style="max-width: 1314px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-asana-export.png?v=571fa87b" alt="This part is the same whichever way you export: one card and the task it becomes in Asana." width="876" height="589" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-export-dark.png?v=ba64200c" alt="This part is the same whichever way you export: one card and the task it becomes in Asana." width="876" height="589" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-asana-export.png?v=855f46b0" alt="This part is the same whichever way you export: one card and the task it becomes in Asana." width="876" height="589" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-export-dark.png?v=9646cf14" alt="This part is the same whichever way you export: one card and the task it becomes in Asana." width="876" height="589" loading="lazy">
 </div>
 <figcaption>This part is the same whichever way you export: one card and the task it becomes in Asana.</figcaption>
 </figure>
 <p>The description of each task is the card body, then the slice, the step and a link back to the card.</p>
-<h3 id="asana-csv">Asana CSV</h3>
-<p>Click <strong>Download CSV</strong>, then import the file into your Asana project. The dialog shows the way: click the project name dropdown, then Import, then CSV.</p>
-<figure class="shot" style="max-width: 1374px">
-<div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-asana-export-csv.png?v=99395e4e" alt="The Asana CSV window, with Download CSV at the bottom." width="916" height="781" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-export-csv-dark.png?v=7f83256b" alt="The Asana CSV window, with Download CSV at the bottom." width="916" height="781" loading="lazy">
-</div>
-<figcaption>The Asana CSV window, with Download CSV at the bottom.</figcaption>
-</figure>
-<p>Asana can't import tags from a file, so the slice, the step and the tags each go in a column of their own: <strong>Slice</strong>, <strong>Step</strong> and <strong>Tags</strong>. Asana turns each column into a custom field in the project.</p>
 <h3 id="asana-api">Asana API</h3>
 <ol class="steps"><li><span class="num">1</span><span>Click <strong>Connect to Asana</strong>.</span></li><li><span class="num">2</span><span>Paste a <strong>Personal Access Token</strong> and the <strong>Project Page URL</strong>.</span></li><li><span class="num">3</span><span>Click <strong>Export to Asana</strong>.</span></li></ol>
 <figure class="shot" style="max-width: 1374px">
@@ -300,6 +292,16 @@
 </figure>
 <p>The slice, the step and the card tags become Asana tags, lower case with hyphens, such as <strong>mvp</strong> and <strong>browse-menu</strong>. The export uses tags the workspace already has and makes the missing ones.</p>
 <p>The progress list links to every task as it's made. Cards marked done are created complete. One export takes up to 2,000 cards.</p>
+<h3 id="asana-csv">Asana CSV</h3>
+<p>Click <strong>Download CSV</strong>, then import the file into your Asana project. The dialog shows the way: click the project name dropdown, then Import, then CSV.</p>
+<figure class="shot" style="max-width: 1374px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/user-story-mapping-for-asana-export-csv.png?v=e5fe6c8f" alt="The Asana CSV window, with Download CSV at the bottom." width="916" height="781" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-asana-export-csv-dark.png?v=6c261b7d" alt="The Asana CSV window, with Download CSV at the bottom." width="916" height="781" loading="lazy">
+</div>
+<figcaption>The Asana CSV window, with Download CSV at the bottom.</figcaption>
+</figure>
+<p>Asana can't import tags from a file, so the slice, the step and the tags each go in a column of their own: <strong>Slice</strong>, <strong>Step</strong> and <strong>Tags</strong>. Asana turns each column into a custom field in the project.</p>
             <nav class="pager" aria-label="Previous and next">
                 <a class="prev" href="/docs/user-story-mapping-for-jira"><span>Previous</span>User story mapping for Jira</a>
                 <a class="next" href="/docs/user-story-mapping-for-phabricator"><span>Next</span>User story mapping for Phabricator</a>

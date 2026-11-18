@@ -20,7 +20,7 @@
     <meta name="twitter:description" content="Bring a story map in from a JSON, YAML or CSV file, or paste the data straight in.">
     <meta name="twitter:image" content="https://storymaps.io/resources/screenshot.png">
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://storymaps.io/docs"},{"@type":"ListItem","position":2,"name":"Import a story map","item":"https://storymaps.io/docs/import-a-story-map"}]}</script>
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Import a story map","description":"Bring a story map in from a JSON, YAML or CSV file, or paste the data straight in.","url":"https://storymaps.io/docs/import-a-story-map","inLanguage":"en","dateModified":"2026-11-15","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Import a story map","description":"Bring a story map in from a JSON, YAML or CSV file, or paste the data straight in.","url":"https://storymaps.io/docs/import-a-story-map","inLanguage":"en","dateModified":"2026-11-18","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/fonts.css">
     <script>
@@ -32,8 +32,8 @@
         } catch(e) {}
     })();
     </script>
-    <link rel="stylesheet" href="/docs/docs.css?v=d8e4cc50">
-    <script src="/docs/docs.js?v=9eb8da2a" defer></script>
+    <link rel="stylesheet" href="/docs/docs.css?v=89dde9d9">
+    <script src="/docs/docs.js?v=6c627eaa" defer></script>
 </head>
 <body class="docs-guide">
 <div class="site-header-wrap">
@@ -175,6 +175,7 @@
             <li><a href="/docs/user-story-mapping-for-asana">User story mapping for Asana</a></li>
             <li><a href="/docs/user-story-mapping-for-phabricator">User story mapping for Phabricator</a></li>
             <li><a href="/docs/user-story-mapping-for-linear">User story mapping for Linear</a></li>
+            <li><a href="/docs/user-story-mapping-for-azure-devops">User story mapping for Azure DevOps</a></li>
         </ul>
     </details>
 </aside>
@@ -212,7 +213,7 @@
 <h2 id="if-the-import-fails">If the import fails</h2>
 <p>Files are checked before anything changes. If something's wrong, such as a slice that names a step that isn't in the list, the app says what, and the story map stays as it was.</p>
 <h2 id="from-jira-asana-phabricator-or-linear">From Jira, Asana, Phabricator or Linear</h2>
-<p>The integrations under <strong>Menu → Import</strong> turn a backlog into a story map. Each has its own page: <a href="/docs/user-story-mapping-for-jira" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Jira</span></a>, <a href="/docs/user-story-mapping-for-asana" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Asana</span></a>, <a href="/docs/user-story-mapping-for-phabricator" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Phabricator</span></a> and <a href="/docs/user-story-mapping-for-linear" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Linear</span></a>.</p>
+<p>The integrations under <strong>Menu → Import</strong> turn a backlog into a story map. Each has its own page: <a href="/docs/user-story-mapping-for-jira" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Jira</span></a>, <a href="/docs/user-story-mapping-for-asana" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Asana</span></a>, <a href="/docs/user-story-mapping-for-phabricator" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Phabricator</span></a>, <a href="/docs/user-story-mapping-for-linear" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Linear</span></a> and <a href="/docs/user-story-mapping-for-azure-devops" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Azure</span> DevOps</a>.</p>
             <nav class="pager" aria-label="Previous and next">
                 <a class="prev" href="/docs/lock-a-story-map-project"><span>Previous section: Access controls</span>Lock a story map project</a>
                 <a class="next" href="/docs/export-a-story-map"><span>Next</span>Export a story map</a>

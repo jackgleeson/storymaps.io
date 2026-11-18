@@ -40,7 +40,7 @@
       },
       {
         "x": 34.9,
-        "y": 69.7
+        "y": 101.2
       },
       {
         "x": 4.6,
@@ -55,23 +55,23 @@
   },
   "create-a-user-story-map/home": {
     "width": 442,
-    "height": 370,
+    "height": 394,
     "callouts": [
       {
         "x": 54,
-        "y": 30.2
+        "y": 34.4
       },
       {
         "x": 6.8,
-        "y": 30.2
+        "y": 34.4
       },
       {
-        "x": 5,
-        "y": 12.3
+        "x": 22,
+        "y": 11.1
       },
       {
         "x": 6.6,
-        "y": 64.8
+        "y": 66.9
       }
     ]
   },
@@ -285,15 +285,15 @@
   },
   "manage-a-story-map-project/manage": {
     "width": 572,
-    "height": 386,
+    "height": 387,
     "callouts": [
       {
         "x": 90.7,
-        "y": 37.3
+        "y": 37.5
       },
       {
         "x": 78.5,
-        "y": 56.2
+        "y": 56.3
       },
       {
         "x": 90.7,
@@ -301,16 +301,16 @@
       },
       {
         "x": 13.5,
-        "y": 80.3
+        "y": 80.4
       },
       {
         "x": 71.1,
-        "y": 79.5
+        "y": 79.6
       }
     ]
   },
   "export-a-story-map/menu": {
-    "width": 250,
+    "width": 300,
     "height": 214,
     "callouts": []
   },
@@ -337,57 +337,57 @@
     ]
   },
   "user-story-mapping-for-jira/import-menu": {
-    "width": 250,
+    "width": 300,
     "height": 242,
     "callouts": [
       {
-        "x": 8.8,
+        "x": 7.4,
         "y": 74.2
       },
       {
-        "x": 8.8,
+        "x": 7.4,
         "y": 87
       }
     ]
   },
   "user-story-mapping-for-asana/import-menu": {
-    "width": 250,
+    "width": 300,
     "height": 242,
     "callouts": [
       {
-        "x": 8.8,
+        "x": 7.4,
         "y": 74.2
       },
       {
-        "x": 8.8,
+        "x": 7.4,
         "y": 87
       }
     ]
   },
   "user-story-mapping-for-phabricator/import-menu": {
-    "width": 250,
+    "width": 300,
     "height": 242,
     "callouts": [
       {
-        "x": 8.8,
+        "x": 7.4,
         "y": 74.2
       },
       {
-        "x": 8.8,
+        "x": 7.4,
         "y": 87
       }
     ]
   },
   "user-story-mapping-for-linear/import-menu": {
-    "width": 250,
+    "width": 300,
     "height": 242,
     "callouts": [
       {
-        "x": 8.8,
+        "x": 7.4,
         "y": 74.2
       },
       {
-        "x": 8.8,
+        "x": 7.4,
         "y": 87
       }
     ]
@@ -458,7 +458,7 @@
   },
   "lock-a-story-map-project/locked": {
     "width": 572,
-    "height": 363,
+    "height": 364,
     "callouts": []
   },
   "build-with-ai/one-feature": {
@@ -472,7 +472,7 @@
     "callouts": []
   },
   "switch-between-story-maps/tabs": {
-    "width": 661,
+    "width": 667,
     "height": 65,
     "callouts": []
   },
@@ -627,53 +627,53 @@
     "callouts": []
   },
   "user-story-mapping-for-jira/export-menu": {
-    "width": 250,
+    "width": 300,
     "height": 242,
     "callouts": [
       {
-        "x": 8.8,
+        "x": 7.4,
         "y": 74.2
       },
       {
-        "x": 8.8,
+        "x": 7.4,
         "y": 87
       }
     ]
   },
   "user-story-mapping-for-asana/export-menu": {
-    "width": 250,
+    "width": 300,
     "height": 242,
     "callouts": [
       {
-        "x": 8.8,
+        "x": 7.4,
         "y": 74.2
       },
       {
-        "x": 8.8,
+        "x": 7.4,
         "y": 87
       }
     ]
   },
   "user-story-mapping-for-phabricator/export-menu": {
-    "width": 251,
+    "width": 300,
     "height": 242,
     "callouts": [
       {
-        "x": 8.7,
+        "x": 7.4,
         "y": 74.2
       },
       {
-        "x": 8.7,
+        "x": 7.4,
         "y": 87
       }
     ]
   },
   "user-story-mapping-for-linear/export-menu": {
-    "width": 250,
+    "width": 300,
     "height": 211,
     "callouts": [
       {
-        "x": 8.8,
+        "x": 7.4,
         "y": 85.1
       }
     ]
@@ -710,5 +710,81 @@
         "y": 51.6
       }
     ]
+  },
+  "define-the-story-map-backbone/backbone": {
+    "width": 520,
+    "height": 241,
+    "callouts": [
+      {
+        "x": 3.8,
+        "y": 8.1
+      },
+      {
+        "x": 3.8,
+        "y": 41.6
+      },
+      {
+        "x": 3.8,
+        "y": 68
+      }
+    ]
+  },
+  "user-story-mapping-for-azure-devops/import-menu": {
+    "width": 300,
+    "height": 242,
+    "callouts": [
+      {
+        "x": 7.4,
+        "y": 74.2
+      },
+      {
+        "x": 7.4,
+        "y": 87
+      }
+    ]
+  },
+  "user-story-mapping-for-azure-devops/import-api": {
+    "width": 916,
+    "height": 473,
+    "callouts": []
+  },
+  "user-story-mapping-for-azure-devops/import-csv": {
+    "width": 916,
+    "height": 545,
+    "callouts": []
+  },
+  "user-story-mapping-for-azure-devops/review": {
+    "width": 916,
+    "height": 641,
+    "callouts": []
+  },
+  "user-story-mapping-for-azure-devops/export-menu": {
+    "width": 300,
+    "height": 242,
+    "callouts": [
+      {
+        "x": 7.4,
+        "y": 74.2
+      },
+      {
+        "x": 7.4,
+        "y": 87
+      }
+    ]
+  },
+  "user-story-mapping-for-azure-devops/export": {
+    "width": 876,
+    "height": 565,
+    "callouts": []
+  },
+  "user-story-mapping-for-azure-devops/export-api": {
+    "width": 916,
+    "height": 572,
+    "callouts": []
+  },
+  "user-story-mapping-for-azure-devops/export-csv": {
+    "width": 916,
+    "height": 781,
+    "callouts": []
   }
 }

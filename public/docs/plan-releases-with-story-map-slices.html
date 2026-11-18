@@ -20,7 +20,7 @@
     <meta name="twitter:description" content="Group the cards you'll build together into slices, give each one a goal and a date, and link straight to it.">
     <meta name="twitter:image" content="https://storymaps.io/resources/screenshot.png">
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://storymaps.io/docs"},{"@type":"ListItem","position":2,"name":"Plan releases with story map slices","item":"https://storymaps.io/docs/plan-releases-with-story-map-slices"}]}</script>
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Plan releases with user story map slices","description":"Group the cards you'll build together into slices, give each one a goal and a date, and link straight to it.","url":"https://storymaps.io/docs/plan-releases-with-story-map-slices","inLanguage":"en","dateModified":"2026-11-13","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Plan releases with user story map slices","description":"Group the cards you'll build together into slices, give each one a goal and a date, and link straight to it.","url":"https://storymaps.io/docs/plan-releases-with-story-map-slices","inLanguage":"en","dateModified":"2026-11-18","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/fonts.css">
     <script>
@@ -32,8 +32,8 @@
         } catch(e) {}
     })();
     </script>
-    <link rel="stylesheet" href="/docs/docs.css?v=d8e4cc50">
-    <script src="/docs/docs.js?v=9eb8da2a" defer></script>
+    <link rel="stylesheet" href="/docs/docs.css?v=89dde9d9">
+    <script src="/docs/docs.js?v=6c627eaa" defer></script>
 </head>
 <body class="docs-guide">
 <div class="site-header-wrap">
@@ -175,6 +175,7 @@
             <li><a href="/docs/user-story-mapping-for-asana">User story mapping for Asana</a></li>
             <li><a href="/docs/user-story-mapping-for-phabricator">User story mapping for Phabricator</a></li>
             <li><a href="/docs/user-story-mapping-for-linear">User story mapping for Linear</a></li>
+            <li><a href="/docs/user-story-mapping-for-azure-devops">User story mapping for Azure DevOps</a></li>
         </ul>
     </details>
 </aside>
@@ -189,6 +190,7 @@
             <a href="#give-a-slice-a-goal-and-a-date">Give a slice a goal and a date</a>
             <a href="#link-to-a-slice">Link to a slice</a>
             <a href="#finish-a-release">Finish a release</a>
+            <a href="#delete-a-slice">Delete a slice</a>
             <a href="#reorder-slices">Reorder slices</a>
             <a href="#track-progress">Track progress</a></nav></details>
 <p>Slices group the cards you'll build together, such as an MVP and the releases after it. A slice runs across the whole user story map, so you can see what each release covers from start to finish.</p>
@@ -197,13 +199,13 @@
 <div class="try-what"><strong>Try it now</strong><p>Plan the releases of a small coffee app. This opens your own copy of the story map, so change anything you like.</p></div>
 <a class="btn" href="/sample/scenario-plan-slices" target="_blank" rel="nofollow noopener" data-practice>Open practice story map</a>
 </div>
-<div class="tip tip-tip"><p><strong>Tip.</strong> Make the first slice thin: only the minimum implementation each step needs to work and be useful, so users can get from the first step to the last in the simplest way that works. A first release that does all of one step, and none of the rest, can't be used. <a href="/docs/slice-an-mvp-with-a-story-map" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Slice</span> an MVP with a story map</a> shows the difference.</p></div>
+<div class="tip tip-tip"><p><strong>Tip.</strong> Make the first slice thin: only the minimum implementation each step needs to work and be useful, so users can get from the first step to the last in the simplest way that works. <a href="/docs/slice-an-mvp-with-a-story-map" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Slice</span> an MVP with a story map</a> shows the difference.</p></div>
 <h2 id="the-slice-menu">The slice menu</h2>
 <p>Everything you can do to a slice is in its menu.</p>
 <figure class="shot" style="max-width: 867px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/plan-releases-with-story-map-slices-menu.png?v=88ec549f" alt="The slice menu on the MVP slice." width="578" height="256" loading="lazy">
-<img class="only-dark" src="/docs/img/plan-releases-with-story-map-slices-menu-dark.png?v=f32be7bd" alt="The slice menu on the MVP slice." width="578" height="256" loading="lazy"><span class="callout" style="left: 4.7%; top: 31.1%">1</span><span class="callout" style="left: 39.1%; top: 47.6%">2</span><span class="callout" style="left: 39.1%; top: 62.8%">3</span>
+<img class="only-light" src="/docs/img/plan-releases-with-story-map-slices-menu.png?v=b8687ca6" alt="The slice menu on the MVP slice." width="578" height="256" loading="lazy">
+<img class="only-dark" src="/docs/img/plan-releases-with-story-map-slices-menu-dark.png?v=9749f404" alt="The slice menu on the MVP slice." width="578" height="256" loading="lazy"><span class="callout" style="left: 4.7%; top: 31.1%">1</span><span class="callout" style="left: 39.1%; top: 47.6%">2</span><span class="callout" style="left: 39.1%; top: 62.8%">3</span>
 </div>
 <figcaption>The slice menu on the MVP slice.</figcaption>
 </figure>
@@ -214,8 +216,8 @@
 <p>Click a slice's name to open its details. Here you can rename the slice and give it a goal and a target date.</p>
 <figure class="shot" style="max-width: 867px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/plan-releases-with-story-map-slices-details.png?v=db0970e8" alt="The details of the MVP slice." width="578" height="322" loading="lazy">
-<img class="only-dark" src="/docs/img/plan-releases-with-story-map-slices-details-dark.png?v=cc63d4c7" alt="The details of the MVP slice." width="578" height="322" loading="lazy">
+<img class="only-light" src="/docs/img/plan-releases-with-story-map-slices-details.png?v=3e53efa1" alt="The details of the MVP slice." width="578" height="322" loading="lazy">
+<img class="only-dark" src="/docs/img/plan-releases-with-story-map-slices-details-dark.png?v=207b4843" alt="The details of the MVP slice." width="578" height="322" loading="lazy">
 </div>
 <figcaption>The details of the MVP slice.</figcaption>
 </figure>
@@ -235,6 +237,10 @@
 </figure>
 <p>Click the banner to see the cards without reopening the slice. They show read-only, and only for you. Choose <strong>Reopen</strong> to unfold the slice for everyone and edit its cards again.</p>
 <p><strong>Close</strong> folds a slice the same way without marking it complete, for a release you've set aside.</p>
+<h2 id="delete-a-slice">Delete a slice</h2>
+<p>Deleting a slice deletes every card in it too, so it's rarely the right way to tidy up a release. Mark a finished release complete, and close one you've set aside: both keep the cards.</p>
+<p>Delete a slice when it was only a temporary place for cards and is now empty, such as the <strong>Imported</strong> slice once the cards from an import have been dragged into releases.</p>
+<p>Choose <strong>Delete</strong> from the slice menu. The story map asks first, and <strong>Ctrl+Z</strong> brings the slice and its cards back. The only slice on a story map can't be deleted.</p>
 <h2 id="reorder-slices">Reorder slices</h2>
 <p>Drag a slice by the ↕ handle in its strip to move it up or down the story map.</p>
 <h2 id="track-progress">Track progress</h2>
@@ -252,6 +258,7 @@
             <a href="#give-a-slice-a-goal-and-a-date">Give a slice a goal and a date</a>
             <a href="#link-to-a-slice">Link to a slice</a>
             <a href="#finish-a-release">Finish a release</a>
+            <a href="#delete-a-slice">Delete a slice</a>
             <a href="#reorder-slices">Reorder slices</a>
             <a href="#track-progress">Track progress</a>
         </nav>

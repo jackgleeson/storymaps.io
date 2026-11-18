@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://storymaps.io/</loc>
-    <lastmod>2026-11-15</lastmod>
+    <lastmod>2026-11-18</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/tour</loc>
@@ -10,15 +10,15 @@
   </url>
   <url>
     <loc>https://storymaps.io/privacy.html</loc>
-    <lastmod>2026-11-15</lastmod>
+    <lastmod>2026-11-17</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/terms.html</loc>
-    <lastmod>2026-03-02</lastmod>
+    <lastmod>2026-11-17</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs</loc>
-    <lastmod>2026-11-15</lastmod>
+    <lastmod>2026-11-18</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/why-user-story-mapping</loc>
@@ -58,7 +58,7 @@
   </url>
   <url>
     <loc>https://storymaps.io/docs/what-is-a-story-mapping-tool</loc>
-    <lastmod>2026-11-12</lastmod>
+    <lastmod>2026-11-18</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/take-the-story-mapping-tour</loc>
@@ -66,11 +66,11 @@
   </url>
   <url>
     <loc>https://storymaps.io/docs/create-a-user-story-map</loc>
-    <lastmod>2026-11-15</lastmod>
+    <lastmod>2026-11-18</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/run-a-user-story-mapping-session</loc>
-    <lastmod>2026-11-15</lastmod>
+    <lastmod>2026-11-18</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/find-your-story-maps</loc>
@@ -90,7 +90,7 @@
   </url>
   <url>
     <loc>https://storymaps.io/docs/define-the-story-map-backbone</loc>
-    <lastmod>2026-11-15</lastmod>
+    <lastmod>2026-11-18</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/add-tasks-to-a-story-map</loc>
@@ -106,7 +106,7 @@
   </url>
   <url>
     <loc>https://storymaps.io/docs/plan-releases-with-story-map-slices</loc>
-    <lastmod>2026-11-13</lastmod>
+    <lastmod>2026-11-18</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/reduce-duplication-with-partials</loc>
@@ -202,11 +202,11 @@
   </url>
   <url>
     <loc>https://storymaps.io/docs/import-a-story-map</loc>
-    <lastmod>2026-11-15</lastmod>
+    <lastmod>2026-11-18</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/export-a-story-map</loc>
-    <lastmod>2026-11-12</lastmod>
+    <lastmod>2026-11-18</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/story-map-data-links</loc>
@@ -214,19 +214,23 @@
   </url>
   <url>
     <loc>https://storymaps.io/docs/user-story-mapping-for-jira</loc>
-    <lastmod>2026-11-16</lastmod>
+    <lastmod>2026-11-18</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/user-story-mapping-for-asana</loc>
-    <lastmod>2026-11-16</lastmod>
+    <lastmod>2026-11-18</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/user-story-mapping-for-phabricator</loc>
-    <lastmod>2026-11-16</lastmod>
+    <lastmod>2026-11-18</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/user-story-mapping-for-linear</loc>
-    <lastmod>2026-11-16</lastmod>
+    <lastmod>2026-11-18</lastmod>
+  </url>
+  <url>
+    <loc>https://storymaps.io/docs/user-story-mapping-for-azure-devops</loc>
+    <lastmod>2026-11-18</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/cli</loc>

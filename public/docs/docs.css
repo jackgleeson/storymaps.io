@@ -203,6 +203,8 @@ ol.steps li { display: grid; grid-template-columns: 30px 1fr; align-items: start
 }
 html.dark-mode .num, html.dark-mode .callout { color: #0f172a; }
 .num { width: 21px; height: 21px; margin-top: 2px; }
+/* A numbered dot at the start of a heading, matching a callout on the screenshot above */
+.docs-article .head-dot { width: 24px; height: 24px; margin: 0 10px 0 0; font-size: 13px; letter-spacing: 0; vertical-align: 3px; }
 
 .docs-toc { position: sticky; top: calc(var(--sticky-top, var(--header-h)) + 36px); align-self: start; font-size: 13px; }
 .docs-toc strong { display: block; color: var(--heading); margin-bottom: 8px; }

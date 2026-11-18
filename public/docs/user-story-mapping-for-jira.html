@@ -20,7 +20,7 @@
     <meta name="twitter:description" content="Turn a Jira project into a story map, through the Jira API or a CSV export, and send the cards back to Jira as stories labelled with their slice and step.">
     <meta name="twitter:image" content="https://storymaps.io/resources/screenshot.png">
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://storymaps.io/docs"},{"@type":"ListItem","position":2,"name":"User story mapping for Jira","item":"https://storymaps.io/docs/user-story-mapping-for-jira"}]}</script>
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"User story mapping for Jira","description":"Turn a Jira project into a story map, through the Jira API or a CSV export, and send the cards back to Jira as stories labelled with their slice and step.","url":"https://storymaps.io/docs/user-story-mapping-for-jira","inLanguage":"en","dateModified":"2026-11-16","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"User story mapping for Jira","description":"Turn a Jira project into a story map, through the Jira API or a CSV export, and send the cards back to Jira as stories labelled with their slice and step.","url":"https://storymaps.io/docs/user-story-mapping-for-jira","inLanguage":"en","dateModified":"2026-11-18","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/fonts.css">
     <script>
@@ -32,8 +32,8 @@
         } catch(e) {}
     })();
     </script>
-    <link rel="stylesheet" href="/docs/docs.css?v=d8e4cc50">
-    <script src="/docs/docs.js?v=9eb8da2a" defer></script>
+    <link rel="stylesheet" href="/docs/docs.css?v=89dde9d9">
+    <script src="/docs/docs.js?v=6c627eaa" defer></script>
 </head>
 <body class="docs-guide">
 <div class="site-header-wrap">
@@ -175,6 +175,7 @@
             <li><a href="/docs/user-story-mapping-for-asana">User story mapping for Asana</a></li>
             <li><a href="/docs/user-story-mapping-for-phabricator">User story mapping for Phabricator</a></li>
             <li><a href="/docs/user-story-mapping-for-linear">User story mapping for Linear</a></li>
+            <li><a href="/docs/user-story-mapping-for-azure-devops">User story mapping for Azure DevOps</a></li>
         </ul>
     </details>
 </aside>
@@ -183,7 +184,7 @@
         <article class="docs-article">
             <div class="crumbs-row"><nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/docs">Docs</a></li><li><a href="/docs#connect-your-tools">Connect your tools</a></li></ol></nav></div>
             <h1>User story mapping for Jira</h1>
-            <p class="byline"><span>5 min read</span></p>
+            <p class="byline"><span>6 min read</span></p>
             <details class="toc-mobile"><summary>On this page</summary><nav><a href="#import-through-the-api">Import through the API</a>
             <a href="#import-a-csv-file">Import a CSV file</a>
             <a href="#review-the-import">Review the import</a>
@@ -191,10 +192,10 @@
             <a href="#build-the-backbone-first">Build the backbone first</a>
             <a href="#export-to-jira">Export to Jira</a></nav></details>
 <p>Bring a Jira backlog in, lay it out as a journey, then send the plan back. Epics, issues, statuses and story points all come with it, and every card links back to its issue.</p>
-<figure class="shot" style="max-width: 375px">
+<figure class="shot" style="max-width: 450px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-jira-import-menu.png?v=fac63c36" alt="The Jira options in the Import menu." width="250" height="242" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-jira-import-menu-dark.png?v=d8de5f71" alt="The Jira options in the Import menu." width="250" height="242" loading="lazy"><span class="callout" style="left: 8.8%; top: 74.2%">1</span><span class="callout" style="left: 8.8%; top: 87%">2</span>
+<img class="only-light" src="/docs/img/user-story-mapping-for-jira-import-menu.png?v=db151b1a" alt="The Jira options in the Import menu." width="300" height="242" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-jira-import-menu-dark.png?v=193cd5b1" alt="The Jira options in the Import menu." width="300" height="242" loading="lazy"><span class="callout" style="left: 7.4%; top: 74.2%">1</span><span class="callout" style="left: 7.4%; top: 87%">2</span>
 </div>
 <figcaption>The Jira options in the Import menu.</figcaption>
 </figure>
@@ -224,16 +225,17 @@
 <p><strong>Review Import</strong> lists every card that will be made: each epic, then its issues, and last the issues with no epic.</p>
 <figure class="shot" style="max-width: 1374px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-jira-review.png?v=1a420354" alt="The review list, the same for the API and a CSV file: each epic, then its issues, with the tag they share." width="916" height="641" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-jira-review-dark.png?v=09edfdc2" alt="The review list, the same for the API and a CSV file: each epic, then its issues, with the tag they share." width="916" height="641" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-jira-review.png?v=26a9b79e" alt="The review list, the same for the API and a CSV file: each epic, then its issues, with the tag they share." width="916" height="641" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-jira-review-dark.png?v=45b5d33a" alt="The review list, the same for the API and a CSV file: each epic, then its issues, with the tag they share." width="916" height="641" loading="lazy">
 </div>
 <figcaption>The review list, the same for the API and a CSV file: each epic, then its issues, with the tag they share.</figcaption>
 </figure>
 <ul><li>Untick any row to leave it out. Untick an epic and its issues go with it.</li><li><strong>Issue type</strong> ticks or unticks every issue of one type. Untick <strong>Epic</strong> to bring in the issues without the epic cards.</li><li><strong>Status</strong> ticks or unticks every issue with that status.</li><li>The box at the top of the list ticks or unticks everything.</li></ul>
 <p>The count at the bottom shows what's going in.</p>
-<p>Importing into an open story map gives you a choice:</p>
-<ul><li><strong>Add to existing map</strong> puts the imported cards to the right of what's there.</li><li><strong>Replace map</strong> swaps the whole story map for the import, and asks first.</li></ul>
-<p>Either way, a backup is taken before anything changes. Click <strong>Import to Map</strong> to finish.</p>
+<p>Importing into a story map you've worked on asks <strong>Where should the cards go?</strong></p>
+<ul><li><strong>Add to this story map</strong> puts the imported cards in a slice called <strong>Imported</strong>, under the steps you already have. If no step has a name yet, they go beside what's there.</li><li><strong>Replace this story map</strong> swaps the whole story map for the import, and asks first.</li></ul>
+<p>Either way, a backup is taken before anything changes. The button at the bottom names the one you chose: click <strong>Add to story map</strong> or <strong>Replace story map</strong> to finish.</p>
+<p>A new story map that nobody has worked on isn't asked. The import fills it, and the button reads <strong>Import to Map</strong>.</p>
 <h2 id="what-you-get-on-the-story-map">What you get on the story map</h2>
 <p>The cards land in a slice called <strong>Imported</strong>, under a blank backbone. A new story map also gets an empty slice above it, with no name, for your first release.</p>
 <ul><li><strong>Epics</strong> become lime green cards, tagged with their own key, such as <strong>COF-1</strong>. Each one carries the description, status and link of the epic, so you don't need Jira open while you arrange the story map. Delete the ones you don't need.</li><li><strong>Issues</strong> become cards tagged with the key of their epic, plus their Jira labels. Issues with no epic get no tag.</li><li><strong>Descriptions</strong> go in the body of the card.</li><li><strong>Statuses</strong> become done, in progress or planned.</li><li><strong>Story points</strong> become the points on the card.</li><li><strong>Links</strong> open the issue in Jira.</li></ul>
@@ -253,40 +255,31 @@
 <p>The zoom buttons work while the guide is open. <strong>Skip the guide</strong> closes it, and a part of the backbone that already has a name is left out. Delete the <strong>Imported</strong> slice when it's empty. <a href="/docs/define-the-story-map-backbone" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Define</span> the story map backbone</a> has more.</p>
 <figure class="shot" style="max-width: 1920px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/import-guide-place-cards.png?v=1f21974a" alt="The backbone is named, and the imported cards sit underneath it." width="1280" height="800" loading="lazy">
-<img class="only-dark" src="/docs/img/import-guide-place-cards-dark.png?v=1f21974a" alt="The backbone is named, and the imported cards sit underneath it." width="1280" height="800" loading="lazy">
+<img class="only-light" src="/docs/img/import-guide-place-cards.png?v=d1d2a1ad" alt="The backbone is named, and the imported cards sit underneath it." width="1280" height="800" loading="lazy">
+<img class="only-dark" src="/docs/img/import-guide-place-cards-dark.png?v=d1d2a1ad" alt="The backbone is named, and the imported cards sit underneath it." width="1280" height="800" loading="lazy">
 </div>
 <figcaption>The backbone is named, and the imported cards sit underneath it.</figcaption>
 </figure>
 <h2 id="export-to-jira">Export to Jira</h2>
 <p>Every card becomes one story. No epics are made: the story map keeps the structure, and each story carries its slice and step as labels.</p>
-<figure class="shot" style="max-width: 375px">
+<figure class="shot" style="max-width: 450px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-jira-export-menu.png?v=867e11b1" alt="The Jira options in the Export menu." width="250" height="242" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-jira-export-menu-dark.png?v=4d2215bb" alt="The Jira options in the Export menu." width="250" height="242" loading="lazy"><span class="callout" style="left: 8.8%; top: 74.2%">1</span><span class="callout" style="left: 8.8%; top: 87%">2</span>
+<img class="only-light" src="/docs/img/user-story-mapping-for-jira-export-menu.png?v=42703402" alt="The Jira options in the Export menu." width="300" height="242" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-jira-export-menu-dark.png?v=a5f5d7b8" alt="The Jira options in the Export menu." width="300" height="242" loading="lazy"><span class="callout" style="left: 7.4%; top: 74.2%">1</span><span class="callout" style="left: 7.4%; top: 87%">2</span>
 </div>
 <figcaption>The Jira options in the Export menu.</figcaption>
 </figure>
-<ol class="steps"><li><span class="num">1</span><span><strong>Jira CSV</strong> downloads a file for you to import in Jira.</span></li><li><span class="num">2</span><span><strong>Jira API</strong> creates the stories in Jira for you.</span></li></ol>
+<ol class="steps"><li><span class="num">1</span><span><strong>Jira API</strong> creates the stories in Jira for you.</span></li><li><span class="num">2</span><span><strong>Jira CSV</strong> downloads a file for you to import in Jira.</span></li></ol>
 <p>Choose <strong>Menu → Export → Jira</strong>, then one of them. Both start the same way:</p>
-<ol class="steps"><li><span class="num">1</span><span>Under <strong>Releases</strong>, tick the slices to send.</span></li><li><span class="num">2</span><span>Under <strong>Status</strong>, tick the statuses to send.</span></li><li><span class="num">3</span><span>Leave <strong>Export task cards only</strong> ticked to send the yellow task cards and any card with a status. Untick it to send cards of every colour, such as notes and questions.</span></li><li><span class="num">4</span><span>Check <strong>What each card becomes</strong>. It shows one card and the story it turns into.</span></li><li><span class="num">5</span><span>Under <strong>Labels</strong>, untick any you don't want: <strong>Slice name</strong>, <strong>Step name</strong> or <strong>Card tags</strong>.</span></li><li><span class="num">6</span><span>Open <strong>Choose cards</strong> to untick single cards.</span></li></ol>
+<ol class="steps"><li><span class="num">1</span><span>Under <strong>Releases</strong>, tick the slices to send.</span></li><li><span class="num">2</span><span>Under <strong>Status</strong>, tick the statuses to send.</span></li><li><span class="num">3</span><span>Leave <strong>Export task cards only</strong> ticked to send the yellow task cards and any card with a status. Untick it to send cards of every colour, such as notes and questions.</span></li><li><span class="num">4</span><span>Open <strong>Choose cards</strong> to untick single cards.</span></li><li><span class="num">5</span><span>Check <strong>What each card becomes</strong>. It shows one card and the story it turns into.</span></li><li><span class="num">6</span><span>Under <strong>Labels</strong>, untick any you don't want: <strong>Slice name</strong>, <strong>Step name</strong> or <strong>Card tags</strong>.</span></li></ol>
 <figure class="shot" style="max-width: 1314px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-jira-export.png?v=db6e0983" alt="This part is the same whichever way you export: one card and the story it becomes in Jira." width="876" height="565" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-jira-export-dark.png?v=329ec007" alt="This part is the same whichever way you export: one card and the story it becomes in Jira." width="876" height="565" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-jira-export.png?v=03592b43" alt="This part is the same whichever way you export: one card and the story it becomes in Jira." width="876" height="565" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-jira-export-dark.png?v=2b7364ee" alt="This part is the same whichever way you export: one card and the story it becomes in Jira." width="876" height="565" loading="lazy">
 </div>
 <figcaption>This part is the same whichever way you export: one card and the story it becomes in Jira.</figcaption>
 </figure>
 <p>Labels are lower case with hyphens, so a card under Browse Menu in the MVP slice is labelled <strong>browse-menu</strong> and <strong>mvp</strong>. The description of each story is the card body, then the slice, the step and a link back to the card.</p>
-<h3 id="jira-csv">Jira CSV</h3>
-<ol class="steps"><li><span class="num">1</span><span>Fill in the <strong>Project Name</strong>, <strong>Project Key</strong> and <strong>Project Type</strong> to import into an existing Jira project, or leave them blank to choose in Jira.</span></li><li><span class="num">2</span><span>Open <strong>Jira status names</strong> if your workflow has its own. To start with, no status, planned and blocked go out as To Do, in progress as In Progress, and done as Done.</span></li><li><span class="num">3</span><span>Click <strong>Download CSV</strong>, then import the file in Jira. The <strong>(How to import)</strong> link opens the Atlassian guide.</span></li></ol>
-<figure class="shot" style="max-width: 1374px">
-<div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-jira-export-csv.png?v=881e47ad" alt="The Jira CSV window, with the project fields at the top and Download CSV at the bottom." width="916" height="781" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-jira-export-csv-dark.png?v=407b8263" alt="The Jira CSV window, with the project fields at the top and Download CSV at the bottom." width="916" height="781" loading="lazy">
-</div>
-<figcaption>The Jira CSV window, with the project fields at the top and Download CSV at the bottom.</figcaption>
-</figure>
 <h3 id="jira-api">Jira API</h3>
 <ol class="steps"><li><span class="num">1</span><span>Click <strong>Connect to Jira</strong>.</span></li><li><span class="num">2</span><span>Fill in the <strong>Jira Instance URL</strong>, <strong>Project Key</strong>, <strong>Email</strong> and <strong>API Token</strong>.</span></li><li><span class="num">3</span><span>Click <strong>Export to Jira</strong>.</span></li></ol>
 <figure class="shot" style="max-width: 1374px">
@@ -297,6 +290,15 @@
 <figcaption>The Jira API window after you click Connect to Jira.</figcaption>
 </figure>
 <p>The progress list links to every story as it's made. Cards that are in progress or done are moved to the matching Jira status. A project with no Story type gets tasks, and a project that doesn't take labels gets its stories without them. One export takes up to 2,000 cards.</p>
+<h3 id="jira-csv">Jira CSV</h3>
+<ol class="steps"><li><span class="num">1</span><span>Fill in the <strong>Project Name</strong>, <strong>Project Key</strong> and <strong>Project Type</strong> to import into an existing Jira project, or leave them blank to choose in Jira.</span></li><li><span class="num">2</span><span>Open <strong>Jira status names</strong> if your workflow has its own. To start with, no status, planned and blocked go out as To Do, in progress as In Progress, and done as Done.</span></li><li><span class="num">3</span><span>Click <strong>Download CSV</strong>, then import the file in Jira. The <strong>(How to import)</strong> link opens the Atlassian guide.</span></li></ol>
+<figure class="shot" style="max-width: 1374px">
+<div class="shot-pic">
+<img class="only-light" src="/docs/img/user-story-mapping-for-jira-export-csv.png?v=b5ebc801" alt="The Jira CSV window, with the project fields at the top and Download CSV at the bottom." width="916" height="781" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-jira-export-csv-dark.png?v=96205fd3" alt="The Jira CSV window, with the project fields at the top and Download CSV at the bottom." width="916" height="781" loading="lazy">
+</div>
+<figcaption>The Jira CSV window, with the project fields at the top and Download CSV at the bottom.</figcaption>
+</figure>
             <nav class="pager" aria-label="Previous and next">
                 <a class="prev" href="/docs/story-map-data-links"><span>Previous</span>Story map data links</a>
                 <a class="next" href="/docs/user-story-mapping-for-asana"><span>Next</span>User story mapping for Asana</a>

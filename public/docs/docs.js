@@ -745,10 +745,34 @@
     var toc = document.querySelectorAll('.docs-toc a');
     var headings = Array.prototype.map.call(toc, function (a) { return document.getElementById(a.getAttribute('href').slice(1)); }).filter(Boolean);
     if (headings.length) {
+        // Wide screens scroll the panel under the header, phones scroll the page
+        var panel = document.getElementById('docsScroll');
+        var scroller = function () {
+            return panel && panel.scrollHeight > panel.clientHeight ? panel : document.scrollingElement || document.documentElement;
+        };
+        // A link to a section names what to highlight. The last sections of a page can't scroll
+        // up to the reading line, so the section linked to stays marked until the page is
+        // scrolled away from where the link put it.
+        var linked = null;
+        var linkedAt = 0;
+        var followLink = function () {
+            var target = location.hash.length > 1 && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+            linked = target && headings.indexOf(target) > -1 ? target : null;
+            linkedAt = scroller().scrollTop;
+        };
         var mark = function () {
-            var line = 120;
-            var current = headings[0];
-            headings.forEach(function (h) { if (h.getBoundingClientRect().top < line) current = h; });
+            var box = scroller();
+            if (linked && Math.abs(box.scrollTop - linkedAt) > 4) linked = null;
+            var current = linked;
+            if (!current) {
+                // The reading line sits near the top. Over the last stretch of the page it moves
+                // down to the bottom of the window, so each of the last sections gets its turn.
+                var height = window.innerHeight;
+                var left = box.scrollHeight - box.clientHeight - box.scrollTop;
+                var line = 120 + Math.max(0, 1 - left / height) * (height - 120);
+                current = headings[0];
+                headings.forEach(function (h) { if (h.getBoundingClientRect().top < line) current = h; });
+            }
             toc.forEach(function (a) { a.classList.toggle('on', a.getAttribute('href') === '#' + current.id); });
         };
         var ticking = false;
@@ -757,10 +781,14 @@
             ticking = true;
             requestAnimationFrame(function () { ticking = false; mark(); });
         };
-        // Wide screens scroll the panel under the header, phones scroll the page
         window.addEventListener('scroll', onScroll, { passive: true });
-        var panel = document.getElementById('docsScroll');
         if (panel) panel.addEventListener('scroll', onScroll, { passive: true });
+        // The browser jumps to the section before or just after these run, so the place it
+        // landed is read on the next frame
+        var afterJump = function () { requestAnimationFrame(function () { followLink(); mark(); }); };
+        window.addEventListener('hashchange', afterJump);
+        window.addEventListener('load', afterJump);
+        followLink();
         mark();
     }
 

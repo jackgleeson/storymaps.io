@@ -20,7 +20,7 @@
     <meta name="twitter:description" content="Turn a Linear team into a story map, through the Linear API or a CSV export, and send the cards back to Linear as issues labelled with their slice and step.">
     <meta name="twitter:image" content="https://storymaps.io/resources/screenshot.png">
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://storymaps.io/docs"},{"@type":"ListItem","position":2,"name":"User story mapping for Linear","item":"https://storymaps.io/docs/user-story-mapping-for-linear"}]}</script>
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"User story mapping for Linear","description":"Turn a Linear team into a story map, through the Linear API or a CSV export, and send the cards back to Linear as issues labelled with their slice and step.","url":"https://storymaps.io/docs/user-story-mapping-for-linear","inLanguage":"en","dateModified":"2026-11-16","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"User story mapping for Linear","description":"Turn a Linear team into a story map, through the Linear API or a CSV export, and send the cards back to Linear as issues labelled with their slice and step.","url":"https://storymaps.io/docs/user-story-mapping-for-linear","inLanguage":"en","dateModified":"2026-11-18","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/fonts.css">
     <script>
@@ -32,8 +32,8 @@
         } catch(e) {}
     })();
     </script>
-    <link rel="stylesheet" href="/docs/docs.css?v=d8e4cc50">
-    <script src="/docs/docs.js?v=9eb8da2a" defer></script>
+    <link rel="stylesheet" href="/docs/docs.css?v=89dde9d9">
+    <script src="/docs/docs.js?v=6c627eaa" defer></script>
 </head>
 <body class="docs-guide">
 <div class="site-header-wrap">
@@ -175,6 +175,7 @@
             <li><a href="/docs/user-story-mapping-for-asana">User story mapping for Asana</a></li>
             <li><a href="/docs/user-story-mapping-for-phabricator">User story mapping for Phabricator</a></li>
             <li><a href="/docs/user-story-mapping-for-linear" class="on" aria-current="page">User story mapping for Linear</a></li>
+            <li><a href="/docs/user-story-mapping-for-azure-devops">User story mapping for Azure DevOps</a></li>
         </ul>
     </details>
 </aside>
@@ -191,10 +192,10 @@
             <a href="#build-the-backbone-first">Build the backbone first</a>
             <a href="#export-to-linear">Export to Linear</a></nav></details>
 <p>Bring a Linear backlog in, lay it out as a journey, then send the plan back. Projects, parent issues, statuses, estimates and labels all come with it.</p>
-<figure class="shot" style="max-width: 375px">
+<figure class="shot" style="max-width: 450px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-linear-import-menu.png?v=9ffcf268" alt="The Linear options in the Import menu." width="250" height="242" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-linear-import-menu-dark.png?v=4f2a0405" alt="The Linear options in the Import menu." width="250" height="242" loading="lazy"><span class="callout" style="left: 8.8%; top: 74.2%">1</span><span class="callout" style="left: 8.8%; top: 87%">2</span>
+<img class="only-light" src="/docs/img/user-story-mapping-for-linear-import-menu.png?v=8ca8e141" alt="The Linear options in the Import menu." width="300" height="242" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-linear-import-menu-dark.png?v=8bc4264d" alt="The Linear options in the Import menu." width="300" height="242" loading="lazy"><span class="callout" style="left: 7.4%; top: 74.2%">1</span><span class="callout" style="left: 7.4%; top: 87%">2</span>
 </div>
 <figcaption>The Linear options in the Import menu.</figcaption>
 </figure>
@@ -223,8 +224,8 @@
 <p><strong>Review Import</strong> lists every card that will be made: each group, then its issues, and last the issues that belong to no group.</p>
 <figure class="shot" style="max-width: 1374px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-linear-review.png?v=a031fd7d" alt="The review list, the same for the API and a CSV file. Here it is grouped by project." width="916" height="641" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-linear-review-dark.png?v=e057c10f" alt="The review list, the same for the API and a CSV file. Here it is grouped by project." width="916" height="641" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-linear-review.png?v=06645972" alt="The review list, the same for the API and a CSV file. Here it is grouped by project." width="916" height="641" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-linear-review-dark.png?v=af5f943a" alt="The review list, the same for the API and a CSV file. Here it is grouped by project." width="916" height="641" loading="lazy">
 </div>
 <figcaption>The review list, the same for the API and a CSV file. Here it is grouped by project.</figcaption>
 </figure>
@@ -232,9 +233,10 @@
 <ul><li><strong>Group by projects</strong> makes each project a group, with its issues under it. Parent issues aren't imported.</li><li><strong>Group by parent issues</strong> makes each parent issue a group, with its sub-issues under it.</li></ul>
 <p>It starts on projects when there are two or more, and on parent issues otherwise.</p>
 <p>Untick any row to leave it out. Untick a group and its issues go with it. <strong>Status</strong> ticks or unticks every issue with that status, and the box at the top of the list ticks or unticks everything. The count at the bottom shows what's going in.</p>
-<p>Importing into an open story map gives you a choice:</p>
-<ul><li><strong>Add to existing map</strong> puts the imported cards to the right of what's there.</li><li><strong>Replace map</strong> swaps the whole story map for the import, and asks first.</li></ul>
-<p>Either way, a backup is taken before anything changes. Click <strong>Import to Map</strong> to finish.</p>
+<p>Importing into a story map you've worked on asks <strong>Where should the cards go?</strong></p>
+<ul><li><strong>Add to this story map</strong> puts the imported cards in a slice called <strong>Imported</strong>, under the steps you already have. If no step has a name yet, they go beside what's there.</li><li><strong>Replace this story map</strong> swaps the whole story map for the import, and asks first.</li></ul>
+<p>Either way, a backup is taken before anything changes. The button at the bottom names the one you chose: click <strong>Add to story map</strong> or <strong>Replace story map</strong> to finish.</p>
+<p>A new story map that nobody has worked on isn't asked. The import fills it, and the button reads <strong>Import to Map</strong>.</p>
 <h2 id="what-you-get-on-the-story-map">What you get on the story map</h2>
 <p>The cards land in a slice called <strong>Imported</strong>, under a blank backbone. A new story map also gets an empty slice above it, with no name, for your first release.</p>
 <ul><li><strong>Groups</strong> become lime green cards. A parent issue is tagged with its own ID, such as <strong>ENG-12</strong>, and a project is tagged <strong>project-01</strong>, <strong>project-02</strong> and so on. Each one carries the details of the group, so you don't need Linear open while you arrange the story map. Delete the ones you don't need.</li><li><strong>Issues</strong> under a group become cards tagged to match it, plus their Linear labels. Issues in no group get no tag.</li><li><strong>Descriptions</strong> go in the body of the card.</li><li><strong>Statuses</strong> become done, in progress or planned.</li><li><strong>Estimates</strong> become the points on the card.</li><li><strong>Links</strong> open the issue or project in Linear.</li></ul>
@@ -254,27 +256,27 @@
 <p>The zoom buttons work while the guide is open. <strong>Skip the guide</strong> closes it, and a part of the backbone that already has a name is left out. Delete the <strong>Imported</strong> slice when it's empty. <a href="/docs/define-the-story-map-backbone" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Define</span> the story map backbone</a> has more.</p>
 <figure class="shot" style="max-width: 1920px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/import-guide-place-cards.png?v=1f21974a" alt="The backbone is named, and the imported cards sit underneath it." width="1280" height="800" loading="lazy">
-<img class="only-dark" src="/docs/img/import-guide-place-cards-dark.png?v=1f21974a" alt="The backbone is named, and the imported cards sit underneath it." width="1280" height="800" loading="lazy">
+<img class="only-light" src="/docs/img/import-guide-place-cards.png?v=d1d2a1ad" alt="The backbone is named, and the imported cards sit underneath it." width="1280" height="800" loading="lazy">
+<img class="only-dark" src="/docs/img/import-guide-place-cards-dark.png?v=d1d2a1ad" alt="The backbone is named, and the imported cards sit underneath it." width="1280" height="800" loading="lazy">
 </div>
 <figcaption>The backbone is named, and the imported cards sit underneath it.</figcaption>
 </figure>
 <h2 id="export-to-linear">Export to Linear</h2>
 <p>Every card becomes one issue. No parent issues are made: the story map keeps the structure, and each issue carries its slice and step as labels.</p>
-<figure class="shot" style="max-width: 375px">
+<figure class="shot" style="max-width: 450px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-linear-export-menu.png?v=c2b09023" alt="The Linear option in the Export menu." width="250" height="211" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-linear-export-menu-dark.png?v=27b6fa05" alt="The Linear option in the Export menu." width="250" height="211" loading="lazy"><span class="callout" style="left: 8.8%; top: 85.1%">1</span>
+<img class="only-light" src="/docs/img/user-story-mapping-for-linear-export-menu.png?v=cb0ee5b5" alt="The Linear option in the Export menu." width="300" height="211" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-linear-export-menu-dark.png?v=0f60a133" alt="The Linear option in the Export menu." width="300" height="211" loading="lazy"><span class="callout" style="left: 7.4%; top: 85.1%">1</span>
 </div>
 <figcaption>The Linear option in the Export menu.</figcaption>
 </figure>
 <ol class="steps"><li><span class="num">1</span><span><strong>Linear API</strong> creates the issues in Linear for you. Linear has no file export from here.</span></li></ol>
 <p>Choose <strong>Menu → Export → Linear → Linear API</strong>:</p>
-<ol class="steps"><li><span class="num">1</span><span>Under <strong>Releases</strong>, tick the slices to send.</span></li><li><span class="num">2</span><span>Under <strong>Status</strong>, tick the statuses to send.</span></li><li><span class="num">3</span><span>Leave <strong>Export task cards only</strong> ticked to send the yellow task cards and any card with a status. Untick it to send cards of every colour, such as notes and questions.</span></li><li><span class="num">4</span><span>Check <strong>What each card becomes</strong>. It shows one card and the issue it turns into.</span></li><li><span class="num">5</span><span>Under <strong>Labels</strong>, untick any you don't want: <strong>Slice name</strong>, <strong>Step name</strong> or <strong>Card tags</strong>.</span></li><li><span class="num">6</span><span>Open <strong>Choose cards</strong> to untick single cards.</span></li><li><span class="num">7</span><span>Click <strong>Connect to Linear</strong>.</span></li><li><span class="num">8</span><span>Paste an <strong>API Key</strong> and fill in the <strong>Team Key</strong>.</span></li><li><span class="num">9</span><span>Click <strong>Export to Linear</strong>.</span></li></ol>
+<ol class="steps"><li><span class="num">1</span><span>Under <strong>Releases</strong>, tick the slices to send.</span></li><li><span class="num">2</span><span>Under <strong>Status</strong>, tick the statuses to send.</span></li><li><span class="num">3</span><span>Leave <strong>Export task cards only</strong> ticked to send the yellow task cards and any card with a status. Untick it to send cards of every colour, such as notes and questions.</span></li><li><span class="num">4</span><span>Open <strong>Choose cards</strong> to untick single cards.</span></li><li><span class="num">5</span><span>Check <strong>What each card becomes</strong>. It shows one card and the issue it turns into.</span></li><li><span class="num">6</span><span>Under <strong>Labels</strong>, untick any you don't want: <strong>Slice name</strong>, <strong>Step name</strong> or <strong>Card tags</strong>.</span></li><li><span class="num">7</span><span>Click <strong>Connect to Linear</strong>.</span></li><li><span class="num">8</span><span>Paste an <strong>API Key</strong> and fill in the <strong>Team Key</strong>.</span></li><li><span class="num">9</span><span>Click <strong>Export to Linear</strong>.</span></li></ol>
 <figure class="shot" style="max-width: 1374px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-linear-export.png?v=e0f36aca" alt="The Linear export window shows one card and the issue it becomes." width="916" height="737" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-linear-export-dark.png?v=61388443" alt="The Linear export window shows one card and the issue it becomes." width="916" height="737" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-linear-export.png?v=b3da0f8e" alt="The Linear export window shows one card and the issue it becomes." width="916" height="737" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-linear-export-dark.png?v=9b627cf2" alt="The Linear export window shows one card and the issue it becomes." width="916" height="737" loading="lazy">
 </div>
 <figcaption>The Linear export window shows one card and the issue it becomes.</figcaption>
 </figure>
@@ -290,7 +292,7 @@
 <p>The progress list links to every issue as it's made. One export takes up to 2,000 cards.</p>
             <nav class="pager" aria-label="Previous and next">
                 <a class="prev" href="/docs/user-story-mapping-for-phabricator"><span>Previous</span>User story mapping for Phabricator</a>
-                <span></span>
+                <a class="next" href="/docs/user-story-mapping-for-azure-devops"><span>Next</span>User story mapping for Azure DevOps</a>
             </nav>
         </article>
         <nav class="docs-toc" aria-label="On this page">
