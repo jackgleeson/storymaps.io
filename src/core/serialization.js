@@ -2,7 +2,7 @@
 // Serialization / deserialization (pure functions)
 
 import { CARD_COLORS, isValidUrl, copySliceDetails, normalizePoints } from '/src/core/constants.js';
-import { state, createColumn, createStory, createRefColumn } from '/src/core/state.js';
+import { state, createColumn, createStory, createRefColumn, STARTER_NAMES } from '/src/core/state.js';
 import { generateId } from '/src/core/constants.js';
 
 // Sanitize URL - only allow valid http/https URLs
@@ -278,6 +278,30 @@ export const appendImport = (data) => {
             if (!slice.stories[col.id]) slice.stories[col.id] = [];
         });
     });
+};
+
+// The steps of a backbone that is already there: named by someone, and neither a hidden spacer
+// nor a column that belongs to a partial. A step still called New Step hasn't been named yet.
+export const backboneSteps = () => state.columns.filter(col => !col.hidden && !col.partialMapId && (col.name || '').trim() && !STARTER_NAMES.has(col.name));
+
+// Imported cards go under a backbone that is already there, in a slice of their own at the
+// bottom, so each card is a short drag from the step and release it belongs to. They are dealt
+// out across the steps from the left, row by row, in the order they came in. No step, user or
+// activity is added. A second import adds to the same slice.
+export const appendCardsUnderBackbone = (cards, sliceName = 'Imported') => {
+    const steps = backboneSteps();
+    if (!steps.length || !cards.length) return false;
+    let slice = state.slices.find(s => s.name === sliceName);
+    if (!slice) {
+        slice = { id: generateId(), name: sliceName, collapsed: false, stories: {} };
+        state.columns.forEach(col => { slice.stories[col.id] = []; });
+        state.slices.push(slice);
+    }
+    cards.forEach((card, i) => {
+        const col = steps[i % steps.length];
+        (slice.stories[col.id] ??= []).push(deserializeCard(card));
+    });
+    return true;
 };
 
 export const deserialize = (data) => {

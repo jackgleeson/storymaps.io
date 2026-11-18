@@ -27,7 +27,7 @@ A larger product can span several story maps, grouped as a **project** so they s
 - **Story mapping** - a backbone of users, activities and steps, task cards with status, points, tags and colours, and release slices with goals and dates
 - **Real-time collaboration** - several people on one story map at once, with live cursors, a shared notepad and an activity log
 - **Projects** - related story maps as tabs under one link
-- **Import and export** - JSON, YAML and CSV files, and Jira, Asana, Phabricator and Linear by file or API
+- **Import and export** - JSON, YAML and CSV files, and Jira, Asana, Phabricator, Linear and Azure DevOps by file or API
 - **Data links** - add `.json`, `.yaml` or `.csv` to any story map link to fetch it as data
 - **Build with AI** - turn a story map into a prompt for app builders, AI chats and AI coding agents
 - **Backups and locks** - named snapshots to roll back to, and a password lock against edits
@@ -53,7 +53,7 @@ It also has `init`, `status`, `log`, `lock`, `backup`, `restore`, `validate` and
 The server entry point is `server.js`, which delegates to modules in `server/`:
 - **WebSocket** - Real-time collaboration via y-websocket
 - **Static files** - Serves the client app from `public/` and `src/`. Paths that can be a map, a project or a sample get the app page; anything else, like `/.env` or `/wp-login.php`, gets a 404
-- **REST API** - Route handlers in `server/routes/` for locks, backups, projects, activity log, stats, format endpoints (`.json`, `.yaml`, `.csv`), and server-proxied third-party imports/exports with SSE progress streaming. Requests to Jira, Asana, Phabricator and Linear go only to public addresses over HTTPS. The server checks the address of each host name before connecting, connects to the address it checked, and checks again on every redirect
+- **REST API** - Route handlers in `server/routes/` for locks, backups, projects, activity log, stats, format endpoints (`.json`, `.yaml`, `.csv`), and server-proxied third-party imports/exports with SSE progress streaming. Requests to Jira, Asana, Phabricator, Linear and Azure DevOps go only to public addresses over HTTPS. The server checks the address of each host name before connecting, connects to the address it checked, and checks again on every redirect
 - **Middleware** - Origin checks, body parsing, and rate limiting in `server/middleware.js` and `server/rate-limit.js`. Through the API, each address can create 10 maps or projects a minute and 500 a day, push a map, change a project or request a new map ID 30 times a minute, and use the import, export, backup and unlock routes 10 times a minute
 
 ### Real-time Sync (Yjs)
@@ -218,7 +218,7 @@ Set these in the `environment` section of the `app` service in `docker-compose.y
 | `STORYMAPS_ALLOWED_ORIGINS` | storymaps.io origins | Comma-separated origins allowed to open WebSocket connections and write to the API, e.g. `https://storymaps.yourcompany.com`. Required when self-hosting on your own domain. `localhost` is always allowed. |
 | `TRUST_PROXY` | unset (`true` in the bundled `docker-compose.yml`) | Set to `true` to take the client IP from `X-Forwarded-For` for rate limiting. Use it behind the bundled Caddy or another trusted proxy; leave it unset if clients can reach the app directly. |
 | `DATA_DIR` | `./data` | Folder for the map database, lock state, counters and backups. |
-| `IMPORT_EXPORT_ENABLED` | `true` | Set to `false` to turn off imports and exports through the APIs of Jira, Asana, Phabricator and Linear. The server then never calls an address someone types in, and the app hides those options. Imports and exports of JSON, YAML and CSV files still work. |
+| `IMPORT_EXPORT_ENABLED` | `true` | Set to `false` to turn off imports and exports through the APIs of Jira, Asana, Phabricator, Linear and Azure DevOps. The server then never calls an address someone types in, and the app hides those options. Imports and exports of JSON, YAML and CSV files still work. |
 | `DISABLE_SSRF_CHECK` | unset | Set to `1` to let server-proxied imports and exports call non-HTTPS URLs, localhost, and private network addresses. This turns off SSRF protection, so use it for local development only. |
 
 ### Running Locally (Development)
@@ -239,7 +239,7 @@ npm run test:integration  # starts the server on a spare port with a temporary d
 npm run test:e2e          # browser tests in Chrome and phone-sized WebKit
 ```
 
-- **Unit tests** (`test/unit`) cover saving and loading maps, projects, JSON, YAML and CSV import and export, real-time sync including two people editing at once, editing and partial maps, search, locks, backups, the activity log, and the Jira, Asana, Linear and Phabricator imports and exports against canned API responses.
+- **Unit tests** (`test/unit`) cover saving and loading maps, projects, JSON, YAML and CSV import and export, real-time sync including two people editing at once, editing and partial maps, search, locks, backups, the activity log, and the Jira, Asana, Linear, Phabricator and Azure DevOps imports and exports against canned API responses.
 - **Integration tests** (`test/integration`) start the real server to test WebSocket sync, origin checks, locks, projects, request handling and static files.
 - **Browser tests** (`test/e2e`) use [Playwright](https://playwright.dev) to run the main journeys: editing a map, two people editing at once, menus and undo, locks, projects, and YAML import and export, plus phone layout checks. They start their own server on port 3210 (set `E2E_PORT` to change it), so they can run alongside a dev server. Locally they use your installed Chrome; run `npx playwright install webkit` once for the phone tests.
 

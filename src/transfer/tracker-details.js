@@ -15,6 +15,8 @@ export const DETAILS = {
     'phabricator.instanceUrl': ['phabImportInstanceUrl', 'phabProxyInstanceUrl', 'phabInstanceUrl'],
     'phabricator.tags': ['phabImportProjectTags', 'phabProxyTags', 'phabTags'],
     'linear.teamKey': ['linearImportTeamKey', 'linearProxyTeamKey'],
+    'azure.organization': ['azureImportOrganization', 'azureCsvOrganization', 'azureProxyOrganization'],
+    'azure.project': ['azureImportProject', 'azureCsvProject', 'azureProxyProject'],
 };
 
 // Browser storage can be off or full, such as in a private window. Then nothing is remembered.

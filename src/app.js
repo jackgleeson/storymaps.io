@@ -182,7 +182,7 @@ const loadFromStorage = () => {
 };
 
 const { exportMap, sanitizeFilename, formatTimestamp, createAutoBackup, hideImportModal, hideExportModal, hideExportYamlModal, hideExportCsvModal } = io;
-const { exportsMod, jiraImportsMod, asanaImportsMod, phabImportsMod, linearImportsMod } = io;
+const { exportsMod, jiraImportsMod, asanaImportsMod, phabImportsMod, linearImportsMod, azureImportsMod } = io;
 
 const {
     showJiraImportModal, hideJiraImportModal, confirmCloseJiraImportModal,
@@ -206,6 +206,12 @@ const {
     verifyLinearImport, fetchFromLinear, showLinearImportStage1, confirmLinearImport,
     showLinearCsvImportModal, handleLinearCsvFile, handleLinearMappingModeChange,
 } = linearImportsMod;
+
+const {
+    showAzureImportModal, confirmCloseAzureImportModal,
+    verifyAzureImport, fetchFromAzure, showAzureImportStage1, confirmAzureImport,
+    showAzureCsvImportModal, handleAzureCsvFile,
+} = azureImportsMod;
 
 const { updateBackupBadge } = backups;
 
@@ -241,11 +247,13 @@ const initEventListeners = () => {
             asana: showAsanaCsvImportModal,
             phabricator: showPhabCsvImportModal,
             linear: showLinearCsvImportModal,
+            'azure-devops': showAzureCsvImportModal,
         } : {
             jira: showJiraImportModal,
             asana: showAsanaImportModal,
             phabricator: showPhabImportModal,
             linear: showLinearImportModal,
+            'azure-devops': showAzureImportModal,
         };
         importMap[btn.dataset.import]?.();
     });
@@ -723,12 +731,65 @@ const initEventListeners = () => {
     });
     dom.linearCsvImportCancel.addEventListener('click', confirmCloseLinearImportModal);
 
+    // Azure DevOps API and CSV Import
+    [[dom.importAzureBtn, showAzureImportModal], [dom.importAzureCsvBtn, showAzureCsvImportModal]].forEach(([button, show]) => {
+        button.addEventListener('click', async () => {
+            closeMainMenu();
+            if (lockState.isLocked && !lockState.sessionUnlocked) {
+                await showAlert('This map is read-only. Unlock it first to import.');
+                return;
+            }
+            show();
+        });
+    });
+    dom.azureImportModalClose.addEventListener('click', confirmCloseAzureImportModal);
+    dom.azureImportModal.addEventListener('click', (e) => {
+        if (e.target === dom.azureImportModal) confirmCloseAzureImportModal();
+    });
+    dom.azureImportCancel.addEventListener('click', confirmCloseAzureImportModal);
+    dom.azureImportVerifyBtn.addEventListener('click', verifyAzureImport);
+    dom.azureImportFetchBtn.addEventListener('click', fetchFromAzure);
+    dom.azureImportBack.addEventListener('click', showAzureImportStage1);
+    dom.azureImportConfirmBtn.addEventListener('click', confirmAzureImport);
+    dom.azureCsvDropzone.addEventListener('click', () => dom.azureCsvFileInput.click());
+    dom.azureCsvDropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dom.azureCsvDropzone.classList.add('dragover');
+    });
+    dom.azureCsvDropzone.addEventListener('dragleave', () => {
+        dom.azureCsvDropzone.classList.remove('dragover');
+    });
+    dom.azureCsvDropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dom.azureCsvDropzone.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file && (file.name.endsWith('.csv') || file.type === 'text/csv')) {
+            dom.azureCsvDropzone.querySelector('span').textContent = file.name;
+            dom.azureCsvImportParseBtn.disabled = false;
+            dom.azureCsvFileInput._droppedFile = file;
+        }
+    });
+    dom.azureCsvFileInput.addEventListener('change', () => {
+        const file = dom.azureCsvFileInput.files[0];
+        if (file) {
+            dom.azureCsvDropzone.querySelector('span').textContent = file.name;
+            dom.azureCsvImportParseBtn.disabled = false;
+            dom.azureCsvFileInput._droppedFile = null;
+        }
+    });
+    dom.azureCsvImportParseBtn.addEventListener('click', () => {
+        const file = dom.azureCsvFileInput._droppedFile || dom.azureCsvFileInput.files[0];
+        handleAzureCsvFile(file);
+    });
+    dom.azureCsvImportCancel.addEventListener('click', confirmCloseAzureImportModal);
+
     // Tracker exports: each menu item opens its own export window
     [
         ['exportJiraBtn', 'jiraCsv'], ['exportJiraProxyBtn', 'jiraApi'],
         ['exportAsanaCsvBtn', 'asanaCsv'], ['exportAsanaProxyBtn', 'asanaApi'],
         ['exportPhabProxyBtn', 'phabApi'], ['exportPhabBtn', 'phabConsole'],
         ['exportLinearProxyBtn', 'linearApi'],
+        ['exportAzureCsvBtn', 'azureCsv'], ['exportAzureProxyBtn', 'azureApi'],
     ].forEach(([buttonId, kind]) => {
         dom[buttonId].addEventListener('click', () => {
             if (dom[buttonId].disabled) return;

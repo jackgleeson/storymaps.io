@@ -75,6 +75,13 @@ test('with tracker APIs turned off, the menus offer only the CSV options', async
   // Linear exports only through its API
   await expect(page.locator('#exportSubmenu [data-integration="linear"]')).toBeHidden();
   await expect(page.locator('#exportSubmenu [data-integration="jira"]')).toBeVisible();
+  await page.locator('#exportSubmenu [data-integration="azure-devops"]').click();
+  await expect(page.locator('#exportAzureCsvBtn')).toBeVisible();
+  await expect(page.locator('#exportAzureProxyBtn')).toBeHidden();
+  await page.locator('#importSubmenuTrigger').click();
+  await page.locator('#importSubmenu [data-integration="azure-devops"]').click();
+  await expect(page.locator('#importAzureCsvBtn')).toBeVisible();
+  await expect(page.locator('#importAzureBtn')).toBeHidden();
 });
 
 test('with tracker APIs turned off, the welcome page imports from CSV', async ({ page }) => {
@@ -166,6 +173,74 @@ test('Jira CSV export shows what a card becomes and downloads one Story per card
   await expect(modal).toBeHidden();
 });
 
+test('Azure DevOps CSV export makes the work item type of the chosen process, with tags and no state', async ({ page, createMap }) => {
+  await openMap(page, await createMap(trackerMap), 2);
+  await openExport(page, 'azure-devops', 'exportAzureCsvBtn');
+  const modal = page.locator('#azureExportModal');
+  const issue = modal.locator('.export-example-issue');
+  await expect(modal.locator('.export-example-heading').last()).toHaveText('In Azure DevOps');
+  await expect(issue.locator('.export-example-type')).toHaveText('User Story, status New');
+  await expect(issue.locator('.export-label')).toHaveText(['mvp', 'browse-menu', 'frontend']);
+  await expect(modal.locator('[data-export="count"]')).toHaveText('3 work items');
+
+  // The process decides the type, and the state new work starts in
+  await page.locator('#azureExportProcess').selectOption('scrum');
+  await expect(issue.locator('.export-example-type')).toHaveText('Product Backlog Item, status New');
+  await page.locator('#azureExportProcess').selectOption('basic');
+  await expect(issue.locator('.export-example-type')).toHaveText('Issue, status To Do');
+
+  const [download] = await Promise.all([page.waitForEvent('download'), page.locator('#azureExportDownload').click()]);
+  expect(download.suggestedFilename()).toBe('tracker-export-azure-devops.csv');
+  const csv = readFileSync(await download.path(), 'utf-8');
+  expect(csv.split('\n')[0]).toBe('Work Item Type,Title,Description,Tags');
+  expect(csv).toContain('Issue,Drink list,');
+  expect(csv).toContain('<div>Slice: MVP<br>Step: Browse Menu<br>Story map: <a href=');
+  expect(csv).toContain(',mvp; browse-menu; frontend');
+  expect(csv).not.toContain('Done');
+  await expect(modal).toBeHidden();
+});
+
+test('the Azure DevOps API export sends the organization, the project and one work item per card', async ({ page, createMap }) => {
+  await openMap(page, await createMap(trackerMap), 2);
+  let sent;
+  await page.route('**/api/export/azure-devops', async (route) => {
+    sent = route.request().postDataJSON();
+    const events = [
+      ...sent.issues.flatMap((item, i) => [
+        ['progress', { type: 'issue', title: item.title, status: 'creating' }],
+        ['progress', { type: 'issue', title: item.title, status: 'created', key: String(40 + i), url: `https://dev.azure.com/acme/Shop/_workitems/edit/${40 + i}`, ...(i === 2 && { note: 'status not set' }) }],
+      ]),
+      ['done', { created: 3, failed: 0 }],
+    ];
+    await route.fulfill({ status: 200, contentType: 'text/event-stream', body: events.map(([event, data]) => `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`).join('') });
+  });
+  await openExport(page, 'azure-devops', 'exportAzureProxyBtn');
+  const modal = page.locator('#azureProxyExportModal');
+  await expect(modal.locator('.export-example-type')).toHaveText('Work item, status Done');
+  await modal.locator('[data-export="next"]').click();
+  await expect(modal.locator('[data-export="summary"]')).toHaveText('Exporting 3 work items');
+
+  // Nothing is sent until every field is filled in
+  await modal.locator('[data-export="verify"]').click();
+  await expect(modal.locator('[data-export="verify-status"]')).toHaveText('Please fill in all fields first');
+  await page.locator('#azureProxyOrganization').fill('https://dev.azure.com/acme/Shop');
+  await page.locator('#azureProxyProject').fill('Shop');
+  await page.locator('#azureProxyToken').fill('pat-secret');
+  await page.locator('#azureProxyExportRun').click();
+
+  await expect(modal.locator('.export-done-summary')).toContainText('3 work items created');
+  await expect(modal.locator('.export-progress-item.done a').first()).toHaveAttribute('href', 'https://dev.azure.com/acme/Shop/_workitems/edit/40');
+  await expect(modal.locator('.export-progress-item.done').last()).toContainText('status not set');
+  expect(sent.organization).toBe('acme');
+  expect(sent.project).toBe('Shop');
+  expect(sent.issues.map(i => [i.title, i.status, i.labels])).toEqual([
+    ['Drink list', 'done', ['mvp', 'browse-menu', 'frontend']],
+    ['Card payment', 'planned', ['mvp', 'pay']],
+    ['Waiting on the bank', 'blocked', ['mvp', 'pay']],
+  ]);
+  expect(await page.evaluate(() => localStorage.getItem('trackerDetails'))).not.toContain('pat-secret');
+});
+
 test('an export starts with only the task cards, and one tick brings the rest in', async ({ page }) => {
   // The coffee shop as it works today: 10 yellow cards, and 17 problems, opportunities and questions
   await page.goto('/sample/type-now');
@@ -190,6 +265,8 @@ test('every tracker export lists blocked cards, and the Status filter can leave 
     ['phabricator', 'exportPhabBtn', 'phabExportModal', 'Stalled', '3 tasks'],
     ['phabricator', 'exportPhabProxyBtn', 'phabProxyExportModal', 'Stalled', '3 tasks'],
     ['linear', 'exportLinearProxyBtn', 'linearProxyExportModal', 'Backlog', '3 issues'],
+    ['azure-devops', 'exportAzureCsvBtn', 'azureExportModal', 'New', '3 work items'],
+    ['azure-devops', 'exportAzureProxyBtn', 'azureProxyExportModal', 'New', '3 work items'],
   ];
   for (const [integration, itemId, modalId, status, total] of kinds) {
     await openExport(page, integration, itemId);
@@ -253,7 +330,9 @@ test('an API export sends one issue per card and ticks each one off', async ({ p
   await expect(modal.locator('.export-progress-item.done')).toHaveCount(2);
   await expect(modal.locator('.export-progress-item.failed')).toContainText('Title too long');
   await expect(modal.locator('.export-progress-item.done a').first()).toHaveAttribute('href', 'https://linear.app/x/ENG-1');
-  await expect(page.locator('#linearProxyExportRun')).toBeDisabled();
+  // The cards are made, so the export button gives way to Done, which closes the window
+  await expect(page.locator('#linearProxyExportRun')).toBeHidden();
+  await expect(modal.getByRole('button', { name: 'Done' })).toBeFocused();
 
   expect(sent.teamKey).toBe('ENG');
   expect(sent.issues.map(i => [i.title, i.status, i.labels])).toEqual([
@@ -262,4 +341,10 @@ test('an API export sends one issue per card and ticks each one off', async ({ p
     ['Waiting on the bank', 'blocked', ['mvp', 'pay']],
   ]);
   expect(sent.issues[0].description).toMatch(/^Slice: MVP\nStep: Browse Menu\nStory map: http.*#card-/);
+
+  // Going back to send more cards brings the export button back
+  await modal.locator('[data-export="back"]').click();
+  await modal.locator('[data-export="next"]').click();
+  await expect(page.locator('#linearProxyExportRun')).toBeEnabled();
+  await expect(modal.getByRole('button', { name: 'Done' })).toBeHidden();
 });

@@ -1,8 +1,8 @@
 import { describe, test, beforeEach } from 'node:test';
 import { strict as assert } from 'node:assert';
 import * as Y from 'yjs';
-import { state } from '/src/core/state.js';
-import { serialize, deserialize, appendImport } from '/src/core/serialization.js';
+import { state, initState, isUntouched } from '/src/core/state.js';
+import { serialize, deserialize, appendImport, appendCardsUnderBackbone, backboneSteps } from '/src/core/serialization.js';
 import { serializeDoc, writeDocFromJson } from '../../server/serialization.js';
 import { fullMap, smallMap, samples } from '../fixtures.js';
 
@@ -135,6 +135,83 @@ describe('serialize and deserialize', () => {
     assert.deepEqual(out.users, [[], []]);
     assert.deepEqual(out.activities, [[], []]);
     assert.deepEqual(out.slices[0].stories, [[], []]);
+  });
+});
+
+describe('a story map nobody has worked on', () => {
+  test('a new story map is untouched, and its New Step is not a backbone', () => {
+    initState();
+    assert.equal(isUntouched(), true);
+    assert.deepEqual(backboneSteps(), []);
+  });
+
+  test('naming the story map, a step or a card, or adding one, makes it someone\'s work', () => {
+    const changes = [
+      () => { state.name = 'Coffee App'; },
+      () => { state.notes = 'Ask about refunds'; },
+      () => { state.columns[0].name = 'Browse Menu'; },
+      () => { Object.values(state.users)[0][0].name = 'Customer'; },
+      () => { Object.values(state.slices[0].stories)[0][0].body = 'As a customer'; },
+      () => { Object.values(state.slices[0].stories)[0].push({ name: 'New Task or Detail' }); },
+      () => { state.slices[0].name = 'MVP'; },
+      () => { state.columns.push({ id: 'second', name: 'New Step' }); },
+    ];
+    for (const change of changes) {
+      initState();
+      change();
+      assert.equal(isUntouched(), false, String(change));
+    }
+  });
+
+  test('a card cleared of its starter text still counts as untouched', () => {
+    initState();
+    Object.values(state.activities)[0][0].name = '';
+    assert.equal(isUntouched(), true);
+  });
+
+  test('a story map with real steps is not untouched', () => {
+    deserialize(asFile(smallMap()));
+    assert.equal(isUntouched(), false);
+    assert.equal(backboneSteps().length, 2);
+  });
+});
+
+describe('appendCardsUnderBackbone', () => {
+  const cards = (...names) => names.map(name => ({ name }));
+  const imported = () => content().slices.find(slice => slice.name === 'Imported')?.stories.map(col => col.map(card => card.name));
+
+  test('deals the cards out under the steps that are there, and adds no step', () => {
+    deserialize(asFile(smallMap()));
+    const before = content();
+    assert.equal(appendCardsUnderBackbone(cards('A', 'B', 'C')), true);
+    const out = content();
+    assert.deepEqual(out.steps, before.steps);
+    assert.deepEqual(out.users, before.users);
+    assert.deepEqual(out.slices.slice(0, before.slices.length), before.slices);
+    assert.deepEqual(imported(), [['A', 'C'], ['B']]);
+  });
+
+  test('a second import adds to the same slice', () => {
+    deserialize(asFile(smallMap()));
+    appendCardsUnderBackbone(cards('A', 'B', 'C'));
+    appendCardsUnderBackbone(cards('D'));
+    assert.deepEqual(imported(), [['A', 'C', 'D'], ['B']]);
+    assert.equal(content().slices.filter(slice => slice.name === 'Imported').length, 1);
+  });
+
+  test('steps with no name and hidden spacers are not part of the backbone', () => {
+    deserialize(asFile({ name: 'x', steps: [{ name: 'Browse' }, { name: '', hidden: true }, { name: '' }, { name: 'Pay' }], slices: [{ name: 'MVP', stories: [[], [], [], []] }] }));
+    assert.deepEqual(backboneSteps().map(step => step.name), ['Browse', 'Pay']);
+    appendCardsUnderBackbone(cards('A', 'B', 'C'));
+    assert.deepEqual(imported(), [['A', 'C'], [], [], ['B']]);
+  });
+
+  test('with no named step, or no cards, nothing changes', () => {
+    deserialize(asFile({ name: 'x', steps: [{ name: '' }], slices: [{ name: '', stories: [[]] }] }));
+    assert.equal(appendCardsUnderBackbone(cards('A')), false);
+    deserialize(asFile(smallMap()));
+    assert.equal(appendCardsUnderBackbone([]), false);
+    assert.equal(imported(), undefined);
   });
 });
 

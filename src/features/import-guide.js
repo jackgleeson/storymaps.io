@@ -16,6 +16,7 @@ import { zoomToFit, zoomForTyping } from '/src/ui/navigation.js';
 export const IMPORTED_SLICE = 'Imported';
 // The guide to the backbone, for people who arrive from a tracker without the idea
 const BACKBONE_DOCS = '/docs/define-the-story-map-backbone';
+const DELETE_SLICE_DOCS = '/docs/plan-releases-with-story-map-slices#delete-a-slice';
 
 // What the story map already has. A part of the backbone that is named needs no step.
 export const backboneNeeds = (map) => {
@@ -146,7 +147,7 @@ export const guideSteps = (needs) => {
         onEnter: show(zoomToFit),
         title: 'Now place the cards',
         body: `${backbone.length ? 'That is the backbone, so every card has somewhere to go. ' : 'The backbone is already here, so every card has somewhere to go. '}`
-            + `Drag each card up out of <strong>${IMPORTED_SLICE}</strong> into a release, under the step it belongs to. Select several to move them together.<br><br>When <strong>${IMPORTED_SLICE}</strong> is empty, delete it.`,
+            + `Drag each card up out of <strong>${IMPORTED_SLICE}</strong> into a release, under the step it belongs to. Select several to move them together.<br><br>When the <strong>${IMPORTED_SLICE}</strong> slice is empty, <a href="${DELETE_SLICE_DOCS}" target="_blank" rel="noopener">delete it</a>.`,
         icon: '\u{1F4CB}',
     }];
 };

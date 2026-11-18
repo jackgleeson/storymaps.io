@@ -326,10 +326,21 @@ export const hasContent = () => {
     return false;
 };
 
+// A story map nobody has worked on yet: one step and the cards a new story map starts with, all
+// still showing their starter text, with no name, notes or partials. There is nothing on it to
+// add to and nothing to lose, so an import fills it without asking.
+export const isUntouched = () => {
+    const starter = (card) => !card.body && !card.url && (!card.name || STARTER_NAMES.has(card.name));
+    if (state.name || state.notes || state.partialMaps.length || state.columns.length > 1 || state.slices.length > 1) return false;
+    if (!state.columns.every(col => !col.partialMapId && starter(col))) return false;
+    const cards = [state.users, state.activities, ...state.slices.map(slice => slice.stories)].flatMap(rows => Object.values(rows).flat());
+    return cards.length <= 3 && cards.every(starter) && state.slices.every(slice => !slice.name);
+};
+
 // Asked before an import replaces a story map that has something on it. The server makes a
 // backup first unless one it already keeps matches the story map, so the question says so.
 export const confirmOverwrite = async () => {
-    return !hasContent() || await showConfirm('This will replace your current story map. Continue?\n\nIf a backup of it doesn\'t already exist, an automatic one will be created, so you can undo the import from Menu → Backups.');
+    return !hasContent() || isUntouched() || await showConfirm('This will replace your current story map. Continue?\n\nIf a backup of it doesn\'t already exist, an automatic one will be created, so you can undo the import from Menu → Backups.');
 };
 
 export const createColumn = (name = '', color = null, url = null, hidden = false, status = null, points = null, tags = [], body = '') => ({ id: generateId(), name, body, color, url, hidden, status, points, tags });

@@ -63,6 +63,7 @@ test('the pages that tell people to install the CLI show the command with a Copy
 
 test('home page imports and samples are named after the button', () => {
   assert.equal(clickEvent(button('[data-import]', { dataset: { import: 'linear' } })), 'import-linear-homepage');
+  assert.equal(clickEvent(button('[data-import]', { dataset: { import: 'azure-devops' } })), 'import-azure-devops-homepage');
   assert.equal(clickEvent(button('[data-sample]', { dataset: { sample: 'recipe-app' } })), 'sample-recipe-app');
 });
 

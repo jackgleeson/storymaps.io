@@ -4,7 +4,7 @@
 import { dom } from '/src/ui/dom.js';
 import { state, initState, pushUndo, confirmOverwrite } from '/src/core/state.js';
 import { el, generateId } from '/src/core/constants.js';
-import { serialize, deserialize, appendImport } from '/src/core/serialization.js';
+import { serialize, deserialize, appendImport, appendCardsUnderBackbone, backboneSteps } from '/src/core/serialization.js';
 import { exportToYaml, importFromYaml } from '/src/transfer/yaml.js';
 import { parseLocation, withProject } from '/src/core/project-links.js';
 import { exportToCsv, importFromCsv } from '/src/transfer/csv.js';
@@ -21,6 +21,7 @@ import * as jiraImportsMod from '/src/transfer/jira-imports.js';
 import * as asanaImportsMod from '/src/transfer/asana-imports.js';
 import * as phabImportsMod from '/src/transfer/phabricator-imports.js';
 import * as linearImportsMod from '/src/transfer/linear-imports.js';
+import * as azureImportsMod from '/src/transfer/azure-imports.js';
 
 let _deps = {};
 
@@ -55,7 +56,14 @@ export const init = (deps) => {
             if (isAppend) {
                 // A story map that is already open has its own slices: it needs no empty one for a first release
                 const isEmpty = (slice) => !slice.name && slice.stories.every(cards => !cards.length);
-                appendImport({ ...data, slices: data.slices.filter(slice => !isEmpty(slice)) });
+                const slices = data.slices.filter(slice => !isEmpty(slice));
+                // With a backbone already there, the cards go under its steps. The import lays
+                // them out in columns, top to bottom, so reading it row by row gives back the
+                // order they came in. Without one, they go to the right with blank steps of
+                // their own, as on a new story map.
+                const rows = Math.max(0, ...slices.flatMap(slice => slice.stories.map(cards => cards.length)));
+                const cards = Array.from({ length: rows }, (_, row) => slices.flatMap(slice => slice.stories.map(col => col[row]).filter(Boolean))).flat();
+                if (!backboneSteps().length || !appendCardsUnderBackbone(cards)) appendImport({ ...data, slices });
                 // Legend entries are saved by ID, like cards
                 state.legend.push(...legendToAdd(data.legend, state.legend).map(entry => ({ id: generateId(), ...entry })));
             } else {
@@ -81,10 +89,11 @@ export const init = (deps) => {
     asanaImportsMod.init({ onImportComplete });
     phabImportsMod.init({ onImportComplete });
     linearImportsMod.init({ onImportComplete });
+    azureImportsMod.init({ onImportComplete });
 };
 
 // Re-export integration modules for listener wiring in app.js
-export { exportsMod, jiraImportsMod, asanaImportsMod, phabImportsMod, linearImportsMod };
+export { exportsMod, jiraImportsMod, asanaImportsMod, phabImportsMod, linearImportsMod, azureImportsMod };
 
 // Utility functions
 export const sanitizeFilename = (name) => {

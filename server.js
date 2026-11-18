@@ -172,9 +172,11 @@ import registerExportJira from './server/routes/export-jira.js';
 import registerExportPhabricator from './server/routes/export-phabricator.js';
 import registerExportAsana from './server/routes/export-asana.js';
 import registerExportLinear from './server/routes/export-linear.js';
+import registerExportAzureDevops from './server/routes/export-azure-devops.js';
 import registerImportJira from './server/routes/import-jira.js';
 import registerImportAsana from './server/routes/import-asana.js';
 import registerImportLinear from './server/routes/import-linear.js';
+import registerImportAzureDevops from './server/routes/import-azure-devops.js';
 import registerImportPhabricator from './server/routes/import-phabricator.js';
 
 // Static routes before parameterized ones
@@ -183,7 +185,7 @@ registerMaps(ctx);    // /api/maps/new-id must register before /api/maps/:id
 registerLocks(ctx);
 registerBackups(ctx);
 registerProjects(ctx);
-// Imports and exports through the APIs of Jira, Asana, Phabricator and Linear make this server
+// Imports and exports through the APIs of Jira, Asana, Phabricator, Linear and Azure DevOps make this server
 // call addresses that people type in. IMPORT_EXPORT_ENABLED=false turns them off, and the app
 // hides them. Imports and exports of files still work.
 const IMPORT_EXPORT_ENABLED = process.env.IMPORT_EXPORT_ENABLED !== 'false';
@@ -192,9 +194,11 @@ if (IMPORT_EXPORT_ENABLED) {
   registerExportPhabricator(ctx);
   registerExportAsana(ctx);
   registerExportLinear(ctx);
+  registerExportAzureDevops(ctx);
   registerImportJira(ctx);
   registerImportAsana(ctx);
   registerImportLinear(ctx);
+  registerImportAzureDevops(ctx);
   registerImportPhabricator(ctx);
 }
 

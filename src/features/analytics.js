@@ -52,6 +52,8 @@ export const CLICKS = [
     ['#importPhabCsvBtn', 'import-phabricator-csv'],
     ['#importLinearBtn', 'import-linear'],
     ['#importLinearCsvBtn', 'import-linear-csv'],
+    ['#importAzureBtn', 'import-azure-devops'],
+    ['#importAzureCsvBtn', 'import-azure-devops-csv'],
 
     // Exports, on the button that does the export
     ['#exportCopyBtn, #exportDownloadBtn', 'export-json'],
@@ -59,10 +61,12 @@ export const CLICKS = [
     ['#exportCsvCopyBtn, #exportCsvDownloadBtn', 'export-csv'],
     ['#jiraExportDownload', 'export-jira-csv'],
     ['#asanaCsvExportDownload', 'export-asana-csv'],
+    ['#azureExportDownload', 'export-azure-devops-csv'],
     ['#jiraProxyExportRun', 'export-jira'],
     ['#asanaProxyExportRun', 'export-asana'],
     ['#phabProxyExportRun', 'export-phabricator'],
     ['#linearProxyExportRun', 'export-linear'],
+    ['#azureProxyExportRun', 'export-azure-devops'],
     ['#phabExportDone', 'export-phabricator-script'],
 
     // Keeping work

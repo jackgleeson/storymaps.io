@@ -1,7 +1,7 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
-// Tracker exports: Jira, Linear, Asana and Phabricator, by file, by API or from the console.
+// Tracker exports: Jira, Linear, Asana, Phabricator and Azure DevOps, by file, by API or from the console.
 // Every export makes one issue per card. The slice and the step go across as labels.
-// All seven windows share one layout: filters, one example of what a card becomes, the
+// All nine windows share one layout: filters, one example of what a card becomes, the
 // label choices, and the list of cards, closed until it's wanted.
 
 import { el } from '/src/core/constants.js';
@@ -13,6 +13,7 @@ import { readSSE, verifyConnection } from '/src/transfer/import-helpers.js';
 import {
     STATUSES, STATUS_NAMES, PHAB_STATUS, collectCards, cardLabels, descriptionLines, toIssue,
     jiraCsv, asanaCsv, phabConsoleFunction, phabConsoleCall, parsePhabTags, extractAsanaProjectGid,
+    azureCsv, azureOrganization, AZURE_PROCESSES,
 } from '/src/transfer/export-issues.js';
 
 export { extractAsanaProjectGid };
@@ -29,6 +30,17 @@ const JIRA_STATUS = { none: 'To Do', planned: 'To Do', 'in-progress': 'In Progre
 const LINEAR_STATUS = { none: 'Backlog', planned: 'Todo', 'in-progress': 'In Progress', blocked: 'Backlog', done: 'Done' };
 const PHAB_STATUS_NAMES = { open: 'Open', progress: 'In Progress', stalled: 'Stalled', resolved: 'Resolved' };
 const ASANA_STATUS = (status) => (status === 'done' ? 'Completed' : 'Not completed');
+// Each process has its own state names. These say where a card lands in any of them.
+const AZURE_STATUS = { none: 'New', planned: 'New', 'in-progress': 'In progress', blocked: 'New', done: 'Done' };
+const azureProcess = () => AZURE_PROCESSES[byId('azureExportProcess').value] || AZURE_PROCESSES.agile;
+const azureOptions = {
+    tracker: 'Azure DevOps', noun: ['work item', 'work items'],
+    labels: 'Tags', listHeading: 'Tags', statusHeading: 'Azure DevOps status',
+};
+const azureCredentials = () => {
+    const c = { organization: azureOrganization(value('azureProxyOrganization')), project: value('azureProxyProject'), token: value('azureProxyToken') };
+    return Object.values(c).every(Boolean) ? c : null;
+};
 
 const jiraCsvStatusNames = () => ({
     none: value('jiraStatusNone'), planned: value('jiraStatusPlanned'), 'in-progress': value('jiraStatusInProgress'),
@@ -121,6 +133,28 @@ const KINDS = {
         resultUrl: (c, id) => `${withScheme(c.instanceUrl)}/${id}`,
     },
     phabConsole: { ...phabOptions, modal: 'phabExportModal', console: true },
+    azureCsv: {
+        ...azureOptions, modal: 'azureExportModal',
+        typeName: () => azureProcess().type,
+        statusText: () => azureProcess().firstState,
+        download: (cards, options) => ({
+            name: '-azure-devops.csv',
+            text: azureCsv(cards.map(card => toIssue(card, { link: cardLink(card), labelOptions: options })), { workItemType: azureProcess().type }),
+        }),
+    },
+    azureApi: {
+        ...azureOptions, modal: 'azureProxyExportModal',
+        typeName: () => 'Work item',
+        statusText: (status) => AZURE_STATUS[status],
+        endpoint: '/api/export/azure-devops',
+        credentials: azureCredentials,
+        missing: 'Please fill in your organization, project and personal access token.',
+        verify: () => {
+            const c = azureCredentials();
+            return c ? { url: '/api/export/azure-devops/verify', body: c } : 'Please fill in all fields first';
+        },
+        resultUrl: null, // the server sends the link with each work item
+    },
 };
 
 // ==================== One export window ====================
@@ -173,7 +207,7 @@ const filterGroup = (title, chips) => {
 
 const toggleIn = (set, key) => (on) => { if (on) set.add(key); else set.delete(key); };
 
-// Build the first stage: the filters, the example, the label choices and the card list
+// Build the first stage: the filters, the card list, the example and the label choices
 const buildChoose = (kind) => {
     const k = KINDS[kind];
     const session = sessions[kind];
@@ -215,6 +249,18 @@ const buildChoose = (kind) => {
             el('span', 'export-tasks-only-note', { text: `Leaves out ${count(session.otherCards, ['card', 'cards'])} in other colours with no status, such as notes and questions` }));
         container.append(tasksOnly);
     }
+    // The card list comes straight after the filters that decide what is in it, so it is in view
+    // without scrolling. The example and the tag choices follow.
+    const details = el('details', 'export-disclosure');
+    const summary = el('summary', 'export-disclosure-summary');
+    const summaryText = el('span');
+    summaryText.dataset.export = 'cards-summary';
+    summary.append(summaryText);
+    summary.insertAdjacentHTML('beforeend', '<svg class="export-disclosure-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>');
+    const list = el('div', 'export-cards');
+    list.dataset.export = 'cards';
+    details.append(summary, list);
+    container.append(details);
     container.append(example);
 
     if (k.labels) {
@@ -235,17 +281,6 @@ const buildChoose = (kind) => {
         if (k.labelNote) section.append(el('p', 'export-label-note', { text: k.labelNote }));
         container.append(section);
     }
-
-    const details = el('details', 'export-disclosure');
-    const summary = el('summary', 'export-disclosure-summary');
-    const summaryText = el('span');
-    summaryText.dataset.export = 'cards-summary';
-    summary.append(summaryText);
-    summary.insertAdjacentHTML('beforeend', '<svg class="export-disclosure-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>');
-    const list = el('div', 'export-cards');
-    list.dataset.export = 'cards';
-    details.append(summary, list);
-    container.append(details);
 };
 
 // One card as it is on the story map, and the issue it becomes
@@ -270,8 +305,9 @@ const renderExample = (kind) => {
 
     const issue = el('div', 'export-example-issue');
     const status = k.statusText(card.status);
+    const typeName = typeof k.typeName === 'function' ? k.typeName() : k.typeName;
     issue.append(
-        el('p', 'export-example-type', { text: k.tracker === 'Asana' ? `${k.typeName}, ${status.toLowerCase()}` : `${k.typeName}, status ${status || 'not set'}` }),
+        el('p', 'export-example-type', { text: k.tracker === 'Asana' ? `${typeName}, ${status.toLowerCase()}` : `${typeName}, status ${status || 'not set'}` }),
         el('p', 'export-example-name', { text: card.name }),
     );
     const labels = el('div', 'export-example-labels');
@@ -505,6 +541,9 @@ const showConnect = (kind) => {
     showStage(kind, 2);
     clearProgress(kind);
     part(kind, 'run').disabled = false;
+    part(kind, 'run').hidden = false;
+    // Only the windows that send cards to a tracker swap to this button when they finish
+    if (part(kind, 'done') && part(kind, 'run')) part(kind, 'done').hidden = true;
     part(kind, 'back').disabled = false;
     part(kind, 'verify').disabled = false;
     part(kind, 'verify-status').textContent = 'Optional - test before exporting';
@@ -561,9 +600,16 @@ const runExport = async (kind) => {
     } catch (e) {
         summary.textContent = `Network error: ${e.message}`;
     }
-    // Once the issues are made, running again would make them twice
+    // Once the issues are made, running again would make them twice, so the button that ran the
+    // export gives way to one that closes the window. A request that never got going can be tried again.
     run.disabled = finished;
     back.disabled = false;
+    const done = part(kind, 'done');
+    if (finished && done) {
+        run.hidden = true;
+        done.hidden = false;
+        done.focus();
+    }
 };
 
 // ==================== Phabricator console export ====================
@@ -619,6 +665,9 @@ export const init = (deps) => {
     ['jiraStatusNone', 'jiraStatusPlanned', 'jiraStatusInProgress', 'jiraStatusBlocked', 'jiraStatusDone'].forEach(id => {
         byId(id)?.addEventListener('input', () => { if (sessions.jiraCsv) refresh('jiraCsv'); });
     });
+
+    // Azure DevOps CSV: the process decides the work item type and the first state
+    byId('azureExportProcess')?.addEventListener('change', () => { if (sessions.azureCsv) refresh('azureCsv'); });
 
     ['phabInstanceUrl', 'phabApiToken', 'phabTags'].forEach(id => byId(id)?.addEventListener('input', renderPhabConsole));
     byId('phabCopyFunction')?.addEventListener('click', () => copyCode(byId('phabImportFunction'), byId('phabCopyFunction')));

@@ -6,8 +6,7 @@ import { showConfirm } from '/src/core/modals.js';
 import { extractAsanaProjectGid } from '/src/transfer/export-issues.js';
 import {
     readSSE, verifyConnection,
-    renderImportPreview, updateImportCount, buildStorymapFromImport
-} from '/src/transfer/import-helpers.js';
+    renderImportPreview, updateImportCount, buildStorymapFromImport, showImportMode } from '/src/transfer/import-helpers.js';
 import { parseCsv } from '/src/transfer/csv.js';
 
 let dom = null;
@@ -264,6 +263,7 @@ export const showAsanaImportStage1 = () => {
 
 const asanaPreviewDomRefs = () => ({
     previewHeader: dom.asanaImportPreviewHeader,
+    mode: dom.asanaImportMode,
     preview: dom.asanaImportPreview
 });
 
@@ -279,13 +279,7 @@ const showAsanaImportStage2 = () => {
     dom.asanaImportStage2.classList.remove('hidden');
     dom.asanaImportTitle.textContent = 'Review Import';
 
-    // Show import mode toggle only when importing into an existing map
-    if (state.mapLoaded) {
-        dom.asanaImportMode.classList.remove('hidden');
-        dom.asanaImportMode.querySelector('input[value="append"]').checked = true;
-    } else {
-        dom.asanaImportMode.classList.add('hidden');
-    }
+    showImportMode(dom.asanaImportMode);
 
     // Show/hide mapping mode toggle
     const toggle = dom.asanaImportMappingMode;

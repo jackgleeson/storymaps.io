@@ -112,6 +112,55 @@ export const asanaCsv = (cards, { link = () => '', slice = true, step = true, ta
     return csvRows([header, ...rows]);
 };
 
+// Azure DevOps reads descriptions as HTML. Blank lines split paragraphs, single line breaks
+// stay as line breaks, and web addresses become links.
+export const textToHtml = (text) => {
+    const escape = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const inline = (line) => line.split(/(https?:\/\/\S+)/).filter(Boolean).map(part =>
+        (/^https?:\/\//.test(part) ? `<a href="${escape(part)}">${escape(part)}</a>` : escape(part))).join('');
+    return String(text || '').split(/\n{2,}/).map(p => p.trim()).filter(Boolean)
+        .map(paragraph => `<div>${paragraph.split('\n').map(inline).join('<br>')}</div>`).join('<div><br></div>');
+};
+
+// The work item type for backlog work, and the state new work starts in, depend on the
+// process a project uses
+export const AZURE_PROCESSES = {
+    agile: { type: 'User Story', firstState: 'New' },
+    scrum: { type: 'Product Backlog Item', firstState: 'New' },
+    basic: { type: 'Issue', firstState: 'To Do' },
+    cmmi: { type: 'Requirement', firstState: 'Proposed' },
+};
+
+// Azure DevOps imports new work items from a file in their first state, so there is no State
+// column. Tags share one column, with semicolons between them.
+export const azureCsv = (issues, { workItemType = AZURE_PROCESSES.agile.type } = {}) => {
+    const hasTags = issues.some(issue => issue.labels.length);
+    const header = ['Work Item Type', 'Title', 'Description', ...(hasTags ? ['Tags'] : [])];
+    const rows = issues.map(issue => [
+        workItemType, issue.title.slice(0, 255), textToHtml(issue.description),
+        ...(hasTags ? [issue.labels.join('; ')] : []),
+    ]);
+    return csvRows([header, ...rows]);
+};
+
+// The organization name, from the name itself or from a link to it:
+// dev.azure.com/acme, dev.azure.com/acme/Shop or acme.visualstudio.com
+export const azureOrganization = (input) => {
+    const text = String(input || '').trim().replace(/^https?:\/\//i, '').replace(/^[^@/]*@/, '');
+    const link = text.match(/^dev\.azure\.com\/([^/?#]+)/i) || text.match(/^([^./]+)\.visualstudio\.com/i);
+    return link ? link[1] : text.replace(/\/.*$/, '');
+};
+
+// The project name in a link to a project or to a page inside it, such as
+// dev.azure.com/acme/Web%20Shop/_boards. Empty when the text is no link or names no project.
+export const azureProject = (input) => {
+    const text = String(input || '').trim().replace(/^https?:\/\//i, '').replace(/^[^@/]*@/, '');
+    const link = text.match(/^dev\.azure\.com\/[^/?#]+\/([^/?#]+)/i) || text.match(/^[^./]+\.visualstudio\.com\/([^/?#]+)/i);
+    // Pages of the organization itself start with an underscore, such as _settings
+    if (!link || link[1].startsWith('_')) return '';
+    try { return decodeURIComponent(link[1]); } catch { return link[1]; }
+};
+
 export const PHAB_STATUS = { none: 'open', planned: 'open', 'in-progress': 'progress', blocked: 'stalled', done: 'resolved' };
 
 // Phabricator tags are projects that must already exist, so a comma-separated list is all there is

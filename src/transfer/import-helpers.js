@@ -2,6 +2,8 @@
 // Shared import helpers used by all platform-specific importers
 
 import { escHtml, CARD_COLORS, DEFAULT_CARD_COLORS } from '/src/core/constants.js';
+import { state, isUntouched } from '/src/core/state.js';
+import { backboneSteps } from '/src/core/serialization.js';
 
 // ==================== SSE Reader (shared) ====================
 
@@ -92,6 +94,51 @@ const statusOf = (row) => (STATUS_ORDER.includes(row.status) ? row.status : 'pla
 
 // ==================== Shared Preview Rendering ====================
 
+// ==================== Add to the story map, or replace it ====================
+
+// Importing into a story map that is open asks where the cards should go, with what each
+// answer does. A story map nobody has worked on yet isn't asked: the import fills it, as it
+// does from the home page. The radio that is ticked is the answer, so the importers read it as
+// before: 'append' or 'replace'.
+const MODE_TEXT = {
+    underSteps: 'The cards go in a slice called Imported, under the steps you already have. Nothing is removed.',
+    beside: 'The cards go in a slice called Imported, beside what is already there. Nothing is removed.',
+    replace: 'Everything on the story map is swapped for the import. A backup is taken first.',
+};
+const MODE_BUTTON = { append: 'Add to story map', replace: 'Replace story map' };
+
+export const importModeShown = (container) => !!container && !container.classList.contains('hidden');
+
+export const showImportMode = (container) => {
+    if (!container) return;
+    const ask = !!state.mapLoaded && !isUntouched();
+    const name = container.id;
+    if (!container.dataset.built) {
+        container.dataset.built = 'true';
+        container.innerHTML = `<fieldset class="import-mode-choice">
+    <legend class="import-mode-legend">Where should the cards go?</legend>
+    <div class="import-mode-options">
+        <label class="import-mode-option"><input type="radio" name="${name}" value="append"><span class="import-mode-text"><span class="import-mode-title">Add to this story map</span><span class="import-mode-detail" data-mode-detail="append"></span></span></label>
+        <label class="import-mode-option"><input type="radio" name="${name}" value="replace"><span class="import-mode-text"><span class="import-mode-title">Replace this story map</span><span class="import-mode-detail">${MODE_TEXT.replace}</span></span></label>
+    </div>
+</fieldset>`;
+        container.addEventListener('change', () => labelImportButton(container));
+    }
+    container.classList.toggle('hidden', !ask);
+    container.querySelector('[data-mode-detail="append"]').textContent = backboneSteps().length ? MODE_TEXT.underSteps : MODE_TEXT.beside;
+    // With nothing to ask, the import replaces the starter cards of the new story map
+    container.querySelector(`input[value="${ask ? 'append' : 'replace'}"]`).checked = true;
+    labelImportButton(container);
+};
+
+// The button says what it will do. With no question, it keeps its usual words.
+const labelImportButton = (container) => {
+    const button = container.closest('.export-stage')?.querySelector('[id$="ImportConfirmBtn"]');
+    if (!button) return;
+    const mode = container.querySelector('input:checked')?.value;
+    button.textContent = importModeShown(container) ? MODE_BUTTON[mode] : 'Import to Map';
+};
+
 // The review step of every tracker import: what was found, filters by type and status, and
 // one row per card that will be made. Group rows come first, each followed by its issues.
 export const renderImportPreview = (epics, projectKey, domRefs, updateCountFn, opts = {}) => {
@@ -123,8 +170,13 @@ export const renderImportPreview = (epics, projectKey, domRefs, updateCountFn, o
         : `Found <strong>${items.length}</strong> ${plural(items.length, words.item)}`;
     const intro = document.createElement('p');
     intro.className = 'import-intro';
-    intro.innerHTML = `${found} in <strong>${escHtml(projectKey)}</strong>. Each one becomes a card, in a slice called Imported, ready to arrange into steps and slices.`;
+    // The question about where the cards go says which slice they land in, so the line above it doesn't
+    const asking = importModeShown(domRefs.mode);
+    intro.innerHTML = `${found} in <strong>${escHtml(projectKey)}</strong>. Each one becomes a card, ${asking ? '' : 'in a slice called Imported, '}ready to arrange into steps and slices.`;
     header.append(intro);
+    // It sits under that line. The header is drawn again when the grouping changes, and the same
+    // element goes back in, so the answer already given is kept.
+    if (domRefs.mode) header.append(domRefs.mode);
 
     const filters = document.createElement('div');
     filters.className = 'export-filters';
@@ -268,7 +320,8 @@ export const renderImportPreview = (epics, projectKey, domRefs, updateCountFn, o
 
         const status = document.createElement('span');
         status.className = 'import-row-status';
-        status.textContent = group && !data.status ? '' : statusNames[statusOf(data)];
+        // A tracker that names its own states shows the name this row has there
+        status.textContent = group && !data.status ? '' : (data.stateName || statusNames[statusOf(data)]);
 
         el.append(checkbox, key, summary, tagCell, status);
         table.append(el);

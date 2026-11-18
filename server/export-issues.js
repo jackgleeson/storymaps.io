@@ -74,3 +74,13 @@ export const toAdf = (text) => {
   });
   return paragraphs.length ? { type: 'doc', version: 1, content: paragraphs } : null;
 };
+
+// Azure DevOps descriptions are HTML. Blank lines split paragraphs, single line breaks stay
+// as line breaks, and web addresses become links. Empty text gives ''.
+export const toHtml = (text) => {
+  const escape = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const inline = (line) => line.split(/(https?:\/\/\S+)/).filter(Boolean).map(part =>
+    /^https?:\/\//.test(part) ? `<a href="${escape(part)}">${escape(part)}</a>` : escape(part)).join('');
+  return String(text || '').split(/\n{2,}/).map(p => p.trim()).filter(Boolean)
+    .map(paragraph => `<div>${paragraph.split('\n').map(inline).join('<br>')}</div>`).join('<div><br></div>');
+};

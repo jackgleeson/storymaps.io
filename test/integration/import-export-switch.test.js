@@ -6,11 +6,12 @@ import { join } from 'node:path';
 import { startServer } from './server-process.js';
 
 // IMPORT_EXPORT_ENABLED=false turns off imports and exports through the APIs of Jira, Asana,
-// Phabricator and Linear, so the server never calls an address someone typed in
+// Phabricator, Linear and Azure DevOps, so the server never calls an address someone typed in
 const TRACKER_ROUTES = [
-  '/api/import/jira', '/api/import/asana', '/api/import/linear', '/api/import/phabricator',
+  '/api/import/jira', '/api/import/asana', '/api/import/linear', '/api/import/phabricator', '/api/import/azure-devops',
   '/api/export/jira', '/api/export/jira/verify', '/api/export/asana', '/api/export/asana/verify',
   '/api/export/linear', '/api/export/linear/verify', '/api/export/phabricator', '/api/export/phabricator/verify',
+  '/api/export/azure-devops', '/api/export/azure-devops/verify',
 ];
 
 const post = (base, path) => fetch(base + path, {

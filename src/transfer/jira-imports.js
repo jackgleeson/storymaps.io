@@ -5,8 +5,7 @@ import { state } from '/src/core/state.js';
 import { showConfirm } from '/src/core/modals.js';
 import {
     readSSE, verifyConnection,
-    renderImportPreview, updateImportCount, buildStorymapFromImport
-} from '/src/transfer/import-helpers.js';
+    renderImportPreview, updateImportCount, buildStorymapFromImport, showImportMode } from '/src/transfer/import-helpers.js';
 import { parseCsv } from '/src/transfer/csv.js';
 
 let dom = null;
@@ -200,6 +199,7 @@ export const showJiraImportStage1 = () => {
 
 const jiraPreviewDomRefs = () => ({
     previewHeader: dom.jiraImportPreviewHeader,
+    mode: dom.jiraImportMode,
     preview: dom.jiraImportPreview
 });
 
@@ -213,13 +213,7 @@ const showJiraImportStage2 = () => {
     dom.jiraCsvImportStage1.classList.add('hidden');
     dom.jiraImportStage2.classList.remove('hidden');
     dom.jiraImportTitle.textContent = 'Review Import';
-    // Show import mode toggle only when importing into an existing map
-    if (state.mapLoaded) {
-        dom.jiraImportMode.classList.remove('hidden');
-        dom.jiraImportMode.querySelector('input[value="append"]').checked = true;
-    } else {
-        dom.jiraImportMode.classList.add('hidden');
-    }
+    showImportMode(dom.jiraImportMode);
     renderImportPreview(jiraImportState.epics, jiraImportState.projectKey, jiraPreviewDomRefs(), jiraUpdateCount, jiraWords);
     jiraUpdateCount();
 };

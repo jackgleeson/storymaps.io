@@ -5,8 +5,7 @@ import { state } from '/src/core/state.js';
 import { showConfirm } from '/src/core/modals.js';
 import {
     readSSE, verifyConnection,
-    renderImportPreview, updateImportCount, buildStorymapFromImport
-} from '/src/transfer/import-helpers.js';
+    renderImportPreview, updateImportCount, buildStorymapFromImport, showImportMode } from '/src/transfer/import-helpers.js';
 import { parseCsv } from '/src/transfer/csv.js';
 
 let dom = null;
@@ -303,6 +302,7 @@ export const showLinearImportStage1 = () => {
 
 const linearPreviewDomRefs = () => ({
     previewHeader: dom.linearImportPreviewHeader,
+    mode: dom.linearImportMode,
     preview: dom.linearImportPreview
 });
 
@@ -318,13 +318,7 @@ const showLinearImportStage2 = () => {
     dom.linearImportStage2.classList.remove('hidden');
     dom.linearImportTitle.textContent = 'Review Import';
 
-    // Show import mode toggle only when importing into an existing map
-    if (state.mapLoaded) {
-        dom.linearImportMode.classList.remove('hidden');
-        dom.linearImportMode.querySelector('input[value="append"]').checked = true;
-    } else {
-        dom.linearImportMode.classList.add('hidden');
-    }
+    showImportMode(dom.linearImportMode);
 
     // Show mapping mode toggle (always visible for Linear)
     const toggle = dom.linearImportMappingMode;

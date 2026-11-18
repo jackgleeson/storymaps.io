@@ -783,8 +783,8 @@ body:not(.welcome-visible) #themeMenuBtn {
 
 /* The server has imports and exports through tracker APIs turned off (IMPORT_EXPORT_ENABLED=false).
    Linear exports only through its API, so Linear leaves the Export menu. */
-[data-integrations="off"] :is(#importJiraBtn, #importAsanaBtn, #importPhabBtn, #importLinearBtn,
-    #exportJiraProxyBtn, #exportAsanaProxyBtn, #exportPhabProxyBtn, #exportLinearProxyBtn),
+[data-integrations="off"] :is(#importJiraBtn, #importAsanaBtn, #importPhabBtn, #importLinearBtn, #importAzureBtn,
+    #exportJiraProxyBtn, #exportAsanaProxyBtn, #exportPhabProxyBtn, #exportLinearProxyBtn, #exportAzureProxyBtn),
 [data-integrations="off"] #exportSubmenu [data-integration="linear"] {
     display: none;
 }
@@ -4047,7 +4047,7 @@ html.dark-mode mark.highlight::after {
 .welcome-integrations-text {
     font-size: 13px;
     color: #888;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     text-align: center;
 }
 
@@ -4056,8 +4056,9 @@ html.dark-mode mark.highlight::after {
     flex-wrap: wrap;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    margin-bottom: 32px;
+    /* The break between the two rows is a line of its own, so the gap above and below it adds up to 6px */
+    gap: 3px 6px;
+    margin-bottom: 22px;
 }
 
 .welcome-integration {
@@ -4071,9 +4072,17 @@ html.dark-mode mark.highlight::after {
     background: var(--color-bg-surface);
     border: 1px solid #e5e7eb;
     border-radius: 8px;
-    padding: 7px 14px 7px 10px;
+    padding: 6px 12px 6px 9px;
     cursor: pointer;
     transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+    white-space: nowrap;
+}
+
+/* Starts the second row of tracker buttons: the three short names sit above the two long ones,
+   so both rows come out about the same width and no button is left on a line of its own */
+.welcome-integrations-break {
+    flex-basis: 100%;
+    height: 0;
 }
 
 .welcome-integration:hover {
@@ -5430,6 +5439,11 @@ html.dark-mode mark.highlight::after {
     gap: 8px;
 }
 
+/* The export button and the Done button take turns: one is hidden while the other shows */
+.export-actions .btn[hidden] {
+    display: none;
+}
+
 .export-divider {
     display: flex;
     align-items: center;
@@ -5522,6 +5536,13 @@ html.dark-mode mark.highlight::after {
     .export-fields-row {
         flex-direction: column;
         gap: 12px;
+    }
+
+    /* Stacked under the field on a narrow screen, so it lines up with the left edge again.
+       The longer selector beats the rule further down that puts it level with the input. */
+    .export-fields-row .export-info-banner.export-info-beside {
+        align-self: flex-start;
+        margin-bottom: 0;
     }
 
     .export-fields-row .export-field[style] {
@@ -5894,6 +5915,12 @@ html.dark-mode mark.highlight::after {
     padding: 6px 10px;
     border-radius: 5px;
     max-width: fit-content;
+}
+
+/* An info box on the same line as a field, level with the input, not its label */
+.export-info-banner.export-info-beside {
+    align-self: flex-end;
+    margin-bottom: 2px;
 }
 
 .export-info-banner.export-info-warning {
@@ -9351,6 +9378,9 @@ html.dark-mode .welcome-integration[data-import="phabricator"] svg path[fill="#9
 html.dark-mode .welcome-integration[data-import="linear"] svg {
     fill: #8a93e6;
 }
+html.dark-mode .welcome-integration[data-import="azure-devops"] svg {
+    fill: #4ea5ec;
+}
 html.dark-mode .welcome-integration {
     background: var(--color-bg-surface);
     color: var(--color-text-primary);
@@ -10255,44 +10285,78 @@ html.dark-mode .export-done-summary.has-failures .done-detail { color: #f59e0b; 
     display: none;
 }
 
-/* Import mode toggle (replace vs append) - segmented pill style */
-.import-mapping-mode:has([name$="ImportMode"]) {
-    border-bottom: none;
-    margin-bottom: 12px;
-    padding: 0;
-    gap: 0;
-}
-.import-mapping-mode:has([name$="ImportMode"]) .import-mapping-label {
+/* Importing into an open story map: where the cards should go. Two options side by side, each
+   with what it does, and the chosen one outlined in teal. */
+.import-mode.hidden {
     display: none;
 }
-.import-mapping-mode:has([name$="ImportMode"]) .import-mapping-option {
-    flex: 1;
-    justify-content: center;
-    gap: 6px;
-    padding: 9px 14px;
+.import-mode {
+    margin: 12px 0 4px;
+}
+.import-mode-choice {
     margin: 0;
-    border: 1.5px solid var(--color-border-medium);
-    background: var(--color-bg-surface);
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--color-text-secondary);
-    transition: all 0.15s ease;
+    padding: 0;
+    border: 0;
+    min-width: 0;
 }
-.import-mapping-mode:has([name$="ImportMode"]) .import-mapping-option:first-of-type {
-    border-radius: 8px 0 0 8px;
-    border-right: none;
-}
-.import-mapping-mode:has([name$="ImportMode"]) .import-mapping-option:last-of-type {
-    border-radius: 0 8px 8px 0;
-}
-.import-mapping-mode:has([name$="ImportMode"]) .import-mapping-option:has(input:checked) {
-    background: linear-gradient(135deg, #14b8a6, #0d9488);
-    border-color: #0d9488;
-    color: #fff;
+.import-mode-legend {
+    padding: 0;
+    margin-bottom: 8px;
+    font-size: 14px;
     font-weight: 600;
+    color: var(--color-text-primary);
 }
-.import-mapping-mode:has([name$="ImportMode"]) .import-mapping-option input[type="radio"] {
-    display: none;
+.import-mode-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+.import-mode-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--color-border-medium);
+    border-radius: 10px;
+    background: var(--color-bg-surface);
+    cursor: pointer;
+    transition: border-color 0.15s, background-color 0.15s;
+}
+.import-mode-option:hover {
+    border-color: var(--color-teal);
+}
+.import-mode-option:has(input:checked) {
+    border-color: var(--color-teal);
+    box-shadow: 0 0 0 1px var(--color-teal);
+    background: rgba(20, 184, 166, 0.07);
+}
+.import-mode-option input[type="radio"] {
+    flex: none;
+    margin: 3px 0 0;
+    accent-color: var(--color-teal);
+}
+.import-mode-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+.import-mode-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+.import-mode-detail {
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--color-text-secondary);
+}
+/* One above the other where there isn't room for two */
+@media (max-width: 600px) {
+    .import-mode-options {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 8px;
+    }
 }
 
 .import-status-filters {

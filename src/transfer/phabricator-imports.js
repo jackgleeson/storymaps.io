@@ -5,8 +5,7 @@ import { state } from '/src/core/state.js';
 import { showConfirm } from '/src/core/modals.js';
 import {
     readSSE, verifyConnection,
-    renderImportPreview, updateImportCount, buildStorymapFromImport
-} from '/src/transfer/import-helpers.js';
+    renderImportPreview, updateImportCount, buildStorymapFromImport, showImportMode } from '/src/transfer/import-helpers.js';
 import { parseCsv } from '/src/transfer/csv.js';
 
 let dom = null;
@@ -240,6 +239,7 @@ export const showPhabImportStage1 = () => {
 
 const phabPreviewDomRefs = () => ({
     previewHeader: dom.phabImportPreviewHeader,
+    mode: dom.phabImportMode,
     preview: dom.phabImportPreview,
     statusFilter: dom.phabImportStatusFilters
 });
@@ -254,13 +254,7 @@ const showPhabImportStage2 = () => {
     dom.phabCsvImportStage1.classList.add('hidden');
     dom.phabImportStage2.classList.remove('hidden');
     dom.phabImportTitle.textContent = 'Review Import';
-    // Show import mode toggle only when importing into an existing map
-    if (state.mapLoaded) {
-        dom.phabImportMode.classList.remove('hidden');
-        dom.phabImportMode.querySelector('input[value="append"]').checked = true;
-    } else {
-        dom.phabImportMode.classList.add('hidden');
-    }
+    showImportMode(dom.phabImportMode);
     renderImportPreview(phabImportState.epics, phabImportState.projectKey, phabPreviewDomRefs(), phabUpdateCount, phabWords);
     phabUpdateCount();
 };

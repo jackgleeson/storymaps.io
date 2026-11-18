@@ -35,7 +35,7 @@ test('Jira import reviews epics and issues in one list and brings epics in as co
   await importCsv(page, 'jira', 'jira', 'jira.csv', jiraCsv);
 
   const review = page.locator('#jiraImportStage2');
-  await expect(review.locator('.import-intro')).toHaveText('Found 2 epics and 4 issues in COFFEE. Each one becomes a card, in a slice called Imported, ready to arrange into steps and slices.');
+  await expect(review.locator('.import-intro')).toHaveText('Found 2 epics and 4 issues in COFFEE. Each one becomes a card, ready to arrange into steps and slices.');
   await expect(page.locator('#jiraImportCount')).toHaveText('Importing 6 cards: 2 epics and 4 issues');
 
   // Epics first, each followed by its issues; issues with no epic come last, with no tag
@@ -60,7 +60,13 @@ test('Jira import reviews epics and issues in one list and brings epics in as co
   await expect(rows.nth(4).locator('input')).not.toBeChecked();
   await expect(page.locator('#jiraImportCount')).toHaveText('Importing 3 cards: 1 epic and 2 issues');
 
-  await review.locator('#jiraImportMode label', { hasText: 'Replace map' }).click();
+  // The story map has steps, so the question says the cards go under them, and the button says what it will do
+  await expect(review.locator('.import-mode-legend')).toHaveText('Where should the cards go?');
+  await expect(review.locator('#jiraImportMode input[value="append"]')).toBeChecked();
+  await expect(review.locator('#jiraImportMode [data-mode-detail="append"]')).toContainText('under the steps you already have');
+  await expect(page.locator('#jiraImportConfirmBtn')).toHaveText('Add to story map');
+  await review.locator('#jiraImportMode label', { hasText: 'Replace this story map' }).click();
+  await expect(page.locator('#jiraImportConfirmBtn')).toHaveText('Replace story map');
   await page.locator('#jiraImportConfirmBtn').click();
   await acceptDialog(page);
 
@@ -80,6 +86,97 @@ test('Jira import reviews epics and issues in one list and brings epics in as co
   expect(text).not.toContain('Payments');
   expect(text).not.toContain('Alert sound');
   expect(text).not.toContain('epic-01');
+});
+
+// A tree query exported from Azure DevOps: the Title column says how deep each work item sits
+const azureCsv = [
+  'ID,Work Item Type,Title 1,Title 2,Title 3,State,Tags',
+  '3,Epic,Ordering,,,Active,',
+  '12,User Story,,Drink list with prices,,Closed,frontend',
+  '31,Task,,,Price the drinks,New,',
+  '21,Feature,,Photos,,New,',
+  '60,Bug,Alert sound for new orders?,,,New,',
+  '61,User Story,Old idea,,,Removed,',
+];
+
+test('Azure DevOps CSV import puts work items under their epic and links the cards back', async ({ page, createMap, pullMap }) => {
+  const id = await createMap();
+  await openMap(page, id);
+  await page.locator('#menuBtn').click();
+  await page.locator('#importSubmenuTrigger').click();
+  await page.locator('#importSubmenu [data-integration="azure-devops"]').click();
+  await page.locator('#importAzureCsvBtn').click();
+  await expect(page.locator('#azureImportTitle')).toHaveText('Import from Azure DevOps CSV');
+  await page.locator('#azureCsvFileInput').setInputFiles({ name: 'azure.csv', mimeType: 'text/csv', buffer: Buffer.from(azureCsv.join('\n')) });
+  await page.locator('#azureCsvOrganization').fill('dev.azure.com/acme');
+  await page.locator('#azureCsvProject').fill('Coffee');
+  await page.locator('#azureCsvImportParseBtn').click();
+
+  // The task under a story and the removed story are left out
+  const review = page.locator('#azureImportStage2');
+  await expect(review.locator('.import-intro')).toHaveText('Found 1 epic and 3 work items in Coffee. Each one becomes a card, ready to arrange into steps and slices.');
+  await expect(page.locator('#azureImportCount')).toHaveText('Importing 4 cards: 1 epic and 3 work items');
+  const rows = review.locator('.import-row:not(.import-row-head)');
+  await expect(rows.locator('.import-row-name')).toHaveText(['Ordering', 'Drink list with prices', 'Photos', 'Alert sound for new orders?']);
+  await expect(rows.locator('.import-row-key')).toHaveText(['', '12', '21', '60']);
+  await expect(rows.nth(1).locator('.import-tag')).toHaveText('epic-01');
+  await expect(rows.nth(3).locator('.import-tag')).toHaveCount(0);
+  await expect(rows.locator('.import-row-status')).toHaveText(['Active', 'Closed', 'New', 'New']);
+  await expect(review.locator('.export-section-title').first()).toHaveText('Work item type');
+  await expect(review.locator('input[data-type]')).toHaveCount(4);
+
+  await review.locator('#azureImportMode label', { hasText: 'Replace this story map' }).click();
+  await page.locator('#azureImportConfirmBtn').click();
+  await acceptDialog(page);
+
+  await expect.poll(() => cardColours(page)).toEqual([
+    ['Ordering', LIME],
+    ['Drink list with prices', YELLOW],
+    ['Photos', YELLOW],
+    ['Alert sound for new orders?', YELLOW],
+  ]);
+  const map = await pullMap(id);
+  expect(map.name).toBe('Coffee Import');
+  expect(map.legend.map(entry => entry.label)).toEqual(['Epic', 'Work item']);
+  const text = JSON.stringify(map);
+  expect(text).toContain('"tags":["epic-01","frontend"]');
+  expect(text).toContain('https://dev.azure.com/acme/Coffee/_workitems/edit/12');
+  expect(text).not.toContain('Price the drinks');
+  expect(text).not.toContain('Old idea');
+});
+
+test('the Azure DevOps API import fetches the work items of a project and reviews them', async ({ page, createMap }) => {
+  await openMap(page, await createMap());
+  let sent;
+  await page.route('**/api/import/azure-devops', async (route) => {
+    sent = route.request().postDataJSON();
+    const items = [
+      { id: 3, title: 'Ordering', type: 'Epic', state: 'Active', status: 'in-progress', description: '<div>Browse &amp; order</div>', tags: [] },
+      { id: 12, title: 'Drink list with prices', type: 'Product Backlog Item', state: 'Done', status: 'done', tags: ['frontend'], points: 3, parentId: 3 },
+    ];
+    const events = [['progress', { phase: 'items', fetched: 2, total: 2 }], ['done', { organization: 'acme', project: 'Coffee', items, itemCount: 2 }]];
+    await route.fulfill({ status: 200, contentType: 'text/event-stream', body: events.map(([event, data]) => `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`).join('') });
+  });
+  await page.locator('#menuBtn').click();
+  await page.locator('#importSubmenuTrigger').click();
+  await page.locator('#importSubmenu [data-integration="azure-devops"]').click();
+  await page.locator('#importAzureBtn').click();
+  await page.locator('#azureImportFetchBtn').click();
+  await expect(page.locator('#azureImportVerifyStatus')).toHaveText('Please fill in all fields');
+  await page.locator('#azureImportOrganization').fill('acme.visualstudio.com');
+  await page.locator('#azureImportProject').fill('Coffee');
+  await page.locator('#azureImportToken').fill('pat-secret');
+  await page.locator('#azureImportFetchBtn').click();
+
+  await expect(page.locator('#azureImportStage2 .import-intro')).toContainText('Found 1 epic and 1 work item in Coffee.');
+  await expect(page.locator('#azureImportStage2 .import-points-badge')).toHaveText('3 pts');
+  expect(sent).toEqual({ organization: 'acme', project: 'Coffee', token: 'pat-secret' });
+  // The organization and the project are remembered, in every Azure DevOps window. The token is not.
+  // The link typed in was tidied to the name of the organization when the field was left.
+  await expect(page.locator('#azureImportOrganization')).toHaveValue('acme');
+  expect(JSON.parse(await page.evaluate(() => localStorage.getItem('trackerDetails')))).toEqual({ 'azure.organization': 'acme', 'azure.project': 'Coffee' });
+  await expect(page.locator('#azureProxyProject')).toHaveValue('Coffee');
+  await expect(page.locator('#azureCsvOrganization')).toHaveValue('acme');
 });
 
 test('Phabricator CSV import makes one card per task and no blank group cards', async ({ page, createMap, pullMap }) => {
@@ -170,7 +267,7 @@ test('after an import, a guide builds the backbone before any card is moved', as
   // The test browser starts with the tour marked as taken
   await page.evaluate(() => localStorage.removeItem('tourCompleted'));
   await importCsv(page, 'jira', 'jira', 'jira.csv', jiraCsv);
-  await page.locator('#jiraImportStage2 #jiraImportMode label', { hasText: 'Replace map' }).click();
+  await page.locator('#jiraImportStage2 #jiraImportMode label', { hasText: 'Replace this story map' }).click();
   await page.locator('#jiraImportConfirmBtn').click();
   await acceptDialog(page);
 
@@ -258,7 +355,7 @@ test('the guide adds a step when Enter is pressed after the last one', async ({ 
   const id = await createMap();
   await openMap(page, id);
   await importCsv(page, 'jira', 'jira', 'jira.csv', jiraCsv);
-  await page.locator('#jiraImportStage2 #jiraImportMode label', { hasText: 'Replace map' }).click();
+  await page.locator('#jiraImportStage2 #jiraImportMode label', { hasText: 'Replace this story map' }).click();
   await page.locator('#jiraImportConfirmBtn').click();
   await acceptDialog(page);
   await expect(guide(page).locator('.tour-tooltip-title')).toHaveText('Who is it for?');
@@ -275,6 +372,42 @@ test('the guide adds a step when Enter is pressed after the last one', async ({ 
   await page.keyboard.press('Enter');
   await expect(guide(page).locator('.tour-tooltip-title')).toHaveText('Now place the cards');
   await expect.poll(async () => (await pullMap(id)).steps.map(step => step.name)).toEqual(names);
+});
+
+test('a new story map nobody has worked on is filled by the import, with no question about adding or replacing', async ({ page, pullMap }) => {
+  await page.goto('/');
+  await page.locator('#welcomeNewBtn').click();
+  await expect(page.locator('.step')).toHaveCount(1);
+  const id = new URL(page.url()).pathname.slice(1);
+  await importCsv(page, 'jira', 'jira', 'jira.csv', jiraCsv);
+
+  const review = page.locator('#jiraImportStage2');
+  await expect(review.locator('#jiraImportMode')).toBeHidden();
+  await expect(review.locator('.import-intro')).toContainText('in a slice called Imported');
+  await expect(page.locator('#jiraImportConfirmBtn')).toHaveText('Import to Map');
+  await page.locator('#jiraImportConfirmBtn').click();
+
+  // Nothing is asked: there was nothing on the story map to lose. The starter cards are gone.
+  await expect(guide(page).locator('.tour-tooltip-title')).toHaveText('Who is it for?');
+  await expect.poll(async () => (await pullMap(id)).slices.map(slice => slice.name)).toEqual(['', 'Imported']);
+  expect(JSON.stringify(await pullMap(id))).not.toContain('New Task or Detail');
+});
+
+test('cards on a story map with no named steps go beside what is there, and the question says so', async ({ page, createMap }) => {
+  const id = await createMap(`name: Loose cards
+steps:
+  - ""
+slices:
+  - name: Later
+    stories:
+      "":
+        - name: An earlier card
+`);
+  await openMap(page, id, 1);
+  await importCsv(page, 'jira', 'jira', 'jira.csv', jiraCsv);
+  const mode = page.locator('#jiraImportStage2 #jiraImportMode');
+  await expect(mode).toBeVisible();
+  await expect(mode.locator('[data-mode-detail="append"]')).toContainText('beside what is already there');
 });
 
 test('added to a story map that has a backbone, the guide goes straight to the cards and the legend gains the epic colour', async ({ page, createMap, pullMap }) => {
@@ -311,5 +444,12 @@ slices:
   await expect.poll(async () => (await pullMap(id)).slices.map(slice => slice.name)).toEqual(['MVP', 'Imported']);
   const map = await pullMap(id);
   expect(map.legend).toEqual([{ color: '#bef264', label: 'Epic' }]);
-  expect(map.steps.slice(0, 2).map(step => step.name)).toEqual(['Browse', 'Pay']);
+  // The cards went under the two steps that were there, dealt out from the left in the order
+  // they came in. No step, user or activity was added.
+  expect(map.steps.map(step => step.name)).toEqual(['Browse', 'Pay']);
+  expect(map.users.flat().map(user => user.name)).toEqual(['Customer']);
+  expect(map.slices[1].stories.map(cards => cards.map(card => card.name))).toEqual([
+    ['Ordering: browse the menu, customise a drink and build an order', 'Photo on each drink', 'Gift cards'],
+    ['Drink list with prices', 'Payments', 'Alert sound for new orders?'],
+  ]);
 });
