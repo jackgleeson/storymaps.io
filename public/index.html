@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <title>Storymaps.io - Free User Story Mapping Tool with Jira, Azure DevOps, Linear, Asana & Phabricator Import/Export</title>
-    <meta name="description" content="Free online user story mapping tool for agile teams. Visualise your product backlog, plan releases, collaborate in real-time, and export to Jira, Azure DevOps, Linear, Asana & Phabricator. No signup required.">
+    <meta name="description" content="Free online user story mapping tool for agile teams. Visualise your product backlog, plan releases, collaborate in real-time, and export to Jira, Azure DevOps, Linear, Asana, Phabricator & Phorge. No signup required.">
     <link rel="canonical" href="https://storymaps.io/">
 
     <!-- Open Graph (Facebook, LinkedIn) -->
     <meta property="og:title" content="Storymaps.io - Free User Story Mapping Tool">
-    <meta property="og:description" content="Free online user story mapping tool for agile teams. Visualise your product backlog, plan releases, collaborate in real-time, and export to Jira, Azure DevOps, Linear, Asana & Phabricator. No signup required.">
+    <meta property="og:description" content="Free online user story mapping tool for agile teams. Visualise your product backlog, plan releases, collaborate in real-time, and export to Jira, Azure DevOps, Linear, Asana, Phabricator & Phorge. No signup required.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://storymaps.io/">
     <meta property="og:image" content="https://storymaps.io/resources/screenshot.png">
@@ -21,7 +21,7 @@
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Storymaps.io - Free User Story Mapping Tool">
-    <meta name="twitter:description" content="Free online user story mapping tool for agile teams. Visualise your product backlog, plan releases, collaborate in real-time, and export to Jira, Azure DevOps, Linear, Asana & Phabricator. No signup required.">
+    <meta name="twitter:description" content="Free online user story mapping tool for agile teams. Visualise your product backlog, plan releases, collaborate in real-time, and export to Jira, Azure DevOps, Linear, Asana, Phabricator & Phorge. No signup required.">
     <meta name="twitter:image" content="https://storymaps.io/resources/screenshot.png">
 
     <script type="application/ld+json">
@@ -30,7 +30,7 @@
             "@type": "WebApplication",
             "@id": "https://storymaps.io/#app",
             "name": "Storymaps.io",
-            "description": "Free online user story mapping tool for agile teams. Visualise your product backlog, plan releases, collaborate in real-time, and export to Jira, Azure DevOps, Linear, Asana & Phabricator. No signup required.",
+            "description": "Free online user story mapping tool for agile teams. Visualise your product backlog, plan releases, collaborate in real-time, and export to Jira, Azure DevOps, Linear, Asana, Phabricator & Phorge. No signup required.",
             "url": "https://storymaps.io/",
             "image": "https://storymaps.io/resources/screenshot.png",
             "inLanguage": "en",
@@ -50,6 +50,8 @@
                 "Export to Jira",
                 "Import from Phabricator",
                 "Export to Phabricator",
+                "Import from Phorge",
+                "Export to Phorge",
                 "Import from Asana",
                 "Export to Asana",
                 "Import from Linear",
@@ -105,7 +107,7 @@
     <noscript>
         <div style="padding: 40px; text-align: center; font-family: sans-serif;">
             <h1>Storymaps.io - Free User Story Mapping Tool</h1>
-            <p>Create, share, and collaborate on user story maps in real-time. Export to Jira, Azure DevOps, Linear, Asana or Phabricator.</p>
+            <p>Create, share, and collaborate on user story maps in real-time. Export to Jira, Azure DevOps, Linear, Asana, Phabricator or Phorge.</p>
             <p>This application requires JavaScript to run. Please enable JavaScript in your browser settings.</p>
         </div>
     </noscript>
@@ -1010,7 +1012,7 @@
                             <div class="export-step-content">
                                 <div class="export-fields-row">
                                     <div class="export-field">
-                                        <label class="export-field-label">Instance URL</label>
+                                        <label class="export-field-label">Instance URL <span class="export-token-help">- Phabricator or Phorge</span></label>
                                         <input type="text" id="phabProxyInstanceUrl" class="export-field-input" placeholder="phabricator.example.com" spellcheck="false">
                                     </div>
                                     <div class="export-field">
@@ -1076,7 +1078,7 @@
                             <div class="export-step-content">
                                 <div class="export-fields-row">
                                     <div class="export-field">
-                                        <label class="export-field-label">Instance URL</label>
+                                        <label class="export-field-label">Instance URL <span class="export-token-help">- Phabricator or Phorge</span></label>
                                         <input type="text" id="phabInstanceUrl" class="export-field-input" placeholder="phabricator.example.com" spellcheck="false">
                                     </div>
                                     <div class="export-field">
@@ -1533,7 +1535,7 @@
                             <div class="export-step-content">
                                 <div class="export-fields-row">
                                     <div class="export-field">
-                                        <label class="export-field-label">Instance URL</label>
+                                        <label class="export-field-label">Instance URL <span class="export-token-help">- Phabricator or Phorge</span></label>
                                         <input type="text" id="phabImportInstanceUrl" class="export-field-input" placeholder="phabricator.example.com" spellcheck="false">
                                     </div>
                                     <div class="export-field">

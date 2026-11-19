@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User story mapping for Phabricator - Storymaps.io docs</title>
-    <meta name="description" content="Turn Phabricator tasks into a story map, through the Conduit API or a Maniphest CSV export, and send the cards back as tasks that say which slice and step they came from.">
+    <title>User story mapping for Phabricator and Phorge - Storymaps.io</title>
+    <meta name="description" content="Turn Phabricator or Phorge tasks into a story map, through the Conduit API or a Maniphest CSV export, and send the cards back as tasks that say which slice and step they came from.">
     <link rel="canonical" href="https://storymaps.io/docs/user-story-mapping-for-phabricator">
-    <meta property="og:title" content="User story mapping for Phabricator - Storymaps.io docs">
-    <meta property="og:description" content="Turn Phabricator tasks into a story map, through the Conduit API or a Maniphest CSV export, and send the cards back as tasks that say which slice and step they came from.">
+    <meta property="og:title" content="User story mapping for Phabricator and Phorge - Storymaps.io">
+    <meta property="og:description" content="Turn Phabricator or Phorge tasks into a story map, through the Conduit API or a Maniphest CSV export, and send the cards back as tasks that say which slice and step they came from.">
     <meta property="og:type" content="article">
     <meta property="og:url" content="https://storymaps.io/docs/user-story-mapping-for-phabricator">
     <meta property="og:image" content="https://storymaps.io/resources/screenshot.png">
@@ -16,11 +16,11 @@
     <meta property="og:image:alt" content="A user story map in Storymaps.io, with cards organised by activities and releases">
     <meta property="og:site_name" content="Storymaps.io">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="User story mapping for Phabricator - Storymaps.io docs">
-    <meta name="twitter:description" content="Turn Phabricator tasks into a story map, through the Conduit API or a Maniphest CSV export, and send the cards back as tasks that say which slice and step they came from.">
+    <meta name="twitter:title" content="User story mapping for Phabricator and Phorge - Storymaps.io">
+    <meta name="twitter:description" content="Turn Phabricator or Phorge tasks into a story map, through the Conduit API or a Maniphest CSV export, and send the cards back as tasks that say which slice and step they came from.">
     <meta name="twitter:image" content="https://storymaps.io/resources/screenshot.png">
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://storymaps.io/docs"},{"@type":"ListItem","position":2,"name":"User story mapping for Phabricator","item":"https://storymaps.io/docs/user-story-mapping-for-phabricator"}]}</script>
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"User story mapping for Phabricator","description":"Turn Phabricator tasks into a story map, through the Conduit API or a Maniphest CSV export, and send the cards back as tasks that say which slice and step they came from.","url":"https://storymaps.io/docs/user-story-mapping-for-phabricator","inLanguage":"en","dateModified":"2026-11-18","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"User story mapping for Phabricator and Phorge","description":"Turn Phabricator or Phorge tasks into a story map, through the Conduit API or a Maniphest CSV export, and send the cards back as tasks that say which slice and step they came from.","url":"https://storymaps.io/docs/user-story-mapping-for-phabricator","inLanguage":"en","dateModified":"2026-11-19","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/fonts.css">
     <script>
@@ -192,6 +192,7 @@
             <a href="#build-the-backbone-first">Build the backbone first</a>
             <a href="#export-to-phabricator">Export to Phabricator</a></nav></details>
 <p>Bring Phabricator tasks in, lay them out as a journey, then send the plan back. Parent tasks, subtasks, statuses and points all come with them, and every card links back to its task.</p>
+<p>Phorge is the maintained fork of Phabricator, with the same Conduit API and Maniphest CSV export. Everything here works the same on both, so this guide says Phabricator for either.</p>
 <figure class="shot" style="max-width: 450px">
 <div class="shot-pic">
 <img class="only-light" src="/docs/img/user-story-mapping-for-phabricator-import-menu.png?v=85155862" alt="The Phabricator options in the Import menu." width="300" height="242" loading="lazy">
@@ -201,11 +202,11 @@
 </figure>
 <ol class="steps"><li><span class="num">1</span><span><strong>Phabricator API</strong> fetches the tasks straight from Phabricator.</span></li><li><span class="num">2</span><span><strong>Phabricator CSV</strong> reads a CSV file exported from Maniphest.</span></li></ol>
 <h2 id="import-through-the-api">Import through the API</h2>
-<ol class="steps"><li><span class="num">1</span><span>Choose <strong>Menu → Import → Phab → Phabricator API</strong>, or click <strong>Phabricator</strong> on the home page.</span></li><li><span class="num">2</span><span>Fill in the <strong>Instance URL</strong>, such as phabricator.example.com.</span></li><li><span class="num">3</span><span>Paste an <strong>API Token</strong>. <strong>How do I get this?</strong> shows where: click your profile picture, go to <strong>Settings</strong>, then <strong>Conduit API Tokens</strong>, then <strong>Generate Token</strong>.</span></li><li><span class="num">4</span><span>Add the <strong>Project Tags</strong> to import. Use the slug from the /tag/ URL of the project, or type the name with spaces, separated by commas.</span></li><li><span class="num">5</span><span>Click <strong>Fetch from Phabricator</strong>. <strong>Verify Connection</strong> checks the details first, if you want to.</span></li></ol>
+<ol class="steps"><li><span class="num">1</span><span>Choose <strong>Menu → Import → Phab → Phabricator API</strong>, or click <strong>Phabricator</strong> on the home page.</span></li><li><span class="num">2</span><span>Fill in the <strong>Instance URL</strong> of your Phabricator or Phorge site, such as phabricator.example.com.</span></li><li><span class="num">3</span><span>Paste an <strong>API Token</strong>. <strong>How do I get this?</strong> shows where: click your profile picture, go to <strong>Settings</strong>, then <strong>Conduit API Tokens</strong>, then <strong>Generate Token</strong>.</span></li><li><span class="num">4</span><span>Add the <strong>Project Tags</strong> to import. Use the slug from the /tag/ URL of the project, or type the name with spaces, separated by commas.</span></li><li><span class="num">5</span><span>Click <strong>Fetch from Phabricator</strong>. <strong>Verify Connection</strong> checks the details first, if you want to.</span></li></ol>
 <figure class="shot" style="max-width: 1374px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-phabricator-import-api.png?v=9b8542df" alt="The Phabricator API window, filled in." width="916" height="495" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-phabricator-import-api-dark.png?v=1b40b1b3" alt="The Phabricator API window, filled in." width="916" height="495" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-phabricator-import-api.png?v=a5a4774f" alt="The Phabricator API window, filled in." width="916" height="495" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-phabricator-import-api-dark.png?v=a477a279" alt="The Phabricator API window, filled in." width="916" height="495" loading="lazy">
 </div>
 <figcaption>The Phabricator API window, filled in.</figcaption>
 </figure>
@@ -286,8 +287,8 @@
 <ol class="steps"><li><span class="num">1</span><span>Click <strong>Connect to Phabricator</strong>.</span></li><li><span class="num">2</span><span>Fill in the <strong>Instance URL</strong> and <strong>API Token</strong>, and add <strong>Project Tags</strong> so the tasks land in the right projects. Every task gets them.</span></li><li><span class="num">3</span><span>Click <strong>Export to Phabricator</strong>.</span></li></ol>
 <figure class="shot" style="max-width: 1374px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-phabricator-export-api.png?v=1bb3157e" alt="The Phabricator API window after you click Connect to Phabricator." width="916" height="594" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-phabricator-export-api-dark.png?v=6ba6b6d1" alt="The Phabricator API window after you click Connect to Phabricator." width="916" height="594" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-phabricator-export-api.png?v=4904c845" alt="The Phabricator API window after you click Connect to Phabricator." width="916" height="594" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-phabricator-export-api-dark.png?v=b8d93ad9" alt="The Phabricator API window after you click Connect to Phabricator." width="916" height="594" loading="lazy">
 </div>
 <figcaption>The Phabricator API window after you click Connect to Phabricator.</figcaption>
 </figure>
@@ -298,8 +299,8 @@
 <ol class="steps"><li><span class="num">1</span><span>Click <strong>Get the code</strong>.</span></li><li><span class="num">2</span><span>Fill in the <strong>Instance URL</strong> and <strong>API Token</strong>, and add <strong>Project Tags</strong>. The code in the window changes as you type.</span></li><li><span class="num">3</span><span>Open your Phabricator site in another tab, and open its browser console. The window shows the keys to press on your computer.</span></li><li><span class="num">4</span><span>Click <strong>Copy</strong> next to the first piece of code, paste it into the console and press Enter. This only gets the console ready. No tasks are made yet.</span></li><li><span class="num">5</span><span>Click <strong>Copy</strong> next to the second piece of code, paste it into the same console and press Enter. This one creates the tasks, and the console lists each one as it's made.</span></li></ol>
 <figure class="shot" style="max-width: 1374px">
 <div class="shot-pic">
-<img class="only-light" src="/docs/img/user-story-mapping-for-phabricator-export-console.png?v=623df0fe" alt="The window after you click Get the code, with the two pieces of code to copy." width="916" height="781" loading="lazy">
-<img class="only-dark" src="/docs/img/user-story-mapping-for-phabricator-export-console-dark.png?v=4376e03e" alt="The window after you click Get the code, with the two pieces of code to copy." width="916" height="781" loading="lazy">
+<img class="only-light" src="/docs/img/user-story-mapping-for-phabricator-export-console.png?v=8f14cde6" alt="The window after you click Get the code, with the two pieces of code to copy." width="916" height="781" loading="lazy">
+<img class="only-dark" src="/docs/img/user-story-mapping-for-phabricator-export-console-dark.png?v=942bf2da" alt="The window after you click Get the code, with the two pieces of code to copy." width="916" height="781" loading="lazy">
 </div>
 <figcaption>The window after you click Get the code, with the two pieces of code to copy.</figcaption>
 </figure>
