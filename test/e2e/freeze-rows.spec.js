@@ -36,9 +36,13 @@ const choose = async (page, value) => {
 test('rows chosen in the menu stay at the top while scrolling, at any zoom', async ({ page, createMap }) => {
   const id = await createMap(LONG_MAP);
   await openMap(page, id);
-  // Users, activities and steps are frozen until someone picks otherwise
-  await expect(page.locator('#freezeMenu input[value="all"]')).toBeChecked();
-  await expect(page.locator('#toggleFreezeBtn')).toHaveClass(/active/);
+  // Nothing is frozen until someone picks otherwise, so the whole map scrolls for a new visitor
+  await expect(page.locator('#freezeMenu input[value="off"]')).toBeChecked();
+  await expect(page.locator('#toggleFreezeBtn')).not.toHaveClass(/active/);
+  await scrollDown(page, 300);
+  await expect(page.locator('#storyMapWrapper')).not.toHaveClass(/rows-stuck/);
+  expect((await rowTops(page)).steps).toBeLessThan(-20);
+  await scrollDown(page, -300);
 
   await choose(page, 'steps');
   await expect(page.locator('#toggleFreezeBtn')).toHaveClass(/active/);
@@ -129,6 +133,7 @@ test('a cursor over the frozen rows shows over the same rows on the other screen
   const other = await openSecondTab();
   await openMap(page, id);
   await openMap(other, id);
+  await choose(page, 'all');
 
   // One screen scrolled with its rows frozen at the top, the other at the top of the map
   await scrollDown(page, 900);
@@ -156,6 +161,7 @@ for (const stuck of [false, true]) {
   test(`clicking, adding and typing in cards in the frozen rows leaves the map where it is${stuck ? ', with the rows stuck' : ''}`, async ({ page, createMap }) => {
     await openMap(page, await createMap(LONG_MAP));
     const wrapper = page.locator('#storyMapWrapper');
+    await choose(page, 'all');
     if (stuck) await scrollDown(page, 700);
     const scrollTop = () => wrapper.evaluate(w => w.scrollTop);
     const before = await scrollTop();
@@ -182,6 +188,7 @@ for (const stuck of [false, true]) {
 
 test('a card that gets focus under the stuck rows comes down below them', async ({ page, createMap }) => {
   await openMap(page, await createMap(LONG_MAP));
+  await choose(page, 'all');
   await scrollDown(page, 900);
   const card = page.locator('.slice-container .story-card').nth(2);
   const rowsBottom = () => page.locator('#storyMap .steps-row').evaluate(r => r.getBoundingClientRect().bottom);
