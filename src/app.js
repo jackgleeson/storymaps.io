@@ -417,6 +417,8 @@ const initEventListeners = () => {
     let lastFullscreenEsc = 0;
     let keyboardLocked = false;
     const updateFullscreenLabel = () => {
+        // In full screen the header goes and its buttons float over the map (styles.css)
+        document.body.classList.toggle('fullscreen-mode', !!document.fullscreenElement);
         if (dom.toggleFullscreenBtn) {
             dom.toggleFullscreenBtn.classList.toggle('active', fullscreenMode);
             dom.toggleFullscreenBtn.title = fullscreenMode ? 'Exit full screen' : 'Full screen';
@@ -805,9 +807,9 @@ const initEventListeners = () => {
     });
 
     // Share dropdown
-    dom.shareBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        closeMainMenu();
+    // Set the share items for where we are. Runs when the Share menu opens, and when the main menu
+    // opens, which offers the same items in full screen.
+    const prepareShareItems = () => {
         const onMap = !dom.welcomeScreen.classList.contains('visible');
         dom.shareScreenshot.disabled = !onMap;
         dom.shareDownload.disabled = !onMap;
@@ -815,6 +817,11 @@ const initEventListeners = () => {
         const inProject = onMap && !!projects.current();
         dom.shareProjectLink.hidden = !inProject;
         dom.shareCopyLink.textContent = inProject ? 'Share this map link' : 'Share URL';
+    };
+    dom.shareBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeMainMenu();
+        prepareShareItems();
         dom.shareMenu.classList.toggle('visible');
     });
     const shareLink = async (url) => {
@@ -823,6 +830,8 @@ const initEventListeners = () => {
             await navigator.clipboard.writeText(url);
             dom.shareBtn.querySelector('.btn-label').textContent = ' Copied!';
             setTimeout(() => dom.shareBtn.querySelector('.btn-label').textContent = ' Share', 2000);
+            // The Share button isn't on screen in full screen, so say it another way
+            if (document.body.classList.contains('fullscreen-mode')) showToast('Link copied');
         } catch {
             await showPrompt('Copy this link to share:', url);
         }
@@ -1150,6 +1159,24 @@ const initEventListeners = () => {
         // A project starts from a map, so the home page doesn't offer one
         dom.projectMenuBtn.hidden = !onMap;
         recentMaps.fillMenu();
+        // The full screen items follow the buttons they stand for: the project link is only there
+        // in a project, and the map link is named to match
+        prepareShareItems();
+        document.querySelectorAll('#fullscreenMenuItems [data-clicks]').forEach(item => {
+            const button = document.getElementById(item.dataset.clicks);
+            item.hidden = button.hidden;
+            item.disabled = button.disabled;
+        });
+        document.getElementById('fullscreenShareLinkLabel').textContent = dom.shareCopyLink.textContent;
+    });
+
+    // In full screen, Share and Build are menu items that click the header buttons, so they do
+    // exactly what those do
+    document.getElementById('fullscreenMenuItems')?.addEventListener('click', (e) => {
+        const item = e.target.closest('[data-clicks]');
+        if (!item) return;
+        closeMainMenu();
+        document.getElementById(item.dataset.clicks).click();
     });
 
     // Submenu collapse helper

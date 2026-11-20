@@ -108,3 +108,31 @@ test('a hidden page stops checking the lock, and checks at once when it comes ba
   await expect(page.getByText('This map is read-only')).toBeVisible({ timeout: 2000 });
   expect(polls).toBe(1);
 });
+
+test('in full screen the floating buttons sit over the read-only banner, not under it', async ({ page, createMap, request }) => {
+  const id = await createMap();
+  await request.post(`/api/lock/${id}`, { data: { passwordHash: hash('pass') } });
+  await openMap(page, id);
+  await expect(page.getByText('This map is read-only')).toBeVisible();
+
+  await page.locator('#toggleFullscreenBtn').click();
+  await expect(page.locator('body')).toHaveClass(/fullscreen-mode/);
+
+  // Every button in the box can be reached: nothing lies over its top edge
+  for (const id of ['searchBtn', 'undoBtn', 'redoBtn', 'menuBtn']) {
+    const onTop = await page.locator(`#${id}`).evaluate((el) => {
+      const box = el.getBoundingClientRect();
+      const at = document.elementFromPoint(box.left + box.width / 2, box.top + 2);
+      return el === at || el.contains(at);
+    });
+    expect(onTop, `${id} is not covered`).toBe(true);
+  }
+  // The banner is still there, and its words are clear of the box
+  const banner = await page.locator('.read-only-banner-text').boundingBox();
+  const box = await page.locator('.header').boundingBox();
+  expect(banner.x + banner.width).toBeLessThan(box.x);
+  // The story map starts below the banner
+  const mapTop = await page.locator('#storyMapWrapper').evaluate((el) => el.getBoundingClientRect().top);
+  const bannerBottom = await page.locator('#readOnlyBanner').evaluate((el) => el.getBoundingClientRect().bottom);
+  expect(mapTop).toBeGreaterThanOrEqual(bannerBottom);
+});

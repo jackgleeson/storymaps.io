@@ -502,8 +502,12 @@ body.welcome-visible .header {
 
 .viewer-count {
     display: none;
-    align-items: center;
+    /* The name and the count are different sizes. Line up their text on one baseline, which every
+       browser places the same way. Centring their boxes left them a part pixel apart, and Firefox
+       rounded that the visible way. */
+    align-items: baseline;
     gap: 6px;
+    line-height: 16px;
     padding: 4px 10px;
     background: #e0f2fe;
     color: #0369a1;
@@ -544,16 +548,21 @@ body.welcome-visible .header {
 }
 
 .viewer-live.visible {
-    display: flex;
+    /* Plain text with the dot inline before it, so its baseline is the baseline of the count */
+    display: block;
 }
 
 .viewer-live::before {
     content: '';
+    display: inline-block;
     width: 7px;
     height: 7px;
+    margin-right: 4px;
     background: #22c55e;
     border-radius: 50%;
-    flex-shrink: 0;
+    /* Sits on the baseline, so lift it to the middle of the digits */
+    position: relative;
+    top: -1px;
 }
 
 /* Tooltip listing connected users */
@@ -937,6 +946,93 @@ body.welcome-visible .gh-star {
 .story-map-wrapper.panning {
     cursor: grabbing;
     user-select: none;
+}
+
+/* Full screen. The header goes, so the story map has the whole screen like a canvas. The buttons
+   used while working (who is here, search, undo, redo and the menu) float at the top right, in the
+   style of the controls at the bottom right. Share and Build move into the menu. The logo, the
+   docs links and the map name wait until full screen ends. */
+body.fullscreen-mode {
+    padding-top: 12px;
+}
+
+body.fullscreen-mode .header {
+    position: fixed;
+    top: 12px;
+    right: 20px;
+    z-index: 1000;
+    width: auto;
+    max-width: calc(100vw - 40px);
+    margin: 0;
+    padding: 5px 6px;
+    background: var(--color-bg-surface);
+    border: 1px solid var(--color-border-medium);
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+body.fullscreen-mode .header > .logo,
+body.fullscreen-mode .header > .header-links,
+body.fullscreen-mode .header > .header-links-divider,
+body.fullscreen-mode .header > .board-name,
+body.fullscreen-mode .header .gh-star,
+body.fullscreen-mode .header .share-dropdown,
+body.fullscreen-mode .header #buildAiBtn {
+    display: none !important;
+}
+
+/* Share and Build move into the menu while in full screen */
+.fullscreen-only {
+    display: none;
+}
+
+body.fullscreen-mode .fullscreen-only {
+    display: block;
+}
+
+/* The project link is only offered for a map in a project */
+.fullscreen-only [hidden] {
+    display: none;
+}
+
+body.fullscreen-mode .header .btn {
+    padding: 6px 10px;
+    font-size: 13px;
+}
+
+/* A locked map or project keeps its read-only banner in full screen. The floating box sits over
+   the right end of the banner, and the banner's words keep clear of it. */
+body.fullscreen-mode.read-only-mode {
+    padding-top: 44px;
+}
+
+body.fullscreen-mode .read-only-banner {
+    z-index: 999;
+    padding-right: 260px;
+}
+
+body.fullscreen-mode.read-only-mode .header {
+    top: 6px;
+}
+
+/* Search opens inside the floating box, beside the buttons */
+body.fullscreen-mode .header .search-bar {
+    flex: 0 0 auto;
+    width: min(320px, 40vw);
+    margin: 0;
+}
+
+/* The "Start a project" prompt goes too. A map in a project keeps its tabs, which are how you move
+   between its maps without leaving full screen. They stop short of the floating buttons. */
+body.fullscreen-mode:not(.in-project) .project-bar {
+    display: none;
+}
+
+body.fullscreen-mode.in-project .project-bar {
+    max-width: none;
+    margin: 0 0 12px;
+    padding-right: 250px;
+    min-height: 40px;
 }
 
 /* Right-side controls stack */

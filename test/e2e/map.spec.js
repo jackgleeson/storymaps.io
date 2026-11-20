@@ -211,3 +211,50 @@ test('a blank cell in the users, activities or steps row says what a click adds'
   const line = await step.evaluate((el) => parseFloat(getComputedStyle(el, '::after').borderTopWidth));
   expect(line * 0.76).toBeGreaterThanOrEqual(1);
 });
+
+test('full screen swaps the header for a few floating buttons, with Share and Build in the menu', async ({ page, createMap }) => {
+  await openMap(page, await createMap());
+  const shown = (selector) => page.locator(selector).isVisible();
+  const mapTop = () => page.locator('#storyMapWrapper').evaluate((el) => el.getBoundingClientRect().top);
+  const topBefore = await mapTop();
+
+  await page.locator('#toggleFullscreenBtn').click();
+  await expect(page.locator('body')).toHaveClass(/fullscreen-mode/);
+
+  // The header's branding, the map name, Share and Build go, and so does the project prompt
+  for (const gone of ['.header .logo', '#boardName', '#shareBtn', '#buildAiBtn', '#projectBar']) {
+    expect(await shown(gone), `${gone} is hidden`).toBe(false);
+  }
+  // The buttons used while working stay, floating at the top right
+  for (const kept of ['#searchBtn', '#undoBtn', '#redoBtn', '#menuBtn']) {
+    expect(await shown(kept), `${kept} is shown`).toBe(true);
+  }
+  const box = await page.locator('.header').boundingBox();
+  const width = page.viewportSize().width;
+  expect(box.x + box.width).toBeGreaterThan(width - 40);
+  expect(box.width).toBeLessThan(width / 2);
+  // The story map takes the space the header had
+  expect(await mapTop()).toBeLessThan(topBefore - 60);
+
+  // Share and Build are in the menu, and do what the buttons do
+  await page.locator('#menuBtn').click();
+  const items = page.locator('#fullscreenMenuItems [data-clicks]:visible');
+  await expect(items).toHaveText([/Share URL/, /Share as image/, /Download image/, /Build with AI/]);
+  await items.filter({ hasText: 'Build with AI' }).click();
+  await expect(page.locator('#buildAiModal')).toBeVisible();
+  await page.locator('#buildAiModalClose').click();
+
+  // Search opens in the floating box
+  await page.locator('#searchBtn').click();
+  await expect(page.locator('#searchInput')).toBeVisible();
+  await page.keyboard.press('Escape');
+
+  // Leaving full screen puts the header back, and the menu loses the extra items
+  await page.locator('#toggleFullscreenBtn').click();
+  await expect(page.locator('body')).not.toHaveClass(/fullscreen-mode/);
+  for (const back of ['.header .logo', '#boardName', '#shareBtn', '#buildAiBtn']) {
+    expect(await shown(back), `${back} is back`).toBe(true);
+  }
+  await page.locator('#menuBtn').click();
+  await expect(page.locator('#fullscreenMenuItems')).toBeHidden();
+});

@@ -718,7 +718,7 @@ export const createTextarea = (className, placeholder, value, onChange, onTextEd
 };
 
 const createColumnPlaceholder = (column) => {
-    const placeholder = el('div', 'step-placeholder', { dataColumnId: column.id, title: 'Click to show step' });
+    const placeholder = el('div', 'step-placeholder', { dataColumnId: column.id });
 
     placeholder.addEventListener('click', () => {
         column.hidden = false;
@@ -730,7 +730,7 @@ const createColumnPlaceholder = (column) => {
 };
 
 export const createPhantomStep = (phantomIndex) => {
-    const phantom = el('div', 'step-placeholder phantom-step', { title: 'Click to add a step' });
+    const phantom = el('div', 'step-placeholder phantom-step');
     phantom.addEventListener('click', () => {
         const col = _materializePhantomColumn(phantomIndex);
         if (col) {
@@ -982,7 +982,7 @@ export const createColumnCard = (column) => {
     // Partial blank columns: show as a clickable placeholder in steps row,
     // but the column is not hidden so backbone/slice rows still show add buttons
     if (column._partialBlank) {
-        const placeholder = el('div', 'step-placeholder', { dataColumnId: column.id, title: 'Click to add a step' });
+        const placeholder = el('div', 'step-placeholder', { dataColumnId: column.id });
         placeholder.classList.add('partial-map-editing');
         placeholder.addEventListener('click', () => {
             delete column._partialBlank;
