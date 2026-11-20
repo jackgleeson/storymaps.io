@@ -152,3 +152,21 @@ test('a one-line title sits in the middle of its card at tablet width', async ({
   });
   expect(gap).toBeLessThanOrEqual(2);
 });
+
+test('the full screen button goes out when the browser leaves full screen and refuses to go back', async ({ page, createMap }) => {
+  await openMap(page, await createMap());
+  const button = page.locator('#toggleFullscreenBtn');
+  await button.click();
+  await expect.poll(() => page.evaluate(() => !!document.fullscreenElement)).toBe(true);
+  await expect(button).toHaveClass(/active/);
+
+  // The browser ends full screen itself, and turns down the request to go back in, as it does
+  // when there was no click or key press
+  await page.evaluate(async () => {
+    Element.prototype.requestFullscreen = () => Promise.reject(new TypeError('not allowed'));
+    await document.exitFullscreen();
+  });
+  await expect.poll(() => page.evaluate(() => !!document.fullscreenElement)).toBe(false);
+  await expect(button).not.toHaveClass(/active/);
+  await expect(button).toHaveAttribute('title', 'Full screen');
+});

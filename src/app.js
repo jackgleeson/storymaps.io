@@ -431,7 +431,7 @@ const initEventListeners = () => {
             if (navigator.keyboard?.lock) {
                 navigator.keyboard.lock(['Escape']).then(() => { keyboardLocked = true; }).catch(() => {});
             }
-        }).catch(() => { fullscreenMode = false; });
+        }).catch(() => { fullscreenMode = false; updateFullscreenLabel(); });
     };
     const exitFullscreenMode = () => {
         fullscreenMode = false;
@@ -456,7 +456,13 @@ const initEventListeners = () => {
                 if (navigator.keyboard?.lock) {
                     navigator.keyboard.lock(['Escape']).then(() => { keyboardLocked = true; }).catch(() => {});
                 }
-            }).catch(() => { fullscreenMode = false; requestAnimationFrame(zoomToFit); });
+            }).catch(() => {
+                // The browser refuses to go back in without a click or key press. The button was lit
+                // just below, before this ran, so put it out here.
+                fullscreenMode = false;
+                updateFullscreenLabel();
+                requestAnimationFrame(zoomToFit);
+            });
         }
         if (!document.fullscreenElement && !fullscreenMode) {
             keyboardLocked = false;

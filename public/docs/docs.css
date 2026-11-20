@@ -357,7 +357,7 @@ html.dark-mode .only-dark { display: block; }
 .try-thumb i.b { background: var(--blue); }
 .try-thumb i.g { background: var(--green); }
 .try-thumb i.cut { grid-column: 1 / -1; height: 2px; background: var(--teal); margin: 1px 0; }
-.try-what strong { display: block; color: var(--heading); font-size: 16px; }
+.try-what > strong { display: block; color: var(--heading); font-size: 16px; }
 .docs-article .try-what p { font-size: 14px; color: var(--muted); margin: 2px 0 0; }
 .btn {
     display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap;

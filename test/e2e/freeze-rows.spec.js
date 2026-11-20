@@ -196,3 +196,51 @@ test('a card that gets focus under the stuck rows comes down below them', async 
   await card.locator('textarea').focus();
   expect((await card.boundingBox()).y).toBeGreaterThanOrEqual(await rowsBottom());
 });
+
+const TAGS_MAP = `name: Tags map
+users:
+  - name: Customer
+activities:
+  - name: Order coffee
+steps:
+  - Browse
+  - Order
+  - Pay
+slices:
+  - name: MVP
+    stories:
+      Browse:
+        - name: Tagged card
+          tags: [frontend, backend, payments, mobile]
+${Array.from({ length: 24 }, (_, i) => `        - name: Card ${i + 1}`).join('\n')}
+`;
+
+// Where the tags popover of the first card sits against its +N button and the bottom of the top rows
+const popoverPlace = (page) => page.evaluate(() => {
+  const more = document.querySelector('.slice-container .story-card .card-tag-overflow');
+  const popover = more.querySelector('.card-tags-popover').getBoundingClientRect();
+  const button = more.getBoundingClientRect();
+  const rows = document.querySelector('#storyMap .map-top').getBoundingClientRect().bottom;
+  return { shown: popover.height > 0, clearOfRows: popover.top >= rows, below: popover.top >= button.bottom, above: popover.bottom <= button.top };
+});
+
+test('the tags popover opens below a card when the frozen rows would cover it', async ({ page, createMap }) => {
+  await openMap(page, await createMap(TAGS_MAP));
+  await choose(page, 'all');
+  const more = page.locator('.slice-container .story-card').first().locator('.card-tag-overflow');
+
+  await more.hover();
+  expect(await popoverPlace(page)).toEqual({ shown: true, clearOfRows: true, below: true, above: false });
+  await expect(page.locator('.card-tags-popover.below')).toHaveCount(1);
+});
+
+test('the tags popover opens above a card when there is room', async ({ page, createMap }) => {
+  await openMap(page, await createMap(TAGS_MAP));
+  // Nothing is frozen, so the rows above don't cover the popover
+  const more = page.locator('.slice-container .story-card').first().locator('.card-tag-overflow');
+
+  await more.hover();
+  const place = await popoverPlace(page);
+  expect(place).toMatchObject({ shown: true, above: true, below: false });
+  await expect(page.locator('.card-tags-popover.below')).toHaveCount(0);
+});

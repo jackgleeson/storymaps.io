@@ -826,6 +826,23 @@ const buildIndicators = (item, card) => {
     return wrap;
 };
 
+// The tags popover opens above its card. Where the frozen rows or the top of the map area would
+// cover it there, it opens below the card.
+const placeTagsPopover = (popover) => {
+    popover.classList.remove('below');
+    const box = popover.getBoundingClientRect();
+    if (!box.height) return;
+    const mapArea = document.getElementById('storyMapWrapper')?.getBoundingClientRect().top ?? 0;
+    // Rows that aren't frozen sit under the popover, so only frozen ones count
+    const topRows = popover.closest('.freeze-on')?.querySelector('.map-top')?.getBoundingClientRect().bottom ?? 0;
+    popover.classList.toggle('below', box.top < Math.max(mapArea, topRows));
+};
+
+const toggleTagsPopover = (popover) => {
+    popover.style.display = popover.style.display === 'flex' ? 'none' : 'flex';
+    placeTagsPopover(popover);
+};
+
 const buildCardTags = (tags, card) => {
     const tagsRow = el('div', 'card-tags-row');
     const maxVisible = tags.length <= 2 ? 2 : 1;
@@ -846,8 +863,9 @@ const buildCardTags = (tags, card) => {
         // Click toggles the tags popover
         overflow.addEventListener('click', (e) => {
             e.stopPropagation();
-            popover.style.display = popover.style.display === 'flex' ? 'none' : 'flex';
+            toggleTagsPopover(popover);
         });
+        overflow.addEventListener('mouseenter', () => placeTagsPopover(popover));
         tagsRow.appendChild(overflow);
     } else {
         // When all tags are visible, check if any are truncated and add popover
@@ -864,15 +882,16 @@ const buildCardTags = (tags, card) => {
             anchor.appendChild(popover);
             anchor.addEventListener('click', (e) => {
                 e.stopPropagation();
-                popover.style.display = popover.style.display === 'flex' ? 'none' : 'flex';
+                toggleTagsPopover(popover);
             });
+            anchor.addEventListener('mouseenter', () => placeTagsPopover(popover));
             tagsRow.appendChild(anchor);
             // Make badges also act as click triggers
             badges.forEach(b => {
                 b.style.cursor = 'pointer';
                 b.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    popover.style.display = popover.style.display === 'flex' ? 'none' : 'flex';
+                    toggleTagsPopover(popover);
                 });
             });
         });

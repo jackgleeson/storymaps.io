@@ -2477,6 +2477,9 @@ body.tour-active .log-stats {
 
 .log-text {
     color: var(--color-text-secondary);
+    /* A long name with no spaces wraps inside the row, so the panel never scrolls sideways */
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 /* Slice Container */
@@ -8004,6 +8007,12 @@ body.read-only-mode .story-card.card-selected {
     max-width: 60%;
 }
 
+/* An open tags popover sits above the tags of the cards around it */
+.card-tags-row:has(.card-tag-overflow:hover),
+.card-tags-row:has(.card-tags-popover[style*="flex"]) {
+    z-index: 21;
+}
+
 .url-indicator ~ .card-tags-row {
     right: 24px;
 }
@@ -8064,6 +8073,18 @@ body.read-only-mode .story-card.card-selected {
     border-right: 1px solid rgba(14, 116, 144, 0.12);
     border-bottom: 1px solid rgba(14, 116, 144, 0.12);
     transform: rotate(45deg);
+}
+
+/* Opens below the card where the frozen rows or the top of the map area would cover it above */
+.card-tags-popover.below {
+    bottom: auto;
+    top: calc(100% + 8px);
+}
+
+.card-tags-popover.below::after {
+    bottom: auto;
+    top: -4px;
+    transform: rotate(225deg);
 }
 
 @keyframes popover-in {
