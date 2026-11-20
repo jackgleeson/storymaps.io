@@ -1,6 +1,6 @@
 # Storymaps.io
 
-A free, open-source user story mapping tool with real-time collaboration. No sign-up needed, no paywall and no trials.
+A free, open-source user story mapping tool with real-time collaboration.
 
 ![Screenshot](public/resources/screenshot.png)
 
