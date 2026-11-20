@@ -1073,3 +1073,36 @@ test('the lock dialog reads naturally for a project with one map', async ({ page
   await expect(option.locator('.project-lock-choice-title')).toHaveText('The project and its map');
   await expect(option.locator('.project-lock-choice-detail')).toHaveText('Nobody can edit that map without the password either, and it can be unlocked on its own later.');
 });
+
+test('the Lock and Unlock buttons beside each map have even space round their words', async ({ page, createMap, request }) => {
+  const headers = { origin: 'http://localhost' };
+  const [a, b] = [await createMap(map('Ordering')), await createMap(map('Loyalty'))];
+  const project = await projectOfMaps(request, [a, b]);
+  await request.post(`/api/lock/${a}`, { data: { passwordHash: sha('pass') }, headers });
+  await request.post(`/api/projects/${project}/lock`, { data: { passwordHash: sha('pass') }, headers });
+  await page.goto(`/p/${project}/${a}`);
+  await expect(tabs(page)).toHaveCount(2);
+  await projectName(page).click();
+
+  const buttons = panel(page).locator('.project-panel-lock-action');
+  await expect(buttons).toHaveText(['Unlock', 'Lock']);
+  for (const button of await buttons.all()) {
+    const space = await button.evaluate((el) => {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const words = range.getBoundingClientRect();
+      const box = el.getBoundingClientRect();
+      const list = el.closest('.project-panel-list').getBoundingClientRect();
+      return { left: Math.round(words.left - box.left), right: Math.round(box.right - words.right), inList: box.right <= list.right + 0.5 };
+    });
+    // The highlight under the pointer is the button, so the words sit in the middle of it
+    expect(space.left).toBe(8);
+    expect(space.right).toBe(8);
+    // And the list, which scrolls, doesn't cut the button off
+    expect(space.inList).toBe(true);
+  }
+  // The words still line up with the right edge of the Copy button above
+  const wordsRight = await buttons.first().evaluate((el) => { const r = document.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect().right; });
+  const copyRight = (await panel(page).getByRole('button', { name: 'Copy' }).boundingBox());
+  expect(Math.abs(wordsRight - (copyRight.x + copyRight.width))).toBeLessThanOrEqual(1);
+});

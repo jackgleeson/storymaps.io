@@ -11796,13 +11796,21 @@ html.dark-mode .project-panel-locked {
     margin-left: auto;
 }
 
-/* Text buttons line up with the text and buttons above them, not with their own padding */
+/* Text buttons line up with the text and buttons above them, not with their own padding. They
+   keep the padding and move out by it, so the highlight under the pointer has even space on both
+   sides of the words. */
 .project-panel-footer > button:first-child:not(:last-child) {
-    padding-left: 0;
+    margin-left: -8px;
 }
 
 .project-panel-item > button:last-child {
-    padding-right: 0;
+    margin-right: -8px;
+}
+
+/* Room for those buttons on the right, inside the list, which would cut off anything outside it */
+.project-panel-list {
+    margin-right: -8px;
+    padding-right: 8px;
 }
 
 .project-panel-footer-right {
