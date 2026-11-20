@@ -36,3 +36,18 @@ test('a map opened from a scrolled home page starts with the header in view', as
   expect(await page.evaluate(() => window.scrollY)).toBe(0);
   await expect(page.locator('#menuBtn')).toBeInViewport();
 });
+
+test('on a phone, full screen keeps the phone header and leaves Share where it is', async ({ page, createMap }) => {
+  await openMap(page, await createMap());
+  // A phone browser decides for itself whether it can go to full screen, so set the state the app
+  // sets when it does
+  await page.evaluate(() => document.body.classList.add('fullscreen-mode'));
+
+  // The header stays in the page, not floating over the read-only banner or the tabs
+  expect(await page.locator('.header').evaluate((el) => getComputedStyle(el).position)).not.toBe('fixed');
+  await expect(page.locator('#shareBtn')).toBeVisible();
+  await expect(page.locator('#boardName')).toBeVisible();
+  // So the menu has no need for the extra share items
+  await page.locator('#menuBtn').click();
+  await expect(page.locator('#fullscreenMenuItems')).toBeHidden();
+});

@@ -640,6 +640,12 @@ body.welcome-visible .header {
     z-index: 1100; /* over the map controls (1000), so a long menu isn't hidden behind the panel */
     display: none;
     white-space: nowrap;
+    /* On a short screen, such as a phone held sideways, the menu scrolls inside the screen
+       and never runs off the bottom of it */
+    max-height: calc(100vh - 130px);
+    max-height: calc(100dvh - 130px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 .dropdown-menu.visible {
@@ -952,87 +958,99 @@ body.welcome-visible .gh-star {
    used while working (who is here, search, undo, redo and the menu) float at the top right, in the
    style of the controls at the bottom right. Share and Build move into the menu. The logo, the
    docs links and the map name wait until full screen ends. */
-body.fullscreen-mode {
-    padding-top: 12px;
-}
-
-body.fullscreen-mode .header {
-    position: fixed;
-    top: 12px;
-    right: 20px;
-    z-index: 1000;
-    width: auto;
-    max-width: calc(100vw - 40px);
-    margin: 0;
-    padding: 5px 6px;
-    background: var(--color-bg-surface);
-    border: 1px solid var(--color-border-medium);
-    border-radius: 10px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-}
-
-body.fullscreen-mode .header > .logo,
-body.fullscreen-mode .header > .header-links,
-body.fullscreen-mode .header > .header-links-divider,
-body.fullscreen-mode .header > .board-name,
-body.fullscreen-mode .header .gh-star,
-body.fullscreen-mode .header .share-dropdown,
-body.fullscreen-mode .header #buildAiBtn {
-    display: none !important;
-}
-
-/* Share and Build move into the menu while in full screen */
+/* Share and Build move into the menu while in full screen, on a screen wide enough for the
+   floating box. The project link is only offered for a map in a project. */
 .fullscreen-only {
     display: none;
 }
 
-body.fullscreen-mode .fullscreen-only {
-    display: block;
-}
-
-/* The project link is only offered for a map in a project */
 .fullscreen-only [hidden] {
     display: none;
 }
 
-body.fullscreen-mode .header .btn {
-    padding: 6px 10px;
-    font-size: 13px;
-}
+/* Wider than a phone. A phone keeps its own header in full screen: it is already small, and the
+   floating box would cover the read-only banner and the project tabs on a narrow screen. */
+@media (min-width: 601px) {
+    body.fullscreen-mode {
+        padding-top: 12px;
+    }
 
-/* A locked map or project keeps its read-only banner in full screen. The floating box sits over
-   the right end of the banner, and the banner's words keep clear of it. */
-body.fullscreen-mode.read-only-mode {
-    padding-top: 44px;
-}
+    body.fullscreen-mode .header {
+        position: fixed;
+        top: 12px;
+        right: 20px;
+        /* Over the map controls (1000): the menu opens from this box, and a long menu must not
+           go behind the panel at the bottom right */
+        z-index: 1100;
+        width: auto;
+        max-width: calc(100vw - 40px);
+        margin: 0;
+        padding: 5px 6px;
+        background: var(--color-bg-surface);
+        border: 1px solid var(--color-border-medium);
+        border-radius: 10px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
 
-body.fullscreen-mode .read-only-banner {
-    z-index: 999;
-    padding-right: 260px;
-}
+    body.fullscreen-mode .header > .logo,
+    body.fullscreen-mode .header > .header-links,
+    body.fullscreen-mode .header > .header-links-divider,
+    body.fullscreen-mode .header > .board-name,
+    body.fullscreen-mode .header .gh-star,
+    body.fullscreen-mode .header .share-dropdown,
+    body.fullscreen-mode .header #buildAiBtn {
+        display: none !important;
+    }
 
-body.fullscreen-mode.read-only-mode .header {
-    top: 6px;
-}
+    /* Share and Build move into the menu while in full screen */
+    body.fullscreen-mode .fullscreen-only {
+        display: block;
+    }
 
-/* Search opens inside the floating box, beside the buttons */
-body.fullscreen-mode .header .search-bar {
-    flex: 0 0 auto;
-    width: min(320px, 40vw);
-    margin: 0;
-}
+    body.fullscreen-mode .dropdown-menu {
+        max-height: calc(100vh - 80px);
+        max-height: calc(100dvh - 80px);
+    }
 
-/* The "Start a project" prompt goes too. A map in a project keeps its tabs, which are how you move
-   between its maps without leaving full screen. They stop short of the floating buttons. */
-body.fullscreen-mode:not(.in-project) .project-bar {
-    display: none;
-}
+    body.fullscreen-mode .header .btn {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
 
-body.fullscreen-mode.in-project .project-bar {
-    max-width: none;
-    margin: 0 0 12px;
-    padding-right: 250px;
-    min-height: 40px;
+    /* A locked map or project keeps its read-only banner in full screen. The floating box sits over
+       the right end of the banner, and the banner's words keep clear of it. */
+    body.fullscreen-mode.read-only-mode {
+        padding-top: 44px;
+    }
+
+    body.fullscreen-mode .read-only-banner {
+        z-index: 999;
+        padding-right: 260px;
+    }
+
+    body.fullscreen-mode.read-only-mode .header {
+        top: 6px;
+    }
+
+    /* Search opens inside the floating box, beside the buttons */
+    body.fullscreen-mode .header .search-bar {
+        flex: 0 0 auto;
+        width: min(320px, 40vw);
+        margin: 0;
+    }
+
+    /* The "Start a project" prompt goes too. A map in a project keeps its tabs, which are how you move
+       between its maps without leaving full screen. They stop short of the floating buttons. */
+    body.fullscreen-mode:not(.in-project) .project-bar {
+        display: none;
+    }
+
+    body.fullscreen-mode.in-project .project-bar {
+        max-width: none;
+        margin: 0 0 12px;
+        padding-right: 250px;
+        min-height: 40px;
+    }
 }
 
 /* Right-side controls stack */
@@ -2609,7 +2627,12 @@ body.tour-active .log-stats {
     top: var(--freeze-top, 0px);
 }
 
-.freeze-on .map-top-inner {
+/* The top rows always have the page colour behind them, frozen or not. Frozen, it hides the cards
+   that scroll under them. Not frozen, it covers anything the browser has left on screen from the
+   slices: Chrome can leave strips of the cards where they used to be when the top rows grow and
+   push the slices down, and without a background those strips showed through the gaps between
+   the top cards. */
+.map-top-inner {
     background-color: var(--color-bg-page);
 }
 

@@ -830,8 +830,8 @@ const initEventListeners = () => {
             await navigator.clipboard.writeText(url);
             dom.shareBtn.querySelector('.btn-label').textContent = ' Copied!';
             setTimeout(() => dom.shareBtn.querySelector('.btn-label').textContent = ' Share', 2000);
-            // The Share button isn't on screen in full screen, so say it another way
-            if (document.body.classList.contains('fullscreen-mode')) showToast('Link copied');
+            // Where the Share button isn't on screen, as in full screen, say it another way
+            if (!dom.shareBtn.offsetParent) showToast('Link copied');
         } catch {
             await showPrompt('Copy this link to share:', url);
         }

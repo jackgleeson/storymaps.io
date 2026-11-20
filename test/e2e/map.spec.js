@@ -258,3 +258,27 @@ test('full screen swaps the header for a few floating buttons, with Share and Bu
   await page.locator('#menuBtn').click();
   await expect(page.locator('#fullscreenMenuItems')).toBeHidden();
 });
+
+test('on a short screen the menu scrolls inside the screen, in front of the map controls', async ({ page, createMap }) => {
+  // A phone held sideways: wide enough for the desktop layout, and short
+  await page.setViewportSize({ width: 915, height: 412 });
+  await openMap(page, await createMap());
+  await page.locator('#toggleFullscreenBtn').click();
+  await expect(page.locator('body')).toHaveClass(/fullscreen-mode/);
+  await page.locator('#menuBtn').click();
+
+  const menu = page.locator('#mainMenu');
+  const box = await menu.boundingBox();
+  expect(box.y + box.height, 'the menu ends inside the screen').toBeLessThanOrEqual(412);
+  expect(await menu.evaluate((el) => el.scrollHeight > el.clientHeight), 'and scrolls').toBe(true);
+
+  // The last item can be scrolled to and clicked: the controls at the bottom right are behind the menu
+  const last = page.locator('#lockMapBtn');
+  await last.scrollIntoViewIfNeeded();
+  const onTop = await last.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    const at = document.elementFromPoint(r.left + 20, r.top + r.height / 2);
+    return el === at || el.contains(at);
+  });
+  expect(onTop).toBe(true);
+});
