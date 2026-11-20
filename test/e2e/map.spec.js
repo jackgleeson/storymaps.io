@@ -170,3 +170,44 @@ test('the full screen button goes out when the browser leaves full screen and re
   await expect(button).not.toHaveClass(/active/);
   await expect(button).toHaveAttribute('title', 'Full screen');
 });
+
+test('a blank cell in the users, activities or steps row says what a click adds', async ({ page, createMap }) => {
+  await openMap(page, await createMap());
+  const label = (cell) => cell.evaluate((el) => getComputedStyle(el, '::after').content);
+
+  const activity = page.locator('.activities-row .empty-backbone-column:not(.phantom-column)').nth(1);
+  expect(await label(activity), 'nothing shows until the pointer is over the cell').toBe('none');
+  await activity.hover();
+  expect(await label(activity)).toBe('"+ activity"');
+
+  const user = page.locator('.users-row .empty-backbone-column:not(.phantom-column)').nth(1);
+  await user.hover();
+  expect(await label(user)).toBe('"+ user"');
+  expect(await label(activity), 'the label goes when the pointer leaves').toBe('none');
+
+  // The whole cell still adds the card
+  await user.click();
+  await expect(page.locator('.users-row .story-card')).toHaveCount(1);
+
+  // Beside a user card, the box is as tall as the card and stops above the "+ user" button
+  const beside = page.locator('.users-row .empty-backbone-column:not(.phantom-column)').first();
+  await beside.hover();
+  const sizes = await beside.evaluate((el) => ({
+    box: Math.round(['height', 'borderTopWidth', 'borderBottomWidth'].reduce((sum, key) => sum + parseFloat(getComputedStyle(el, '::after')[key]), 0)),
+    card: document.querySelector('.users-row .story-card').offsetHeight,
+    cell: el.offsetHeight,
+  }));
+  expect(sizes.box).toBe(sizes.card);
+  expect(sizes.cell).toBeGreaterThan(sizes.card);
+
+  // A blank step past the last one
+  const step = page.locator('.step-placeholder').first();
+  await step.hover();
+  expect(await label(step)).toBe('"+ step"');
+
+  // Zoomed out, the dashed line is still at least a pixel on screen
+  await page.evaluate(() => document.getElementById('storyMap').style.setProperty('--zoom', '0.76'));
+  await step.hover();
+  const line = await step.evaluate((el) => parseFloat(getComputedStyle(el, '::after').borderTopWidth));
+  expect(line * 0.76).toBeGreaterThanOrEqual(1);
+});

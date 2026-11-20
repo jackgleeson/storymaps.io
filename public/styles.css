@@ -57,6 +57,7 @@
 
     /* Sizing */
     --card-width: 180px;
+    --backbone-add-height: 19px; /* The slim "+ user" button under user cards */
     --label-width: 80px;
     --border-radius: 6px;
     --border-radius-sm: 4px;
@@ -2947,6 +2948,9 @@ body.dragging-cards input {
 .users-row .btn-add-story,
 .activities-row .btn-add-story,
 .backbone-row .btn-add-story {
+    /* A set height, the same in every browser, so the hover box in a blank cell can stop above it */
+    box-sizing: border-box;
+    height: var(--backbone-add-height);
     min-height: 15px;
     padding: 2px 8px;
     font-size: 11px;
@@ -2991,6 +2995,71 @@ body.dragging-cards input {
 .empty-backbone-column:hover {
     border-color: var(--color-border-strong);
     background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* A blank cell in the users, activities or steps row says what a click on it adds: under the
+   pointer it shows a dashed box in the colour of the card, reading "+ user", "+ activity" or
+   "+ step". The box is drawn over the cell, and the whole cell still takes the click. Only where
+   there is a pointer to hover with, so a tap on a phone looks as it did. */
+@media (hover: hover) {
+    .users-row .empty-backbone-column:not(.partial-map-preview-col),
+    .activities-row .empty-backbone-column:not(.partial-map-preview-col),
+    .step-placeholder {
+        position: relative;
+    }
+
+    /* The box replaces the grey outline, and a cell past the last step shows it at full strength */
+    .users-row .empty-backbone-column:not(.partial-map-preview-col):hover,
+    .activities-row .empty-backbone-column:not(.partial-map-preview-col):hover,
+    .step-placeholder:hover {
+        border-color: transparent;
+        background-color: transparent;
+        opacity: 1;
+    }
+
+    .users-row .empty-backbone-column:not(.partial-map-preview-col):hover::after,
+    .activities-row .empty-backbone-column:not(.partial-map-preview-col):hover::after,
+    .step-placeholder:hover::after {
+        position: absolute;
+        inset: -1px; /* Over the border of the cell */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* At least one pixel on screen at any zoom. A 1px line thins out and drops away when the
+           map is zoomed out, and browsers round a part-pixel width down, so round it up. */
+        border: 1px dashed;
+        border-width: round(up, calc(1px / var(--zoom, 1)), 1px);
+        border-radius: 2px;
+        font-size: 11px;
+        font-weight: 500;
+        pointer-events: none;
+    }
+
+    .users-row .empty-backbone-column:not(.partial-map-preview-col):hover::after {
+        content: '+ user';
+        color: #9f1239;
+        background-color: rgba(253, 164, 175, 0.3);
+        border-color: rgba(225, 29, 72, 0.5);
+    }
+
+    /* Beside user cards, the box is as tall as a card: it stops above the line of "+ user" buttons */
+    .users-row:not(.empty-backbone-row) .empty-backbone-column:not(.partial-map-preview-col):hover::after {
+        bottom: calc(var(--backbone-add-height) + 8px - 1px);
+    }
+
+    .activities-row .empty-backbone-column:not(.partial-map-preview-col):hover::after {
+        content: '+ activity';
+        color: #1e40af;
+        background-color: rgba(147, 197, 253, 0.3);
+        border-color: rgba(37, 99, 235, 0.5);
+    }
+
+    .step-placeholder:hover::after {
+        content: '+ step';
+        color: #166534;
+        background-color: rgba(134, 239, 172, 0.3);
+        border-color: rgba(22, 163, 74, 0.5);
+    }
 }
 
 /* Phantom story column (auto-expanding columns) */
@@ -9537,6 +9606,33 @@ html.dark-mode .slice-peeking .slice-label-container {
 /* Empty backbone row hover */
 html.dark-mode .empty-backbone-row .story-column:hover {
     border-color: #475569;
+}
+
+@media (hover: hover) {
+    html.dark-mode .users-row .empty-backbone-column:not(.partial-map-preview-col):hover,
+    html.dark-mode .activities-row .empty-backbone-column:not(.partial-map-preview-col):hover,
+    html.dark-mode .step-placeholder:hover {
+        border-color: transparent;
+        background-color: transparent;
+    }
+
+    html.dark-mode .users-row .empty-backbone-column:not(.partial-map-preview-col):hover::after {
+        color: #fda4af;
+        background-color: rgba(253, 164, 175, 0.14);
+        border-color: rgba(253, 164, 175, 0.6);
+    }
+
+    html.dark-mode .activities-row .empty-backbone-column:not(.partial-map-preview-col):hover::after {
+        color: #93c5fd;
+        background-color: rgba(147, 197, 253, 0.14);
+        border-color: rgba(147, 197, 253, 0.6);
+    }
+
+    html.dark-mode .step-placeholder:hover::after {
+        color: #86efac;
+        background-color: rgba(134, 239, 172, 0.14);
+        border-color: rgba(134, 239, 172, 0.6);
+    }
 }
 
 /* Slice progress */

@@ -10,9 +10,7 @@ export const FREEZE_MODES = {
     all: ['users-row', 'activities-row', 'steps-row']
 };
 
-// Nothing is frozen until someone chooses it: a new visitor who scrolls down expects the whole
-// story map to move, and rows that stay behind look like a fault.
-export const DEFAULT_FREEZE_MODE = 'off';
+export const DEFAULT_FREEZE_MODE = 'all';
 
 export const normalizeFreezeMode = (mode) =>
     Object.hasOwn(FREEZE_MODES, mode) ? mode : DEFAULT_FREEZE_MODE;
