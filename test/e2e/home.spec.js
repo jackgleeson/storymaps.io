@@ -37,6 +37,17 @@ test('the text is in the page as served, and its links lead to pages that exist'
   for (const href of links) expect((await request.get(href)).status(), href).toBe(200);
 });
 
+test('links in the text lead to guides, and the questions are also in the structured data', async ({ page, request }) => {
+  await page.goto('/');
+  const hrefs = await about(page).locator('.welcome-about-row a').evaluateAll(as => as.map(a => a.getAttribute('href')));
+  expect(hrefs).toHaveLength(8);
+  for (const href of hrefs) expect((await request.get(href)).status(), href).toBe(200);
+
+  const shown = await about(page).locator('.welcome-about-faq > div').evaluateAll(rows => rows.map(r => [r.querySelector('h3').textContent, r.querySelector('p').textContent]));
+  const data = JSON.parse(await page.locator('#faqData').textContent());
+  expect(data.mainEntity.map(q => [q.name, q.acceptedAnswer.text])).toEqual(shown);
+});
+
 test('the sample named in the text opens that sample', async ({ page }) => {
   await page.goto('/');
   await about(page).locator('.welcome-about-sample').click();

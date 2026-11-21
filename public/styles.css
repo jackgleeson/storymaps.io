@@ -4674,6 +4674,16 @@ html.dark-mode .welcome-about-dark {
     height: 44px;
 }
 
+.welcome-about a.welcome-about-tool {
+    color: #555;
+    font-weight: 600;
+}
+
+.welcome-about a.welcome-about-tool:hover {
+    color: #0f766e;
+    text-decoration: none;
+}
+
 .welcome-about-faq {
     border-top: 1px solid #e8ecf0;
 }
@@ -9757,8 +9767,11 @@ html.dark-mode .welcome-about-shot {
 html.dark-mode .welcome-about-tools {
     box-shadow: none;
 }
-html.dark-mode .welcome-about-tool {
+html.dark-mode .welcome-about a.welcome-about-tool {
     color: #cbd5e1;
+}
+html.dark-mode .welcome-about a.welcome-about-tool:hover {
+    color: #2dd4bf;
 }
 html.dark-mode .welcome-about-faq,
 html.dark-mode .welcome-about-faq > div {
