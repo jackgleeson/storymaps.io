@@ -5502,6 +5502,8 @@ html.dark-mode .welcome-about-dark {
 .modal-body {
     padding: 24px;
     overflow-y: auto;
+    /* A footer that sticks to the bottom of the body is cut to the rounded corners of the modal */
+    border-radius: 0 0 12px 12px;
 }
 
 /* Custom dialog modals (replace native alert/confirm/prompt) */
@@ -6018,7 +6020,8 @@ html.dark-mode .welcome-about-dark {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    max-height: 70vh;
+    /* The modal limits the height, and this scrolls only when the form is taller than that */
+    min-height: 0;
     overflow-y: auto;
 }
 
@@ -11192,22 +11195,8 @@ body.tour-active .btn-slice-menu {
     }
 }
 
-/* On a touch device, the home page leads with Start Mapping, and its menu leaves out what needs a map */
+/* On a touch device, the home page menu leaves out what needs a map */
 @media (pointer: coarse) {
-    #welcomeTourBtn {
-        display: none !important;
-    }
-
-    #welcomeNewBtn {
-        width: 100%;
-        padding: 16px 32px;
-        font-size: 18px;
-        background: linear-gradient(135deg, #14b8a6, #0d9488);
-        color: #fff;
-        border: none;
-        box-shadow: 0 2px 8px rgba(20, 184, 166, 0.3);
-    }
-
     body.welcome-visible #mainMenu > .dropdown-item:disabled,
     body.welcome-visible #mainMenu > .dropdown-submenu:has(> .dropdown-submenu-trigger:disabled) {
         display: none !important;

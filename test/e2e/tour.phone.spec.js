@@ -19,12 +19,17 @@ const highlightsApart = (page) => page.evaluate(() => {
   return boxes.every((a, i) => boxes.slice(i + 1).every(b => a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top));
 });
 
-test('on a phone the home page leads with Start Mapping, and the tour is in the menu', async ({ page }) => {
+test('on a phone the home page has the tour button first, and the tour is in the menu too', async ({ page }) => {
   await page.goto('/');
+  await expect(page.locator('#welcomeTourBtn')).toBeVisible();
   await expect(page.locator('#welcomeNewBtn')).toBeVisible();
-  await expect(page.locator('#welcomeTourBtn')).toBeHidden();
+  const [tour, start] = await Promise.all(['#welcomeTourBtn', '#welcomeNewBtn'].map(s => page.locator(s).boundingBox()));
+  expect(tour.y < start.y || tour.x < start.x).toBe(true);
   await page.locator('#menuBtn').tap();
   await expect(page.locator('#tourMenuBtn')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await page.locator('#welcomeTourBtn').tap();
+  await expect(tooltip(page)).toBeVisible();
 });
 
 test('the story map stays put during the step that lets you drag cards', async ({ page }) => {
