@@ -4532,80 +4532,242 @@ html.dark-mode mark.highlight::after {
 /* Bottom section — learn more */
 .welcome-bottom {
     border-top: 1px solid #e8ecf0;
-    padding: 24px 48px;
+    padding: 56px 48px 48px;
     max-width: 1200px;
     margin: 0 auto;
     width: 100%;
 }
 
-.welcome-learn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
+/* What the tool does, below the welcome area: readable text for visitors and search engines */
+.welcome-about {
+    max-width: 1040px;
+    margin: 0 auto;
 }
 
-.welcome-learn-groups {
-    display: flex;
-    justify-content: center;
-    gap: 24px;
+.welcome-about h2,
+.welcome-about h3 {
+    font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #111;
 }
 
-.welcome-learn-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
+.welcome-about h2 {
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+    line-height: 1.15;
+    margin-bottom: 12px;
+    text-align: center;
+    text-wrap: balance;
 }
 
-.welcome-learn-group-label {
-    font-size: 11px;
+.welcome-about h3 {
+    font-size: 20px;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--color-text-muted);
+    letter-spacing: -0.2px;
+    line-height: 1.25;
+    margin-bottom: 8px;
 }
 
-.welcome-learn-group-cards {
+.welcome-about p {
+    font-size: 15px;
+    line-height: 1.65;
+    color: #555;
+}
+
+.welcome-about a {
+    color: #0f766e;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.welcome-about a:hover {
+    text-decoration: underline;
+}
+
+.welcome-about .welcome-about-lead {
+    font-size: 16px;
+    line-height: 1.6;
+    max-width: 680px;
+    margin: 0 auto 40px;
+    text-align: center;
+}
+
+.welcome-about-row {
     display: flex;
-    gap: 8px;
+    align-items: center;
+    gap: 56px;
+    margin-bottom: 44px;
 }
 
-.welcome-learn-card {
+.welcome-about-row-flip {
+    flex-direction: row-reverse;
+}
+
+.welcome-about-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.welcome-about-kicker {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #0f766e;
+    margin-bottom: 8px;
+}
+
+.welcome-about-shot {
+    flex: 0 0 50%;
+    max-width: 520px;
+    aspect-ratio: 52 / 27;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+    background: var(--color-bg-page);
+}
+
+.welcome-about-shot img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: left top;
+}
+
+.welcome-about-dark,
+html.dark-mode .welcome-about-light {
+    display: none !important;
+}
+
+html.dark-mode .welcome-about-dark {
+    display: block !important;
+}
+
+.welcome-about-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    gap: 20px 34px;
+    border: 0;
+    box-shadow: none;
+    background: none;
+}
+
+.welcome-about-tool {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 12px 16px;
-    background: var(--color-bg-surface);
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    text-decoration: none;
-    color: #444;
-    font-size: 12px;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    white-space: nowrap;
+}
+
+.welcome-about-tool svg {
+    width: 44px;
+    height: 44px;
+}
+
+.welcome-about-faq {
+    border-top: 1px solid #e8ecf0;
+}
+
+.welcome-about-faq > div {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    gap: 32px;
+    padding: 16px 0;
+    border-bottom: 1px solid #e8ecf0;
+}
+
+.welcome-about-faq h3 {
+    font-size: 16px;
+    margin: 0;
+}
+
+.welcome-about .welcome-about-next {
+    margin-top: 28px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.welcome-about-sample {
+    font: inherit;
     font-weight: 500;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
-    min-width: 90px;
-    height: 90px;
+    color: #0f766e;
+    background: none;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
 }
 
-.welcome-learn-card:hover {
-    border-color: var(--color-teal);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transform: translateY(-1px);
+.welcome-about-sample:hover {
+    text-decoration: underline;
 }
 
-.welcome-learn-icon {
-    width: 36px;
-    height: 36px;
+@media (max-width: 900px) {
+    .welcome-bottom {
+        padding: 40px 24px 32px;
+    }
+
+    .welcome-about-row {
+        gap: 32px;
+    }
 }
 
-.welcome-learn-book {
-    height: 36px;
-    width: auto;
-    border-radius: 2px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+@media (max-width: 700px) {
+    .welcome-bottom {
+        padding: 32px 16px 24px;
+    }
+
+    .welcome-about h2 {
+        font-size: 24px;
+    }
+
+    .welcome-about .welcome-about-lead {
+        font-size: 15px;
+        margin-bottom: 28px;
+    }
+
+    .welcome-about-row,
+    .welcome-about-row-flip {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+        margin-bottom: 36px;
+    }
+
+    .welcome-about-shot {
+        flex: none;
+        max-width: none;
+    }
+
+    .welcome-about-tools {
+        aspect-ratio: auto;
+        gap: 20px 0;
+        padding: 8px 0;
+    }
+
+    /* Three on the first line, two on the second */
+    .welcome-about-tool {
+        flex: 0 0 33%;
+    }
+
+    .welcome-about-tool svg {
+        width: 36px;
+        height: 36px;
+    }
+
+    .welcome-about-faq > div {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 4px;
+    }
 }
 
 .welcome-footer {
@@ -4850,37 +5012,6 @@ html.dark-mode mark.highlight::after {
         font-size: 12px;
     }
 
-    .welcome-bottom {
-        padding: 16px 24px;
-    }
-
-    .welcome-learn-groups {
-        gap: 16px;
-    }
-
-    .welcome-learn-group-cards {
-        gap: 6px;
-    }
-
-    .welcome-learn-group-label {
-        font-size: 10px;
-    }
-
-    .welcome-learn-card {
-        padding: 10px 12px;
-        font-size: 11px;
-        min-width: 80px;
-        height: 80px;
-    }
-
-    .welcome-learn-icon {
-        width: 28px;
-        height: 28px;
-    }
-
-    .welcome-learn-book {
-        height: 32px;
-    }
 
     .welcome-footer {
         margin-top: 24px;
@@ -5039,38 +5170,6 @@ html.dark-mode mark.highlight::after {
         display: none;
     }
 
-    .welcome-bottom {
-        padding: 16px;
-    }
-
-    .welcome-learn-groups {
-        flex-wrap: wrap;
-        gap: 12px;
-    }
-
-    .welcome-learn-group-cards {
-        gap: 4px;
-    }
-
-    .welcome-learn-group-label {
-        font-size: 9px;
-    }
-
-    .welcome-learn-card {
-        padding: 8px 10px;
-        font-size: 10px;
-        min-width: 70px;
-        height: 68px;
-    }
-
-    .welcome-learn-icon {
-        width: 24px;
-        height: 24px;
-    }
-
-    .welcome-learn-book {
-        height: 26px;
-    }
 
     .steps-row-spacer,
     .slice-label-container,
@@ -9639,6 +9738,32 @@ html.dark-mode .welcome-hero-img {
 html.dark-mode .welcome-bottom {
     border-top-color: #1e293b;
 }
+html.dark-mode .welcome-about h2,
+html.dark-mode .welcome-about h3 {
+    color: #f1f5f9;
+}
+html.dark-mode .welcome-about p {
+    color: #94a3b8;
+}
+html.dark-mode .welcome-about a,
+html.dark-mode .welcome-about-kicker,
+html.dark-mode .welcome-about-sample {
+    color: #2dd4bf;
+}
+html.dark-mode .welcome-about-shot {
+    border-color: var(--color-border);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+}
+html.dark-mode .welcome-about-tools {
+    box-shadow: none;
+}
+html.dark-mode .welcome-about-tool {
+    color: #cbd5e1;
+}
+html.dark-mode .welcome-about-faq,
+html.dark-mode .welcome-about-faq > div {
+    border-color: #1e293b;
+}
 html.dark-mode .welcome-samples-label {
     color: #94a3b8;
 }
@@ -9986,22 +10111,6 @@ html.dark-mode .options-delete-column:hover {
 /* Card expand modal overlay */
 html.dark-mode .card-expand-overlay {
     background: rgba(0, 0, 0, 0.6);
-}
-
-/* Learn more cards on welcome */
-/* Learn cards */
-html.dark-mode .welcome-learn-group-label {
-    color: #94a3b8;
-}
-html.dark-mode .welcome-learn-card {
-    background: var(--color-bg-surface);
-    border-color: var(--color-border);
-    color: #94a3b8;
-}
-html.dark-mode .welcome-learn-card:hover {
-    border-color: var(--color-teal);
-    box-shadow: 0 2px 12px rgba(45, 212, 191, 0.15);
-    color: #e2e8f0;
 }
 
 /* Welcome footer */

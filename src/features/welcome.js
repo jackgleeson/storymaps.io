@@ -314,6 +314,11 @@ export const initListeners = () => {
         }
     });
 
+    // The sample named in the text below the welcome area
+    document.querySelector('.welcome-about-sample')?.addEventListener('click', (e) => {
+        startWithSample(e.currentTarget.dataset.sample);
+    });
+
     initCursors();
 };
 
