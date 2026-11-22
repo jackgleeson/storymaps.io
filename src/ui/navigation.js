@@ -37,11 +37,15 @@ const ZOOM_STEP = 0.1;
 const ZOOM_MIN = 0.1;
 // Fitting the map to the window never zooms out further than this: half size on a small screen,
 // where people scroll sideways instead, and 80% beside a lesson, so the cards stay readable in the
-// narrower pane
+// narrower pane. A small screen is a phone, or a touch screen up to the width of a tablet held
+// upright: fitted to that width a story map came out at 25%, too small to read, and the tour
+// locks the zoom so it could not be changed.
 // (The lesson module sets window.storymapsLesson beside a lesson; reading it keeps that module, and
 // what it loads, out of this one.)
 const inLesson = () => typeof window !== 'undefined' && !!window.storymapsLesson;
-const fitFloor = (width) => (inLesson() ? 0.8 : width < 600 ? 0.5 : ZOOM_MIN);
+const touchScreen = () => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
+const smallScreen = (width) => width < 600 || (width < 1000 && touchScreen());
+const fitFloor = (width) => (inLesson() ? 0.8 : smallScreen(width) ? 0.5 : ZOOM_MIN);
 const ZOOM_MAX = 3;
 
 // Pan/drag state
