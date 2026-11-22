@@ -192,8 +192,24 @@ let _backdrop = null;
 // Phones get the details as a sheet across the top of the screen, clear of the keyboard
 const useSheet = () => window.matchMedia('(max-width: 600px)').matches;
 
+// While the details box is open, its slice keeps the look it has under the pointer: the rest of the
+// map stays dimmed. The rule is written by slice ID, so it holds when the map is drawn again.
+let _focusStyle = null;
+
+const focusSlice = (sliceId) => {
+    _focusStyle ??= document.head.appendChild(el('style'));
+    _focusStyle.textContent = `.story-map.slice-details-focus .map-body > :not([data-slice-id="${CSS.escape(sliceId)}"]) { opacity: 0.25; }`;
+    dom.storyMap.classList.add('slice-details-focus');
+};
+
+const unfocusSlice = () => {
+    dom.storyMap.classList.remove('slice-details-focus');
+    if (_focusStyle) _focusStyle.textContent = '';
+};
+
 const closeFloating = () => {
     if (!_floating) return;
+    unfocusSlice();
     _floating.remove();
     _backdrop?.remove();
     _floating = null;
@@ -427,6 +443,7 @@ export const openSliceDetails = (slice, anchor) => {
 
     panel.append(title, nameLabel, goalLabel, dateLabel, actions);
     showFloating(panel, anchor, { sheet: useSheet() });
+    if (!useSheet()) focusSlice(sliceId);
     fitName();
     name.focus();
     name.setSelectionRange(name.value.length, name.value.length);

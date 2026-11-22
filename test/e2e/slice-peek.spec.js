@@ -272,3 +272,58 @@ test('the card count of a closed slice counts partial cards once, even while the
   await expect(page.locator('.step')).toHaveCount(4);
   await expect(banner(page)).toContainText('5 cards');
 });
+
+test('resting the pointer on a slice name dims the rest of the story map until the pointer leaves', async ({ page, createMap }) => {
+  const id = await createMap(`name: Dim
+steps:
+  - Browse
+  - Order
+slices:
+  - name: First
+    stories:
+      Browse:
+        - name: Drink list
+  - name: Second
+    stories:
+      Order:
+        - name: Pick size
+`);
+  await openMap(page, id, 2);
+  const opacity = (locator) => locator.evaluate(el => getComputedStyle(el).opacity);
+  const first = page.locator('.slice-container').first();
+  const second = page.locator('.slice-container').nth(1);
+  // The rows of the top part dim one by one, so the page colour behind frozen rows stays solid
+  const top = page.locator('.map-top-inner > *').first();
+  await second.locator('.slice-label').hover();
+  await expect.poll(() => opacity(first)).toBe('0.25');
+  await expect.poll(() => opacity(top)).toBe('0.25');
+  expect(await opacity(second)).toBe('1');
+  expect(await opacity(page.locator('.map-top'))).toBe('1');
+  expect(await opacity(page.locator('.map-top-inner'))).toBe('1');
+  // Moving to the other name swaps which slice stands out
+  await first.locator('.slice-label').hover();
+  await expect.poll(() => opacity(second)).toBe('0.25');
+  await expect.poll(() => opacity(first)).toBe('1');
+  // Off the names, the whole story map comes back
+  await page.mouse.move(600, 500);
+  await expect.poll(() => opacity(second)).toBe('1');
+  await expect.poll(() => opacity(top)).toBe('1');
+  // With the details box open the slice stays clear, even with the pointer on the box or another name
+  await second.locator('.slice-label').click();
+  await expect(page.locator('.slice-details')).toBeVisible();
+  await page.locator('.slice-details-name').hover();
+  await page.waitForTimeout(700);
+  expect(await opacity(first)).toBe('0.25');
+  expect(await opacity(top)).toBe('0.25');
+  expect(await opacity(second)).toBe('1');
+  await first.locator('.slice-label').hover();
+  await page.waitForTimeout(700);
+  expect(await opacity(second)).toBe('1');
+  expect(await opacity(first)).toBe('0.25');
+  // Closing the box with the pointer off the names brings everything back
+  await page.locator('.slice-details-name').hover();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.slice-details')).toHaveCount(0);
+  await expect.poll(() => opacity(first)).toBe('1');
+  await expect.poll(() => opacity(top)).toBe('1');
+});

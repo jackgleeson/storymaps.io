@@ -134,6 +134,40 @@ test('clicking into a card that still has its starter text selects it, so typing
   await expect(activity).not.toHaveValue('!');
 });
 
+test('dragging a selection box selects the cards under it, and no add slot appears under the pointer', async ({ page, createMap }) => {
+  const id = await createMap(`name: Box
+steps:
+  - A
+  - B
+slices:
+  - name: MVP
+    stories:
+      A:
+        - name: first
+      B:
+        - name: second
+`);
+  await openMap(page, id, 2);
+  const first = await page.locator('.slice-container .story-card').first().boundingBox();
+  const second = await page.locator('.slice-container .story-card').nth(1).boundingBox();
+  // The empty slot in the users row above the second column shows "+ user" when the pointer is on it
+  const slot = page.locator('.users-row .empty-backbone-column').nth(1);
+  const slotBox = await slot.boundingBox();
+  // Start in the empty space under the cards and drag up to the slot in the users row
+  await page.mouse.move(second.x + second.width + 30, second.y + second.height + 120);
+  await page.mouse.down();
+  await page.mouse.move(first.x + 10, first.y + 10, { steps: 10 });
+  await page.mouse.move(slotBox.x + slotBox.width / 2, slotBox.y + slotBox.height / 2, { steps: 10 });
+  await expect(page.locator('.marquee-rect')).toBeVisible();
+  expect(await slot.evaluate(el => el.matches(':hover'))).toBe(false);
+  await page.mouse.move(first.x + 10, first.y + 10, { steps: 10 });
+  await page.mouse.up();
+  await expect(page.locator('.slice-container .story-card.card-selected')).toHaveCount(2);
+  // Once the box is gone, the slot answers the pointer again
+  await page.mouse.move(slotBox.x + slotBox.width / 2, slotBox.y + slotBox.height / 2, { steps: 5 });
+  expect(await slot.evaluate(el => el.matches(':hover'))).toBe(true);
+});
+
 test('dragging a card selects no text in the cards it passes over', async ({ page, createMap }) => {
   const id = await createMap(`name: Drag
 steps:

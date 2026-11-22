@@ -369,7 +369,7 @@ function initCursors() {
             { x: 40, y: 40, pause: 700 },
             { x: 20, y: 48, pause: 900 },
         ],
-        // Priya - right half and bottom
+        // Moska - right half and bottom
         [
             { x: 88, y: 30, pause: 700 },
             { x: 75, y: 42, pause: 1500 },

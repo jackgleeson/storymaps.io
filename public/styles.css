@@ -76,7 +76,8 @@ body {
        so the page could scroll by that much and hide the header */
     height: 100vh;
     height: 100dvh;
-    padding: 24px;
+    /* Nothing above the header, so it sits where it does on the home page */
+    padding: 0 24px 24px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -3205,6 +3206,14 @@ body.dragging-cards input {
 .btn-add-slice {
     background: transparent;
     border: 1px dashed var(--color-border-strong);
+    /* At least one pixel on screen at any zoom, as for the "+ user" box above: a 1px line thins out
+       when the map is zoomed out, and whole edges of the button dropped away at some zoom levels */
+    border-width: round(up, calc(1px / var(--zoom, 1)), 1px);
+    /* The rounded-up border is thicker on screen than 1px, so its colour is thinned by the same
+       amount and the button looks as light as it does at 100%. --slice-btn-px is the border in
+       map pixels: 1 at 100% and above, 2 or more when zoomed out. */
+    --slice-btn-px: round(up, calc(1 / var(--zoom, 1)), 1);
+    border-color: color-mix(in srgb, var(--slice-btn-line, var(--color-border-strong)) calc(100% / (1 + (var(--slice-btn-px) * var(--zoom, 1) - 1) * min(1, var(--slice-btn-px) - 1))), transparent);
     color: var(--color-text-faint);
     padding: 4px 8px;
     border-radius: 3px;
@@ -3804,13 +3813,44 @@ html.dark-mode .slice-details-date::-webkit-calendar-picker-indicator {
     display: none;
 }
 
+/* In all three cases below the top rows are dimmed row by row, not as one block, so the page
+   colour behind them stays solid and frozen rows still hide the cards that scroll under them. */
+/* Resting the pointer on a slice name dims the rest of the map, the same way a slice link does,
+   so the slice stands out on a busy map. It waits a moment first, so the map does not flicker as
+   the pointer passes over the names, and it is off during the tour. */
+@media (hover: hover) {
+    .story-map .map-top-inner > *,
+    .story-map .map-body > * {
+        transition: opacity 0.25s ease;
+    }
+
+    body:not(.tour-active) .story-map:not(.slice-details-focus):has(.slice-label:hover) .map-top-inner > *,
+    body:not(.tour-active) .story-map:not(.slice-details-focus):has(.slice-label:hover) .map-body > :not(:has(.slice-label:hover)) {
+        opacity: 0.25;
+        transition-delay: 0.3s;
+    }
+}
+
+/* With the details box of a slice open, the rest of the map stays dimmed until the box closes,
+   wherever the pointer goes. src/features/slice-links.js names the slice that stays clear. */
+.story-map.slice-details-focus .map-top-inner > * {
+    opacity: 0.25;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: reduce) {
+    .story-map .map-top-inner > *,
+    .story-map .map-body > * {
+        transition: none;
+    }
+}
+
 /* Opening a slice link dims the rest of the map for a moment */
-.story-map.slice-spotlight .map-top,
+.story-map.slice-spotlight .map-top-inner > *,
 .story-map.slice-spotlight .map-body > * {
     transition: opacity 0.4s ease;
 }
 
-.story-map.slice-spotlight-on .map-top,
+.story-map.slice-spotlight-on .map-top-inner > *,
 .story-map.slice-spotlight-on .map-body > :not(.slice-spotlight-target) {
     opacity: 0.25;
 }
@@ -3835,7 +3875,7 @@ html.dark-mode .slice-container.slice-spotlight-land {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .story-map.slice-spotlight .map-top,
+    .story-map.slice-spotlight .map-top-inner > *,
     .story-map.slice-spotlight .map-body > * {
         transition: none;
     }
@@ -8076,6 +8116,11 @@ body.read-only-mode .story-card.card-selected {
     cursor: crosshair;
 }
 
+/* While a selection box is dragged, nothing under the pointer reacts to hover, so no add slots appear */
+.story-map-wrapper.marquee-active * {
+    pointer-events: none;
+}
+
 /* Canvas context menu */
 
 .canvas-context-menu {
@@ -10050,7 +10095,7 @@ html.dark-mode .view-btn.active {
 /* Btn-add-slice — visible dashed border with teal hint */
 html.dark-mode .btn-add-slice {
     color: #94a3b8;
-    border-color: #475569;
+    --slice-btn-line: #475569;
 }
 html.dark-mode .btn-add-slice:hover {
     border-color: var(--color-teal);

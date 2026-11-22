@@ -818,5 +818,10 @@
     "width": 252,
     "height": 236,
     "callouts": []
+  },
+  "plan-releases-with-story-map-slices/focus": {
+    "width": 566,
+    "height": 519,
+    "callouts": []
   }
 }
