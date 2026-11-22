@@ -5088,15 +5088,17 @@ html.dark-mode .welcome-about-dark {
         display: inline;
     }
 
+    /* A phone has little height, so the space above the story map is kept small: less room over
+       the header, between its two lines and under it */
     body {
-        padding: 12px;
+        padding: 4px 12px 12px;
     }
 
     .header {
         flex-wrap: wrap;
-        gap: 10px;
-        padding: 12px 0;
-        margin-bottom: 16px;
+        gap: 6px 10px;
+        padding: 8px 0 6px;
+        margin-bottom: 10px;
     }
 
     .logo,
@@ -12201,8 +12203,22 @@ html.dark-mode .project-lock-choice:has(input:checked) {
         display: none;
     }
 
+    /* The tabs sit close under the map name, but clear of it: the name grows a box when it is
+       edited, and the bar must not run into that. A little room comes from the top of the tabs,
+       which stay 40px tall for tapping. */
+    body.in-project:not(.welcome-visible) .header {
+        padding-bottom: 3px;
+    }
+
     body.in-project .project-bar {
-        margin-bottom: 16px;
+        margin-top: 0;
+        margin-bottom: 8px;
+    }
+
+    body.in-project .project-bar .project-tab,
+    body.in-project .project-bar .project-add,
+    body.in-project .project-bar .project-name {
+        padding-top: 10px;
     }
 
     .project-panel {
