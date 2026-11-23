@@ -175,9 +175,10 @@ body.welcome-visible .header-link-label {
     display: none;
 }
 
-/* Two by two: the menu is too narrow for four labels in a row */
+/* One row, however many links there are, each the same width */
 .menu-links {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
     gap: 2px;
 }
 
@@ -189,7 +190,7 @@ body.welcome-visible .header-link-label {
     padding: 8px 4px;
     border-radius: 8px;
     color: var(--color-text-primary);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 500;
     line-height: 1.25;
     text-align: center;

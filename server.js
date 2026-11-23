@@ -215,6 +215,7 @@ const PAGE_ROUTES = {
   '/docs': '/docs/index.html',
   '/learn': '/learn/index.html',
   '/developers': '/developers.html',
+  '/build-with-ai': '/build-with-ai.html',
 };
 
 // Docs pages that were renamed, old address to new, written by the docs build. The old address
@@ -340,9 +341,10 @@ const server = createServer(async (req, res) => {
     }
   }
 
-  // The developers page has one address too
-  if (/^\/developers(\.html|\/+)$/.test(reqPath)) {
-    res.writeHead(301, { 'Location': '/developers' + req.url.slice(reqPath.length) });
+  // The developers and Build with AI pages have one address each too, the page for each app builder included
+  const sitePage = reqPath.match(/^(\/developers|\/build-with-ai(?:\/[a-z0-9-]+)?)(\.html|\/+)$/);
+  if (sitePage) {
+    res.writeHead(301, { 'Location': sitePage[1] + req.url.slice(reqPath.length) });
     res.end();
     return;
   }
@@ -350,7 +352,7 @@ const server = createServer(async (req, res) => {
   // Static files - try cache first, then disk. Site pages get clean URLs (/docs -> docs/index.html).
   // Docs and course pages built from docs/ also get clean URLs: /docs/plan-slices ->
   // docs/plan-slices.html, /learn/first-map/1 -> learn/first-map/1.html
-  const docsPage = /^\/(docs|learn)(\/[a-z0-9-]+)+$/.test(reqPath) ? reqPath + '.html' : null;
+  const docsPage = /^\/(docs|learn|build-with-ai)(\/[a-z0-9-]+)+$/.test(reqPath) ? reqPath + '.html' : null;
   let relPath = reqPath === '/' ? '/index.html' : (PAGE_ROUTES[reqPath] || docsPage || reqPath);
   const ext = extname(relPath);
 

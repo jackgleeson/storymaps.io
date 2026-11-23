@@ -91,3 +91,31 @@ test('a practice map link opens a fresh copy of its map', async ({ page, context
   await expect(map).toHaveURL(/\/[a-z0-9]{8}$/);
   await expect(map.locator('.slice-container')).toHaveCount(slices);
 });
+
+test('a screenshot on the Build with AI page opens at full size, and a click or Escape closes it', async ({ page }) => {
+  await page.goto('/build-with-ai/lovable');
+  const shot = page.locator('#lovable .bwa-steps img:visible').first();
+  await shot.click();
+  const zoom = page.locator('.shot-zoom');
+  expect(await zoom.locator('img').evaluate(i => new URL(i.src).pathname)).toBe((await shot.getAttribute('src')).split('?')[0]);
+  const small = await shot.boundingBox();
+  expect((await zoom.locator('img').boundingBox()).width).toBeGreaterThan(small.width * 2);
+  await page.keyboard.press('Escape');
+  await expect(zoom).toHaveCount(0);
+  await shot.click();
+  await zoom.click();
+  await expect(zoom).toHaveCount(0);
+});
+
+test('a builder page with a full app has links that jump to the prototype and the full app', async ({ page }) => {
+  await page.goto('/build-with-ai/lovable');
+  const parts = page.locator('.bwa-parts');
+  await parts.getByRole('link', { name: /The full app/ }).click();
+  await expect(page).toHaveURL(/#full-app$/);
+  await expect(page.locator('#full-app h2')).toBeInViewport();
+  await parts.getByRole('link', { name: /The prototype/ }).click();
+  await expect(page.locator('#prototype')).toBeInViewport();
+  // A builder with no full app yet has nothing to jump between
+  await page.goto('/build-with-ai/bolt');
+  await expect(page.locator('.bwa-parts')).toHaveCount(0);
+});

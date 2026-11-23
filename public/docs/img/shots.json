@@ -829,6 +829,56 @@
     "height": 387,
     "callouts": []
   },
+  "build-with-ai-page/lovable-1": {
+    "width": 674,
+    "height": 431,
+    "callouts": []
+  },
+  "build-with-ai-page/lovable-2": {
+    "width": 634,
+    "height": 213,
+    "callouts": []
+  },
+  "build-with-ai-page/v0-1": {
+    "width": 674,
+    "height": 431,
+    "callouts": []
+  },
+  "build-with-ai-page/v0-2": {
+    "width": 634,
+    "height": 213,
+    "callouts": []
+  },
+  "build-with-ai-page/replit-1": {
+    "width": 674,
+    "height": 431,
+    "callouts": []
+  },
+  "build-with-ai-page/replit-2": {
+    "width": 634,
+    "height": 213,
+    "callouts": []
+  },
+  "build-with-ai-page/base44-1": {
+    "width": 674,
+    "height": 431,
+    "callouts": []
+  },
+  "build-with-ai-page/base44-2": {
+    "width": 634,
+    "height": 213,
+    "callouts": []
+  },
+  "build-with-ai-page/bolt-1": {
+    "width": 674,
+    "height": 431,
+    "callouts": []
+  },
+  "build-with-ai-page/bolt-2": {
+    "width": 634,
+    "height": 213,
+    "callouts": []
+  },
   "build-with-ai/card-right-click": {
     "width": 332,
     "height": 358,
@@ -837,6 +887,26 @@
   "build-with-ai/card-menu": {
     "width": 170,
     "height": 297,
+    "callouts": []
+  },
+  "build-with-ai-page/lovable-full-1": {
+    "width": 674,
+    "height": 431,
+    "callouts": []
+  },
+  "build-with-ai-page/lovable-full-2": {
+    "width": 634,
+    "height": 213,
+    "callouts": []
+  },
+  "build-with-ai-page/v0-full-1": {
+    "width": 674,
+    "height": 431,
+    "callouts": []
+  },
+  "build-with-ai-page/v0-full-2": {
+    "width": 634,
+    "height": 213,
     "callouts": []
   }
 }

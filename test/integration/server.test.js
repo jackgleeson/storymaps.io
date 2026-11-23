@@ -616,7 +616,9 @@ describe('pages and files', () => {
   });
 
   test('serves the site pages at clean URLs', async () => {
-    const pages = { '/docs': 'User story mapping docs and guides - Storymaps.io', '/developers': 'User story mapping for developers - CLI, AI and self-hosting' };
+    const pages = { '/docs': 'User story mapping docs and guides - Storymaps.io', '/developers': 'User story mapping for developers - CLI, AI and self-hosting',
+      '/build-with-ai': 'Turn a user story map into an app with AI app builders',
+      '/build-with-ai/lovable': 'Build an app from a user story map with Lovable' };
     for (const [path, title] of Object.entries(pages)) {
       const res = await api('GET', path);
       assert.equal(res.status, 200, path);
@@ -630,6 +632,8 @@ describe('pages and files', () => {
       '/docs/': '/docs', '/docs/bulk-edit-story-map-cards/': '/docs/bulk-edit-story-map-cards', '/docs/bulk-edit-story-map-cards.html': '/docs/bulk-edit-story-map-cards',
       '/docs/index.html': '/docs', '/docs/bulk-edit-story-map-cards.html?a=1': '/docs/bulk-edit-story-map-cards?a=1',
       '/developers.html': '/developers', '/developers/': '/developers', '/developers.html?a=1': '/developers?a=1',
+      '/build-with-ai.html': '/build-with-ai', '/build-with-ai/': '/build-with-ai', '/build-with-ai.html?a=1': '/build-with-ai?a=1',
+      '/build-with-ai/lovable.html': '/build-with-ai/lovable', '/build-with-ai/lovable/': '/build-with-ai/lovable',
     };
     for (const [from, to] of Object.entries(moved)) {
       const res = await fetch(`${base}${from}`, { redirect: 'manual' });
@@ -667,7 +671,8 @@ describe('pages and files', () => {
     for (const { url, title } of index) {
       const res = await api('GET', url);
       assert.equal(res.status, 200, url);
-      assert.ok(res.text.includes(`<h1>${title}</h1>`), url);
+      // A builder page has its logo inside the heading
+      assert.ok(res.text.replace(/<svg[^]*?<\/svg>/g, '').includes(`<h1>${title}</h1>`), url);
     }
     assert.equal((await api('GET', '/docs/not-a-page')).status, 404);
     assert.match((await api('GET', '/docs/docs.css')).headers.get('content-type'), /text\/css/);

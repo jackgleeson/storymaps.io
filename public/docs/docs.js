@@ -793,8 +793,9 @@
     }
 
     // A screenshot opens at full size when clicked, as it can be too small to read in a narrow
-    // column, such as beside the practice story map. A click anywhere or Escape closes it.
-    document.querySelectorAll('.shot-pic img').forEach(function (img) {
+    // column, such as beside the practice story map, or in a small tile on the Build with AI page.
+    // A click anywhere or Escape closes it.
+    document.querySelectorAll('.shot-pic img, .bwa-steps img, .bwa-frame img, .bwa-tour img').forEach(function (img) {
         img.addEventListener('click', function () {
             var zoom = document.createElement('div');
             zoom.className = 'shot-zoom';

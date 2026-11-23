@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://storymaps.io/</loc>
-    <lastmod>2026-11-23</lastmod>
+    <lastmod>2026-11-13</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/tour</loc>
@@ -327,5 +327,29 @@
   <url>
     <loc>https://storymaps.io/developers</loc>
     <lastmod>2026-11-13</lastmod>
+  </url>
+  <url>
+    <loc>https://storymaps.io/build-with-ai</loc>
+    <lastmod>2026-11-23</lastmod>
+  </url>
+  <url>
+    <loc>https://storymaps.io/build-with-ai/lovable</loc>
+    <lastmod>2026-11-23</lastmod>
+  </url>
+  <url>
+    <loc>https://storymaps.io/build-with-ai/v0</loc>
+    <lastmod>2026-11-23</lastmod>
+  </url>
+  <url>
+    <loc>https://storymaps.io/build-with-ai/replit</loc>
+    <lastmod>2026-11-23</lastmod>
+  </url>
+  <url>
+    <loc>https://storymaps.io/build-with-ai/base44</loc>
+    <lastmod>2026-11-23</lastmod>
+  </url>
+  <url>
+    <loc>https://storymaps.io/build-with-ai/bolt</loc>
+    <lastmod>2026-11-23</lastmod>
   </url>
 </urlset>

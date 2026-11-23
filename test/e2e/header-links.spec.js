@@ -1,6 +1,7 @@
 import { test, expect, openMap } from './fixtures.js';
 
-const PAGES = [['Docs', '/docs', 'Contents'], ['Developers', '/developers', 'User story mapping for developers']];
+const PAGES = [['Docs', '/docs', 'Contents'], ['Developers', '/developers', 'User story mapping for developers'],
+  ['Build with AI', '/build-with-ai', 'From story map to shipped product, with one prompt']];
 
 test('the home page header links lead to their pages', async ({ page }) => {
   for (const [name, path, heading = name] of PAGES) {
@@ -17,20 +18,21 @@ test('on a narrow map the links are in the main menu', async ({ page, createMap 
   await expect(page.locator('.header-links')).toBeHidden();
   await page.locator('#menuBtn').click();
   await expect(page.locator('.menu-links').getByRole('link', { name: 'Developers' })).toHaveAttribute('href', '/developers');
+  await expect(page.locator('.menu-links').getByRole('link', { name: 'Build with AI' })).toHaveAttribute('href', '/build-with-ai');
   await page.locator('.menu-links').getByRole('link', { name: 'Docs' }).click();
   await expect(page).toHaveURL('/docs');
 });
 
 test('Docs is a plain link, and a docs or developers page marks its own link', async ({ page }) => {
-  for (const path of ['/', '/docs/plan-releases-with-story-map-slices', '/developers']) {
+  for (const path of ['/', '/docs/plan-releases-with-story-map-slices', '/developers', '/build-with-ai']) {
     await page.goto(path);
     const links = page.locator('.header-links');
     await links.getByRole('link', { name: 'Docs', exact: true }).hover();
     await expect(page.locator('.docs-menu-panel')).toHaveCount(0);
-    const current = path.startsWith('/docs') ? 'Docs' : path === '/developers' ? 'Developers' : null;
+    const current = path.startsWith('/docs') ? 'Docs' : path === '/developers' ? 'Developers' : path === '/build-with-ai' ? 'Build with AI' : null;
     // No Learn link until there are courses
     await expect(links.getByRole('link', { name: 'Learn', exact: true })).toHaveCount(0);
-    for (const name of ['Docs', 'Developers']) {
+    for (const name of ['Docs', 'Developers', 'Build with AI']) {
       const link = links.getByRole('link', { name, exact: true });
       if (name === current) await expect(link).toHaveAttribute('aria-current', 'page');
       else await expect(link).not.toHaveAttribute('aria-current');
