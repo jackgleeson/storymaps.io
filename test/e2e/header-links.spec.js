@@ -1,7 +1,7 @@
 import { test, expect, openMap } from './fixtures.js';
 
 const PAGES = [['Docs', '/docs', 'Contents'], ['Developers', '/developers', 'User story mapping for developers'],
-  ['Build with AI', '/build-with-ai', 'From story map to shipped product, with one prompt']];
+  ['Build with AI', '/build-with-ai', 'From story map to shipped, with one prompt']];
 
 test('the home page header links lead to their pages', async ({ page }) => {
   for (const [name, path, heading = name] of PAGES) {
