@@ -212,6 +212,23 @@ test('a blank cell in the users, activities or steps row says what a click adds'
   expect(line * 0.76).toBeGreaterThanOrEqual(1);
 });
 
+test('the blank columns past the last step have no outline until the pointer is over one', async ({ page, createMap }) => {
+  await openMap(page, await createMap());
+  const outline = (cell) => cell.evaluate((el) => getComputedStyle(el).borderTopColor);
+  const clear = 'rgba(0, 0, 0, 0)';
+
+  for (const dark of [false, true]) {
+    await page.evaluate((on) => document.documentElement.classList.toggle('dark-mode', on), dark);
+    await page.mouse.move(0, 0);
+    const column = page.locator('.slice-container .phantom-column').first();
+    await expect.poll(() => outline(page.locator('.phantom-step').first())).toBe(clear);
+    await expect.poll(() => outline(column)).toBe(clear);
+
+    await column.hover();
+    await expect.poll(() => outline(column), 'the outline shows under the pointer').not.toBe(clear);
+  }
+});
+
 test('full screen swaps the header for a few floating buttons, with Share and Build in the menu', async ({ page, createMap }) => {
   await openMap(page, await createMap());
   const shown = (selector) => page.locator(selector).isVisible();
