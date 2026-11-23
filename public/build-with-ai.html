@@ -30,7 +30,7 @@
         } catch(e) {}
     })();
     </script>
-    <link rel="stylesheet" href="/docs/docs.css?v=381cc0bd">
+    <link rel="stylesheet" href="/docs/docs.css?v=3e85ca70">
     <script src="/docs/docs.js?v=c6f40470" defer></script>
 </head>
 <body class="docs-dev">
@@ -57,7 +57,21 @@
     <div class="dev-band-dark dev-top">
     <section class="bwa-hero dev-wrap">
         <h1>From story map to shipped, with one prompt</h1>
-        <p class="dev-lead">A user story map is also a structured spec that AI can build from. Copy the prompt, paste it into an app builder, and the story map supplies the context: who the product is for, what they do and what goes in each release. Start with a prototype to click through in a few minutes, then build the full app and ship it.</p>
+        <p class="dev-lead">A user story map is a plan that an AI app builder can read.</p>
+        <ol class="bwa-hero-steps">
+            <li>
+                <div class="bwa-hero-frame"><img src="/docs/img/build-with-ai-page-hero-1.png?v=a9917791" alt="The Build with AI window, with Lovable, v0, Replit, Base44 and Bolt to pick from" width="800" height="640"></div>
+                <div class="bwa-hero-step"><span aria-hidden="true">1</span><div><strong>Click Build</strong><p>Pick an app builder and a slice of the story map.</p></div></div>
+            </li>
+            <li>
+                <div class="bwa-hero-frame"><div class="bwa-hero-prompt" role="img" aria-label="The prompt pasted into an app builder, with a link to the story map"><div aria-hidden="true"><p>The YAML at the URL below describes a product plan in user story map format.</p><p>Use it as a structured specification. Your task: build a functional prototype of the features listed in the &quot;MVP&quot; slice.</p><p><span>https://storymaps.io/abc12345.yaml</span></p><i></i></div></div></div>
+                <div class="bwa-hero-step"><span aria-hidden="true">2</span><div><strong>Paste the prompt</strong><p>The builder gets the whole plan: who the product is for, what they do and what goes in each release.</p></div></div>
+            </li>
+            <li>
+                <div class="bwa-hero-frame"><img src="/docs/img/build-with-ai-page-hero-3.png?v=f5767aa9" alt="The coffee ordering app built from the story map, with a search box, dietary filters and drinks with prices" width="720" height="576"></div>
+                <div class="bwa-hero-step"><span aria-hidden="true">3</span><div><strong>Click through the app</strong><p>A prototype in a few minutes, then the full app.</p></div></div>
+            </li>
+        </ol>
     </section>
     </div>
     <nav class="bwa-jump" aria-label="App builders">
@@ -71,32 +85,27 @@
         </div>
     </nav>
     <section class="dev-wrap bwa-why">
-        <div class="dev-copy">
-            <h2>Why a story map builds better than a prompt on its own</h2>
-            <p>A prompt such as &quot;build me a coffee ordering app&quot; leaves the AI to guess who it's for, what they do, what comes first and what features you want. A story map has already settled those questions, and the Storymaps.io prompt hands it over as a structured spec.</p>
-        </div>
-        <div class="bwa-why-cols">
-            <div class="bwa-why-col">
-                <h3>A prompt on its own</h3>
-                <ul>
-                    <li>The AI guesses the users, the journey, the features and how much to build.</li>
-                    <li>You ask again and again to get what you want, and each time it can guess differently.</li>
-                    <li>A change of plan means writing the prompt again.</li>
-                </ul>
+        <div class="bwa-why-two">
+            <div class="dev-copy">
+                <h2>A spec in two dimensions</h2>
+                <p>Most briefs are a flat list of features. A story map has two dimensions. From left to right, it is the user journey: who the product is for and what they do, step by step. From top to bottom, it is the priority: the tasks under each step, most important first, divided into releases.</p>
+                <p>The Storymaps.io prompt hands both to the app builder as structured <a href="/docs/story-map-data-links">data</a>, so it knows what to build, where each feature fits in the journey and what comes first. The spec holds more than the next build: it shows where the product is today and where it is going, so what the builder makes fits both.</p>
+                <p>Change the story map, and the same prompt builds the new plan. After the first build, refine the design and details in the builder's chat as usual.</p>
             </div>
-            <div class="bwa-why-col bwa-why-map">
-                <h3>A Storymaps.io prompt with a story map</h3>
-                <ul>
-                    <li>Users, activities and steps give the journey, in order.</li>
-                    <li>Tasks give the features under each step, most important first.</li>
-                    <li>A slice says how much to build, and its goal says what the build is for.</li>
-                    <li>Change the story map, and the same prompt builds the new plan.</li>
-                </ul>
+            <div class="bwa-map" role="img" aria-label="A story map of a coffee ordering app. Across the top, five steps in the order a customer takes them. Below each step, its tasks, most important first, divided into three releases: MVP, V1 and V2.">
+                <div class="bwa-map-across" aria-hidden="true"><span>The user journey</span><i></i></div>
+                <div class="bwa-map-down" aria-hidden="true"><span>The priority</span><i></i></div>
+                <div class="bwa-map-board" aria-hidden="true">
+                    <div class="bwa-map-row"><b class="bwa-map-activity">Order Coffee</b></div>
+                    <div class="bwa-map-row"><b class="bwa-map-step">Browse Menu</b><b class="bwa-map-step">Customize Drink</b><b class="bwa-map-step">Add To Cart</b><b class="bwa-map-step">Pay</b><b class="bwa-map-step">Track Order</b></div>
+                    <div class="bwa-map-slice bwa-map-first"><span>MVP</span><i></i><em>Build this first</em></div>
+                    <div class="bwa-map-row"><b>Drink list with prices</b><b>Choose size</b><b>Order summary</b><b>Apple Pay</b><b>Ready notification</b></div>
+                    <div class="bwa-map-slice"><span>V1</span><i></i></div>
+                    <div class="bwa-map-row bwa-map-later"><b>Search by name</b><b>Select milk type</b><b>Edit or remove items</b><b>Credit card</b><b>Estimated wait time</b></div>
+                    <div class="bwa-map-slice"><span>V2</span><i></i></div>
+                    <div class="bwa-map-row bwa-map-later"><b>Filter by dietary needs</b><b>Save custom drinks</b><u></u><b>Gift cards</b><b>Queue position</b></div>
+                </div>
             </div>
-        </div>
-        <div class="dev-copy">
-            <h2>Each story map is a spec of the present and the future</h2>
-            <p>Every story map doubles as a structured specification that AI can read. Add <code>.yaml</code> to the end of its link and an AI tool gets the whole story map as <a href="/docs/story-map-data-links">data</a>. It holds more than the next build: it shows where the product is today and where it is going, so what the AI builds fits both.</p>
         </div>
     </section>
     <section class="dev-wrap bwa-cards" aria-label="App builders">
@@ -140,6 +149,7 @@
             </div>
             <a class="btn" href="/sample/coffee-ordering" target="_blank" rel="nofollow noopener">Open the coffee story map</a>
         </div>
+        <p class="bwa-marks dev-wrap">Lovable, v0, Replit, Base44 and Bolt are trademarks of their owners. Storymaps.io is not affiliated with them.</p>
     </section>
 </main>
 <footer class="docs-footer">

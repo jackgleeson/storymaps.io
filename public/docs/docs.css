@@ -1142,6 +1142,26 @@ html.dark-mode .dev-commands dl div { background: #020617; }
 .bwa-hero { display: flex; flex-direction: column; gap: 20px; padding-top: 72px; padding-bottom: 56px; }
 .bwa-hero h1 { max-width: 16em; font-size: 50px; line-height: 1.05; font-weight: 800; letter-spacing: -0.03em; }
 .bwa-hero .dev-lead { margin-top: 0; max-width: 38em; }
+/* Three numbered pictures of how it works */
+.bwa-hero-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin: 24px 0 0; padding: 0; list-style: none; }
+.bwa-hero-steps li { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+/* Each picture sits in a plain browser frame: a bar with three dots, then the picture */
+.bwa-hero-frame { overflow: hidden; border-radius: 12px; border: 1px solid #334155; background: #ffffff; }
+.bwa-hero-frame::before { content: ''; display: block; height: 26px; background: radial-gradient(circle at 16px 50%, #94a3b8 4px, transparent 4.5px), radial-gradient(circle at 30px 50%, #94a3b8 4px, transparent 4.5px), radial-gradient(circle at 44px 50%, #94a3b8 4px, transparent 4.5px), #e2e8f0; }
+.bwa-hero-steps img { display: block; width: 100%; height: auto; aspect-ratio: 5 / 4; object-fit: cover; object-position: left top; }
+/* The pasted prompt is drawn, not a picture, so its text stays sharp at any size */
+.bwa-hero-prompt { container-type: inline-size; display: flex; align-items: center; aspect-ratio: 5 / 4; padding: 0 6%; background: linear-gradient(160deg, #1e293b, #115e59); }
+.bwa-hero-prompt div { position: relative; display: flex; flex-direction: column; gap: 2.4cqw; width: 100%; padding: 4.5cqw 5cqw 11cqw; border-radius: 4cqw; background: #ffffff; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); }
+.bwa-hero-prompt p { margin: 0; font-size: 3.5cqw; line-height: 1.45; color: #0f172a; }
+.bwa-hero-prompt span { color: #1d4ed8; }
+.bwa-hero-prompt i { position: absolute; right: 4cqw; bottom: 3cqw; width: 7cqw; height: 7cqw; border-radius: 50%; background: #0f172a; }
+.bwa-hero-prompt i::after { content: ''; position: absolute; left: 50%; top: 54%; width: 2cqw; height: 2cqw; border-left: 0.6cqw solid #ffffff; border-top: 0.6cqw solid #ffffff; transform: translate(-50%, -50%) rotate(45deg); }
+.bwa-hero-step { display: flex; align-items: baseline; gap: 12px; }
+.bwa-hero-step span { font-size: 30px; font-weight: 800; line-height: 1; color: #2dd4bf; }
+.bwa-hero-step div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.bwa-hero-step strong { font-size: 18px; font-weight: 700; color: #ffffff; }
+.bwa-hero-step p { margin: 0; font-size: 15px; line-height: 1.5; color: #cbd5e1; }
+@media (max-width: 760px) { .bwa-hero-steps { grid-template-columns: minmax(0, 1fr); } }
 .bwa .btn { min-height: 44px; padding: 0 22px; }
 .bwa-jump { background: var(--surface); border-bottom: 1px solid var(--border); }
 .bwa-jump > div { display: flex; flex-wrap: wrap; align-items: center; gap: 0 28px; font-size: 15px; font-weight: 600; }
@@ -1160,12 +1180,39 @@ html.dark-mode .dev-commands dl div { background: #020617; }
 .bwa-why h2 { font-size: 32px; line-height: 1.15; }
 .bwa-why .dev-copy p { max-width: 42em; }
 .bwa-why .dev-copy ~ .dev-copy { margin-top: 24px; }
-.bwa-why-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-.bwa-why-col { display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
-.bwa-why-col.bwa-why-map { border-color: var(--teal-dark); }
-.bwa-why-col h3 { margin: 0; font-size: 18px; font-weight: 700; color: var(--heading); }
-.bwa-why-col ul { display: flex; flex-direction: column; gap: 8px; margin: 0; padding-left: 20px; }
-.bwa-why-col li, .bwa-why-col p { font-size: 15px; }
+/* The text beside a small story map. The arrows name the two dimensions: across and down. */
+.bwa-why-two { display: flex; flex-wrap: wrap; align-items: center; gap: 32px 56px; }
+.bwa-why-two .dev-copy { flex: 1 1 380px; min-width: 0; }
+.bwa-map { flex: 1.3 1 480px; min-width: 0; display: grid; grid-template-columns: 30px minmax(0, 1fr); grid-template-rows: 30px auto; gap: 8px; font-size: 13px; font-weight: 700; }
+.bwa-map-across { grid-column: 2; display: flex; align-items: center; gap: 10px; color: var(--teal-dark); }
+.bwa-map-down { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; align-items: center; gap: 10px; color: #b45309; }
+.bwa-map-down span { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
+.bwa-map-across i, .bwa-map-down i { position: relative; flex: 1; background: currentColor; }
+.bwa-map-across i { height: 2px; }
+.bwa-map-down i { width: 2px; }
+.bwa-map-across i::after, .bwa-map-down i::after { content: ''; position: absolute; border: 6px solid transparent; }
+.bwa-map-across i::after { right: -2px; top: -5px; border-left: 10px solid currentColor; border-right: 0; }
+.bwa-map-down i::after { bottom: -2px; left: -5px; border-top: 10px solid currentColor; border-bottom: 0; }
+html.dark-mode .bwa-map-across { color: #5eead4; }
+html.dark-mode .bwa-map-down { color: #fcd34d; }
+.bwa-map-board { grid-column: 2; grid-row: 2; display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+.bwa-map-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.bwa-map-row b, .bwa-map-row u { display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 4px 6px; border-radius: 4px; background: #fef08a; color: #1e293b; font-size: 11px; font-weight: 500; line-height: 1.25; text-align: center; text-decoration: none; overflow-wrap: anywhere; }
+.bwa-map-row u { background: none; }
+.bwa-map-row .bwa-map-activity { grid-column: 1 / -1; background: #bfdbfe; font-weight: 600; }
+.bwa-map-row .bwa-map-step { background: #bbf7d0; font-weight: 600; }
+.bwa-map-later b { background: #fef9c3; color: #475569; }
+.bwa-map-slice { display: flex; align-items: center; gap: 8px; font-size: 10px; letter-spacing: 0.08em; color: var(--muted, #64748b); }
+.bwa-map-slice i { flex: 1; border-top: 1px dashed currentColor; }
+.bwa-map-first { color: var(--teal-dark); }
+.bwa-map-slice em { padding: 2px 10px; border-radius: 999px; background: #ccfbf1; color: #0f766e; font-style: normal; letter-spacing: 0; font-size: 11px; }
+html.dark-mode .bwa-map-first { color: #5eead4; }
+@media (max-width: 560px) {
+    .bwa-map { grid-template-columns: 22px minmax(0, 1fr); gap: 6px; }
+    .bwa-map-board { padding: 10px; gap: 6px; }
+    .bwa-map-row { gap: 4px; }
+    .bwa-map-row b, .bwa-map-row u { min-height: 40px; padding: 2px; font-size: 9px; }
+}
 .bwa-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; padding-top: 56px; padding-bottom: 64px; }
 .bwa-card { display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
 .bwa-card h2 { font-size: 24px; }
@@ -1227,6 +1274,7 @@ html.dark-mode .bwa-frame img.only-light { display: none; }
 .bwa-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 20px 48px; padding-top: 64px; padding-bottom: 64px; }
 .bwa-cta .dev-copy { flex: 1 1 420px; gap: 10px; }
 .bwa-cta p { max-width: 36em; }
+.docs-dev .dev-band-dark .bwa-marks { padding-bottom: 32px; margin-top: -32px; font-size: 13px; line-height: 1.5; opacity: 0.7; }
 
 @media (max-width: 860px) {
     .bwa-hero { padding-top: 40px; padding-bottom: 32px; }
@@ -1234,6 +1282,7 @@ html.dark-mode .bwa-frame img.only-light { display: none; }
     .bwa-head h1 { font-size: 30px; }
     .bwa-builder > div { padding-top: 24px; padding-bottom: 40px; }
     .bwa-cta { padding-top: 40px; padding-bottom: 40px; }
+    .docs-dev .dev-band-dark .bwa-marks { margin-top: -16px; padding-bottom: 24px; }
     .bwa-jump span { flex-basis: 100%; padding-top: 12px; }
     .bwa-jump a { padding: 10px 0 14px; }
     .dev-wrap { padding-left: 16px; padding-right: 16px; }
