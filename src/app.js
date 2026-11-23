@@ -909,6 +909,13 @@ const initEventListeners = () => {
                     const clonedTop = clonedMap.querySelector(':scope > .map-top');
                     if (clonedTop) Object.assign(clonedTop.style, { height: 'auto', position: 'static' });
 
+                    // The "+ Slice" border colour is a color-mix(), which the browser reports as
+                    // color(srgb ...). html2canvas cannot read that and gives up on the whole image.
+                    // At full size the mix is the plain line colour, so set that.
+                    for (const btn of clonedDoc.querySelectorAll('.btn-add-slice')) {
+                        btn.style.borderColor = 'var(--slice-btn-line, var(--color-border-strong))';
+                    }
+
                     // Ensure story columns have explicit width
                     for (const col of clonedDoc.querySelectorAll('.story-column')) {
                         col.style.width = '180px';

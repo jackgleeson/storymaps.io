@@ -299,3 +299,16 @@ test('on a short screen the menu scrolls inside the screen, in front of the map 
   });
   expect(onTop).toBe(true);
 });
+
+test('Download image saves the story map as a PNG', async ({ page, createMap }) => {
+  await openMap(page, await createMap());
+  // The image is handed to the browser through a link that is never added to the page
+  await page.evaluate(() => {
+    HTMLAnchorElement.prototype.click = function () { window.savedImage = { name: this.download, href: this.href.slice(0, 22) }; };
+  });
+  await page.locator('#shareBtn').click();
+  await page.locator('#shareDownload').click();
+  await expect.poll(() => page.evaluate(() => window.savedImage?.name)).toMatch(/^coffee-app-.*\.png$/);
+  expect(await page.evaluate(() => window.savedImage.href)).toBe('data:image/png;base64,');
+  await expect(page.locator('#shareBtn .btn-label')).toHaveText(/Share/);
+});
