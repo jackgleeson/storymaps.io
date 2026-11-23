@@ -19,6 +19,8 @@ let _deleteSelectedCards = null;
 let _insertPartialMapRef = null;
 let _getSliceActions = null;
 let _copyCardLink = null;
+let _buildCard = null;
+let _canBuildCard = null;
 
 // Marquee state
 let isMarquee = false;
@@ -55,7 +57,7 @@ let panStartY = 0;
 let panScrollLeft = 0;
 let panScrollTop = 0;
 
-export const init = ({ state, updateSelectionUI, selection, clearSelection, isMapEditable, addColumnAt, deleteColumn, duplicateColumns, duplicateCards, deleteSelectedColumns, deleteSelectedCards, insertPartialMapRef, getSliceActions, copyCardLink }) => {
+export const init = ({ state, updateSelectionUI, selection, clearSelection, isMapEditable, addColumnAt, deleteColumn, duplicateColumns, duplicateCards, deleteSelectedColumns, deleteSelectedCards, insertPartialMapRef, getSliceActions, copyCardLink, buildCard, canBuildCard }) => {
     _dom = {
         storyMap: document.getElementById('storyMap'),
         storyMapWrapper: document.getElementById('storyMapWrapper'),
@@ -82,6 +84,8 @@ export const init = ({ state, updateSelectionUI, selection, clearSelection, isMa
     _insertPartialMapRef = insertPartialMapRef;
     _getSliceActions = getSliceActions;
     _copyCardLink = copyCardLink;
+    _buildCard = buildCard;
+    _canBuildCard = canBuildCard;
 };
 
 const updatePanMode = () => {
@@ -302,6 +306,7 @@ const ICON_DELETE = '<polyline points="3 5 4 13 12 13 13 5"/><line x1="2" y1="5"
 const ICON_DUPLICATE = '<rect x="3" y="3" width="8" height="10" rx="1.5"/><path d="M6 3V2.5A1.5 1.5 0 0 1 7.5 1H12a1.5 1.5 0 0 1 1.5 1.5V11A1.5 1.5 0 0 1 12 12.5H11"/>';
 const ICON_INSERT_PARTIAL = '<rect x="2" y="2" width="5" height="5" rx="0.7" fill="#fef08a" stroke="#d4aa00" stroke-width="0.7"/><rect x="9" y="2" width="5" height="5" rx="0.7" fill="#fecdd3" stroke="#e88a9a" stroke-width="0.7"/><rect x="2" y="9" width="5" height="5" rx="0.7" fill="#a5f3fc" stroke="#67c5d6" stroke-width="0.7"/><rect x="9" y="9" width="5" height="5" rx="0.7" fill="#14b8a6" stroke="#0d9488" stroke-width="0.7"/>';
 
+const ICON_BUILD = '<polygon points="9 2 3 9 8 9 7 14 13 7 8 7 9 2"/>';
 const ICON_LINK = '<path d="M7 9a3 3 0 0 0 4.5.3l2-2a3 3 0 0 0-4.2-4.2l-1 1"/><path d="M9 7a3 3 0 0 0-4.5-.3l-2 2a3 3 0 0 0 4.2 4.2l1-1"/>';
 const ICON_DETAILS = '<circle cx="8" cy="8" r="6"/><line x1="8" y1="7.5" x2="8" y2="11"/><line x1="8" y1="5" x2="8" y2="5.2"/>';
 const ICON_REOPEN = '<polyline points="5 3 2 6 5 9"/><path d="M2 6h7a4 4 0 0 1 0 8H7"/>';
@@ -339,6 +344,8 @@ const showContextMenu = (x, y, columnId, columnIndex, cardId = null) => {
 
     // Copying a link to a card works in locked maps too, where it's the only item
     if (cardId && _copyCardLink) menu.appendChild(makeMenuItem('Copy link to card', ICON_LINK, () => _copyCardLink(cardId)));
+    // So does building one card, which only reads the story map. Cards a prompt can't name don't get it.
+    if (cardId && _canBuildCard?.(cardId)) menu.appendChild(makeMenuItem('Build with AI', ICON_BUILD, () => _buildCard(cardId)));
     if (!_isMapEditable() || _selection.columnIds.length > 0) {
         if (menu.childElementCount) positionMenu(menu, x, y);
         return;

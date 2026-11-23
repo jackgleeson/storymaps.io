@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://storymaps.io/</loc>
-    <lastmod>2026-11-22</lastmod>
+    <lastmod>2026-11-23</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/tour</loc>
@@ -18,7 +18,7 @@
   </url>
   <url>
     <loc>https://storymaps.io/docs</loc>
-    <lastmod>2026-11-18</lastmod>
+    <lastmod>2026-11-23</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/why-user-story-mapping</loc>
@@ -122,7 +122,11 @@
   </url>
   <url>
     <loc>https://storymaps.io/docs/build-an-app-from-a-story-map-with-ai</loc>
-    <lastmod>2026-11-13</lastmod>
+    <lastmod>2026-11-23</lastmod>
+  </url>
+  <url>
+    <loc>https://storymaps.io/docs/build-one-feature-with-ai</loc>
+    <lastmod>2026-11-23</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/prototype-an-mvp-with-ai</loc>
@@ -133,12 +137,12 @@
     <lastmod>2026-11-10</lastmod>
   </url>
   <url>
-    <loc>https://storymaps.io/docs/build-one-feature-with-ai</loc>
+    <loc>https://storymaps.io/docs/prototype-a-whole-product-with-ai</loc>
     <lastmod>2026-11-10</lastmod>
   </url>
   <url>
-    <loc>https://storymaps.io/docs/prototype-a-whole-product-with-ai</loc>
-    <lastmod>2026-11-10</lastmod>
+    <loc>https://storymaps.io/docs/build-a-full-app-with-ai</loc>
+    <lastmod>2026-11-23</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/compare-product-directions-with-ai</loc>

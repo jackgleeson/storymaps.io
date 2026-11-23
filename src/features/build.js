@@ -4,7 +4,7 @@
 import { dom } from '/src/ui/dom.js';
 import { serialize } from '/src/core/serialization.js';
 import { exportToYaml } from '/src/transfer/yaml.js';
-import { showConfirm } from '/src/core/modals.js';
+import { showConfirm, showToast } from '/src/core/modals.js';
 
 let _deps = {};
 
@@ -48,6 +48,33 @@ const syncBuildModes = (isAgent) => {
     const existing = modes.querySelector('option[value="existing"]');
     if (isAgent && !existing) modes.add(new Option('Add to Existing App', 'existing'));
     if (!isAgent && existing) existing.remove();
+};
+
+// The cards of a slice that a prompt can name, each with its step, in the order of the steps.
+// Cards with no name are left out, and so are the steps of a partial, whose cards live in the partial.
+const sliceCards = (slice) => _deps.state.columns.flatMap(step => step.partialMapId ? []
+    : (slice.stories?.[step.id] || []).filter(card => oneLine(card.name)).map(card => ({ card, step })));
+
+const oneLine = (text) => (text || '').replace(/\s+/g, ' ').trim();
+
+// The Card list for the slice picked: every card in it under its step, after "All cards"
+const fillCards = () => {
+    const sel = dom.buildAiCard;
+    const slice = _deps.state.slices[dom.buildAiSlice.value];
+    sel.innerHTML = '';
+    sel.add(new Option('All cards', ''));
+    let group = null;
+    let groupStep = null;
+    (slice ? sliceCards(slice) : []).forEach(({ card, step }) => {
+        if (step !== groupStep) {
+            group = document.createElement('optgroup');
+            group.label = oneLine(step.name) || 'Unnamed step';
+            sel.appendChild(group);
+            groupStep = step;
+        }
+        group.appendChild(new Option(oneLine(card.name), card.id));
+    });
+    sel.disabled = sel.options.length === 1;
 };
 
 const allTargetGrids = () => [dom.buildAiTargets, dom.buildAiTargets2, dom.buildAiTargets3];
@@ -94,10 +121,21 @@ function updateBuildPrompt() {
     const mode = dom.buildAiModeSelect.value;
     const isPrototype = mode === 'prototype';
     const qualifier = isPrototype ? 'functional prototype' : 'full app';
-    const task = (where) => mode === 'existing'
-        ? `add the features listed in ${where} to the existing app in this project. Read the existing code first, keep what's already there working, and follow its conventions.`
-        : `build a ${qualifier} of the features listed in ${where}.`;
     const slice = sliceVal === 'all' ? null : state.slices[sliceVal];
+    // One card picked in the Card list: the prompt names it, its step and its slice, as the YAML has no card IDs
+    const picked = slice && sliceCards(slice).find(c => c.card.id === dom.buildAiCard.value);
+    const existingRules = "Read the existing code first, keep what's already there working, and follow its conventions.";
+    const task = (where, q = '"') => {
+        if (!picked) return mode === 'existing'
+            ? `add the features listed in ${where} to the existing app in this project. ${existingRules}`
+            : `build a ${qualifier} of the features listed in ${where}.`;
+        const named = (text) => `${q}${isCli ? shellEscape(oneLine(text)) : oneLine(text)}${q}`;
+        const step = oneLine(picked.step.name) ? `, under the ${named(picked.step.name)} step` : '';
+        const place = `It is in ${where}${step}. Use the rest of the story map to see where it fits.`;
+        return mode === 'existing'
+            ? `add only the ${named(picked.card.name)} card to the existing app in this project. ${place} ${existingRules}`
+            : `build a ${qualifier} of only the ${named(picked.card.name)} card. ${place}`;
+    };
     // A slice with no name shows as "Slice 1" here, but the map has no slice by that name: point at it by position
     const sliceRef = (q) => !slice ? 'the full map'
         : slice.name ? `the ${q}${sliceName}${q} slice`
@@ -111,11 +149,11 @@ function updateBuildPrompt() {
         const cliScope = slice?.name ? `the '${sliceName.replace(/'/g, "\\'")}' slice` : sliceRef();
         if (useCli) {
             const fileRef = targetId === 'codex' ? 'storymap.yml' : '@storymap.yml';
-            let inner = `The storymap file ${fileRef} describes a product plan in user story map format. Use it as a structured specification. Your task: ${task(cliScope)}`;
+            let inner = `The storymap file ${fileRef} describes a product plan in user story map format. Use it as a structured specification. Your task: ${task(cliScope, "'")}`;
             if (extra) inner += ` ${shellEscape(extra)}`;
             prompt = `npx storymaps pull --force ${mapUrl} && ${cmd} "${inner}"`;
         } else {
-            let inner = `The YAML at ${mapUrl}.yaml describes a product plan in user story map format. Use it as a structured specification. Your task: ${task(cliScope)}`;
+            let inner = `The YAML at ${mapUrl}.yaml describes a product plan in user story map format. Use it as a structured specification. Your task: ${task(cliScope, "'")}`;
             if (extra) inner += ` ${shellEscape(extra)}`;
             prompt = `${cmd} "${inner}"`;
         }
@@ -133,7 +171,8 @@ function updateBuildPrompt() {
         prompt = `${instructions}\n\n${exportToYaml(serialize())}`;
     }
     dom.buildAiPrompt.value = prompt;
-    dom.buildAiPrompt.rows = (useFetch || useCli) ? 3 : Math.min(12, prompt.split('\n').length + 1);
+    // A prompt for one card runs longer, so it gets the room to show in full
+    dom.buildAiPrompt.rows = (useFetch || useCli) ? (picked ? 5 : 3) : Math.min(12, prompt.split('\n').length + 1);
     dom.buildAiInstructions.innerHTML = isCli
         ? 'Run this command in your terminal'
         : buildAiInstructions[targetId];
@@ -145,6 +184,55 @@ function updateBuildPrompt() {
     dom.buildAiCopy.querySelector('span').textContent = isCli ? 'Copy Command' : 'Copy Prompt';
 }
 
+// Open the window on the first slice and the first tool, as it is each time
+const openWindow = () => {
+    const { state } = _deps;
+    const sel = dom.buildAiSlice;
+    sel.innerHTML = '';
+    state.slices.forEach((s, i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = s.name || `Slice ${i + 1}`;
+        sel.appendChild(opt);
+    });
+    const allOpt = document.createElement('option');
+    allOpt.value = 'all';
+    allOpt.textContent = 'All Slices';
+    sel.appendChild(allOpt);
+    allTargetGrids().forEach(g => g.querySelectorAll('.build-ai-target').forEach(b => b.classList.remove('selected')));
+    dom.buildAiTargets.querySelector('.build-ai-target').classList.add('selected');
+    _lastTargetId = null;
+    dom.buildAiInstructionsInput.value = '';
+    fillCards();
+    updateBuildPrompt();
+    dom.buildAiModal.classList.add('visible');
+};
+
+// Where a card sits in the slices, if a prompt can name it
+const findSliceCard = (cardId) => {
+    const { state } = _deps;
+    for (let sliceIdx = 0; sliceIdx < state.slices.length; sliceIdx++) {
+        if (sliceCards(state.slices[sliceIdx]).some(c => c.card.id === cardId)) return sliceIdx;
+    }
+    return -1;
+};
+
+export const canBuildCard = (cardId) => findSliceCard(cardId) >= 0;
+
+// Build with AI from a card menu: the window opens with the slice and the card already picked
+export const openForCard = (cardId) => {
+    const sliceIdx = findSliceCard(cardId);
+    if (sliceIdx < 0) {
+        showToast('Name the card to build it on its own');
+        return;
+    }
+    openWindow();
+    dom.buildAiSlice.value = String(sliceIdx);
+    fillCards();
+    dom.buildAiCard.value = cardId;
+    updateBuildPrompt();
+};
+
 export const closeModal = () => dom.buildAiModal.classList.remove('visible');
 
 export const confirmClose = async () => {
@@ -154,28 +242,9 @@ export const confirmClose = async () => {
 
 export const init = (deps) => {
     _deps = deps;
-    const { state, showPrompt } = deps;
+    const { showPrompt } = deps;
 
-    dom.buildAiBtn.addEventListener('click', () => {
-        const sel = dom.buildAiSlice;
-        sel.innerHTML = '';
-        state.slices.forEach((s, i) => {
-            const opt = document.createElement('option');
-            opt.value = i;
-            opt.textContent = s.name || `Slice ${i + 1}`;
-            sel.appendChild(opt);
-        });
-        const allOpt = document.createElement('option');
-        allOpt.value = 'all';
-        allOpt.textContent = 'All Slices';
-        sel.appendChild(allOpt);
-        allTargetGrids().forEach(g => g.querySelectorAll('.build-ai-target').forEach(b => b.classList.remove('selected')));
-        dom.buildAiTargets.querySelector('.build-ai-target').classList.add('selected');
-        _lastTargetId = null;
-        dom.buildAiInstructionsInput.value = '';
-        updateBuildPrompt();
-        dom.buildAiModal.classList.add('visible');
-    });
+    dom.buildAiBtn.addEventListener('click', openWindow);
 
     const handleTargetClick = (e) => {
         const btn = e.target.closest('.build-ai-target');
@@ -187,7 +256,8 @@ export const init = (deps) => {
     dom.buildAiTargets.addEventListener('click', handleTargetClick);
     dom.buildAiTargets2.addEventListener('click', handleTargetClick);
     dom.buildAiTargets3.addEventListener('click', handleTargetClick);
-    dom.buildAiSlice.addEventListener('change', updateBuildPrompt);
+    dom.buildAiSlice.addEventListener('change', () => { fillCards(); updateBuildPrompt(); });
+    dom.buildAiCard.addEventListener('change', updateBuildPrompt);
     dom.buildAiFetchToggle.addEventListener('change', updateBuildPrompt);
     dom.buildAiCliToggle.addEventListener('change', updateBuildPrompt);
     dom.buildAiModeSelect?.addEventListener('change', updateBuildPrompt);

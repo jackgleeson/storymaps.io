@@ -1445,7 +1445,7 @@ const switchPanelTab = (sectionKey) => {
 stateInit({ serialize, deserialize, renderAndSave, logEvent: (text, ids) => log.logEvent(text, ids) });
 
 // Wire navigation module
-navigation.init({ state, updateSelectionUI, selection, clearSelection, isMapEditable, addColumnAt, deleteColumn, duplicateColumns, duplicateCards, deleteSelectedColumns, deleteSelectedCards, insertPartialMapRef: (...args) => insertPartialMapRef(...args), getSliceActions: (...args) => ui.getSliceActions(...args), copyCardLink: (cardId) => cardLinks.copyCardLinkById(cardId) });
+navigation.init({ state, updateSelectionUI, selection, clearSelection, isMapEditable, addColumnAt, deleteColumn, duplicateColumns, duplicateCards, deleteSelectedColumns, deleteSelectedCards, insertPartialMapRef: (...args) => insertPartialMapRef(...args), getSliceActions: (...args) => ui.getSliceActions(...args), copyCardLink: (cardId) => cardLinks.copyCardLinkById(cardId), buildCard: (cardId) => build.openForCard(cardId), canBuildCard: (cardId) => build.canBuildCard(cardId) });
 
 // Wire presence module
 presence.init({

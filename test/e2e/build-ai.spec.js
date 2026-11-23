@@ -123,3 +123,84 @@ test('Build with AI can add a slice to an existing app, for coding agents only',
   await mode.selectOption('full');
   await expect(prompt).toHaveValue(/build a full app of the features listed/);
 });
+
+const COFFEE = `name: Coffee app
+steps:
+  - Browse
+  - Add To Cart
+  - Pay
+slices:
+  - name: MVP
+    stories:
+      Browse:
+        - name: Drink list
+  - name: V2
+    stories:
+      Add To Cart:
+        - name: Group ordering
+      Pay:
+        - name: Split payment
+        - name: Gift cards
+`;
+
+test('Build with AI builds one card picked from the Card list', async ({ page, createMap }) => {
+  const id = await createMap(COFFEE);
+  await openMap(page, id);
+  await page.locator('#buildAiBtn').click();
+  const prompt = page.locator('#buildAiPrompt');
+  const cards = page.locator('#buildAiCard');
+
+  // The list holds the cards of the slice picked, under their steps, and starts on the whole slice
+  await expect(cards).toHaveValue('');
+  await expect(cards.locator('option')).toHaveText(['All cards', 'Drink list']);
+  await expect(prompt).toHaveValue(/of the features listed in the "MVP" slice\./);
+
+  await page.locator('#buildAiSlice').selectOption({ label: 'V2' });
+  await expect(cards.locator('option')).toHaveText(['All cards', 'Group ordering', 'Split payment', 'Gift cards']);
+  await expect(cards.locator('optgroup')).toHaveCount(2);
+  await expect(cards.locator('optgroup').first()).toHaveAttribute('label', 'Add To Cart');
+
+  // The prompt names the card, its slice and its step, and still gives the whole story map
+  await cards.selectOption({ label: 'Group ordering' });
+  await expect(prompt).toHaveValue(/Your task: build a functional prototype of only the "Group ordering" card\. It is in the "V2" slice, under the "Add To Cart" step\. Use the rest of the story map to see where it fits\./);
+  await expect(prompt).toHaveValue(new RegExp(`/${id}\\.yaml$`));
+
+  // A coding agent can add the card to an app, with the names in single quotes for the terminal
+  await page.locator('.build-ai-target[data-target="claude-code"]').click();
+  await page.locator('#buildAiModeSelect').selectOption('existing');
+  await expect(prompt).toHaveValue(/add only the 'Group ordering' card to the existing app in this project\. It is in the 'V2' slice, under the 'Add To Cart' step\..* Read the existing code first/);
+
+  // Another slice goes back to all its cards, and every slice has no card to pick
+  await page.locator('#buildAiSlice').selectOption({ label: 'MVP' });
+  await expect(cards).toHaveValue('');
+  await expect(prompt).toHaveValue(/the features listed in the 'MVP' slice/);
+  await page.locator('#buildAiSlice').selectOption('all');
+  await expect(cards).toBeDisabled();
+});
+
+test('Build with AI on a card menu opens the window on that card', async ({ page, createMap }) => {
+  const id = await createMap(COFFEE);
+  await openMap(page, id);
+  const prompt = page.locator('#buildAiPrompt');
+
+  // The right-click menu of a card in a slice
+  const split = page.locator('.story-card[data-story-id]').filter({ has: page.locator('textarea.story-text') }).nth(2);
+  const splitId = await split.getAttribute('data-story-id');
+  const splitName = await split.locator('textarea.story-text').inputValue();
+  await split.click({ button: 'right' });
+  await page.getByRole('button', { name: 'Build with AI' }).click();
+  await expect(page.locator('#buildAiModal')).toHaveClass(/visible/);
+  await expect(page.locator('#buildAiSlice')).toHaveValue('1');
+  await expect(page.locator('#buildAiCard')).toHaveValue(splitId);
+  await expect(prompt).toHaveValue(new RegExp(`of only the "${splitName}" card\\. It is in the "V2" slice`));
+  await page.locator('#buildAiModalClose').click();
+
+  // The ... menu of a card has it too
+  const first = page.locator('.story-card[data-story-id]').filter({ has: page.locator('textarea.story-text') }).first();
+  await first.hover();
+  await first.locator('.btn-options').click();
+  await first.locator('.options-item', { hasText: 'Build with AI' }).evaluate(e => e.click());
+  await expect(page.locator('#buildAiSlice')).toHaveValue('0');
+  await expect(prompt).toHaveValue(/of only the "Drink list" card\. It is in the "MVP" slice, under the "Browse" step\./);
+  await page.locator('#buildAiModalClose').click();
+});

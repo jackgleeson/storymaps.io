@@ -7,6 +7,7 @@ import { showAlert, showChoice, showConfirm, showPrompt } from '/src/core/modals
 import { quoted } from '/src/core/log.js';
 import { copySliceLink, createSliceInfo, openSliceDetails, setSliceNameText } from '/src/features/slice-links.js';
 import { copyCardLink } from '/src/features/card-links.js';
+import { openForCard as buildCard } from '/src/features/build.js';
 import { frozenRowsHeight } from '/src/features/freeze-rows.js';
 import { toggleSliceMenu } from '/src/ui/navigation.js';
 
@@ -457,7 +458,7 @@ export const patchCardForItem = (item) => {
     patchSliceMetrics(card.dataset.sliceId);
 };
 
-export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColorChange, onUrlChange, onStatusChange = null, onHide = null, onDeleteColumn = null, onCopyLink = null) => {
+export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColorChange, onUrlChange, onStatusChange = null, onHide = null, onDeleteColumn = null, onCopyLink = null, onBuild = null) => {
     const container = el('div', 'card-options');
 
     const btn = el('button', 'btn-options', { text: '...', title: 'Options', ariaLabel: 'Options menu', ariaHasPopup: 'true', ariaExpanded: 'false' });
@@ -577,6 +578,17 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
             onCopyLink();
         });
         menu.appendChild(copyLinkOption);
+    }
+
+    // Build with AI option (for cards in a slice): opens the Build window on this card
+    if (onBuild) {
+        const buildOption = el('button', 'options-item', { text: 'Build with AI' });
+        buildOption.addEventListener('click', (e) => {
+            e.stopPropagation();
+            menu.classList.remove('visible');
+            onBuild();
+        });
+        menu.appendChild(buildOption);
     }
 
     // Hide header option (for steps only)
@@ -1103,7 +1115,8 @@ export const createStoryCard = (story, columnId, sliceId, isBackboneRow = false,
         },
         null, // onHide - not used
         isBackboneRow ? () => _deleteColumn(columnId) : null,
-        () => copyCardLink(story)
+        () => copyCardLink(story),
+        isBackboneRow ? null : () => buildCard(story.id)
     );
 
     card.append(textarea, createExpandButton(story), optionsMenu, buildIndicators(story, card));

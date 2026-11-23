@@ -327,7 +327,7 @@
         "y": 55.1
       },
       {
-        "x": 51.2,
+        "x": 66.3,
         "y": 55.1
       },
       {
@@ -463,7 +463,7 @@
   },
   "build-with-ai/one-feature": {
     "width": 634,
-    "height": 387,
+    "height": 407,
     "callouts": []
   },
   "build-with-ai/whole-product": {
@@ -822,6 +822,21 @@
   "plan-releases-with-story-map-slices/focus": {
     "width": 566,
     "height": 519,
+    "callouts": []
+  },
+  "build-with-ai/full-app": {
+    "width": 634,
+    "height": 387,
+    "callouts": []
+  },
+  "build-with-ai/card-right-click": {
+    "width": 332,
+    "height": 358,
+    "callouts": []
+  },
+  "build-with-ai/card-menu": {
+    "width": 170,
+    "height": 297,
     "callouts": []
   }
 }
