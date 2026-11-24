@@ -6728,9 +6728,10 @@ html.dark-mode .welcome-about-dark {
     display: inline-block;
 }
 
-/* Adjust body when banner is visible */
+/* Make room for the banner: its height and no more, so the header sits as far below the banner
+   as it does below the top of the window on an unlocked map */
 body.read-only-mode {
-    padding-top: calc(24px + 32px);
+    padding-top: 28px;
 }
 
 /* Shown when the connection to the server drops (src/features/connection-status.js). Edits made
@@ -7866,7 +7867,7 @@ body.read-only-mode .empty-backbone-column {
     }
 
     body.read-only-mode {
-        padding-top: calc(12px + 28px);
+        padding-top: 25px;
     }
 
     .dialog-modal { width: 94vw; padding: 18px; }
