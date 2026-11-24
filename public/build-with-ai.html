@@ -30,7 +30,7 @@
         } catch(e) {}
     })();
     </script>
-    <link rel="stylesheet" href="/docs/docs.css?v=3e85ca70">
+    <link rel="stylesheet" href="/docs/docs.css?v=59ecd437">
     <script src="/docs/docs.js?v=c6f40470" defer></script>
 </head>
 <body class="docs-dev">
@@ -87,23 +87,71 @@
     <section class="dev-wrap bwa-why">
         <div class="bwa-why-two">
             <div class="dev-copy">
-                <h2>A spec in two dimensions</h2>
-                <p>Most briefs are a flat list of features. A story map has two dimensions. From left to right, it is the user journey: who the product is for and what they do, step by step. From top to bottom, it is the priority: the tasks under each step, most important first, divided into releases.</p>
+                <h2>Show the AI the full picture</h2>
+                <p>A list of features says what to build, but not where each one fits or which comes first. A story map shows both. From left to right, it is the user journey: who the product is for and what they do, step by step. From top to bottom, it is the priority: the tasks under each step, most important first, divided into releases.</p>
                 <p>The Storymaps.io prompt hands both to the app builder as structured <a href="/docs/story-map-data-links">data</a>, so it knows what to build, where each feature fits in the journey and what comes first. The spec holds more than the next build: it shows where the product is today and where it is going, so what the builder makes fits both.</p>
                 <p>Change the story map, and the same prompt builds the new plan. After the first build, refine the design and details in the builder's chat as usual.</p>
             </div>
-            <div class="bwa-map" role="img" aria-label="A story map of a coffee ordering app. Across the top, five steps in the order a customer takes them. Below each step, its tasks, most important first, divided into three releases: MVP, V1 and V2.">
-                <div class="bwa-map-across" aria-hidden="true"><span>The user journey</span><i></i></div>
-                <div class="bwa-map-down" aria-hidden="true"><span>The priority</span><i></i></div>
-                <div class="bwa-map-board" aria-hidden="true">
-                    <div class="bwa-map-row"><b class="bwa-map-activity">Order Coffee</b></div>
-                    <div class="bwa-map-row"><b class="bwa-map-step">Browse Menu</b><b class="bwa-map-step">Customize Drink</b><b class="bwa-map-step">Add To Cart</b><b class="bwa-map-step">Pay</b><b class="bwa-map-step">Track Order</b></div>
+            <div class="bwa-view">
+                <input type="radio" name="bwa-view" id="bwa-view-map" checked>
+                <input type="radio" name="bwa-view" id="bwa-view-yaml">
+                <div class="bwa-view-tabs" role="group" aria-label="The same story map, two ways">
+                    <label for="bwa-view-map">What you see</label>
+                    <label for="bwa-view-yaml">What the AI sees</label>
+                </div>
+                <div class="bwa-view-panel bwa-map" role="img" aria-label="A story map of a coffee ordering app. At the top left, the user, Customer, and the activity, Order Coffee. Across, five steps in the order a customer takes them. Below each step, its tasks, most important first, divided into two releases: MVP and V1.">
+                    <div class="bwa-map-across" aria-hidden="true"><span>The user journey</span><i></i></div>
+                    <div class="bwa-map-down" aria-hidden="true"><span>The priority</span><i></i></div>
+                    <div class="bwa-map-board" aria-hidden="true">
+                        <div class="bwa-map-row"><b class="bwa-map-user">Customer</b><u></u><u></u><u></u><u></u></div>
+                        <div class="bwa-map-row"><b class="bwa-map-activity">Order Coffee</b><u></u><u></u><u></u><u></u></div>
+                        <div class="bwa-map-row"><b class="bwa-map-step">Browse Menu</b><b class="bwa-map-step">Customize Drink</b><b class="bwa-map-step">Add To Cart</b><b class="bwa-map-step">Pay</b><b class="bwa-map-step">Track Order</b></div>
                     <div class="bwa-map-slice bwa-map-first"><span>MVP</span><i></i><em>Build this first</em></div>
-                    <div class="bwa-map-row"><b>Drink list with prices</b><b>Choose size</b><b>Order summary</b><b>Apple Pay</b><b>Ready notification</b></div>
+                        <div class="bwa-map-row"><b>Drink list with prices</b><b>Choose size</b><b>Order summary</b><b>Apple Pay</b><b>Ready notification</b></div>
                     <div class="bwa-map-slice"><span>V1</span><i></i></div>
-                    <div class="bwa-map-row bwa-map-later"><b>Search by name</b><b>Select milk type</b><b>Edit or remove items</b><b>Credit card</b><b>Estimated wait time</b></div>
-                    <div class="bwa-map-slice"><span>V2</span><i></i></div>
-                    <div class="bwa-map-row bwa-map-later"><b>Filter by dietary needs</b><b>Save custom drinks</b><u></u><b>Gift cards</b><b>Queue position</b></div>
+                        <div class="bwa-map-row bwa-map-later"><b>Search by name</b><b>Select milk type</b><b>Edit or remove items</b><b>Credit card</b><b>Estimated wait time</b></div>
+                    </div>
+                </div>
+                <div class="bwa-view-panel bwa-yaml">
+                    <div class="bwa-yaml-bar">storymaps.io/abc12345.yaml</div>
+                    <pre tabindex="0"><code><span>name</span>: Coffee Ordering
+<span>users</span>:
+  - <span>name</span>: Customer
+    <span>step</span>: Browse Menu
+<span>activities</span>:
+  - <span>name</span>: Order Coffee
+    <span>step</span>: Browse Menu
+<span>steps</span>:
+  - Browse Menu
+  - Customize Drink
+  - Add To Cart
+  - Pay
+  - Track Order
+<span>slices</span>:
+  - <span>name</span>: MVP
+    <span>stories</span>:
+      <span>Browse Menu</span>:
+        - <span>name</span>: Drink list with prices
+      <span>Customize Drink</span>:
+        - <span>name</span>: Choose size
+      <span>Add To Cart</span>:
+        - <span>name</span>: Order summary
+      <span>Pay</span>:
+        - <span>name</span>: Apple Pay
+      <span>Track Order</span>:
+        - <span>name</span>: Ready notification
+  - <span>name</span>: V1
+    <span>stories</span>:
+      <span>Browse Menu</span>:
+        - <span>name</span>: Search by name
+      <span>Customize Drink</span>:
+        - <span>name</span>: Select milk type
+      <span>Add To Cart</span>:
+        - <span>name</span>: Edit or remove items
+      <span>Pay</span>:
+        - <span>name</span>: Credit card
+      <span>Track Order</span>:
+        - <span>name</span>: Estimated wait time</code></pre>
                 </div>
             </div>
         </div>

@@ -1183,7 +1183,24 @@ html.dark-mode .dev-commands dl div { background: #020617; }
 /* The text beside a small story map. The arrows name the two dimensions: across and down. */
 .bwa-why-two { display: flex; flex-wrap: wrap; align-items: center; gap: 32px 56px; }
 .bwa-why-two .dev-copy { flex: 1 1 380px; min-width: 0; }
-.bwa-map { flex: 1.3 1 480px; min-width: 0; display: grid; grid-template-columns: 30px minmax(0, 1fr); grid-template-rows: 30px auto; gap: 8px; font-size: 13px; font-weight: 700; }
+/* Two tabs over the small story map: the map a person sees, and the YAML an AI tool gets. Radio buttons
+   do the switching, so it works with no script. */
+.bwa-view { flex: 1.3 1 480px; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+.bwa-view > input { position: absolute; opacity: 0; pointer-events: none; }
+.bwa-view-tabs { display: flex; gap: 6px; align-self: flex-start; padding: 4px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); }
+.bwa-view-tabs label { display: inline-flex; align-items: center; min-height: 36px; padding: 0 16px; border-radius: 999px; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; }
+.bwa-view-tabs label:hover { color: var(--heading); }
+#bwa-view-map:checked ~ .bwa-view-tabs label[for="bwa-view-map"], #bwa-view-yaml:checked ~ .bwa-view-tabs label[for="bwa-view-yaml"] { background: var(--teal-dark); color: #ffffff; }
+#bwa-view-map:focus-visible ~ .bwa-view-tabs label[for="bwa-view-map"], #bwa-view-yaml:focus-visible ~ .bwa-view-tabs label[for="bwa-view-yaml"] { outline: 2px solid var(--teal-dark); outline-offset: 2px; }
+.bwa-view-panel { display: none; }
+#bwa-view-map:checked ~ .bwa-map { display: grid; }
+#bwa-view-yaml:checked ~ .bwa-yaml { display: block; }
+.bwa-yaml { overflow: hidden; border-radius: 12px; border: 1px solid #334155; background: #0f172a; }
+.bwa-yaml-bar { padding: 8px 16px; border-bottom: 1px solid #334155; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: #94a3b8; }
+.bwa-yaml pre { margin: 0; padding: 14px 16px; height: 340px; overflow: auto; background: none; border: 0; border-radius: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; line-height: 1.55; color: #e2e8f0; }
+.bwa-yaml code { padding: 0; background: none; border: 0; font: inherit; color: inherit; }
+.bwa-yaml code span { color: #5eead4; }
+.bwa-map { min-width: 0; grid-template-columns: 30px minmax(0, 1fr); grid-template-rows: 30px auto; gap: 8px; font-size: 13px; font-weight: 700; }
 .bwa-map-across { grid-column: 2; display: flex; align-items: center; gap: 10px; color: var(--teal-dark); }
 .bwa-map-down { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; align-items: center; gap: 10px; color: #b45309; }
 .bwa-map-down span { writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap; }
@@ -1199,7 +1216,8 @@ html.dark-mode .bwa-map-down { color: #fcd34d; }
 .bwa-map-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
 .bwa-map-row b, .bwa-map-row u { display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 4px 6px; border-radius: 4px; background: #fef08a; color: #1e293b; font-size: 11px; font-weight: 500; line-height: 1.25; text-align: center; text-decoration: none; overflow-wrap: anywhere; }
 .bwa-map-row u { background: none; }
-.bwa-map-row .bwa-map-activity { grid-column: 1 / -1; background: #bfdbfe; font-weight: 600; }
+.bwa-map-row .bwa-map-user { background: #fca5a5; font-weight: 600; }
+.bwa-map-row .bwa-map-activity { background: #bfdbfe; font-weight: 600; }
 .bwa-map-row .bwa-map-step { background: #bbf7d0; font-weight: 600; }
 .bwa-map-later b { background: #fef9c3; color: #475569; }
 .bwa-map-slice { display: flex; align-items: center; gap: 8px; font-size: 10px; letter-spacing: 0.08em; color: var(--muted, #64748b); }
