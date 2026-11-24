@@ -308,6 +308,61 @@ export function validateYaml(obj) {
         errors.push('"project" must be a project ID, such as the part after /p/ in a project link');
     }
 
+    // Values of the wrong kind. Each of these stops the story map from opening in the browser, so
+    // they are errors, and the checks further down can rely on the right kinds being there.
+    const isMap = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+    const shape = [];
+    const mustBeText = (where, key, value) => {
+        if (value == null || typeof value === 'string') return;
+        const quoted = typeof value === 'object' ? '' : `. Put it in quotes: "${value}"`;
+        shape.push(`${where}: "${key}" must be text${quoted}`);
+    };
+    // A colour anywhere in the file, in a card, step, user, activity, legend entry or partial
+    const checkColours = (value, where) => {
+        if (Array.isArray(value)) return value.forEach((v, i) => checkColours(v, `${where}[${i}]`));
+        if (!isMap(value)) return;
+        for (const [key, v] of Object.entries(value)) {
+            if (key === 'color') mustBeText(where, 'color', v);
+            else checkColours(v, where ? `${where}.${key}` : key);
+        }
+    };
+    checkColours(obj, '');
+    if (obj.name != null && typeof obj.name === 'object') shape.push('"name" must be text');
+    for (const key of ['users', 'activities', 'slices', 'legend']) {
+        if (obj[key] != null && !Array.isArray(obj[key])) shape.push(`"${key}" must be a list`);
+    }
+    if (obj.partials != null && !isMap(obj.partials)) shape.push('"partials" must be a set of named partials');
+    obj.steps.forEach((step, i) => {
+        if (typeof step === 'string') return;
+        if (!isMap(step)) shape.push(`steps[${i}] must be a step name, or a step with a name and other fields`);
+        else if (step.name != null && typeof step.name === 'object') shape.push(`steps[${i}]: "name" must be text`);
+    });
+    for (const key of ['users', 'activities']) {
+        if (!Array.isArray(obj[key])) continue;
+        obj[key].forEach((item, i) => {
+            if (!isMap(item)) shape.push(`${key}[${i}] must have a name and a step`);
+            else if (item.name != null && typeof item.name === 'object') shape.push(`${key}[${i}]: "name" must be text`);
+        });
+    }
+    if (Array.isArray(obj.slices)) obj.slices.forEach((slice, i) => {
+        if (!isMap(slice)) return shape.push(`slices[${i}] must be a slice with a name and stories`);
+        mustBeText(`slices[${i}]`, 'name', slice.name);
+        if (slice.stories == null) return;
+        if (!isMap(slice.stories)) return shape.push(`slices[${i}]: "stories" must list cards under step names`);
+        for (const [stepName, cards] of Object.entries(slice.stories)) {
+            if (cards == null) continue;
+            if (!Array.isArray(cards)) shape.push(`slices[${i}]: the cards under "${stepName}" must be a list`);
+            else cards.forEach((card, ci) => {
+                if (!isMap(card) && typeof card !== 'string') shape.push(`slices[${i}]: "${stepName}"[${ci}] must be a card with a name`);
+            });
+        }
+    });
+    if (Array.isArray(obj.legend)) obj.legend.forEach((entry, i) => {
+        if (!isMap(entry)) shape.push(`legend[${i}] must have a color and a label`);
+        else mustBeText(`legend[${i}]`, 'label', entry.label);
+    });
+    if (shape.length) return { valid: false, errors: [...errors, ...shape], warnings };
+
     const stepNames = [];
     obj.steps.forEach((step, i) => {
         if (step === 'spacer') return;

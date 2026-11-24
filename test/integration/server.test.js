@@ -418,6 +418,16 @@ describe('HTTP API', () => {
     assert.deepEqual(res.json.errors, ['Missing or empty "steps" list']);
   });
 
+  test('YAML with a value of the wrong kind, which would stop the map opening, is a 400', async () => {
+    const card = 'name: x\nsteps:\n  - Browse\nslices:\n  - name: MVP\n    stories:\n      Browse:\n        - name: One\n          color: {a: 1}\n';
+    const res = await api('POST', '/api/maps', { body: card, yaml: true });
+    assert.equal(res.status, 400);
+    assert.match(res.json.errors.join(), /"color" must be text/);
+    // A mistyped status is kept and does no harm, so it is still accepted
+    const typo = await api('POST', '/api/maps', { body: card.replace('color: {a: 1}', 'status: donee'), yaml: true });
+    assert.equal(typo.status, 201);
+  });
+
   test('a map can be created from YAML', async () => {
     const res = await api('POST', '/api/maps', { body: 'name: From YAML\nsteps:\n  - Browse\n', yaml: true });
     assert.equal(res.status, 201);

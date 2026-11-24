@@ -199,6 +199,46 @@ describe('validateYaml', () => {
   });
 });
 
+describe('validateYaml: values of the wrong kind', () => {
+  const check = (yaml) => validateYaml(jsyaml.load(yaml));
+  const SLICE = 'slices:\n  - name: MVP\n    stories:\n      Sign up:\n        - name: Form\n';
+  const bad = {
+    'a card colour that is not text': [MAP + SLICE + '          color: {a: 1}\n', /"color" must be text/],
+    'a card colour that is a number': [MAP + SLICE + '          color: 5\n', /"color" must be text\. Put it in quotes: "5"/],
+    'a step colour that is not text': ['name: x\nsteps:\n  - name: A\n    color: [red]\n', /steps\[0\]: "color" must be text/],
+    'a user colour that is not text': [MAP + 'users:\n  - name: Sam\n    step: Sign up\n    color: true\n', /users\[0\]: "color" must be text/],
+    'a legend colour that is not text': [MAP + 'legend:\n  - color: {a: 1}\n    label: Tasks\n', /legend\[0\]: "color" must be text/],
+    'a legend label that is not text': [MAP + 'legend:\n  - color: "#fef08a"\n    label: 5\n', /legend\[0\]: "label" must be text\. Put it in quotes: "5"/],
+    'a legend that is not a list': [MAP + 'legend: oops\n', /"legend" must be a list/],
+    'a slice name that is a number': [MAP + SLICE.replace('name: MVP', 'name: 2026'), /slices\[0\]: "name" must be text\. Put it in quotes: "2026"/],
+    'a slice that is only a word': [MAP + 'slices:\n  - oops\n', /slices\[0\] must be a slice/],
+    'slices that are not a list': [MAP + 'slices:\n  a: 1\n', /"slices" must be a list/],
+    'cards that are not a list': [MAP + 'slices:\n  - name: MVP\n    stories:\n      Sign up: oops\n', /cards under "Sign up" must be a list/],
+    'a map name that is not text': ['name: {a: 1}\nsteps:\n  - A\n', /"name" must be text/],
+    'a step name that is not text': ['name: x\nsteps:\n  - name: {a: 1}\n', /steps\[0\]: "name" must be text/],
+    'a step that is a number': ['name: x\nsteps:\n  - A\n  - 7\n', /steps\[1\] must be a step name/],
+    'partials that are not named': [MAP + 'partials: oops\n', /"partials" must be a set of named partials/],
+    'a colour inside a partial that is not text': ['name: x\nsteps:\n  - partial: pay\npartials:\n  pay:\n    steps:\n      - name: Pay\n        color: 5\n', /partials\.pay\.steps\[0\]: "color" must be text/],
+  };
+  for (const [label, [yaml, message]] of Object.entries(bad)) {
+    test(`rejects ${label}`, () => {
+      const result = check(yaml);
+      assert.equal(result.valid, false);
+      assert.match(result.errors.join('\n'), message);
+    });
+  }
+
+  test('a typo in a status, colour name or points is not an error', () => {
+    const result = check(MAP + SLICE + '          status: donee\n          color: purplee\n          points: lots\n          statuss: done\n');
+    assert.equal(result.valid, true);
+    assert.deepEqual(result.errors, []);
+  });
+
+  test('a card can be only a name, and a number is a fine card name', () => {
+    assert.ok(check(MAP + 'slices:\n  - name: MVP\n    stories:\n      Sign up:\n        - Form\n        - name: 42\n').valid);
+  });
+});
+
 describe('project key', () => {
   test('is written straight after id, and loading the YAML ignores it', () => {
     const yaml = exportToYaml({ name: 'CLI', id: '1g2pt83x', project: 'jas75z7l', site: 'storymaps.io', steps: [{ name: 'Sign up' }], slices: [] });
