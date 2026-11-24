@@ -1185,7 +1185,9 @@ html.dark-mode .dev-commands dl div { background: #020617; }
 .bwa-why-two .dev-copy { flex: 1 1 380px; min-width: 0; }
 /* Two tabs over the small story map: the map a person sees, and the YAML an AI tool gets. Radio buttons
    do the switching, so it works with no script. */
-.bwa-view { flex: 1.3 1 480px; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+/* Positioned, so the hidden radio buttons below stay inside it. Left to the page, they sit outside
+   the scrolling area, and choosing one scrolled the whole window up under the header for good. */
+.bwa-view { position: relative; flex: 1.3 1 480px; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
 .bwa-view > input { position: absolute; opacity: 0; pointer-events: none; }
 .bwa-view-tabs { display: flex; gap: 6px; align-self: flex-start; padding: 4px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); }
 .bwa-view-tabs label { display: inline-flex; align-items: center; min-height: 36px; padding: 0 16px; border-radius: 999px; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; }
