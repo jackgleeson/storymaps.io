@@ -26,6 +26,7 @@ import { DATA_DIR, LOCK_FILE, BACKUPS_DIR, getBackupFile, ensureDataDir, readJso
 import { isRateLimited, isProxyRateLimited, isCreateRateLimited, reservePasswordAttempt, refundPasswordAttempt } from './server/rate-limit.js';
 import { sanitizeFilename } from './server/http-helpers.js';
 import { serializeDoc, contentEtag, loadAndSerialize, appendLogEntry, diffPush, writeDocFromJson, countCards } from './server/serialization.js';
+import { badValuesLine } from './server/bad-values.js';
 import { createRouter } from './server/router.js';
 import { createProjects } from './server/projects.js';
 import { isOriginAllowed, isCliApi, parseBody } from './server/middleware.js';
@@ -565,6 +566,8 @@ const keepLockedMapsReadOnly = (ws, docName) => {
   });
 };
 
+const badValueChecked = new Set();
+const BAD_VALUE_CHECK_MS = Number(process.env.BAD_VALUE_CHECK_MS) || 5000;
 wss.on('connection', (ws, req) => {
   // A connection that breaks the protocol (too many fragments, a message over the size limit)
   // emits 'error', then ws closes it. Without a listener, the error would crash the server.
@@ -597,6 +600,22 @@ wss.on('connection', (ws, req) => {
 
     // Track updates with debounce
     doc.on('update', () => trackMapUpdate(docName, doc));
+
+    // A map stored with a value the browser cannot draw (see server/bad-values.js) opens to a blank
+    // page. Log which map and which fields, once the map has had time to load from disk. Once per
+    // map while the server runs, and never the values themselves.
+    if (!badValueChecked.has(docName)) {
+      badValueChecked.add(docName);
+      setTimeout(() => {
+        if (docs.get(docName) !== doc) return;
+        try {
+          const line = badValuesLine(docName, serializeDoc(doc));
+          if (line) console.warn(line);
+        } catch (err) {
+          console.warn(`[${new Date().toISOString()}] [bad-values] ${docName}: could not be read: ${err.message}`);
+        }
+      }, BAD_VALUE_CHECK_MS).unref();
+    }
 
     // Count activity-log entries from connected clients. Loading a map from disk replays
     // its log with no origin, and CLI pushes are counted by the PUT route.

@@ -38,6 +38,8 @@ export const startServer = async (dataDir, extraEnv = {}) => {
   return {
     base: `http://localhost:${port}`,
     wsBase: `ws://localhost:${port}`,
+    // What the server has printed so far, for tests of what is logged
+    output: () => output,
     // Stops the server the way Docker does, so it writes everything to disk first
     stop: async () => {
       if (server.exitCode !== null) return;
