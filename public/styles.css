@@ -1043,8 +1043,27 @@ body.welcome-visible .gh-star {
 
     /* The "Start a project" prompt goes too. A map in a project keeps its tabs, which are how you move
        between its maps without leaving full screen. They stop short of the floating buttons. */
-    body.fullscreen-mode:not(.in-project) .project-bar {
+    body.fullscreen-mode:not(.in-project) .project-bar:not(.panel-open) {
         display: none;
+    }
+
+    /* "Start a project" in the menu still opens its box. The bar takes no room and shows only the
+       box, under the floating buttons. */
+    body.fullscreen-mode:not(.in-project) .project-bar.panel-open {
+        max-width: none;
+        height: 0;
+        min-height: 0;
+        margin: 0;
+    }
+
+    body.fullscreen-mode:not(.in-project) .project-bar.panel-open > :not(.project-panel) {
+        display: none;
+    }
+
+    body.fullscreen-mode:not(.in-project) .project-bar.panel-open .project-panel {
+        top: 50px;
+        left: auto !important;
+        right: 0;
     }
 
     body.fullscreen-mode.in-project .project-bar {

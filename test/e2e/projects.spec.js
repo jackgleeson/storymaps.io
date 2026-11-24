@@ -43,6 +43,21 @@ const pullContent = async (pullMap, id) => {
   return content;
 };
 
+test('in full screen, Start a project in the menu opens the box and makes the project', async ({ page, createMap }) => {
+  await openMap(page, await createMap(map('Ordering')), 2);
+  await page.evaluate(() => document.body.classList.add('fullscreen-mode'));
+  await expect(page.locator('#projectAddBtn')).toBeHidden();
+
+  await openMenu(page, 'projectMenuBtn');
+  await expect(panel(page).getByRole('heading')).toHaveText('Start a project');
+  await expect(panel(page)).toBeInViewport({ ratio: 1 });
+  await expect(page.locator('#projectAddBtn')).toBeHidden();
+  await panel(page).getByLabel('Project name').fill('Coffee App');
+  await panel(page).getByRole('button', { name: 'Create project' }).click();
+  await expect(page).toHaveURL(/\/p\/[a-z0-9]{8}\//);
+  await expect(tabs(page)).toHaveCount(1);
+});
+
 test('a map in no project offers to start one, which asks only for a name', async ({ page, createMap }) => {
   const [a, b] = [await createMap(map('Ordering')), await createMap(map('Loyalty'))];
   await openMap(page, a, 2);
