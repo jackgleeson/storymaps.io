@@ -238,3 +238,55 @@ test('the tags popover opens above a card when there is room', async ({ page, cr
   expect(place).toMatchObject({ shown: true, above: true, below: false });
   await expect(page.locator('.card-tags-popover.below')).toHaveCount(0);
 });
+
+test('the tags popover sits above other cards and the card buttons stay out of its way', async ({ page, createMap }) => {
+  await openMap(page, await createMap(TAGS_MAP));
+  await choose(page, 'off');
+  const card = page.locator('.slice-container .story-card').first();
+  const more = card.locator('.card-tag-overflow');
+  const row = card.locator('.card-tags-row');
+  const look = () => card.evaluate(el => ({
+    buttons: getComputedStyle(el.querySelector('.btn-options')).opacity,
+    row: getComputedStyle(el.querySelector('.card-tags-row')).zIndex,
+  }));
+
+  // On the card but off the tags, the buttons show and the tags sit at their usual level
+  await card.locator('.story-text').hover();
+  await expect.poll(look).toEqual({ buttons: '1', row: '5' });
+
+  // On the tags, the popover opens, its row comes above the cards around it and the buttons hide
+  await more.hover();
+  await expect.poll(look).toEqual({ buttons: '0', row: '21' });
+
+  // Back on the card, both return
+  await card.locator('.story-text').hover();
+  await expect.poll(look).toEqual({ buttons: '1', row: '5' });
+
+  // A click keeps the popover open after the pointer leaves, and its row stays above
+  await more.click();
+  await page.mouse.move(900, 600);
+  await expect(more.locator('.card-tags-popover')).toBeVisible();
+  await expect(row).toHaveCSS('z-index', '21');
+  await more.click();
+  await page.mouse.move(900, 600);
+  await expect(row).toHaveCSS('z-index', '5');
+});
+
+test('changing a card while the pointer is on its tags does not leave the card buttons hidden', async ({ page, createMap }) => {
+  await openMap(page, await createMap(TAGS_MAP));
+  await choose(page, 'off');
+  const card = page.locator('.slice-container .story-card').first();
+  await card.locator('.card-tag-overflow').hover();
+  await expect(card).toHaveClass(/tags-hover/);
+
+  // A change of colour draws the tags again under the pointer. The old tags can't say it left.
+  await page.evaluate(async () => {
+    const [{ state }, ui] = await Promise.all([import('/src/core/state.js'), import('/src/ui/ui.js')]);
+    const item = Object.values(state.slices[0].stories).flat().find(c => c.name === 'Tagged card');
+    item.color = '#bbf7d0';
+    ui.patchCardForItem(item);
+  });
+  await card.locator('.story-text').hover();
+  await expect(card).not.toHaveClass(/tags-hover/);
+  await expect(card.locator('.btn-options')).toHaveCSS('opacity', '1');
+});

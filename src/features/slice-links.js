@@ -11,7 +11,29 @@ import { frozenRowsHeight } from '/src/features/freeze-rows.js';
 
 let _deps = {};
 
-export const init = (deps) => { _deps = deps; };
+export const init = (deps) => {
+    _deps = deps;
+    watchSliceNameHover();
+};
+
+// While the pointer is on a slice name the rest of the map is dimmed: each row of the top part and
+// each other slice gets .slice-name-dimmed, which the stylesheet reads. Marking those few elements
+// keeps the restyle to them. A class on the map, or :has() in the stylesheet, has the browser
+// restyle every card. Every move onto another element checks again, so a name that was redrawn or
+// removed under the pointer can't leave the map dimmed.
+const watchSliceNameHover = () => {
+    const map = dom.storyMap;
+    let standsOut = null;
+    const dimAllBut = (slice) => {
+        if (slice === standsOut) return;
+        standsOut = slice;
+        for (const part of map.querySelectorAll('.map-top-inner > *, .map-body > *')) {
+            part.classList.toggle('slice-name-dimmed', !!slice && part !== slice);
+        }
+    };
+    map.addEventListener('mouseover', (e) => dimAllBut(e.target.closest?.('.slice-label')?.closest('.map-body > *') ?? null));
+    map.addEventListener('mouseleave', () => dimAllBut(null));
+};
 
 // A link to the open map with a hash for a slice or card. A map open in a project links to it at
 // the project link, so the tabs come with it.

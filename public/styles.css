@@ -3838,15 +3838,18 @@ html.dark-mode .slice-details-date::-webkit-calendar-picker-indicator {
    colour behind them stays solid and frozen rows still hide the cards that scroll under them. */
 /* Resting the pointer on a slice name dims the rest of the map, the same way a slice link does,
    so the slice stands out on a busy map. It waits a moment first, so the map does not flicker as
-   the pointer passes over the names, and it is off during the tour. */
+   the pointer passes over the names, and it is off during the tour.
+   src/features/slice-links.js sets .slice-name-dimmed on the parts to dim while the pointer is on a
+   name. A :has() rule here did the same job, but with one inside the map the browser restyles every
+   element in the map whenever anything in it changes, and that slows every edit and drag on a big
+   story map. */
 @media (hover: hover) {
     .story-map .map-top-inner > *,
     .story-map .map-body > * {
         transition: opacity 0.25s ease;
     }
 
-    body:not(.tour-active) .story-map:not(.slice-details-focus):has(.slice-label:hover) .map-top-inner > *,
-    body:not(.tour-active) .story-map:not(.slice-details-focus):has(.slice-label:hover) .map-body > :not(:has(.slice-label:hover)) {
+    body:not(.tour-active) .story-map:not(.slice-details-focus) .slice-name-dimmed {
         opacity: 0.25;
         transition-delay: 0.3s;
     }
@@ -3979,8 +3982,10 @@ html.dark-mode .slice-container.slice-spotlight-land {
     opacity: 1;
 }
 
-.story-card:has(.card-tag-overflow:hover) .btn-options,
-.story-card:has(.card-tag-overflow:hover) .btn-expand {
+/* The card buttons stay out of the way of the tags popover. src/ui/ui.js sets .tags-hover while
+   the pointer is on the tags (no :has() inside the map, see .slice-name-dimmed). */
+.story-card.tags-hover .btn-options,
+.story-card.tags-hover .btn-expand {
     opacity: 0 !important;
 }
 
@@ -8376,9 +8381,10 @@ body.read-only-mode .story-card.card-selected {
     max-width: 60%;
 }
 
-/* An open tags popover sits above the tags of the cards around it */
-.card-tags-row:has(.card-tag-overflow:hover),
-.card-tags-row:has(.card-tags-popover[style*="flex"]) {
+/* An open tags popover sits above the tags of the cards around it. src/ui/ui.js sets .tags-hover
+   under the pointer and .tags-open after a click. */
+.card-tags-row.tags-hover,
+.card-tags-row.tags-open {
     z-index: 21;
 }
 

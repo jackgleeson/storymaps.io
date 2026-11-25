@@ -823,6 +823,8 @@ const patchSliceMetrics = (sliceId) => {
 };
 
 const buildIndicators = (item, card) => {
+    // The tags the pointer was on are about to be replaced, and can no longer say it has left
+    card?.classList.remove('tags-hover');
     const wrap = el('div', 'card-indicators');
     const urlIndicator = createUrlIndicator(item.url);
     if (urlIndicator) wrap.appendChild(urlIndicator);
@@ -852,7 +854,24 @@ const placeTagsPopover = (popover) => {
 
 const toggleTagsPopover = (popover) => {
     popover.style.display = popover.style.display === 'flex' ? 'none' : 'flex';
+    popover.closest('.card-tags-row')?.classList.toggle('tags-open', popover.style.display === 'flex');
     placeTagsPopover(popover);
+};
+
+// While the pointer is on the tags that open the popover, the tags row and its card are marked, so
+// the popover sits above the cards around it and the card buttons stay out of its way. The
+// stylesheet reads these classes. It used :has() for this, and with :has() inside the map the
+// browser restyles every element in the map whenever anything in it changes.
+const watchTagsHover = (trigger, popover, tagsRow, card) => {
+    trigger.addEventListener('mouseenter', () => {
+        placeTagsPopover(popover);
+        tagsRow.classList.add('tags-hover');
+        card?.classList.add('tags-hover');
+    });
+    trigger.addEventListener('mouseleave', () => {
+        tagsRow.classList.remove('tags-hover');
+        card?.classList.remove('tags-hover');
+    });
 };
 
 const buildCardTags = (tags, card) => {
@@ -877,7 +896,7 @@ const buildCardTags = (tags, card) => {
             e.stopPropagation();
             toggleTagsPopover(popover);
         });
-        overflow.addEventListener('mouseenter', () => placeTagsPopover(popover));
+        watchTagsHover(overflow, popover, tagsRow, card);
         tagsRow.appendChild(overflow);
     } else {
         // When all tags are visible, check if any are truncated and add popover
@@ -896,7 +915,7 @@ const buildCardTags = (tags, card) => {
                 e.stopPropagation();
                 toggleTagsPopover(popover);
             });
-            anchor.addEventListener('mouseenter', () => placeTagsPopover(popover));
+            watchTagsHover(anchor, popover, tagsRow, card);
             tagsRow.appendChild(anchor);
             // Make badges also act as click triggers
             badges.forEach(b => {

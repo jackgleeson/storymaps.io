@@ -327,3 +327,46 @@ slices:
   await expect.poll(() => opacity(first)).toBe('1');
   await expect.poll(() => opacity(top)).toBe('1');
 });
+
+test('a slice name that goes away under the pointer does not leave the story map dimmed', async ({ page, createMap }) => {
+  const id = await createMap(`name: Dim
+steps:
+  - Browse
+slices:
+  - name: First
+    stories:
+      Browse:
+        - name: Drink list
+  - name: Second
+    stories:
+      Browse:
+        - name: Pick size
+`);
+  await openMap(page, id, 1);
+  const dimmed = page.locator('.slice-name-dimmed');
+  const first = page.locator('.slice-container').first();
+  await page.locator('.slice-container').nth(1).locator('.slice-label').hover();
+  await expect.poll(() => first.evaluate(el => getComputedStyle(el).opacity)).toBe('0.25');
+
+  // The slice under the pointer is deleted by someone else, so the name is gone with no move of the pointer
+  await page.evaluate(async () => {
+    const [{ state }, render] = await Promise.all([import('/src/core/state.js'), import('/src/ui/render.js')]);
+    state.slices.pop();
+    render.render();
+  });
+  // The next move of the pointer, to anywhere that is not a name, leaves nothing dimmed
+  await first.locator('.story-card').hover();
+  await expect(dimmed).toHaveCount(0);
+  await expect.poll(() => first.evaluate(el => getComputedStyle(el).opacity)).toBe('1');
+
+  // Leaving the story map from a name clears it too
+  await page.evaluate(async () => {
+    const [{ state }, render] = await Promise.all([import('/src/core/state.js'), import('/src/ui/render.js')]);
+    state.slices.push({ id: 'second', name: 'Second', collapsed: false, stories: {} });
+    render.render();
+  });
+  await first.locator('.slice-label').hover();
+  await expect(dimmed).not.toHaveCount(0);
+  await page.mouse.move(600, 5);
+  await expect(dimmed).toHaveCount(0);
+});
