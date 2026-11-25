@@ -2928,6 +2928,19 @@ body.tour-active .log-stats {
     position: relative;
 }
 
+/* A story map of 300 cards or more (BIG_MAP_CARDS in src/ui/render.js): while a card is dragged, the browser
+   skips the cards that are off screen, so each move lays out a screenful and not the whole map.
+   A skipped card keeps the height it last had, which the browser remembers for cards given "auto"
+   here. Only during a drag: skipping a card makes measuring it slow, and every redraw measures them
+   all. The dragged card is left alone, as skipping also clips the count badge at its corner. */
+.story-map.big-map .story-column .story-card {
+    contain-intrinsic-height: auto 90px;
+}
+
+body.dragging-cards .story-map.big-map .story-column .story-card:not(.sortable-chosen, .sortable-ghost, .sortable-drag) {
+    content-visibility: auto;
+}
+
 /* Disable hover effects when main menu is open (prevents print artifacts) */
 body.main-menu-open .story-card:hover,
 body.main-menu-open .step:hover {

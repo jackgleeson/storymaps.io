@@ -26,6 +26,21 @@ const skipFirstVisit = () => {
   localStorage.setItem('tourCompleted', 'true');
 };
 
+// Every redraw in a test is checked against the whole map built again from nothing (see
+// src/ui/redraw-check.js). The page logs a difference, and the test that caused it fails.
+// The tests use the redraw that keeps what has not changed on every map, whatever its size, so
+// they all exercise it (see redrawMode in src/ui/render.js).
+const checkRedraws = () => {
+  window.__redrawCheck = true;
+  localStorage.setItem('redraw', 'keep');
+};
+const watchRedraws = (page) => {
+  const differences = [];
+  page.on('console', (msg) => { if (msg.text().startsWith('[redraw-check]')) differences.push(msg.text()); });
+  return differences;
+};
+const expectSameAsBuilt = (differences) => expect(differences, 'a redraw left the page different from the map built from nothing').toEqual([]);
+
 // A made-up client address, so each test has its own rate-limit allowance on the server
 const clientAddress = () => ({ 'X-Forwarded-For': `198.18.${Math.floor(Math.random() * 256)}.${Math.floor(Math.random() * 256)}` });
 
@@ -35,8 +50,11 @@ export const test = base.extend({
   },
 
   page: async ({ page }, use) => {
+    const differences = watchRedraws(page);
     await page.addInitScript(skipFirstVisit);
+    await page.addInitScript(checkRedraws);
     await use(page);
+    expectSameAsBuilt(differences);
   },
 
   // Make a map through the API, the way the CLI does, and return its ID
@@ -51,14 +69,18 @@ export const test = base.extend({
   // A second person: a separate browser context, so a separate session
   openSecondTab: async ({ browser }, use) => {
     const contexts = [];
+    const differences = [];
     await use(async () => {
       const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, extraHTTPHeaders: clientAddress() });
       contexts.push(context);
       const page = await context.newPage();
+      differences.push(watchRedraws(page));
       await page.addInitScript(skipFirstVisit);
+      await page.addInitScript(checkRedraws);
       return page;
     });
     await Promise.all(contexts.map(c => c.close()));
+    expectSameAsBuilt(differences.flat());
   },
 
   // The map as the server has it, for checking what was saved

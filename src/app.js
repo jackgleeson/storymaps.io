@@ -148,14 +148,25 @@ const saveToStorage = () => {
     }
 };
 
+// A redraw draws changed cards new, so a search or filter in use is applied again
+const reapplySearch = () => {
+    if (dom.searchInput.value.trim() || hasActiveFilters()) {
+        applySearchFilter(dom.searchInput.value.trim());
+    }
+};
+
 // Combined render and save - used after state mutations
 const renderAndSave = () => {
     partials.ensurePartialBlankCol();
     render();
     saveToStorage();
-    if (dom.searchInput.value.trim() || hasActiveFilters()) {
-        applySearchFilter(dom.searchInput.value.trim());
-    }
+    reapplySearch();
+};
+
+// The redraw after a change from someone else
+const renderFromRemote = () => {
+    render();
+    reapplySearch();
 };
 
 const { openExpandModal, closeExpandModal } = cardExpand;
@@ -1485,7 +1496,7 @@ yjs.init({
     log,
     connectionStatus,
     isMapEditable,
-    render,
+    render: renderFromRemote,
     setPreserveToolbar,
     onSync: () => cardExpand.refreshFromRemote(),
 });

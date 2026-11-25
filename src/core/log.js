@@ -218,6 +218,9 @@ export const logTextEdit = (label, itemId) => {
 const render = () => {
     if (!_container || !_yarray) return;
     renderStats();
+    // The entry under the pointer is about to be replaced and can no longer say the pointer left,
+    // so take its highlight off the map now
+    document.querySelectorAll('.log-highlight').forEach(el => el.classList.remove('log-highlight'));
 
     const entries = _yarray.toArray();
 

@@ -3,6 +3,7 @@
 
 import { generateId, CARD_COLORS } from '/src/core/constants.js';
 import { showConfirm } from '/src/core/modals.js';
+import { heldObjects, keepHeldObjects } from '/src/core/keep-objects.js';
 
 export const state = {
     mapId: null,
@@ -81,8 +82,11 @@ const snapshotState = () => JSON.stringify({
     })),
 });
 
+// The cards keep the objects they had, with the values from the snapshot, so the redraw after an
+// undo draws only the cards the undo changed
 const restoreSnapshot = (json) => {
     const snap = JSON.parse(json);
+    const before = heldObjects(state);
     state.name = snap.name;
     state.columns = snap.columns;
     state.users = snap.users;
@@ -91,6 +95,7 @@ const restoreSnapshot = (json) => {
     state.legend = snap.legend;
     state.notes = snap.notes;
     state.partialMaps = snap.partialMaps || [];
+    keepHeldObjects(state, before);
 };
 
 export const pushUndo = () => {

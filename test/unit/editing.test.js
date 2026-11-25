@@ -7,6 +7,7 @@ const fakeElement = () => ({ value: '', querySelector: () => null, querySelector
 globalThis.document ??= { getElementById: () => fakeElement() };
 globalThis.window ??= { location: { hostname: 'storymaps.io' } };
 window.matchMedia ??= () => ({ matches: false, addEventListener() {} });
+window.addEventListener ??= () => {};
 globalThis.requestAnimationFrame ??= () => 0;
 const memoryStorage = () => {
   const items = new Map();

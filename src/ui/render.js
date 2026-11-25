@@ -7,7 +7,9 @@ import { partialMapEditState } from '/src/core/state.js';
 import { showAlert, showConfirm, showPrompt } from '/src/core/modals.js';
 import { quoted } from '/src/core/log.js';
 import { openSliceDetails } from '/src/features/slice-links.js';
-import { mapBody, fitMapTop } from '/src/ui/map-top.js';
+import { mapTop, mapBody, fitMapTop } from '/src/ui/map-top.js';
+import { compareMaps } from '/src/ui/redraw-check.js';
+import { startKeeping, stopKeeping, keyed, leaf, sync } from '/src/ui/keep.js';
 
 let _state = null;
 let _dom = null;
@@ -52,6 +54,11 @@ export const init = ({ state, isMapEditable, pushUndo, saveToStorage, renderAndS
     _replaceWithPartial = replaceWithPartial;
     _logEvent = logEvent;
     _logTextEdit = logTextEdit;
+
+    // A change of window size or a font arriving can change how titles wrap, and cards are measured
+    // when they are drawn. The next redraw draws them all, as every redraw used to.
+    window.addEventListener('resize', () => { _drawn = null; });
+    document.fonts?.ready.then(() => { _drawn = null; });
 };
 
 const _getEditingPartialColIds = () => {
@@ -63,57 +70,17 @@ const _getEditingPartialColIds = () => {
 // Rendering
 // =============================================================================
 
-export const render = () => {
-    // Save focused textarea before clearing DOM
-    let savedFocus = null;
-    const active = document.activeElement;
-    if (active && active.tagName === 'TEXTAREA') {
-        const card = active.closest('.story-card');
-        const step = active.closest('.step');
-
-        if (card && card.dataset.storyId) {
-            savedFocus = {
-                selector: `.story-card[data-story-id="${card.dataset.storyId}"] .story-text`,
-                selStart: active.selectionStart || 0,
-                selEnd: active.selectionEnd || 0
-            };
-        } else if (step && step.dataset.columnId) {
-            savedFocus = {
-                selector: `.step[data-column-id="${step.dataset.columnId}"] .step-text`,
-                selStart: active.selectionStart || 0,
-                selEnd: active.selectionEnd || 0
-            };
-        }
-    }
-
-    // Preserve scroll position across DOM rebuild
-    const savedScrollLeft = _dom.storyMapWrapper.scrollLeft;
-    const savedScrollTop = _dom.storyMapWrapper.scrollTop;
-
-    // Preserve hover state across DOM rebuild (prevents button flicker on remote edits)
-    const hoveredCard = _dom.storyMap.querySelector('.story-card:hover');
-    const hoveredStep = _dom.storyMap.querySelector('.step:hover');
-    let savedHover = null;
-    if (hoveredCard && hoveredCard.dataset.storyId) {
-        savedHover = { sel: `.story-card[data-story-id="${hoveredCard.dataset.storyId}"]` };
-    } else if (hoveredStep && hoveredStep.dataset.columnId) {
-        savedHover = { sel: `.step[data-column-id="${hoveredStep.dataset.columnId}"]` };
-    }
-
-    _dom.storyMap.classList.add('notransition');
-    _dom.storyMap.innerHTML = '';
-
+// Build the two parts of the map from what is in memory: the top rows and the slices, each zoomed
+// (see map-top.js). Nothing here touches the page, so the redraw check can build a second copy.
+const buildMapParts = () => {
     // The top rows and the slices go in two parts, each zoomed (see map-top.js)
     const mapTopEl = el('div', 'map-top');
-    const topRows = el('div', 'map-top-inner');
+    const topRows = keyed(el('div', 'map-top-inner'), 'top-rows');
     mapTopEl.appendChild(topRows);
     const bodyEl = el('div', 'map-body');
-    _dom.storyMap.append(mapTopEl, bodyEl);
 
-    // Apply partial editing class for dimming
     const editingPmId = partialMapEditState.activeId;
     const editingColIds = _getEditingPartialColIds();
-    _dom.storyMap.classList.toggle('partial-editing', !!editingPmId);
 
     const expandedIds = partialMapEditState.expandedIds;
     const hasAnyExpanded = expandedIds.size > 0 && !editingPmId;
@@ -141,8 +108,8 @@ export const render = () => {
     }
 
     // Steps row (the backbone)
-    const stepsRow = el('div', 'steps-row');
-    const stepsLabel = el('div', 'steps-row-spacer');
+    const stepsRow = keyed(el('div', 'steps-row'), 'row:steps');
+    const stepsLabel = leaf(el('div', 'steps-row-spacer'), 'label');
     stepsLabel.appendChild(el('span', 'row-type-label', { text: 'Steps' }));
     stepsRow.appendChild(stepsLabel);
 
@@ -215,6 +182,77 @@ export const render = () => {
         bodyEl.appendChild(createSliceContainer(slice, index));
     });
 
+    return [mapTopEl, bodyEl];
+};
+
+export const render = () => {
+    // A redraw in the middle of a drag takes the dragged card from under the pointer, and the drop
+    // is lost. So a redraw asked for during a drag, by a change from someone else, waits for the drop.
+    if (_dragInProgress) {
+        _redrawWaiting = true;
+        return;
+    }
+    _redrawWaiting = false;
+    markBigMap();
+    // Save focused textarea before clearing DOM
+    let savedFocus = null;
+    const active = document.activeElement;
+    if (active && active.tagName === 'TEXTAREA') {
+        const card = active.closest('.story-card');
+        const step = active.closest('.step');
+
+        if (card && card.dataset.storyId) {
+            savedFocus = {
+                selector: `.story-card[data-story-id="${card.dataset.storyId}"] .story-text`,
+                selStart: active.selectionStart || 0,
+                selEnd: active.selectionEnd || 0
+            };
+        } else if (step && step.dataset.columnId) {
+            savedFocus = {
+                selector: `.step[data-column-id="${step.dataset.columnId}"] .step-text`,
+                selStart: active.selectionStart || 0,
+                selEnd: active.selectionEnd || 0
+            };
+        }
+    }
+
+    // Preserve scroll position across DOM rebuild
+    const savedScrollLeft = _dom.storyMapWrapper.scrollLeft;
+    const savedScrollTop = _dom.storyMapWrapper.scrollTop;
+
+    // Preserve hover state across DOM rebuild (prevents button flicker on remote edits)
+    const hoveredCard = _dom.storyMap.querySelector('.story-card:hover');
+    const hoveredStep = _dom.storyMap.querySelector('.step:hover');
+    let savedHover = null;
+    if (hoveredCard && hoveredCard.dataset.storyId) {
+        savedHover = { sel: `.story-card[data-story-id="${hoveredCard.dataset.storyId}"]` };
+    } else if (hoveredStep && hoveredStep.dataset.columnId) {
+        savedHover = { sel: `.step[data-column-id="${hoveredStep.dataset.columnId}"]` };
+    }
+
+    // Apply partial editing class for dimming
+    _dom.storyMap.classList.toggle('partial-editing', !!partialMapEditState.activeId);
+
+    const keeping = canKeep();
+    let topRows;
+    if (keeping) {
+        // Build with stand-ins for the cards and steps that have not changed, then bring the page
+        // into line with what was built (see keep.js)
+        let parts;
+        startKeeping(_dom.storyMap);
+        try { parts = buildMapParts(); } finally { stopKeeping(); }
+        topRows = mapTop(_dom.storyMap).firstElementChild;
+        sync(topRows, parts[0].firstElementChild);
+        sync(mapBody(_dom.storyMap), parts[1]);
+    } else {
+        _dom.storyMap.classList.add('notransition');
+        _dom.storyMap.innerHTML = '';
+        const [mapTopEl, bodyEl] = buildMapParts();
+        topRows = mapTopEl.firstElementChild;
+        _dom.storyMap.append(mapTopEl, bodyEl);
+    }
+    _drawn = { mapId: _state.mapId, plain: isPlain() };
+
     // The top part holds its zoomed height, and keeps it as the rows grow while editing
     fitMapTop(_dom.storyMap);
     topRowsObserver ??= new ResizeObserver(() => fitMapTop(_dom.storyMap));
@@ -235,7 +273,8 @@ export const render = () => {
     // Restore focus if user was editing
     if (savedFocus) {
         const textarea = _dom.storyMap.querySelector(savedFocus.selector);
-        if (textarea) {
+        // A kept card still has the cursor where it was
+        if (textarea && textarea !== document.activeElement) {
             textarea.focus();
             const len = textarea.value.length;
             const selStart = Math.min(savedFocus.selStart, len);
@@ -247,32 +286,115 @@ export const render = () => {
     // Restore hover state to prevent button flicker on remote edits
     if (savedHover) {
         const el = _dom.storyMap.querySelector(savedHover.sel);
-        if (el) {
+        if (el && !el.classList.contains('card-hovered')) {
             el.classList.add('card-hovered');
             el.addEventListener('mouseleave', () => el.classList.remove('card-hovered'), { once: true });
         }
     }
 
-    _dom.storyMap.offsetHeight; // force reflow to flush no-transition state
-    _dom.storyMap.classList.remove('notransition');
+    if (!keeping) {
+        _dom.storyMap.offsetHeight; // force reflow to flush no-transition state
+        _dom.storyMap.classList.remove('notransition');
+    }
 
     uiRenderLegend();
     uiRenderPartialsList();
     _notepadUpdate();
     updateSelectionUI();
+
+    if (window.__redrawCheck) checkRedraw();
 };
 
 let topRowsObserver = null;
 
+// What the last redraw put on the page: for which map, and whether it was the plain map, with no
+// partial being edited or shown expanded
+let _drawn = null;
+const isPlain = () => !partialMapEditState.activeId && partialMapEditState.expandedIds.size === 0;
+
+// Which redraw to use. 'keep' keeps the cards and steps that have not changed (see keep.js), and
+// 'full' builds everything again. For now only a big story map keeps, where a full redraw is slow
+// enough to feel. The redraw item in this browser's storage overrides that either way, to try
+// keeping on any map or to switch it off if it misbehaves.
+const redrawMode = () => {
+    const choice = localStorage.getItem('redraw');
+    if (choice === 'keep' || choice === 'full') return choice;
+    return isBigMap() ? 'keep' : 'full';
+};
+
+// A redraw can keep what is on the page when the page shows this same map, drawn plain, and it is
+// plain now. Editing a partial or showing one expanded changes every row and marks the steps, so
+// those draw in full, as does the first plain redraw after them.
+const canKeep = () => redrawMode() === 'keep' && isPlain() && !!_drawn?.plain && _drawn.mapId === _state.mapId
+    && !!mapTop(_dom.storyMap)?.firstElementChild && !!mapBody(_dom.storyMap);
+
+// For the browser tests: the map on the page must match the whole map built again from nothing
+// (see redraw-check.js)
+const checkRedraw = () => {
+    const fresh = el('div');
+    fresh.append(...buildMapParts());
+    const difference = compareMaps(_dom.storyMap, fresh);
+    if (difference) console.error(`[redraw-check] ${difference}`);
+};
+
 // Store Sortable instances to destroy on re-render
 let sortableInstances = [];
+
+// See the top of render()
+let _dragInProgress = false;
+let _redrawWaiting = false;
+const dragStarted = () => { _dragInProgress = true; };
+// Run what a drop does, then the redraw that waited for it, if the drop did not redraw itself
+const afterDrag = (drop) => {
+    _dragInProgress = false;
+    try {
+        drop();
+    } finally {
+        if (_redrawWaiting) render();
+    }
+};
+
+// The order on the page, with what is in memory but not on the page put back in: a slice or step
+// someone else added mid-drag is not drawn until the drop. Each goes before the next one that
+// followed it.
+const withUndrawn = (drawnOrder, all) => {
+    const drawn = new Set(drawnOrder);
+    const order = [...drawnOrder];
+    all.forEach((item, i) => {
+        if (drawn.has(item)) return;
+        const next = all.slice(i + 1).find(other => drawn.has(other));
+        order.splice(next ? order.indexOf(next) : order.length, 0, item);
+    });
+    return order;
+};
 
 // Safari gives every card its own layer while a card slides aside, about 140 extra on a map of
 // 50 cards, and joining them each frame makes a drag stutter when the map is zoomed. So in Safari
 // cards move aside without sliding unless the map is at 100%. Set as a drag starts, as zoom changes.
+//
+// To slide cards aside, Sortable measures every card in the column on each move of the pointer, and
+// each measurement lays the page out again. On a story map of 1,750 cards, from a tracker import,
+// each move took seconds, and one of 400 cards already drags less smoothly than a small one. So a
+// story map of BIG_MAP_CARDS cards or more moves cards aside without sliding. Everything
+// smaller keeps the slide.
+//
+// On each move Sortable also asks every column whether it is empty, so a card let go within 5px of
+// an empty column still lands in it. On a big story map that check is a sixth of the drag time, so
+// it goes too, and a card lands in an empty column only when the pointer is over it.
+const BIG_MAP_CARDS = 300;
+const countCards = () => _state.slices.reduce((cards, slice) =>
+    cards + Object.values(slice.stories || {}).reduce((n, column) => n + column.length, 0), 0);
+// Marks the map as big before its cards are drawn, so the browser never lays out the ones off screen
+// (.big-map in styles.css)
+const markBigMap = () => _dom.storyMap.classList.toggle('big-map', countCards() >= BIG_MAP_CARDS);
+const isBigMap = () => _dom.storyMap.classList.contains('big-map');
 const setDragAnimation = () => {
-    const slide = _getIsSafari() && Math.abs(_zoomLevelGetter() - 1) > 0.001 ? 0 : 150;
-    for (const sortable of sortableInstances) sortable.option('animation', slide);
+    const safariZoomed = _getIsSafari() && Math.abs(_zoomLevelGetter() - 1) > 0.001;
+    const slide = safariZoomed || isBigMap() ? 0 : 150;
+    for (const sortable of sortableInstances) {
+        sortable.option('animation', slide);
+        sortable.option('emptyInsertThreshold', isBigMap() ? 0 : 5);
+    }
 };
 let _sortableInitPending = null;
 
@@ -500,6 +622,15 @@ export const initSortable = async () => {
     sortableInstances.forEach(s => s.destroy());
     sortableInstances = [];
 
+    // A drag that was under way has just been cut short, with no drop to run the waiting redraw
+    if (_dragInProgress) {
+        _dragInProgress = false;
+        if (_redrawWaiting) {
+            render();
+            return;
+        }
+    }
+
     // Don't enable drag-drop if map is locked
     if (!_isMapEditable()) {
         return;
@@ -538,6 +669,7 @@ export const initSortable = async () => {
             // A selection that keeps its columns can only land in a slice
             onMove: (evt) => lockedDragX === null || !!evt.to.dataset.sliceId,
             onStart: (evt) => {
+                dragStarted();
                 startDragAutoScroll();
                 const multiIds = getMultiDragIds(evt.item.dataset.storyId);
                 if (multiIds) startDragFollowers(multiIds, evt.item);
@@ -558,7 +690,7 @@ export const initSortable = async () => {
                     _broadcastDragStart({ type: 'story', storyId, color: story?.color || '#fef08a' });
                 }
             },
-            onEnd: (evt) => {
+            onEnd: (evt) => afterDrag(() => {
                 stopDragAutoScroll();
                 if (_broadcastDragEnd) _broadcastDragEnd();
                 const { landings, changed: followersMoved } = readLandings();
@@ -589,7 +721,7 @@ export const initSortable = async () => {
                         moveStory(storyId, fromColumnId, fromSliceId, toColumnId, toSliceId, toIndex, fromRowType, toRowType);
                     }
                 }
-            }
+            })
         });
         sortableInstances.push(sortable);
     });
@@ -604,12 +736,13 @@ export const initSortable = async () => {
             chosenClass: 'sortable-chosen',
             dragClass: 'sortable-drag',
             draggable: '.slice-container',
-            onEnd: () => {
+            onStart: dragStarted,
+            onEnd: () => afterDrag(() => {
                 const sliceContainers = _dom.storyMap.querySelectorAll('.slice-container');
 
-                const newSliceOrder = [...sliceContainers].map(el =>
+                const newSliceOrder = withUndrawn([...sliceContainers].map(el =>
                     _state.slices.find(s => s.id === el.dataset.sliceId)
-                ).filter(Boolean);
+                ).filter(Boolean), _state.slices);
 
                 const orderChanged = newSliceOrder.some((slice, i) => slice.id !== _state.slices[i]?.id);
                 if (!orderChanged) return;
@@ -618,7 +751,7 @@ export const initSortable = async () => {
                 _state.slices = newSliceOrder;
                 _logEvent?.('Reordered slices');
                 _renderAndSave();
-            }
+            })
         });
         sortableInstances.push(sortable);
     }
@@ -674,6 +807,7 @@ export const initSortable = async () => {
             filter: '.steps-row-spacer, .phantom-step, .partial-map-ref, .partial-map-preview-col',
             scroll: false, // replaced by startDragAutoScroll
             onStart: (evt) => {
+                dragStarted();
                 setDragAnimation();
                 startDragAutoScroll();
                 isDragging = true;
@@ -692,7 +826,7 @@ export const initSortable = async () => {
 
                 animFrame = requestAnimationFrame(updateColumnPositions);
             },
-            onEnd: () => {
+            onEnd: () => afterDrag(() => {
                 stopDragAutoScroll();
                 if (_broadcastDragEnd) _broadcastDragEnd();
                 isDragging = false;
@@ -737,7 +871,7 @@ export const initSortable = async () => {
                 _logEvent?.('Reordered steps');
                 dragColumnId = null;
                 _renderAndSave();
-            }
+            })
         });
         sortableInstances.push(sortable);
     }

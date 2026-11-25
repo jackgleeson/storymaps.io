@@ -2,6 +2,7 @@
 // UI component builders
 
 import { CARD_COLORS, DEFAULT_CARD_COLORS, STATUS_OPTIONS, TITLE_MAX_LENGTH, el, isValidUrl } from '/src/core/constants.js';
+import { standIn, signed, resign, unsettle, keyed, leaf } from '/src/ui/keep.js';
 import { createSlice, partialMapEditState } from '/src/core/state.js';
 import { showAlert, showChoice, showConfirm, showPrompt } from '/src/core/modals.js';
 import { quoted } from '/src/core/log.js';
@@ -467,168 +468,177 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
     btn.tabIndex = -1;
     const menu = el('div', 'options-menu');
 
-    // Color option
-    const colorOption = el('div', 'options-item options-color');
-    colorOption.appendChild(el('span', null, { text: 'Color' }));
-    const colorSwatches = el('div', 'color-swatches');
-    colorSwatches.addEventListener('click', (e) => e.stopPropagation());
-    const itemColor = item.color?.toLowerCase();
-    Object.entries(colors).forEach(([name, hex]) => {
-        const swatch = el('button', 'color-swatch', { title: name });
-        swatch.style.backgroundColor = hex;
-        swatch.dataset.color = hex.toLowerCase();
-        markLegendSwatch(swatch, name, hex);
-        if (itemColor === hex.toLowerCase()) swatch.classList.add('selected');
-        swatch.addEventListener('click', (e) => {
-            e.stopPropagation();
-            _logEvent?.(`Changed card color${quoted(item.name)}`, [item.id]);
-            onColorChange(hex);
-            menu.classList.remove('visible');
-        });
-        colorSwatches.appendChild(swatch);
-    });
-    colorOption.appendChild(colorSwatches);
-    menu.appendChild(colorOption);
+    // The menu is filled the first time it opens. A filled menu is about 40 elements, and built for
+    // every card it made up three quarters of the page on a big story map.
+    let pointsInput;
+    let filled = false;
+    const fillMenu = () => {
+        if (filled) return;
+        filled = true;
 
-    // Points option
-    const pointsOption = el('div', 'options-item options-points');
-    pointsOption.appendChild(el('span', null, { text: 'Points' }));
-    const pointsInput = createPointsInput(item, () => {
-        const card = container.closest('.step, .story-card');
-        if (card) {
-            patchCard(card, item);
-            const sliceId = card.dataset.sliceId;
-            if (sliceId) patchSliceMetrics(sliceId);
-        }
-        _saveToStorage();
-    });
-    pointsOption.appendChild(pointsInput);
-    menu.appendChild(pointsOption);
-
-    // Status option
-    if (onStatusChange) {
-        const statusOption = el('div', 'options-item options-status');
-        statusOption.appendChild(el('span', null, { text: 'Status' }));
-        const statusSwatches = el('div', 'status-swatches');
-        statusSwatches.addEventListener('click', (e) => e.stopPropagation());
-
-        const noneSwatch = el('button', 'status-swatch status-none', { title: 'None', text: '×' });
-        noneSwatch.dataset.status = '';
-        if (!item.status) noneSwatch.classList.add('selected');
-        noneSwatch.addEventListener('click', (e) => {
-            e.stopPropagation();
-            _logEvent?.(`Changed card status${quoted(item.name)}`, [item.id]);
-            onStatusChange(null);
-            menu.classList.remove('visible');
-        });
-        statusSwatches.appendChild(noneSwatch);
-
-        Object.entries(STATUS_OPTIONS).forEach(([key, { label, color }]) => {
-            const swatch = el('button', 'status-swatch', { title: label });
-            swatch.style.backgroundColor = color;
-            swatch.dataset.status = key;
-            if (item.status === key) swatch.classList.add('selected');
+        // Color option
+        const colorOption = el('div', 'options-item options-color');
+        colorOption.appendChild(el('span', null, { text: 'Color' }));
+        const colorSwatches = el('div', 'color-swatches');
+        colorSwatches.addEventListener('click', (e) => e.stopPropagation());
+        const itemColor = item.color?.toLowerCase();
+        Object.entries(colors).forEach(([name, hex]) => {
+            const swatch = el('button', 'color-swatch', { title: name });
+            swatch.style.backgroundColor = hex;
+            swatch.dataset.color = hex.toLowerCase();
+            markLegendSwatch(swatch, name, hex);
+            if (itemColor === hex.toLowerCase()) swatch.classList.add('selected');
             swatch.addEventListener('click', (e) => {
                 e.stopPropagation();
-                _logEvent?.(`Changed card status${quoted(item.name)}`, [item.id]);
-                onStatusChange(key);
+                _logEvent?.(`Changed card color${quoted(item.name)}`, [item.id]);
+                onColorChange(hex);
                 menu.classList.remove('visible');
             });
-            statusSwatches.appendChild(swatch);
+            colorSwatches.appendChild(swatch);
         });
-        statusOption.appendChild(statusSwatches);
-        menu.appendChild(statusOption);
-    }
+        colorOption.appendChild(colorSwatches);
+        menu.appendChild(colorOption);
 
-    // Tags option
-    const tagsOption = el('div', 'options-item options-tags');
-    tagsOption.appendChild(el('span', null, { text: 'Tags' }));
-    tagsOption.addEventListener('click', (e) => e.stopPropagation());
-    const tagEditor = createTagEditor(item, () => {
-        const card = container.closest('.step, .story-card');
-        if (card) patchCard(card, item);
-        _saveToStorage();
-    });
-    tagsOption.append(tagEditor.list, tagEditor.inputWrapper);
-    menu.appendChild(tagsOption);
-
-    // URL option
-    const urlOption = el('button', 'options-item', { text: item.url ? 'Edit URL...' : 'Add URL...' });
-    urlOption.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        const url = await showPrompt('Enter URL (https:// or http://):', item.url || '');
-        if (url !== null) {
-            if (url === '' || isValidUrl(url)) {
-                _logEvent?.(`${url ? 'Added card URL' : 'Removed card URL'}${quoted(item.name)}`, [item.id]);
-                onUrlChange(url);
-            } else {
-                await showAlert('Invalid URL. Please enter a valid http:// or https:// URL.');
+        // Points option
+        const pointsOption = el('div', 'options-item options-points');
+        pointsOption.appendChild(el('span', null, { text: 'Points' }));
+        pointsInput = createPointsInput(item, () => {
+            const card = container.closest('.step, .story-card');
+            if (card) {
+                patchCard(card, item);
+                const sliceId = card.dataset.sliceId;
+                if (sliceId) patchSliceMetrics(sliceId);
             }
+            _saveToStorage();
+        });
+        pointsOption.appendChild(pointsInput);
+        menu.appendChild(pointsOption);
+
+        // Status option
+        if (onStatusChange) {
+            const statusOption = el('div', 'options-item options-status');
+            statusOption.appendChild(el('span', null, { text: 'Status' }));
+            const statusSwatches = el('div', 'status-swatches');
+            statusSwatches.addEventListener('click', (e) => e.stopPropagation());
+
+            const noneSwatch = el('button', 'status-swatch status-none', { title: 'None', text: '×' });
+            noneSwatch.dataset.status = '';
+            if (!item.status) noneSwatch.classList.add('selected');
+            noneSwatch.addEventListener('click', (e) => {
+                e.stopPropagation();
+                _logEvent?.(`Changed card status${quoted(item.name)}`, [item.id]);
+                onStatusChange(null);
+                menu.classList.remove('visible');
+            });
+            statusSwatches.appendChild(noneSwatch);
+
+            Object.entries(STATUS_OPTIONS).forEach(([key, { label, color }]) => {
+                const swatch = el('button', 'status-swatch', { title: label });
+                swatch.style.backgroundColor = color;
+                swatch.dataset.status = key;
+                if (item.status === key) swatch.classList.add('selected');
+                swatch.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    _logEvent?.(`Changed card status${quoted(item.name)}`, [item.id]);
+                    onStatusChange(key);
+                    menu.classList.remove('visible');
+                });
+                statusSwatches.appendChild(swatch);
+            });
+            statusOption.appendChild(statusSwatches);
+            menu.appendChild(statusOption);
         }
-        menu.classList.remove('visible');
-    });
-    menu.appendChild(urlOption);
 
-    // Copy link option (for cards, which open from a link; steps don't)
-    if (onCopyLink) {
-        const copyLinkOption = el('button', 'options-item', { text: 'Copy link to card' });
-        copyLinkOption.addEventListener('click', (e) => {
-            e.stopPropagation();
-            menu.classList.remove('visible');
-            onCopyLink();
+        // Tags option
+        const tagsOption = el('div', 'options-item options-tags');
+        tagsOption.appendChild(el('span', null, { text: 'Tags' }));
+        tagsOption.addEventListener('click', (e) => e.stopPropagation());
+        const tagEditor = createTagEditor(item, () => {
+            const card = container.closest('.step, .story-card');
+            if (card) patchCard(card, item);
+            _saveToStorage();
         });
-        menu.appendChild(copyLinkOption);
-    }
+        tagsOption.append(tagEditor.list, tagEditor.inputWrapper);
+        menu.appendChild(tagsOption);
 
-    // Build with AI option (for cards in a slice): opens the Build window on this card
-    if (onBuild) {
-        const buildOption = el('button', 'options-item', { text: 'Build with AI' });
-        buildOption.addEventListener('click', (e) => {
+        // URL option
+        const urlOption = el('button', 'options-item', { text: item.url ? 'Edit URL...' : 'Add URL...' });
+        urlOption.addEventListener('click', async (e) => {
             e.stopPropagation();
-            menu.classList.remove('visible');
-            onBuild();
-        });
-        menu.appendChild(buildOption);
-    }
-
-    // Hide header option (for steps only)
-    if (onHide) {
-        const hideOption = el('button', 'options-item', { text: 'Hide Header' });
-        hideOption.addEventListener('click', (e) => {
-            e.stopPropagation();
-            menu.classList.remove('visible');
-            onHide();
-        });
-        menu.appendChild(hideOption);
-    }
-
-    // Delete option (step cards have Delete Column instead)
-    if (onDelete) {
-        const deleteOption = el('button', 'options-item options-delete', { text: 'Delete' });
-        deleteOption.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            menu.classList.remove('visible');
-            if (deleteMessage) {
-                if (await showConfirm(deleteMessage)) onDelete();
-            } else {
-                onDelete();
+            const url = await showPrompt('Enter URL (https:// or http://):', item.url || '');
+            if (url !== null) {
+                if (url === '' || isValidUrl(url)) {
+                    _logEvent?.(`${url ? 'Added card URL' : 'Removed card URL'}${quoted(item.name)}`, [item.id]);
+                    onUrlChange(url);
+                } else {
+                    await showAlert('Invalid URL. Please enter a valid http:// or https:// URL.');
+                }
             }
-        });
-        menu.appendChild(deleteOption);
-    }
-
-    // Delete column option (for step cards only)
-    if (onDeleteColumn) {
-        const deleteColumnOption = el('button', 'options-item options-delete-column', { text: 'Delete Column' });
-        deleteColumnOption.addEventListener('click', async (e) => {
-            e.stopPropagation();
             menu.classList.remove('visible');
-            if (await showConfirm('Delete this column and all its stories?')) {
-                onDeleteColumn();
-            }
         });
-        menu.appendChild(deleteColumnOption);
-    }
+        menu.appendChild(urlOption);
+
+        // Copy link option (for cards, which open from a link; steps don't)
+        if (onCopyLink) {
+            const copyLinkOption = el('button', 'options-item', { text: 'Copy link to card' });
+            copyLinkOption.addEventListener('click', (e) => {
+                e.stopPropagation();
+                menu.classList.remove('visible');
+                onCopyLink();
+            });
+            menu.appendChild(copyLinkOption);
+        }
+
+        // Build with AI option (for cards in a slice): opens the Build window on this card
+        if (onBuild) {
+            const buildOption = el('button', 'options-item', { text: 'Build with AI' });
+            buildOption.addEventListener('click', (e) => {
+                e.stopPropagation();
+                menu.classList.remove('visible');
+                onBuild();
+            });
+            menu.appendChild(buildOption);
+        }
+
+        // Hide header option (for steps only)
+        if (onHide) {
+            const hideOption = el('button', 'options-item', { text: 'Hide Header' });
+            hideOption.addEventListener('click', (e) => {
+                e.stopPropagation();
+                menu.classList.remove('visible');
+                onHide();
+            });
+            menu.appendChild(hideOption);
+        }
+
+        // Delete option (step cards have Delete Column instead)
+        if (onDelete) {
+            const deleteOption = el('button', 'options-item options-delete', { text: 'Delete' });
+            deleteOption.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                menu.classList.remove('visible');
+                if (deleteMessage) {
+                    if (await showConfirm(typeof deleteMessage === 'function' ? deleteMessage() : deleteMessage)) onDelete();
+                } else {
+                    onDelete();
+                }
+            });
+            menu.appendChild(deleteOption);
+        }
+
+        // Delete column option (for step cards only)
+        if (onDeleteColumn) {
+            const deleteColumnOption = el('button', 'options-item options-delete-column', { text: 'Delete Column' });
+            deleteColumnOption.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                menu.classList.remove('visible');
+                if (await showConfirm('Delete this column and all its stories?')) {
+                    onDeleteColumn();
+                }
+            });
+            menu.appendChild(deleteColumnOption);
+        }
+    };
 
     // Swatches are marked when the menu is built, but status, colour and points changes patch the
     // card without rebuilding it, so refresh the marks from the item each time the menu opens
@@ -641,6 +651,7 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
 
     btn.addEventListener('click', (e) => {
         e.stopPropagation();
+        fillMenu();
         document.querySelectorAll('.options-menu.visible').forEach(m => {
             if (m !== menu) {
                 m.classList.remove('visible');
@@ -679,6 +690,22 @@ export const createUrlIndicator = (url) => {
     return indicator;
 };
 
+// Work that measures the page after a render, done for every card in one go on the next frame.
+// Each job has up to three parts, and each part runs for all the jobs before the next part starts:
+// prepare (change the page), measure (read sizes), apply (change the page with what was measured).
+// Done card by card, each read after a change makes the browser lay the whole story map out again,
+// which took most of a minute on a story map of 1,700 cards.
+const layoutJobs = [];
+const queueLayoutJob = (job) => {
+    if (layoutJobs.push(job) > 1) return;
+    requestAnimationFrame(() => {
+        const jobs = layoutJobs.splice(0);
+        jobs.forEach(j => j.prepare?.());
+        const measured = jobs.map(j => j.measure());
+        jobs.forEach((j, i) => j.apply(measured[i]));
+    });
+};
+
 export const createTextarea = (className, placeholder, value, onChange, onTextEdit) => {
     const isCardText = className === 'step-text' || className === 'story-text';
     const initialRows = isCardText ? (value && value.length > 20 ? 2 : 1) : 2;
@@ -703,11 +730,25 @@ export const createTextarea = (className, placeholder, value, onChange, onTextEd
         // of a pixel (16.8px at tablet widths) while the measured height is a whole number (17),
         // so the two are compared by rounding. Rounding the line height down first made one line
         // look like more than one, and the title then sat in the top half of a two-row box.
-        const autoResize = () => {
-            textarea.rows = 1;
+        const oneRow = () => { textarea.rows = 1; };
+        // Null when there is nothing to measure, because the map is not showing
+        const rowsNeeded = () => {
+            if (!textarea.scrollHeight) return null;
             const lineHeight = parseFloat(getComputedStyle(textarea).lineHeight) || 18;
-            const neededRows = Math.round(textarea.scrollHeight / lineHeight);
-            textarea.rows = Math.min(Math.max(neededRows, 1), 2);
+            return Math.round(textarea.scrollHeight / lineHeight);
+        };
+        const setRows = (neededRows) => {
+            if (neededRows !== null) {
+                textarea.rows = Math.min(Math.max(neededRows, 1), 2);
+                return;
+            }
+            // Keep the guess, and have the card drawn and measured again by the next redraw
+            textarea.rows = initialRows;
+            unsettle(textarea);
+        };
+        const autoResize = () => {
+            oneRow();
+            setRows(rowsNeeded());
         };
 
         textarea.addEventListener('input', (e) => {
@@ -717,7 +758,7 @@ export const createTextarea = (className, placeholder, value, onChange, onTextEd
             _saveToStorage();
         });
 
-        requestAnimationFrame(autoResize);
+        queueLayoutJob({ prepare: oneRow, measure: rowsNeeded, apply: setRows });
     } else {
         textarea.addEventListener('input', (e) => {
             onChange(e.target.value);
@@ -742,7 +783,7 @@ const createColumnPlaceholder = (column) => {
 };
 
 export const createPhantomStep = (phantomIndex) => {
-    const phantom = el('div', 'step-placeholder phantom-step');
+    const phantom = leaf(el('div', 'step-placeholder phantom-step'), `phantom-step:${phantomIndex}`);
     phantom.addEventListener('click', () => {
         const col = _materializePhantomColumn(phantomIndex);
         if (col) {
@@ -759,7 +800,8 @@ export const createPhantomStep = (phantomIndex) => {
 };
 
 export const createPhantomStoryColumn = (phantomIndex, slice, insertIndex, rowTypeKey = null) => {
-    const phantom = el('div', 'story-column phantom-column empty-backbone-column');
+    // What the handler uses, the slice and the row, is fixed by the row this sits in
+    const phantom = leaf(el('div', 'story-column phantom-column empty-backbone-column'), `phantom:${phantomIndex}`);
     phantom.addEventListener('click', () => {
         const col = _materializePhantomColumn(phantomIndex);
         if (col) {
@@ -779,6 +821,8 @@ export const patchCard = (card, item) => {
 
     card.querySelector('.card-indicators')?.remove();
     card.appendChild(buildIndicators(item, card));
+    // The card shows the item as it now is, so a redraw can keep it
+    resign(card);
 
     if (_refilterCard) _refilterCard(card, item);
 };
@@ -900,10 +944,14 @@ const buildCardTags = (tags, card) => {
         tagsRow.appendChild(overflow);
     } else {
         // When all tags are visible, check if any are truncated and add popover
-        requestAnimationFrame(() => {
-            const badges = tagsRow.querySelectorAll('.card-tag-badge');
-            if (![...badges].some(b => b.scrollWidth > b.clientWidth)) return;
-            const anchor = el('span', 'card-tag-overflow');
+        const badges = [...tagsRow.querySelectorAll('.card-tag-badge')];
+        // Null when there is nothing to measure, because the map is not showing
+        const anyCutOff = () => tagsRow.offsetParent ? badges.some(b => b.scrollWidth > b.clientWidth) : null;
+        queueLayoutJob({ measure: anyCutOff, apply: (cutOff) => {
+            // Have the card drawn and measured again by the next redraw
+            if (cutOff === null && tagsRow.isConnected) unsettle(tagsRow);
+            if (!cutOff) return;
+            const anchor = el('span', 'card-tag-overflow card-tags-anchor');
             anchor.style.padding = '0';
             anchor.style.background = 'none';
             const popover = el('div', 'card-tags-popover');
@@ -925,7 +973,7 @@ const buildCardTags = (tags, card) => {
                     toggleTagsPopover(popover);
                 });
             });
-        });
+        } });
     }
     return tagsRow;
 };
@@ -1026,14 +1074,17 @@ export const createColumnCard = (column) => {
         return placeholder;
     }
 
-    const card = el('div', 'step', { dataColumnId: column.id });
+    const kept = standIn('step', column, 'step');
+    if (kept) return kept;
+
+    const card = signed(el('div', 'step', { dataColumnId: column.id }), 'step', column, 'step');
     if (column.color) card.style.backgroundColor = column.color;
 
     const dragHandle = el('div', 'step-drag-handle', { html: '↔', title: 'Drag to move entire column' });
     card.appendChild(dragHandle);
 
     const textarea = createTextarea('step-text', 'Step...', column.name,
-        (val) => column.name = val,
+        (val) => { column.name = val; resign(card); },
         () => _logTextEdit?.('step name', column.id));
 
     const optionsMenu = createOptionsMenu(
@@ -1078,6 +1129,12 @@ export const createColumnCard = (column) => {
 };
 
 export const createStoryCard = (story, columnId, sliceId, isBackboneRow = false, rowType = null, rowTypeKey = null) => {
+    // Everything but the card itself that decides how it is built. A card drawn for another place
+    // is drawn again (see keep.js).
+    const place = `card|${columnId}|${sliceId}|${isBackboneRow}|${rowType}|${rowTypeKey}`;
+    const kept = standIn('card', story, place);
+    if (kept) return kept;
+
     const attrs = {
         dataStoryId: story.id,
         dataColumnId: columnId,
@@ -1087,7 +1144,7 @@ export const createStoryCard = (story, columnId, sliceId, isBackboneRow = false,
     } else {
         attrs.dataSliceId = sliceId;
     }
-    const card = el('div', 'story-card', attrs);
+    const card = signed(el('div', 'story-card', attrs), 'card', story, place);
     if (story.color) card.style.backgroundColor = story.color;
     if (story.body) card.classList.add('has-body');
 
@@ -1100,11 +1157,12 @@ export const createStoryCard = (story, columnId, sliceId, isBackboneRow = false,
         placeholderText = 'Step...';
     }
     const textarea = createTextarea('story-text', placeholderText, story.name,
-        (val) => story.name = val,
+        (val) => { story.name = val; resign(card); },
         () => _logTextEdit?.('card title', story.id));
 
     const onDelete = () => _deleteStory(columnId, sliceId, story.id, rowTypeKey);
-    const deleteMessage = isBackboneRow
+    // Worked out when asked for, since the title can change while the card stays
+    const deleteMessage = () => isBackboneRow
         ? `Delete "${story.name || 'this card'}"?`
         : `Delete "${story.name || 'this task'}"?`;
 
@@ -1159,7 +1217,7 @@ export const createStoryColumn = (col, slice, rowType = null) => {
     } else {
         attrs.dataSliceId = slice.id;
     }
-    const columnEl = el('div', 'story-column', attrs);
+    const columnEl = keyed(el('div', 'story-column', attrs), `cell:${col.id}`);
 
     const isBackboneRow = !!rowType;
     let cards;
@@ -1176,11 +1234,13 @@ export const createStoryColumn = (col, slice, rowType = null) => {
         columnEl.appendChild(createStoryCard(story, col.id, slice?.id || null, isBackboneRow, rowType === 'users' ? 'Users' : rowType === 'activities' ? 'Activities' : null, rowType));
     });
 
-    // For backbone rows with no cards, make column clickable to add a card
-    if (isBackboneRow && cards.length === 0) {
-        columnEl.classList.add('empty-backbone-column');
+    // For backbone rows with no cards, make column clickable to add a card. The cell stays on the
+    // page while its cards come and go (see keep.js), so the handler is always there and asks the
+    // class whether the cell is empty at the time of the click.
+    if (isBackboneRow) {
+        columnEl.classList.toggle('empty-backbone-column', cards.length === 0);
         columnEl.addEventListener('click', (e) => {
-            if (e.target === columnEl) {
+            if (e.target === columnEl && columnEl.classList.contains('empty-backbone-column')) {
                 _addStory(col.id, null, rowType);
             }
         });
@@ -1190,7 +1250,8 @@ export const createStoryColumn = (col, slice, rowType = null) => {
     if ((!isBackboneRow || hasCards) && rowType !== 'activities' && (!col.hidden || hasCards)) {
         let btnText = '+';
         if (hasCards && rowType === 'users') btnText = '+ user';
-        const addBtn = el('button', 'btn-add-story', { text: btnText });
+        // The step, slice and row it adds to are fixed by the cell it sits in
+        const addBtn = leaf(el('button', 'btn-add-story', { text: btnText }), `add:${btnText}`);
         addBtn.addEventListener('click', () => _addStory(col.id, slice?.id || null, rowType));
         columnEl.appendChild(addBtn);
     }
@@ -1203,15 +1264,15 @@ export const createEmptyBackboneRow = (rowType) => {
     const containerClass = rowType === 'Users' ? 'users-row empty-backbone-row' :
                            rowType === 'Activities' ? 'activities-row empty-backbone-row' :
                            'backbone-row empty-backbone-row';
-    const container = el('div', containerClass);
+    const container = keyed(el('div', containerClass), `row:${rowTypeKey}`);
 
-    const labelContainer = el('div', 'row-label-container');
+    const labelContainer = leaf(el('div', 'row-label-container'), 'label');
     const label = el('span', 'row-type-label', { text: rowType });
     labelContainer.appendChild(label);
     container.appendChild(labelContainer);
 
-    const storiesArea = el('div', 'slice-stories-area');
-    const storiesRow = el('div', 'stories-row');
+    const storiesArea = keyed(el('div', 'slice-stories-area'), 'area');
+    const storiesRow = keyed(el('div', 'stories-row'), 'stories');
 
     const editingColIdsBR = _getEditingPartialColIds();
     const expandedIdsBR = partialMapEditState.expandedIds;
@@ -1251,14 +1312,9 @@ export const createEmptyBackboneRow = (rowType) => {
             }
             return;
         }
-        const columnEl = el('div', 'story-column empty-backbone-column', {
-            dataColumnId: col.id,
-            'data-row-type': rowTypeKey
-        });
+        // The same cell a row with cards has, so it can stay when the row gets its first card
+        const columnEl = createStoryColumn(col, null, rowTypeKey);
         if (editingColIdsBR?.has(col.id)) columnEl.classList.add('partial-map-editing-col');
-        columnEl.addEventListener('click', () => {
-            _addStory(col.id, null, rowTypeKey);
-        });
         storiesRow.appendChild(columnEl);
     });
 
@@ -1278,15 +1334,15 @@ export const createBackboneRow = (rowType, cardMap) => {
     const containerClass = rowType === 'Users' ? 'users-row' :
                            rowType === 'Activities' ? 'activities-row' :
                            'backbone-row';
-    const container = el('div', containerClass);
+    const container = keyed(el('div', containerClass), `row:${rowTypeKey}`);
 
-    const labelContainer = el('div', 'row-label-container');
+    const labelContainer = leaf(el('div', 'row-label-container'), 'label');
     const label = el('span', 'row-type-label', { text: rowType });
     labelContainer.appendChild(label);
     container.appendChild(labelContainer);
 
-    const storiesArea = el('div', 'slice-stories-area');
-    const storiesRow = el('div', 'stories-row');
+    const storiesArea = keyed(el('div', 'slice-stories-area'), 'area');
+    const storiesRow = keyed(el('div', 'stories-row'), 'stories');
 
     const editingColIdsBK = _getEditingPartialColIds();
     const expandedIdsBK = partialMapEditState.expandedIds;
@@ -1555,7 +1611,7 @@ export const createSliceContainer = (slice, index) => {
     const peeking = slice.collapsed && _peekedSlices.has(slice.id);
     let containerClass = 'slice-container';
     if (slice.collapsed) containerClass += peeking ? ' slice-peeking' : ' slice-collapsed';
-    const container = el('div', containerClass, { dataSliceId: slice.id });
+    const container = keyed(el('div', containerClass, { dataSliceId: slice.id }), `slice:${slice.id}`);
 
     const labelContainer = el('div', 'slice-label-container', { dataSliceId: slice.id });
 
@@ -1570,7 +1626,7 @@ export const createSliceContainer = (slice, index) => {
         labelContainer.appendChild(controlsRow);
         container.appendChild(labelContainer);
 
-        const storiesArea = el('div', 'slice-stories-area');
+        const storiesArea = keyed(el('div', 'slice-stories-area'), 'area');
         storiesArea.appendChild(createClosedBannerRow(slice, peeking));
         if (peeking) storiesArea.appendChild(createPeekRow(slice));
         container.appendChild(storiesArea);
@@ -1626,8 +1682,8 @@ export const createSliceContainer = (slice, index) => {
 
     container.appendChild(labelContainer);
 
-    const storiesArea = el('div', 'slice-stories-area');
-    const storiesRow = el('div', 'stories-row');
+    const storiesArea = keyed(el('div', 'slice-stories-area'), 'area');
+    const storiesRow = keyed(el('div', 'stories-row'), 'stories');
 
     const editingColIds = _getEditingPartialColIds();
     const expandedIdsSC = partialMapEditState.expandedIds;
