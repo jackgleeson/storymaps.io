@@ -453,3 +453,183 @@ slices:
     ['Drink list with prices', 'Payments', 'Alert sound for new orders?'],
   ]);
 });
+
+// A big import: three epics, and 1,100 issues of three types, 400 of them done
+const bigJiraCsv = () => {
+  const lines = ['Summary,Issue key,Issue Type,Status,Parent key,Labels', 'Menu,BIG-1,Epic,To Do,,', 'Basket,BIG-2,Epic,To Do,,', 'Payments,BIG-3,Epic,To Do,,'];
+  let key = 10;
+  const add = (type, status, count) => {
+    for (let i = 0; i < count; i++) lines.push(`${type} ${key},BIG-${key},${type},${status},BIG-${1 + (key++ % 3)},`);
+  };
+  add('Story', 'Done', 300);
+  add('Story', 'To Do', 300);
+  add('Bug', 'Done', 100);
+  add('Bug', 'To Do', 200);
+  add('Sub-task', 'To Do', 200);
+  return lines;
+};
+
+test('an import of more than 1,000 cards warns, and a quick trim brings it under', async ({ page, createMap }) => {
+  await openMap(page, await createMap());
+  await importCsv(page, 'jira', 'jira', 'big.csv', bigJiraCsv());
+
+  const review = page.locator('#jiraImportStage2');
+  const warning = review.locator('.import-big-warning');
+  const count = page.locator('#jiraImportCount');
+  const button = page.locator('#jiraImportConfirmBtn');
+  const trims = review.locator('.import-trim');
+  await expect(warning).toBeVisible();
+  await expect(warning).toHaveText("1,103 cards is a lot for one story map. More than 1,000 cards on one story map could result in performance issues and make it hard to find your way around. Untick what you don't need, or import one project at a time.");
+  await expect(count).toHaveText('Importing 1,103 cards: 3 epics and 1,100 issues');
+  await expect(count).toHaveClass(/import-count-big/);
+  await expect(review.locator('.import-intro')).toContainText('Found 3 epics and 1,100 issues in BIG.');
+  // The button says how many cards it will add
+  await expect(button).toHaveText('Add 1,103 cards');
+
+  // The trims: the done ones, then the issue types, smallest first, never the most common one
+  await expect(trims).toHaveText(['Leave out Done-400', 'Leave out Sub-tasks-200', 'Leave out Bugs-300']);
+  // The status boxes say how many each holds
+  await expect(review.locator('label:has(input[data-status="done"])')).toHaveText('Done(400)');
+
+  // One press leaves the sub-tasks out, and that is enough here
+  await trims.nth(1).click();
+  await expect(count).toHaveText('Importing 903 cards: 3 epics and 900 issues');
+  await expect(warning).toBeHidden();
+  await expect(button).toHaveText('Add to story map');
+  await expect(trims.nth(1)).toHaveText('Sub-tasks left out');
+  await expect(trims.nth(1)).toHaveAttribute('aria-pressed', 'true');
+  // It is the same as unticking the type below it
+  await expect(review.locator('input[data-type="Sub-task"]')).not.toBeChecked();
+
+  // Pressing it again brings them back, and the warning with them
+  await trims.nth(1).click();
+  await expect(count).toHaveText('Importing 1,103 cards: 3 epics and 1,100 issues');
+  await expect(warning).toBeVisible();
+
+  // A trim says what it would take off what is ticked now: 100 of the 300 bugs are done
+  await trims.nth(0).click();
+  await expect(count).toHaveText('Importing 703 cards: 3 epics and 700 issues');
+  await expect(trims).toHaveText(['Done left out', 'Leave out Sub-tasks-200', 'Leave out Bugs-200']);
+
+  // Replacing the story map is named on the button too, once it is big again
+  await trims.nth(0).click();
+  await review.locator('input[value="replace"]').check();
+  await expect(button).toHaveText('Replace with 1,103 cards');
+});
+
+test('an import of 1,000 cards or fewer has no warning and no quick trims', async ({ page, createMap }) => {
+  await openMap(page, await createMap());
+  await importCsv(page, 'jira', 'jira', 'jira.csv', jiraCsv);
+  const review = page.locator('#jiraImportStage2');
+  await expect(review.locator('.import-row')).not.toHaveCount(0);
+  await expect(review.locator('.import-big-warning')).toBeHidden();
+  await expect(review.locator('.import-trim')).toHaveCount(0);
+  await expect(page.locator('#jiraImportConfirmBtn')).toHaveText('Add to story map');
+});
+
+test('a big import whose done tasks start unticked shows the trims only once it is over 1,000', async ({ page, createMap }) => {
+  await openMap(page, await createMap());
+  const lines = ['ID,Monogram,Title,Description,Status,Points,URI'];
+  for (let i = 0; i < 600; i++) lines.push(`${i},T${i},Open task ${i},,Open,,`);
+  for (let i = 600; i < 1050; i++) lines.push(`${i},T${i},Old task ${i},,Resolved,,`);
+  await importCsv(page, 'phabricator', 'phab', 'phab.csv', lines);
+
+  // Phabricator leaves resolved tasks out to begin with, so only 600 of the 1,050 are ticked
+  const review = page.locator('#phabImportStage2');
+  const trims = review.locator('.import-trim');
+  await expect(page.locator('#phabImportCount')).toHaveText('Importing 600 cards');
+  await expect(review.locator('.import-big-warning')).toBeHidden();
+  await expect(trims).toBeHidden();
+
+  // Ticking them goes over, and the warning and the trim come into view
+  await review.locator('input[data-status="done"]').check();
+  await expect(page.locator('#phabImportCount')).toHaveText('Importing 1,050 cards');
+  await expect(review.locator('.import-big-warning')).toBeVisible();
+  await expect(trims).toHaveText(['Leave out Done-450']);
+
+  // The trim stays once it has done its job, so it can be taken back
+  await trims.first().click();
+  await expect(page.locator('#phabImportCount')).toHaveText('Importing 600 cards');
+  await expect(review.locator('.import-big-warning')).toBeHidden();
+  await expect(trims).toHaveText(['Done left out']);
+});
+
+// Labels: Jira repeats the Labels column once for each label an issue has
+const labelledCsv = [
+  'Summary,Issue key,Issue Type,Status,Parent key,Labels,Labels',
+  'Menu,LAB-1,Epic,To Do,,,',
+  'Old menu page,LAB-2,Story,To Do,LAB-1,legacy,',
+  'Menu on a phone,LAB-3,Story,To Do,LAB-1,mobile,',
+  'Old phone menu,LAB-4,Story,To Do,LAB-1,legacy,mobile',
+  'Try a new layout,LAB-5,Task,To Do,LAB-1,spike,',
+  'Prices,LAB-6,Story,To Do,LAB-1,,',
+];
+
+test('unticking a label leaves out every card that has it, and the left-out labels show beside the list', async ({ page, createMap }) => {
+  await openMap(page, await createMap());
+  await importCsv(page, 'jira', 'jira', 'labels.csv', labelledCsv);
+  const review = page.locator('#jiraImportStage2');
+  const count = page.locator('#jiraImportCount');
+  const toggle = review.locator('.import-labels-toggle');
+  const panel = review.locator('.import-labels-panel');
+  const option = (name) => panel.locator('.import-labels-option', { hasText: name });
+  const ticked = () => review.locator('.import-row:not(.import-row-head)').evaluateAll(rows =>
+    rows.filter(r => r.querySelector('input').checked).map(r => r.querySelector('.import-row-key').textContent));
+
+  await expect(toggle).toHaveText('3 of 3 labels');
+  await expect(panel).toBeHidden();
+  await toggle.click();
+  // Most used first, then by name, with how many cards carry each, and the cards with no label last
+  await expect(panel.locator('.import-labels-option')).toHaveText(['legacy2', 'mobile2', 'spike1', 'No label2']);
+
+  // A card with two labels is left out when either of them is
+  await option('legacy').locator('input').uncheck();
+  await expect(count).toHaveText('Importing 4 cards: 1 epic and 3 issues');
+  expect(await ticked()).toEqual(['LAB-1', 'LAB-3', 'LAB-5', 'LAB-6']);
+  await expect(toggle).toHaveText('2 of 3 labels');
+  await expect(option('legacy')).toHaveText('legacy-2');
+  await expect(review.locator('.import-labels-pill')).toHaveText(['legacy×']);
+  await expect(review.locator('.import-labels-left-out .import-trim-count')).toHaveText('-2');
+  // The rows left out say which label did it
+  await expect(review.locator('.import-row-left-label')).toHaveText(['legacy', 'legacy']);
+
+  // With mobile out as well, bringing legacy back leaves the card with both labels out
+  await option('mobile').locator('input').uncheck();
+  await option('legacy').locator('input').check();
+  expect(await ticked()).toEqual(['LAB-1', 'LAB-2', 'LAB-5', 'LAB-6']);
+  await expect(review.locator('.import-row-left-label')).toHaveText(['mobile', 'mobile']);
+
+  // Finding a label narrows the list
+  await panel.locator('.import-labels-find').fill('spi');
+  await expect(panel.locator('.import-labels-option:visible')).toHaveText(['spike1']);
+  await panel.locator('.import-labels-find').fill('');
+
+  // Escape closes the list and leaves the import open
+  await page.keyboard.press('Escape');
+  await expect(panel).toBeHidden();
+  await expect(review).toBeVisible();
+
+  // The cross on a pill brings its cards back
+  await review.locator('.import-labels-pill button').click();
+  await expect(count).toHaveText('Importing 6 cards: 1 epic and 5 issues');
+  await expect(review.locator('.import-labels-pill')).toHaveCount(0);
+
+  // Untick all, then tick one, keeps only that label
+  await toggle.click();
+  await panel.getByRole('button', { name: 'Untick all' }).click();
+  await expect(count).toHaveText('Importing 0 cards');
+  await option('spike').locator('input').check();
+  expect(await ticked()).toEqual(['LAB-5']);
+  await panel.getByRole('button', { name: 'Tick all', exact: true }).click();
+  await expect(count).toHaveText('Importing 6 cards: 1 epic and 5 issues');
+  // Clicking away closes the list
+  await review.locator('.import-intro').click();
+  await expect(panel).toBeHidden();
+});
+
+test('an import with no labels has no labels list', async ({ page, createMap }) => {
+  await openMap(page, await createMap());
+  await importCsv(page, 'phabricator', 'phab', 'phab.csv', ['ID,Monogram,Title,Description,Status,Points,URI', '101,T101,Login,,Open,2,']);
+  await expect(page.locator('#phabImportStage2 .import-row')).not.toHaveCount(0);
+  await expect(page.locator('#phabImportStage2 .import-labels')).toHaveCount(0);
+});

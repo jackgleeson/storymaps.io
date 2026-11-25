@@ -8,13 +8,13 @@ import { serialize, deserialize, appendImport, appendCardsUnderBackbone, backbon
 import { exportToYaml, importFromYaml } from '/src/transfer/yaml.js';
 import { parseLocation, withProject } from '/src/core/project-links.js';
 import { exportToCsv, importFromCsv } from '/src/transfer/csv.js';
-import { showAlert } from '/src/core/modals.js';
+import { showAlert, showConfirm } from '/src/core/modals.js';
 import { isMapEditable, lockState, lockHeaders } from '/src/core/lock.js';
 import { closeMainMenu, zoomToFit } from '/src/ui/navigation.js';
 import * as yjs from '/src/core/yjs.js';
 import * as log from '/src/core/log.js';
 import * as exportsMod from '/src/transfer/exports.js';
-import { legendToAdd } from '/src/transfer/import-helpers.js';
+import { legendToAdd, isBigImport, BIG_IMPORT_REASON } from '/src/transfer/import-helpers.js';
 import { initTrackerDetails } from '/src/transfer/tracker-details.js';
 import * as importGuide from '/src/features/import-guide.js';
 import * as jiraImportsMod from '/src/transfer/jira-imports.js';
@@ -147,9 +147,30 @@ const syncImportedNotes = () => {
     }, 'local');
 };
 
-// Helper for "import from welcome" boilerplate
-const doImport = async (deserializeFn) => {
+// The cards in the slices of a map read from a file. Each slice lists its cards by step, as lists
+// in a list, or by step ID in older files.
+export const cardsInFile = (data) => {
+    const count = (value) => {
+        if (Array.isArray(value)) return value.reduce((n, item) => n + (Array.isArray(item) ? count(item) : 1), 0);
+        if (value && typeof value === 'object') return Object.values(value).reduce((n, item) => n + count(item), 0);
+        return 0;
+    };
+    return (Array.isArray(data?.slices) ? data.slices : []).reduce((n, slice) => n + count(slice?.stories), 0);
+};
+
+// A file has no review step to untick cards in, so a big one is asked about before it is imported
+const confirmBigFile = async (data) => {
+    const cards = cardsInFile(data);
+    if (!isBigImport(cards)) return true;
+    const n = cards.toLocaleString('en-GB');
+    return showConfirm(`This file has ${n} cards. ${BIG_IMPORT_REASON} You can import it as it is, or cancel and take out what you don't need first.`, { ok: `Import ${n} cards` });
+};
+
+// Helper for "import from welcome" boilerplate. data is the map as read from the file.
+const doImport = async (deserializeFn, data) => {
     const isFromWelcome = !state.mapId;
+
+    if (!await confirmBigFile(data)) return false;
 
     if (!isFromWelcome) {
         _deps.saveToStorage();
@@ -193,7 +214,7 @@ export const importMap = async (file) => {
     reader.onload = async (e) => {
         try {
             const parsed = JSON.parse(e.target.result);
-            const ok = await doImport(() => deserialize(parsed));
+            const ok = await doImport(() => deserialize(parsed), parsed);
             if (ok) importBackupsIfPresent(parsed);
         } catch {
             await showAlert('Failed to import: Invalid file format');
@@ -216,7 +237,7 @@ export const hideImportModal = () => {
 const importFromJsonText = async (jsonText) => {
     try {
         const data = JSON.parse(jsonText);
-        const ok = await doImport(() => { deserialize(data); syncImportedNotes(); });
+        const ok = await doImport(() => { deserialize(data); syncImportedNotes(); }, data);
         if (ok) {
             hideImportModal();
             importBackupsIfPresent(data);
@@ -256,7 +277,7 @@ const importFromYamlText = async (yamlText) => {
     }
 
     try {
-        const ok = await doImport(() => { deserialize(data); syncImportedNotes(); });
+        const ok = await doImport(() => { deserialize(data); syncImportedNotes(); }, data);
         if (ok) {
             hideImportYamlModal();
             importBackupsIfPresent(data);
@@ -271,7 +292,7 @@ const importYamlFile = async (file) => {
     reader.onload = async (e) => {
         try {
             const data = importFromYaml(e.target.result);
-            const ok = await doImport(() => deserialize(data));
+            const ok = await doImport(() => deserialize(data), data);
             if (ok) importBackupsIfPresent(data);
         } catch (err) {
             const msg = err.validationErrors ? err.validationErrors.join('\n') : 'Invalid YAML format';
@@ -431,7 +452,7 @@ const importFromCsvText = async (csvText) => {
     }
 
     try {
-        const ok = await doImport(() => deserialize(data));
+        const ok = await doImport(() => deserialize(data), data);
         if (ok) hideImportCsvModal();
     } catch {
         await showAlert('Failed to import: Invalid data structure');
@@ -443,7 +464,7 @@ const importCsvFile = async (file) => {
     reader.onload = async (e) => {
         try {
             const data = importFromCsv(e.target.result);
-            await doImport(() => deserialize(data));
+            await doImport(() => deserialize(data), data);
         } catch (err) {
             await showAlert('Failed to import: ' + (err.message || 'Invalid CSV format'));
         }

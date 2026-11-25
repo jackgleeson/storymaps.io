@@ -154,7 +154,8 @@ const show = (mode, message, defaultValue, placeholder, labels = {}) => {
 };
 
 export const showAlert = (message) => show('alert', message);
-export const showConfirm = (message) => show('confirm', message);
+// labels.ok names the main button when OK is not clear enough about what it does
+export const showConfirm = (message, labels) => show('confirm', message, undefined, undefined, labels);
 export const showPrompt = (message, defaultValue, placeholder) => show('prompt', message, defaultValue, placeholder);
 // Cancel and two choices: resolves 'ok' for the main button, 'alt' for the other, null for Cancel
 export const showChoice = (message, { ok, alt }) => show('choice', message, undefined, undefined, { ok, alt });

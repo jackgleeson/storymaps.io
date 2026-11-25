@@ -348,3 +348,38 @@ test('an API export sends one issue per card and ticks each one off', async ({ p
   await expect(page.locator('#linearProxyExportRun')).toBeEnabled();
   await expect(modal.getByRole('button', { name: 'Done' })).toBeHidden();
 });
+
+// A file has no review step, so one with more than 1,000 cards is asked about first
+const bigYaml = (cards) => `name: Big file\nsteps:\n  - Plan\nslices:\n  - name: MVP\n    stories:\n      Plan:\n${Array.from({ length: cards }, (_, i) => `        - name: Card ${i + 1}`).join('\n')}\n`;
+
+test('a file of more than 1,000 cards is asked about before it is imported', async ({ page, createMap }) => {
+  await openMap(page, await createMap());
+  await openSubmenu(page, 'importSubmenuTrigger', 'importYamlMenuItem');
+  await page.locator('#importYamlText').fill(bigYaml(1001));
+  await page.locator('#importYamlBtn').click();
+
+  const dialog = page.locator('.dialog-modal');
+  await expect(dialog).toBeVisible();
+  await expect(page.locator('.dialog-message')).toHaveText("This file has 1,001 cards. More than 1,000 cards on one story map could result in performance issues and make it hard to find your way around. You can import it as it is, or cancel and take out what you don't need first.");
+  // Cancel leaves the story map as it was
+  await dialog.getByRole('button', { name: 'Cancel' }).click();
+  await expect(dialog).toBeHidden();
+  await expect(page.locator('#boardName')).toHaveValue('Coffee app');
+
+  // The main button says what it does
+  await page.locator('#importYamlBtn').click();
+  await dialog.getByRole('button', { name: 'Import 1,001 cards' }).click();
+  await acceptDialog(page);
+  await expect(page.locator('#boardName')).toHaveValue('Big file');
+  await expect(page.locator('.slice-container .story-card')).toHaveCount(1001);
+});
+
+test('a file of 1,000 cards is imported without the question', async ({ page, createMap }) => {
+  await openMap(page, await createMap());
+  await openSubmenu(page, 'importSubmenuTrigger', 'importYamlMenuItem');
+  await page.locator('#importYamlText').fill(bigYaml(1000));
+  await page.locator('#importYamlBtn').click();
+  // Only the usual question about replacing the story map
+  await acceptDialog(page);
+  await expect(page.locator('#boardName')).toHaveValue('Big file');
+});

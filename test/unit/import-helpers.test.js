@@ -114,3 +114,27 @@ describe('buildStorymapFromImport', () => {
     assert.deepEqual(legendToAdd(undefined, existing), []);
   });
 });
+
+describe('a big import', () => {
+  test('is one of more than 1,000 cards', async () => {
+    const { isBigImport, BIG_IMPORT_CARDS } = await import('/src/transfer/import-helpers.js');
+    assert.equal(BIG_IMPORT_CARDS, 1000);
+    assert.equal(isBigImport(1000), false);
+    assert.equal(isBigImport(1001), true);
+  });
+
+  test('names issue types in the plural as a tracker writes them', async () => {
+    const { pluralType } = await import('/src/transfer/import-helpers.js');
+    assert.deepEqual(['Bug', 'Story', 'Sub-task', 'User Story', 'Task', 'Issues'].map(pluralType),
+      ['Bugs', 'Stories', 'Sub-tasks', 'User Stories', 'Tasks', 'Issues']);
+  });
+
+  test('offers up to three issue types to leave out, smallest first, never the most common', async () => {
+    const { trimTypes } = await import('/src/transfer/import-helpers.js');
+    assert.deepEqual(trimTypes({ Story: 606, Task: 299, Bug: 241, 'Sub-task': 80 }), ['Sub-task', 'Bug', 'Task']);
+    assert.deepEqual(trimTypes({ Story: 600, Bug: 300, 'Sub-task': 200, Task: 50, Spike: 10 }), ['Spike', 'Task', 'Sub-task']);
+    // One type, or none, leaves nothing to offer
+    assert.deepEqual(trimTypes({ Story: 12 }), []);
+    assert.deepEqual(trimTypes({}), []);
+  });
+});
