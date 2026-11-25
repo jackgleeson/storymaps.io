@@ -63,7 +63,7 @@ export default function register(ctx) {
   });
 
   route('POST', '/api/backups/:mapId', async (req, res, { mapId }, body) => {
-    if (ctx.isProxyRateLimited(req)) {
+    if (ctx.isBackupRateLimited(req)) {
       res.writeHead(429, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Too many attempts' }));
       return;
@@ -106,7 +106,7 @@ export default function register(ctx) {
 
   // Register /import before /:backupId so "import" isn't captured as a backupId
   route('POST', '/api/backups/:mapId/import', async (req, res, { mapId }, body) => {
-    if (ctx.isProxyRateLimited(req)) {
+    if (ctx.isBackupRateLimited(req)) {
       res.writeHead(429, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'Too many attempts' }));
       return;

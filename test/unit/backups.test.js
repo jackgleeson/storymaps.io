@@ -16,7 +16,7 @@ beforeEach(() => {
   docs = new Map();
   const ctx = {
     route: (method, path, handler) => { handlers[`${method} ${path}`] = handler; },
-    isProxyRateLimited: (req) => req.limited === true,
+    isBackupRateLimited: (req) => req.limited === true,
     readJson: async (path, fallback) => (files.has(path) ? structuredClone(files.get(path)) : fallback),
     updateJson: async (path, fallback, fn) => {
       const data = files.has(path) ? structuredClone(files.get(path)) : fallback;

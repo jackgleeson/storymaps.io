@@ -3,7 +3,7 @@ import { strict as assert } from 'node:assert';
 
 // Limit by the socket address, whatever the dev shell sets
 delete process.env.TRUST_PROXY;
-const { isRateLimited, isProxyRateLimited, isCreateRateLimited } = await import('../../server/rate-limit.js');
+const { isRateLimited, isProxyRateLimited, isBackupRateLimited, isCreateRateLimited } = await import('../../server/rate-limit.js');
 
 // The limiters keep their counts for the whole run, so every test uses its own IP
 let ipCounter = 0;
@@ -16,9 +16,9 @@ describe('rate limits', () => {
   beforeEach(() => mock.timers.enable({ apis: ['Date'], now: 1_000_000 }));
   afterEach(() => mock.timers.reset());
 
-  test('allows 30 API requests a minute, then limits', () => {
+  test('allows 60 API requests a minute, then limits', () => {
     const req = newClient();
-    assert.ok(sendRequests(isRateLimited, req, 30).every(limited => !limited));
+    assert.ok(sendRequests(isRateLimited, req, 60).every(limited => !limited));
     assert.equal(isRateLimited(req), true);
   });
 
@@ -83,6 +83,23 @@ describe('rate limits', () => {
     sendRequests(isCreateRateLimited, req, 20);
     mock.timers.tick(24 * 60 * 60_000);
     assert.ok(sendRequests(isCreateRateLimited, req, 10).every(limited => !limited));
+  });
+
+  test('allows 60 backups a minute, then limits', () => {
+    const req = newClient();
+    assert.ok(sendRequests(isBackupRateLimited, req, 60).every(limited => !limited));
+    assert.equal(isBackupRateLimited(req), true);
+  });
+
+  // A class behind one address making a backup each must not use up the allowance for locking,
+  // which is also the limit on guessing a lock password
+  test('backups and the proxy limit are counted separately', () => {
+    const req = newClient();
+    sendRequests(isBackupRateLimited, req, 60);
+    assert.equal(isBackupRateLimited(req), true);
+    assert.equal(isProxyRateLimited(req), false);
+    sendRequests(isProxyRateLimited, req, 9);
+    assert.equal(isProxyRateLimited(req), true, 'locking still stops after 10');
   });
 
   test('the API and proxy limits are counted separately', () => {

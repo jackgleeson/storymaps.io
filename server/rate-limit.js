@@ -58,7 +58,14 @@ const checkLimits = (req, ...checked) => {
   return false;
 };
 
-const api = createLimiter(30, 60_000);
+// A school or an office can share one address, so the limits on everyday actions leave room for a
+// class doing the same thing in the same minute: starting a project each, or making a backup each.
+const api = createLimiter(60, 60_000);
+// Backups have their own allowance. A map keeps only its newest few, so many requests can't fill the
+// disk, and the backup made before an import must not be refused for a class importing together.
+const backups = createLimiter(60, 60_000);
+// Locking and removing a lock refuse a wrong password, and the tracker routes call other services
+// for the visitor, so these stay tight
 const proxy = createLimiter(10, 60_000);
 const passwordAttempts = createLimiter(10, 60_000);
 // Creating maps through the API: people and the CLI make one at a time, so this only stops
@@ -68,6 +75,7 @@ const createPerDay = createLimiter(500, 24 * 60 * 60_000);
 
 export const isRateLimited = (req) => checkLimits(req, api);
 export const isProxyRateLimited = (req) => checkLimits(req, proxy);
+export const isBackupRateLimited = (req) => checkLimits(req, backups);
 // Project passwords have their own allowance, so other calls can't use it up. An attempt is taken
 // before the password is checked, so guesses sent at the same time all count. It's given back when
 // the password was right, so someone who has it can work through a project's maps.
