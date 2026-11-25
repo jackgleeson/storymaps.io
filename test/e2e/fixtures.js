@@ -28,12 +28,7 @@ const skipFirstVisit = () => {
 
 // Every redraw in a test is checked against the whole map built again from nothing (see
 // src/ui/redraw-check.js). The page logs a difference, and the test that caused it fails.
-// The tests use the redraw that keeps what has not changed on every map, whatever its size, so
-// they all exercise it (see redrawMode in src/ui/render.js).
-const checkRedraws = () => {
-  window.__redrawCheck = true;
-  localStorage.setItem('redraw', 'keep');
-};
+const checkRedraws = () => { window.__redrawCheck = true; };
 const watchRedraws = (page) => {
   const differences = [];
   page.on('console', (msg) => { if (msg.text().startsWith('[redraw-check]')) differences.push(msg.text()); });

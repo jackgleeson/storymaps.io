@@ -908,5 +908,46 @@
     "width": 634,
     "height": 213,
     "callouts": []
+  },
+  "import-a-big-backlog/warning": {
+    "width": 916,
+    "height": 736,
+    "callouts": [
+      {
+        "x": 2,
+        "y": 25.5
+      },
+      {
+        "x": 2,
+        "y": 37.5
+      },
+      {
+        "x": 87.8,
+        "y": 89.9
+      }
+    ]
+  },
+  "import-a-big-backlog/trimmed": {
+    "width": 916,
+    "height": 736,
+    "callouts": []
+  },
+  "import-a-big-backlog/labels": {
+    "width": 916,
+    "height": 736,
+    "callouts": [
+      {
+        "x": 2,
+        "y": 65.4
+      },
+      {
+        "x": 55.8,
+        "y": 41.8
+      },
+      {
+        "x": 55.8,
+        "y": 24.2
+      }
+    ]
   }
 }

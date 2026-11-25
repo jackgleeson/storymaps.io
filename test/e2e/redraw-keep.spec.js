@@ -262,7 +262,7 @@ test('a slice someone else adds while a slice is being dragged is kept after the
   await expect.poll(() => shown(other)).toEqual(['Later', 'MVP', 'Added meanwhile']);
 });
 
-// A big story map gets the drag changes and, by default, the redraw that keeps what has not changed
+// A big story map gets the drag changes. The redraw that keeps what has not changed is for every story map.
 const mapOf = (cards) => `name: Sized
 steps:
   - Browse

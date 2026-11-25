@@ -41,7 +41,11 @@ const describe = (node, depth, lines) => {
         // kept card can have its menu open
         .filter(a => !['class', 'style', 'rows', 'draggable', 'aria-expanded'].includes(a.name))
         .map(a => `${a.name}=${JSON.stringify(a.value)}`).sort();
-    const style = skipStyle(node) ? '' : node.style.cssText;
+    // Sortable slides cards into place with a transform and a transition of its own, and takes
+    // them off when the slide ends. A kept card can still be mid-slide when the map is redrawn.
+    const style = skipStyle(node) ? '' : [...node.style]
+        .filter(prop => prop !== 'transform' && !prop.startsWith('transition'))
+        .map(prop => `${prop}: ${node.style.getPropertyValue(prop)};`).join(' ');
     if (style) attrs.push(`style=${JSON.stringify(style)}`);
     if (node.tagName === 'TEXTAREA' || node.tagName === 'INPUT') attrs.push(`value=${JSON.stringify(node.value)}`);
     lines.push(`${pad}${node.tagName.toLowerCase()}${classes ? '.' + classes : ''}${attrs.length ? ' ' + attrs.join(' ') : ''}`);

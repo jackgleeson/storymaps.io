@@ -18,7 +18,7 @@
   </url>
   <url>
     <loc>https://storymaps.io/docs</loc>
-    <lastmod>2026-11-23</lastmod>
+    <lastmod>2026-11-25</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/why-user-story-mapping</loc>
@@ -235,6 +235,10 @@
   <url>
     <loc>https://storymaps.io/docs/user-story-mapping-for-azure-devops</loc>
     <lastmod>2026-11-24</lastmod>
+  </url>
+  <url>
+    <loc>https://storymaps.io/docs/import-a-big-backlog</loc>
+    <lastmod>2026-11-25</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/cli</loc>

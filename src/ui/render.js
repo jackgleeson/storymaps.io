@@ -313,14 +313,9 @@ let _drawn = null;
 const isPlain = () => !partialMapEditState.activeId && partialMapEditState.expandedIds.size === 0;
 
 // Which redraw to use. 'keep' keeps the cards and steps that have not changed (see keep.js), and
-// 'full' builds everything again. For now only a big story map keeps, where a full redraw is slow
-// enough to feel. The redraw item in this browser's storage overrides that either way, to try
-// keeping on any map or to switch it off if it misbehaves.
-const redrawMode = () => {
-    const choice = localStorage.getItem('redraw');
-    if (choice === 'keep' || choice === 'full') return choice;
-    return isBigMap() ? 'keep' : 'full';
-};
+// 'full' builds everything again. Every story map keeps. Setting the redraw item in this browser's
+// storage to full switches it off there, if it misbehaves.
+const redrawMode = () => (localStorage.getItem('redraw') === 'full' ? 'full' : 'keep');
 
 // A redraw can keep what is on the page when the page shows this same map, drawn plain, and it is
 // plain now. Editing a partial or showing one expanded changes every row and marks the steps, so

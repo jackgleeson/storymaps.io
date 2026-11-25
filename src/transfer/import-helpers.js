@@ -298,7 +298,7 @@ export const renderImportPreview = (epics, projectKey, domRefs, updateCountFn, o
             const statusChip = chip(statusNames[status], withStatus, !excludedStatuses.has(status), 'status', status, (on) => {
                 rows.filter(row => hasStatus(row, status)).forEach(row => setIncluded(row, on));
             });
-            // Done goes first: finished work is what most often has no place on a story map
+            // Done goes first: it is the one trim every tracker has, and often the biggest
             if (status === 'done') trims.unshift({ kind: 'status', value: status, name: statusNames[status], box: statusChip.querySelector('input'), takes: (row) => hasStatus(row, status) });
             return statusChip;
         })));
