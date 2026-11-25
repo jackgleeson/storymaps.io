@@ -47,7 +47,10 @@ const ZOOM_MIN = 0.1;
 const inLesson = () => typeof window !== 'undefined' && !!window.storymapsLesson;
 const touchScreen = () => typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
 const smallScreen = (width) => width < 600 || (width < 1000 && touchScreen());
-const fitFloor = (width) => (inLesson() ? 0.8 : smallScreen(width) ? 0.5 : ZOOM_MIN);
+// The tour on a phone goes no smaller than three quarters: at half size the cards it points at were
+// 60px wide and too small to read, and the tour locks the zoom so it could not be changed.
+const inTour = () => typeof document !== 'undefined' && document.body.classList.contains('tour-active');
+const fitFloor = (width) => (inLesson() ? 0.8 : inTour() && width < 600 ? 0.75 : smallScreen(width) ? 0.5 : ZOOM_MIN);
 const ZOOM_MAX = 3;
 
 // Pan/drag state

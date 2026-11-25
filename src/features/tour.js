@@ -307,10 +307,19 @@ const positionTooltip = (rect) => {
     if (onRight ? above() || below() : below() || above()) return;
     // Try right
     if (toRight()) return;
-    // Fall back to left
-    tt.style.left = `${Math.max(MARGIN, spotLeft - TOOLTIP_GAP - ttRect.width)}px`;
-    tt.style.top = `${clampY(spotTop + spotH / 2 - ttRect.height / 2, ttRect.height, vh)}px`;
-    tt.setAttribute('data-arrow', 'right');
+    // To the left of the highlight when there is room there
+    if (spotLeft - TOOLTIP_GAP - ttRect.width >= MARGIN) {
+        tt.style.left = `${spotLeft - TOOLTIP_GAP - ttRect.width}px`;
+        tt.style.top = `${clampY(spotTop + spotH / 2 - ttRect.height / 2, ttRect.height, vh)}px`;
+        tt.setAttribute('data-arrow', 'right');
+        return;
+    }
+    // No room on any side: a phone held sideways, where the highlight fills the width and the
+    // screen is short, or the step that lights the whole story map. It has to sit over the
+    // highlight, so it takes the bottom right corner of the window. A story map is usually empty
+    // at its right-hand end, and the top rows and the first cards stay in view.
+    tt.style.left = `${Math.max(MARGIN, vw - ttRect.width - MARGIN)}px`;
+    tt.style.top = `${Math.max(MARGIN, vh - ttRect.height - MARGIN)}px`;
 };
 
 const clampX = (x, w, vw) => Math.max(MARGIN, Math.min(x, vw - w - MARGIN));
@@ -628,9 +637,18 @@ const onMapScroll = (e) => {
 };
 
 // Only moves things: entering the step again would save any cards dragged so far as their places.
-// On a phone the address bar sliding away counts as a resize.
+// On a phone the address bar sliding away counts as a resize, and changes only the height. A new
+// width is a phone turned on its side or a window resized: the story map is fitted to it again,
+// and the scroll a step was holding is let go, since it was measured for the old width and held
+// the map away from the highlight.
+let _resizedWidth = 0;
 const onResize = () => {
     if (!_active) return;
+    if (window.innerWidth !== _resizedWidth) {
+        _resizedWidth = window.innerWidth;
+        _heldScroll = null;
+        if (!isFree() && !_options.typing) _zoomToFit?.();
+    }
     positionCurrentStep();
 };
 
@@ -676,8 +694,11 @@ export const runSteps = (steps, options = {}) => {
     window.addEventListener('wheel', onWheel, { passive: false });
     window.addEventListener('touchmove', onTouchMove, { passive: false, capture: true });
     $('storyMapWrapper')?.addEventListener('scroll', onMapScroll);
+    _resizedWidth = window.innerWidth;
     window.addEventListener('resize', onResize);
     if (options.typing) startFollowing();
+    // The tour has its own smallest zoom on a phone, so fit the story map again now it has begun
+    else _zoomToFit?.();
 
     buildProgressDots();
     renderStep();

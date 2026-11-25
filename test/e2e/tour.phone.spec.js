@@ -12,11 +12,17 @@ const stepFits = (page) => page.evaluate(() => {
     && !!onTop?.closest('.tour-btn-next');
 });
 
-// Overlapping highlights cancel out and leave a dark strip, and the tour box stays clear of them
+// Overlapping highlights cancel out and leave a dark strip, and the tour box stays clear of them.
+// Where the highlights leave no room for the box above or below them, as when the whole story map
+// is lit, the box sits at the bottom of the window instead.
 const highlightsApart = (page) => page.evaluate(() => {
-  const boxes = [...document.querySelectorAll('.tour-spotlight')].filter(s => s.style.display !== 'none').map(s => s.getBoundingClientRect());
-  boxes.push(document.querySelector('#tourTooltip').getBoundingClientRect());
-  return boxes.every((a, i) => boxes.slice(i + 1).every(b => a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top));
+  const apart = (a, b) => a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top;
+  const lit = [...document.querySelectorAll('.tour-spotlight')].filter(s => s.style.display !== 'none').map(s => s.getBoundingClientRect());
+  const box = document.querySelector('#tourTooltip').getBoundingClientRect();
+  if (!lit.every((a, i) => lit.slice(i + 1).every(b => apart(a, b)))) return false;
+  if (lit.every(a => apart(a, box))) return true;
+  const room = Math.max(Math.min(...lit.map(a => a.top)), innerHeight - Math.max(...lit.map(a => a.bottom)));
+  return room < box.height && innerHeight - box.bottom < 20;
 });
 
 test('on a phone the home page has the tour button first, and the tour is in the menu too', async ({ page }) => {
@@ -86,3 +92,38 @@ for (const viewport of [{ width: 600, height: 1024 }, { width: 800, height: 1280
     });
   });
 }
+
+test('on a phone the tour shows the story map at three quarters, big enough to read', async ({ page }) => {
+  await page.goto('/tour');
+  await expect(tooltip(page)).toBeVisible();
+  await expect(page.locator('#zoomReset')).toHaveText('75%');
+  // Ending the tour fits the story map to the phone again, at half size
+  await tooltip(page).locator('.tour-btn-skip').tap();
+  await expect(tooltip(page)).toBeHidden();
+  await expect(page.locator('#zoomReset')).toHaveText('50%');
+});
+
+test('the tour follows a phone turned on its side and back', async ({ page }) => {
+  await page.goto('/tour');
+  await expect(tooltip(page)).toBeVisible();
+  while (await tooltip(page).locator('.tour-tooltip-title').textContent() !== 'Users') await next(page).tap();
+  const upright = page.viewportSize();
+  // The highlighted row starts inside the window, with its first card in view and clear of the tour box
+  const follows = () => page.evaluate(() => {
+    const spot = document.querySelector('.tour-spotlight').getBoundingClientRect();
+    const card = document.querySelector('.users-row .story-card').getBoundingClientRect();
+    const box = document.querySelector('#tourTooltip').getBoundingClientRect();
+    const apart = card.right <= box.left || box.right <= card.left || card.bottom <= box.top || box.bottom <= card.top;
+    return spot.left >= 0 && spot.left < 60 && card.left >= 0 && card.right <= innerWidth && card.top >= spot.top && card.top < spot.bottom && apart;
+  });
+  await expect.poll(follows).toBe(true);
+
+  await page.setViewportSize({ width: upright.height, height: upright.width });
+  await expect.poll(follows).toBe(true);
+  expect(await stepFits(page)).toBe(true);
+
+  await page.setViewportSize(upright);
+  await expect.poll(follows).toBe(true);
+  await expect(page.locator('#zoomReset')).toHaveText('75%');
+  expect(await stepFits(page)).toBe(true);
+});
