@@ -418,6 +418,47 @@ html.dark-mode .usage code { background: #020617; box-shadow: inset 0 0 0 1px va
 /* A command as a heading reads as the heading, in the code face with no box around it */
 .docs-article h2 code, .docs-article h3 code { font-size: 0.92em; padding: 0; background: none; border: 0; border-radius: 0; color: inherit; letter-spacing: -0.01em; }
 
+/* The kinds of card on the glossary page, drawn at the size of a card in a screenshot */
+.kinds { display: flex; flex-wrap: wrap; gap: 20px; margin: 18px 0 10px; }
+.kind { width: 153px; display: flex; flex-direction: column; gap: 10px; font-size: 14px; line-height: 1.6; }
+.kind .dn { min-height: 77px; font-size: 14px; }
+/* A list of terms, with a box that narrows it */
+.terms { margin: 18px 0 20px; max-width: 760px; }
+.terms dl { margin: 0; border-bottom: 1px solid var(--border); }
+.gloss-term { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 0 24px; padding: 14px 0; border-top: 1px solid var(--border); scroll-margin-top: calc(var(--sticky-top, var(--header-h)) + 16px); }
+.gloss-term[hidden] { display: none; }
+.gloss-term dt { font-weight: 600; color: var(--heading); }
+.gloss-term dd { margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.gloss-term .aka { font-size: 14px; color: var(--muted); }
+.terms-find { display: flex; flex-direction: column; gap: 6px; margin: 0 0 18px; max-width: 360px; font-size: 14px; font-weight: 600; color: var(--heading); }
+.terms-find input { height: 40px; padding: 7px 12px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); color: var(--text); font: inherit; font-weight: 400; font-size: 15px; }
+.terms-find input:focus-visible { outline: 2px solid var(--teal); outline-offset: 1px; }
+.terms-count { margin: 0 0 12px; font-size: 14px; color: var(--muted); }
+.terms-count[hidden] { display: none; }
+/* A table in a box, with a shaded header row */
+.boxed .table-wrap { margin: 18px 0 20px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+.boxed .table-wrap th { padding: 10px 16px; background: var(--surface-2); font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; }
+.boxed .table-wrap td { padding: 12px 16px; }
+.boxed .table-wrap td:first-child { white-space: normal; }
+.boxed .table-wrap table { table-layout: fixed; }
+.boxed .table-wrap th:nth-child(1) { width: 31%; }
+.boxed .table-wrap th:nth-child(2) { width: 19%; }
+@media (max-width: 600px) {
+    .boxed .table-wrap table { font-size: 14px; }
+    .boxed .table-wrap th { white-space: normal; padding: 8px 10px; font-size: 11px; }
+    .boxed .table-wrap td { padding: 10px; }
+    .boxed .table-wrap th:nth-child(1) { width: 27%; }
+    .boxed .table-wrap th:nth-child(2) { width: 21%; }
+}
+/* Small screenshots side by side */
+.shot-row { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; margin: 22px 0 8px; }
+.shot-row figure.shot { flex: 0 1 auto; margin: 0; }
+@media (max-width: 600px) {
+    .gloss-term { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+    .terms-find { max-width: none; }
+    .shot-row figure.shot { flex: 0 0 100%; }
+    .terms-find input { height: 44px; font-size: 16px; }
+}
 .table-wrap { margin: 14px 0 20px; max-width: 760px; overflow-x: auto; }
 .table-wrap table { width: 100%; border-collapse: collapse; font-size: 15px; }
 .table-wrap th { padding: 0 16px 6px 0; text-align: left; font-size: 13px; font-weight: 600; color: var(--muted); }

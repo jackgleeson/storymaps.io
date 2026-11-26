@@ -20,7 +20,7 @@
     <meta name="twitter:description" content="Run storymaps status for progress across the story map and in each slice, counts by status, and the cards that are blocked.">
     <meta name="twitter:image" content="https://storymaps.io/resources/screenshot.png">
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://storymaps.io/docs"},{"@type":"ListItem","position":2,"name":"CLI","item":"https://storymaps.io/docs/cli"},{"@type":"ListItem","position":3,"name":"Check story map progress","item":"https://storymaps.io/docs/cli/check-story-map-progress"}]}</script>
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Check story map progress in the terminal","description":"Run storymaps status for progress across the story map and in each slice, counts by status, and the cards that are blocked.","url":"https://storymaps.io/docs/cli/check-story-map-progress","inLanguage":"en","dateModified":"2026-11-12","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"Check story map progress in the terminal","description":"Run storymaps status for progress across the story map and in each slice, counts by status, and the cards that are blocked.","url":"https://storymaps.io/docs/cli/check-story-map-progress","inLanguage":"en","dateModified":"2026-11-26","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/fonts.css">
     <script>
@@ -32,8 +32,8 @@
         } catch(e) {}
     })();
     </script>
-    <link rel="stylesheet" href="/docs/docs.css?v=db6c98f2">
-    <script src="/docs/docs.js?v=c6f40470" defer></script>
+    <link rel="stylesheet" href="/docs/docs.css?v=553718ce">
+    <script src="/docs/docs.js?v=432529a8" defer></script>
 </head>
 <body class="docs-guide docs-cli">
 <div class="site-header-wrap">
@@ -149,7 +149,7 @@
 <div class="code-bar"><span>Terminal</span><button type="button" class="code-copy" data-copy aria-label="Copy the command"><svg aria-hidden="true" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span>Copy</span></button></div>
 <pre><span class="term-cmd" data-cmd><span class="term-prompt" aria-hidden="true">$ </span>storymaps status</span><span class="term-out"> </span><span class="term-out">Coffee App</span><span class="term-out term-dim">id: abc12345</span><span class="term-out"> </span><span class="term-out">Overall Progress</span><span class="term-out">  █░░░░░░░░░░░░░░░░░░░ 1/19 stories (5%)</span><span class="term-out"> </span><span class="term-out">Slices</span><span class="term-out">  MVP  ███░░░░░░░░░░░░ 1/6 (17%)</span><span class="term-out">  V1   ░░░░░░░░░░░░░░░ 0/8 (0%)</span><span class="term-out">  V2   ░░░░░░░░░░░░░░░ 0/5 (0%)</span><span class="term-out"> </span><span class="term-out">Status</span><span class="term-out">  ● done: 1</span><span class="term-out">  ○ no status: 18</span></pre>
 </figure>
-<ul><li><strong>Overall Progress</strong> counts the cards marked <code>done</code> against all the cards.</li><li><strong>Slices</strong> does the same for each slice, with its points when cards have them.</li><li><strong>Status</strong> counts the cards with each status.</li><li><strong>Blocked</strong> shows only when a card is blocked, and lists each one by name.</li></ul>
+<ul><li><strong>Overall Progress</strong> counts the cards marked <code>done</code> against all the cards. The CLI calls task cards stories.</li><li><strong>Slices</strong> does the same for each slice, with its points when cards have them.</li><li><strong>Status</strong> counts the cards with each status.</li><li><strong>Blocked</strong> shows only when a card is blocked, and lists each one by name.</li></ul>
 <p>Cards in a legend colour whose label doesn't say task, such as <strong>Notes</strong> or <strong>Questions</strong>, are left out of the counts.</p>
 <h2 id="any-story-map-without-a-file">Any story map, without a file</h2>
 <p>Give it a link to check a story map you haven't pulled:</p>

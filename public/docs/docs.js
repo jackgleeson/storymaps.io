@@ -833,6 +833,29 @@
         });
     }
 
+    // A list of terms with a "Find a term" box: typing hides the terms that don't match, by name,
+    // meaning or other names, and says how many are left
+    document.querySelectorAll('[data-terms]').forEach(function (list) {
+        var input = list.querySelector('[data-terms-filter]');
+        var count = list.querySelector('[data-terms-count]');
+        var terms = Array.prototype.slice.call(list.querySelectorAll('.gloss-term'));
+        if (!input) return;
+        input.addEventListener('input', function () {
+            var words = input.value.toLowerCase().split(/\s+/).filter(Boolean);
+            var shown = 0;
+            terms.forEach(function (term) {
+                var text = term.textContent.toLowerCase();
+                var match = words.every(function (w) { return text.indexOf(w) !== -1; });
+                term.hidden = !match;
+                if (match) shown++;
+            });
+            count.hidden = !words.length;
+            count.textContent = shown
+                ? shown + ' of ' + terms.length + ' terms match'
+                : 'No term matches. Try another word.';
+        });
+    });
+
     // Page views, counted as the app counts them (src/features/analytics.js): on storymaps.io
     // only, so a self-hosted copy and the dev server never fetch it
     if (window.location.hostname === 'storymaps.io') {

@@ -949,5 +949,42 @@
         "y": 24.2
       }
     ]
+  },
+  "story-map-glossary/control-panel": {
+    "width": 351,
+    "height": 594,
+    "callouts": [
+      {
+        "x": 12.7,
+        "y": 7.5
+      },
+      {
+        "x": 5.6,
+        "y": 85.9
+      },
+      {
+        "x": 7.1,
+        "y": 93.3
+      },
+      {
+        "x": 59,
+        "y": 89.4
+      }
+    ]
+  },
+  "story-map-glossary/partials": {
+    "width": 334,
+    "height": 204,
+    "callouts": []
+  },
+  "story-map-glossary/notepad": {
+    "width": 572,
+    "height": 743,
+    "callouts": []
+  },
+  "story-map-glossary/log": {
+    "width": 334,
+    "height": 308,
+    "callouts": []
   }
 }
