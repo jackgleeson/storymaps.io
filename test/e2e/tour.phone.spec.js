@@ -106,7 +106,13 @@ test('on a phone the tour shows the story map at three quarters, big enough to r
 test('the tour follows a phone turned on its side and back', async ({ page }) => {
   await page.goto('/tour');
   await expect(tooltip(page)).toBeVisible();
-  while (await tooltip(page).locator('.tour-tooltip-title').textContent() !== 'Users') await next(page).tap();
+  // One tap, one step: wait for each title before tapping again
+  const title = tooltip(page).locator('.tour-tooltip-title');
+  await expect(title).toHaveText('What is a story map?');
+  for (const step of ['Our example: a coffee app', 'Users']) {
+    await next(page).tap();
+    await expect(title).toHaveText(step);
+  }
   const upright = page.viewportSize();
   // The highlighted row starts inside the window, with its first card in view and clear of the tour box
   const follows = () => page.evaluate(() => {
