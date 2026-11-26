@@ -312,3 +312,14 @@ test('Download image saves the story map as a PNG', async ({ page, createMap }) 
   expect(await page.evaluate(() => window.savedImage.href)).toBe('data:image/png;base64,');
   await expect(page.locator('#shareBtn .btn-label')).toHaveText(/Share/);
 });
+
+test('a story map too wide for the window opens at 80%, and Alt+R goes back to that', async ({ page, createMap }) => {
+  const steps = Array.from({ length: 30 }, (_, i) => `  - Step ${i}`).join('\n');
+  await openMap(page, await createMap(`name: Wide\nsteps:\n${steps}\n`), 30);
+  const zoom = page.locator('#zoomReset');
+  await expect(zoom).toHaveText('80%');
+  await page.locator('#zoomOut').click();
+  await expect(zoom).not.toHaveText('80%');
+  await page.keyboard.press('Alt+r');
+  await expect(zoom).toHaveText('80%');
+});

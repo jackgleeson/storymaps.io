@@ -1,5 +1,11 @@
 import { test, expect } from './fixtures.js';
 
+// The mouse drags between slices, so every slice has to be in the window: fit the whole story map,
+// as it was before wide story maps opened at 80%
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => { window.storymapsFitWhole = true; });
+});
+
 const slice = (page, i) => page.locator('.slice-container').nth(i);
 const column = (scope, i) => scope.locator('.story-column').nth(i);
 const ids = (scope) => scope.locator('.story-card[data-story-id]').evaluateAll(cards => cards.map(c => c.dataset.storyId));

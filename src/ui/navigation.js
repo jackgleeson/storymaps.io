@@ -37,8 +37,11 @@ export let zoomLevel = 1;
 export let isPinching = false;
 const ZOOM_STEP = 0.1;
 const ZOOM_MIN = 0.1;
-// Fitting the map to the window never zooms out further than this: half size on a small screen,
-// where people scroll sideways instead, and 80% beside a lesson, so the cards stay readable in the
+const FIT_FLOOR = 0.8;
+// Fitting the map to the window never zooms out further than this: 80% on a desktop,
+// where a wide story map fitted whole came out at 15% and could not be read, so it now opens
+// readable and people scroll sideways or zoom out by hand; half size on a small screen, where
+// people scroll sideways too; and 80% beside a lesson, so the cards stay readable in the
 // narrower pane. A small screen is a phone, or a touch screen up to the width of a tablet held
 // upright: fitted to that width a story map came out at 25%, too small to read, and the tour
 // locks the zoom so it could not be changed.
@@ -49,8 +52,11 @@ const touchScreen = () => typeof window !== 'undefined' && window.matchMedia('(p
 const smallScreen = (width) => width < 600 || (width < 1000 && touchScreen());
 // The tour on a phone goes no smaller than three quarters: at half size the cards it points at were
 // 60px wide and too small to read, and the tour locks the zoom so it could not be changed.
+// The docs screenshots set window.storymapsFitWhole, so a picture still shows the
+// whole of a wide story map. Tests that drag across a whole story map set it too.
+const fitWhole = () => typeof window !== 'undefined' && !!window.storymapsFitWhole;
 const inTour = () => typeof document !== 'undefined' && document.body.classList.contains('tour-active');
-const fitFloor = (width) => (inLesson() ? 0.8 : inTour() && width < 600 ? 0.75 : smallScreen(width) ? 0.5 : ZOOM_MIN);
+const fitFloor = (width) => (inLesson() ? 0.8 : inTour() && width < 600 ? 0.75 : smallScreen(width) ? 0.5 : fitWhole() ? ZOOM_MIN : FIT_FLOOR);
 const ZOOM_MAX = 3;
 
 // Pan/drag state
