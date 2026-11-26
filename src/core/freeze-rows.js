@@ -10,7 +10,7 @@ export const FREEZE_MODES = {
     all: ['users-row', 'activities-row', 'steps-row']
 };
 
-export const DEFAULT_FREEZE_MODE = 'all';
+export const DEFAULT_FREEZE_MODE = 'activities';
 
 export const normalizeFreezeMode = (mode) =>
     Object.hasOwn(FREEZE_MODES, mode) ? mode : DEFAULT_FREEZE_MODE;

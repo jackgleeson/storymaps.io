@@ -36,8 +36,8 @@ const choose = async (page, value) => {
 test('rows chosen in the menu stay at the top while scrolling, at any zoom', async ({ page, createMap }) => {
   const id = await createMap(LONG_MAP);
   await openMap(page, id);
-  // Users, activities and steps are frozen until someone picks otherwise
-  await expect(page.locator('#freezeMenu input[value="all"]')).toBeChecked();
+  // Activities and steps are frozen until someone picks otherwise
+  await expect(page.locator('#freezeMenu input[value="activities"]')).toBeChecked();
   await expect(page.locator('#toggleFreezeBtn')).toHaveClass(/active/);
 
   await choose(page, 'steps');
@@ -154,6 +154,8 @@ const clickAt = async (page, locator) => {
 
 for (const stuck of [false, true]) {
   test(`clicking, adding and typing in cards in the frozen rows leaves the map where it is${stuck ? ', with the rows stuck' : ''}`, async ({ page, createMap }) => {
+    // All three rows frozen, so the users row is in reach after scrolling
+    await page.addInitScript(() => localStorage.setItem('freezeRows', 'all'));
     await openMap(page, await createMap(LONG_MAP));
     const wrapper = page.locator('#storyMapWrapper');
     if (stuck) await scrollDown(page, 700);
