@@ -7599,7 +7599,7 @@ html.dark-mode .notes-editor {
    own colour (the class is set in src/features/notepad.js) */
 .notes-editor.drawn-bold .cm-md-heading,
 .notes-editor.drawn-bold .cm-md-bold {
-    -webkit-text-stroke: 0.6px currentColor;
+    -webkit-text-stroke: 0.3px currentColor;
 }
 
 .notes-editor .cm-md-code {
