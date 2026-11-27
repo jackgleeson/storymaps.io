@@ -8161,10 +8161,19 @@ body.read-only-mode .slice-drag-handle {
 
 body.read-only-mode .story-text,
 body.read-only-mode .step-text,
-body.read-only-mode .slice-label,
 body.read-only-mode .board-name {
     pointer-events: none;
     cursor: default;
+}
+
+/* A slice name on a locked story map can't be clicked to edit, but the pointer still has to reach
+   it: resting on it dims the rest of the map (src/features/slice-links.js) */
+body.read-only-mode .slice-label {
+    cursor: default;
+}
+
+body.read-only-mode .slice-label:hover {
+    background-color: transparent;
 }
 
 body.read-only-mode .slice-label-empty::before {

@@ -370,3 +370,31 @@ slices:
   await page.mouse.move(600, 5);
   await expect(dimmed).toHaveCount(0);
 });
+
+test('resting on a slice name dims the rest of a locked story map, and a click opens nothing', async ({ page, createMap, request }) => {
+  const id = await createMap(`name: Dim
+steps:
+  - Browse
+slices:
+  - name: First
+    stories:
+      Browse:
+        - name: Drink list
+  - name: Second
+    stories:
+      Browse:
+        - name: Pick size
+`);
+  const passwordHash = createHash('sha256').update('secret').digest('hex');
+  expect((await request.post(`/api/lock/${id}`, { data: { passwordHash } })).status()).toBe(200);
+  await openMap(page, id, 1);
+  await expect(page.locator('body')).toHaveClass(/read-only-mode/);
+  const first = page.locator('.slice-container').first();
+  const name = page.locator('.slice-container').nth(1).locator('.slice-label');
+  await name.hover();
+  await expect.poll(() => first.evaluate(el => getComputedStyle(el).opacity)).toBe('0.25');
+  await name.click();
+  await expect(page.locator('.slice-details')).toHaveCount(0);
+  await first.locator('.story-card').hover();
+  await expect.poll(() => first.evaluate(el => getComputedStyle(el).opacity)).toBe('1');
+});
