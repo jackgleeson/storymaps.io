@@ -97,6 +97,8 @@ const buildPreview = (cm) => {
         const on = (from, to) => typing && state.selection.ranges.some(r => r.from <= to && r.to >= from);
         // The same, but a cursor resting just after the range doesn't count
         const inside = (from, to) => typing && state.selection.ranges.some(r => (r.empty ? r.from >= from && r.from < to : r.from < to && r.to > from));
+        // The same, but a cursor resting just before or just after the range doesn't count
+        const within = (from, to) => typing && state.selection.ranges.some(r => (r.empty ? r.from > from && r.from < to : r.from < to && r.to > from));
         const out = [];
         // A description far longer than anyone writes shows as plain text, so every keystroke in it stays quick
         if (state.doc.length > MAX_FORMATTED_DOC) return Decoration.none;
@@ -187,7 +189,10 @@ const buildPreview = (cm) => {
 
             for (const mark of inlineMarks(line.text, start)) {
                 const from = at + mark.from, to = at + mark.to;
-                const shown = on(from, to);
+                // A link shows its Markdown only with the cursor inside it, which is where the
+                // pencil puts it. A cursor resting before or after it, as after a click on the
+                // end of the line, leaves it as a link.
+                const shown = mark.type === 'link' ? within(from, to) : on(from, to);
                 const url = mark.url && isValidUrl(mark.url) ? mark.url : null;
                 if (mark.open) {
                     add(at + mark.open[0], at + mark.open[1], shown ? symbol : hide);
@@ -296,6 +301,40 @@ const tidyUnnamedLink = (cm) => cm.EditorView.updateListener.of((update) => {
     });
 });
 
+// With the cursor resting against a link, move it one place into the link. direction: -1 for a
+// link that ends at the cursor, 1 for one that starts there.
+const stepIntoLink = (view, direction) => {
+    const { main } = view.state.selection;
+    if (view.state.readOnly || !main.empty || view.state.selection.ranges.length > 1) return false;
+    const line = view.state.doc.lineAt(main.head);
+    const at = main.head - line.from;
+    if (!inlineMarks(line.text).some(mark => mark.type === 'link' && (direction < 0 ? mark.to : mark.from) === at)) return false;
+    view.dispatch({ selection: { anchor: main.head + direction }, scrollIntoView: true });
+    return true;
+};
+
+// A click on the end of a line, or the End key, can leave the cursor just inside the last link,
+// between its words and the hidden address, which looks the same as just after the link. That
+// would show its Markdown. The cursor goes outside the link instead. A step of one place with
+// the arrow keys is left alone, as that is how to walk into a link.
+const keepOutOfLinks = (cm) => cm.EditorState.transactionFilter.of((tr) => {
+    if (tr.docChanged || !tr.selection || !tr.isUserEvent('select')) return tr;
+    const { main } = tr.newSelection;
+    if (!main.empty || tr.newSelection.ranges.length > 1) return tr;
+    const was = tr.startState.selection.main.head;
+    if (Math.abs(main.head - was) === 1) return tr;
+    const line = tr.newDoc.lineAt(main.head);
+    const at = main.head - line.from;
+    for (const mark of inlineMarks(line.text)) {
+        if (mark.type !== 'link' || !mark.open) continue;
+        // Already in this link, with its Markdown showing
+        if (was > line.from + mark.from && was < line.from + mark.to) continue;
+        const to = at === mark.close[0] ? mark.to : at === mark.open[1] ? mark.from : null;
+        if (to !== null) return [tr, { selection: { anchor: line.from + to }, sequential: true }];
+    }
+    return tr;
+});
+
 // cm: the CodeMirror bundle. enterAction(text, from, to): what Enter does at the cursor, such as
 // starting the next item of a list, or null for a plain new line.
 export const markdownExtensions = (cm, { enterAction } = {}) => [
@@ -312,12 +351,17 @@ export const markdownExtensions = (cm, { enterAction } = {}) => [
         }
     }])),
     cm.keymap.of([
+        // Backspace just after a link, or Delete just before it, would take a symbol that isn't
+        // showing and break the link. The first press shows its Markdown, with the cursor inside.
+        { key: 'Backspace', run: (v) => stepIntoLink(v, -1) },
+        { key: 'Delete', run: (v) => stepIntoLink(v, 1) },
         { key: 'Mod-b', run: (v) => wrapSelection(v, '**') },
         { key: 'Mod-i', run: (v) => wrapSelection(v, '*') },
         { key: 'Mod-Shift-x', run: (v) => wrapSelection(v, '~~') },
         { key: 'Mod-e', run: (v) => wrapSelection(v, '`') },
     ]),
     buildPreview(cm),
+    keepOutOfLinks(cm),
     tidyUnnamedLink(cm),
     // A symbol typed between a link's text and its address, as in [text]~~(address), would
     // break the link in two. Someone putting ~~ or ** round the words means the whole link,

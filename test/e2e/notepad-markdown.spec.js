@@ -57,6 +57,12 @@ test('two people type in the notepad at once, each seeing it formatted', async (
   await other.keyboard.type('*From B*');
   await expect(notes(page).locator('.cm-md-italic')).toHaveText('From B');
   await expect.poll(async () => (await pullMap(id)).notes).toBe('**From A**\n*From B*');
+  // The name beside the other cursor keeps to its label on a list item, which is indented
+  await other.keyboard.press('Enter');
+  await other.keyboard.type('- an item');
+  const label = notes(page).locator('.cm-md-item .cm-ySelectionInfo');
+  await expect(label).toBeVisible();
+  expect(await label.evaluate(el => getComputedStyle(el).textIndent)).toBe('0px');
   // Each sees symbols only where their own cursor is
   expect(await shown(page)).toContain('**From A**');
   expect(await shown(other)).not.toContain('**From A**');
@@ -141,4 +147,31 @@ test('a block of code in the notepad takes no extra lines, and a long note forma
   await page.keyboard.press('Control+Home');
   await expect(notes(page).locator('.cm-md-bold').first()).toBeVisible();
   expect(await notes(page).locator('.cm-md-bold').count()).toBeLessThan(300);
+});
+
+test('a link keeps its Markdown hidden with the cursor resting beside it', async ({ page, createMap, pullMap }) => {
+  const id = await createMap();
+  await openMap(page, id);
+  await openNotes(page);
+  await notes(page).click();
+  await page.keyboard.type('see [the plan](https://example.com/p)');
+  // The cursor is just after the link, as after a click on the end of the line
+  expect((await shown(page)).trim()).toBe('see the plan');
+  await page.keyboard.press('Home');
+  await page.keyboard.press('End');
+  expect((await shown(page)).trim()).toBe('see the plan');
+  // Typing carries on after the link
+  await page.keyboard.type(' today');
+  await expect.poll(async () => (await pullMap(id)).notes).toBe('see [the plan](https://example.com/p) today');
+
+  // Backspace against the link shows its Markdown first, and takes nothing
+  for (let i = 0; i < 6; i++) await page.keyboard.press('Backspace');
+  await page.keyboard.press('Backspace');
+  expect(await shown(page)).toContain('[the plan](https://example.com/p');
+  await expect.poll(async () => (await pullMap(id)).notes).toBe('see [the plan](https://example.com/p)');
+  // The arrow keys show it too, once the cursor is inside
+  await page.keyboard.press('End');
+  expect((await shown(page)).trim()).toBe('see the plan');
+  await page.keyboard.press('ArrowLeft');
+  expect(await shown(page)).toContain('[the plan]');
 });

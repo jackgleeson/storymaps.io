@@ -7506,6 +7506,12 @@ html.dark-mode .connection-notice.is-online::before {
     text-indent: 0;
 }
 
+/* The name beside the cursor of someone else, which would take the indent of a list item and
+   slide out of its own label */
+.md-editor .cm-ySelectionInfo {
+    text-indent: 0;
+}
+
 .cm-md-number {
     color: var(--card-muted);
 }

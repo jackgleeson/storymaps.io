@@ -234,3 +234,22 @@ test('a typed tick box item keeps its dash until the box is finished', async ({ 
   await page.keyboard.type('a');
   await expect(description(page).locator('.cm-md-bullet')).toHaveCount(2);
 });
+
+test('opening a card and clicking the end of a line leave the last link as a link', async ({ page, createMap }) => {
+  const map = MAP.replace('- Clear with `Esc`', '- Clear with `Esc`\n\n            Tracked work is [here](https://example.com/work)');
+  await openMap(page, await createMap(map), 1);
+  await open(page);
+  expect(await shown(page)).not.toContain('https://example.com/work');
+  // A click to the right of the last line puts the cursor after the link, not in it
+  const line = description(page).locator('.cm-line').last();
+  const box = await line.boundingBox();
+  await page.mouse.click(box.x + box.width - 20, box.y + box.height / 2);
+  await expect(description(page)).toBeFocused();
+  expect(await shown(page)).not.toContain('https://example.com/work');
+  await page.keyboard.type(' now');
+  expect(await shown(page)).toContain('here');
+  expect((await shown(page)).trimEnd().endsWith('now')).toBe(true);
+  // The pencil still shows its Markdown
+  await description(page).locator('.cm-md-edit').last().click();
+  expect(await shown(page)).toContain('[here](https://example.com/work)');
+});
