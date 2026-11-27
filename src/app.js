@@ -63,26 +63,25 @@ const newMapId = async () => {
 const subscribeToMap = async (mapId) => {
     clearUndoHistory();
     projects.load(mapId);
-    // The lock is read while the story map loads, and known before the first draw. Read later, a
-    // locked story map showed as editable until then, and for as long as the name prompt stayed up.
-    const lockRead = loadLockState(mapId);
     if (!getYdoc()) {
         await createYjsDoc(mapId);
     }
-    await lockRead;
-    restoreSessionUnlock(mapId);
-    updateLockUI();
 
+    // No waiting from here to the draw when the story map is already loaded: a new story map calls
+    // this and saves straight after, and a draw that came later would redraw the cards under the person
     syncFromYjs();
     render();
     recentMaps.noteOpened();
     bookmarkNudge.start(mapId);
 
     const deferredTracking = async () => {
+        // The lock comes before the name prompt, which can stay up for a long time. An existing
+        // story map has read its lock already (loadMapById); this covers the other ways in.
+        await loadLockState(mapId);
+        restoreSessionUnlock(mapId);
         subscribeLockState(mapId);
         updateLockUI();
         updateEditability();
-        // After the lock: this can wait on the name prompt
         await trackPresence();
         trackCursor();
         // Fetch backup count for menu badge
@@ -1689,7 +1688,13 @@ const loadMapById = async (mapId) => {
         const known = await mapKnownToServer(mapId);
         // A deleted map can't be opened, and the server refuses its connection
         if (known === 'deleted') return false;
+        // The lock is read while the story map loads, and applied before the first draw. Read
+        // later, a locked story map showed as editable until then.
+        const lockRead = loadLockState(mapId);
         await createYjsDoc(mapId);
+        await lockRead;
+        restoreSessionUnlock(mapId);
+        updateLockUI();
         await subscribeToMap(mapId);
 
         // Data arrived via Yjs sync
