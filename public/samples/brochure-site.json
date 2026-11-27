@@ -57,7 +57,7 @@
         [
           {
             "name": "Hero banner with headline",
-            "body": "## Acceptance criteria\n- [x] The headline says what we do in under 10 words\n- [x] One button, leading to **Get in Touch**\n- [x] Readable on a phone with no sideways scrolling\n- [x] The image loads in under 2 seconds on 4G",
+            "body": "Agreed with the client on the kickoff call: the headline has to say what they do in **under 10 words**.\n\n> If my mum can't tell what we sell from the first line, start again.\n\nOne button only, leading to **Get in Touch**. The client asked for a second button to the blog. We said no for now, as it splits the click.",
             "status": "done",
             "points": 2,
             "tags": [
@@ -79,7 +79,7 @@
         [
           {
             "name": "Service list",
-            "body": "One card per service, in the order sales pitch them.\n\n## Acceptance criteria\n- [x] Each card has a title and one sentence\n- [x] Cards stack in a single column on a phone\n- [ ] Each card links to its detail page, *once those exist in V2*",
+            "body": "One card per service, in the order sales pitch them.\n\nSales asked for a detail page behind each card. That is V2, so for now a card is a title and one sentence, with no link.\n\n- [x] Copy for all six services, from the client\n- [x] Icons from the brand pack\n- [ ] Check the order with sales before launch",
             "url": "https://asana.com/test-company/WEB-36",
             "status": "done",
             "points": 2,
@@ -102,7 +102,7 @@
         [
           {
             "name": "Contact form",
-            "body": "## Fields\n- Name\n- Email\n- Message\n\n## Acceptance criteria\n- [x] A sent form shows a thank you message\n- [x] The enquiry reaches the `hello@` inbox within a minute\n- [x] Spam is caught without a puzzle to solve",
+            "body": "## Fields\n- Name\n- Email\n- Message\n\nWe talked about a phone number field and left it out: every extra field loses enquiries.\n\nEnquiries go to the `hello@` inbox. Spam is caught with a hidden field, not a puzzle, after the client said puzzles put their own customers off.",
             "url": "https://asana.com/test-company/WEB-28",
             "status": "done",
             "points": 2,

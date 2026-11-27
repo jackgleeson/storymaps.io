@@ -188,7 +188,7 @@
         [
           {
             "name": "View check-in instructions",
-            "body": "Shown to the guest from **48 hours** before check-in.\n\n## Acceptance criteria\n- [x] Address, with a link to open it in a maps app\n- [x] Check-in time and how to get the key\n- [x] Works offline once it has been opened",
+            "body": "Shown to the guest from **48 hours** before check-in. Hosts did not want the address out any earlier.\n\nWhat the guest needs, in the order they need it:\n\n1. The address, with a link to open it in a maps app\n2. The check-in time\n3. How to get the key\n\nIt has to work offline once opened. Guests often arrive with no signal.",
             "url": "https://jira.com/test-company/HOL-48",
             "status": "done",
             "points": 2,

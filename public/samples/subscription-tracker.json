@@ -83,7 +83,7 @@
         [
           {
             "name": "List all active subscriptions",
-            "body": "## Acceptance criteria\n- [x] Shows the name, the cost and the next renewal date\n- [x] The soonest renewal is at the top\n- [x] An empty list explains how to add the first one",
+            "body": "Name, cost and next renewal date for each subscription.\n\nWe discussed the order. **Soonest renewal first** won over alphabetical, as the next charge is what people open the app to check.\n\nAn empty list explains how to add the first one.",
             "status": "done",
             "points": 3,
             "tags": [
@@ -118,7 +118,7 @@
         [
           {
             "name": "Mark subscription as cancelled",
-            "body": "Cancelling here only stops the tracking. It does **not** cancel with the provider.\n\n## Acceptance criteria\n- [x] Asks for the date the subscription ends\n- [x] Says clearly that the provider still needs telling\n- [x] No more reminders are sent for it",
+            "body": "Cancelling here only stops the tracking. It does **not** cancel with the provider.\n\n> Testers assumed we had cancelled it for them. The screen has to say that the provider still needs telling.\n\n- [x] Ask for the date the subscription ends\n- [x] Stop reminders for it\n- [ ] Link to the provider's cancel page, where we know it",
             "url": "https://linear.app/test-company/SUB-1",
             "status": "done",
             "points": 1,

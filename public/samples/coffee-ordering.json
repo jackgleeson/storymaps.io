@@ -85,7 +85,7 @@
         [
           {
             "name": "Drink list with prices",
-            "body": "**As a** customer\n**I want** to see every drink with its price\n**So that** I can choose before I reach the counter\n\n## Acceptance criteria\n- [x] Drinks are grouped by **hot**, **iced** and **tea**\n- [x] Each drink shows its price for a regular size\n- [x] A sold out drink is greyed out and can't be added",
+            "body": "The menu as the shop has it on the board behind the counter: hot, iced and tea, each with its price.\n\nFrom the chat with the shop owner:\n\n- Show the price of a **regular** size. The other sizes come on the next screen\n- A sold out drink stays on the list, greyed out. When the shop tried hiding them on the till, regulars thought the drink was gone for good\n- No photos for now. The names are enough, and photos slow the list down\n\n> People decide in the queue. If the list takes more than a second or two to load, they will order at the counter.",
             "url": "https://jira.com/test-company/COF-55",
             "status": "done",
             "points": 3,
@@ -103,7 +103,7 @@
         [
           {
             "name": "Order summary with total",
-            "body": "The last look before paying.\n\n## Acceptance criteria\n- [x] Lists each drink with its size and extras\n- [x] Shows the total, with tax included\n- [x] The pay button says the amount, such as **Pay £4.20**",
+            "body": "The last look before paying.\n\nWe discussed showing tax on a line of its own. Decision: one total, **tax included**, as that is what the shop shows on its board.\n\nThe pay button says the amount, such as **Pay £4.20**, so nobody wonders what they are agreeing to.",
             "url": "https://jira.com/test-company/COF-20",
             "status": "done",
             "points": 2,
@@ -146,7 +146,7 @@
         [
           {
             "name": "View incoming orders",
-            "body": "**As a** barista\n**I want** new orders to appear on the shop tablet\n**So that** I can start them without checking a phone\n\n## Acceptance criteria\n- [x] The newest order is at the bottom of the queue\n- [x] Each order shows the customer's first name and pickup time\n- [x] The list updates with no refresh",
+            "body": "**As a** barista\n**I want** new orders to appear on the shop tablet\n**So that** I can start them without checking a phone\n\nThe shop asked for the newest order at the **bottom** of the queue, the way paper tickets line up on the rail.\n\nStill to settle with them:\n- [x] First name and pickup time on each order\n- [ ] A sound for a new order, or is the shop too loud already?",
             "url": "https://jira.com/test-company/COF-26",
             "status": "done",
             "points": 3,

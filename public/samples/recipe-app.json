@@ -80,7 +80,7 @@
         [
           {
             "name": "Recipe cards with photo",
-            "body": "## Acceptance criteria\n- [x] Each card shows a photo, the title and the cook time\n- [x] Two cards across on a phone, four on a tablet\n- [x] A recipe with no photo gets a plain placeholder\n- [x] More cards load as the cook scrolls",
+            "body": "The first thing a cook sees, so the photo does the work.\n\n- Photo, title and cook time on each card\n- Two cards across on a phone, four on a tablet\n\nA recipe with no photo gets a plain placeholder. We thought about hiding those recipes and decided against it: a good recipe shouldn't vanish for want of a picture.",
             "status": "done",
             "points": 3,
             "tags": [

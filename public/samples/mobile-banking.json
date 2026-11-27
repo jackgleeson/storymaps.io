@@ -155,7 +155,7 @@
         [
           {
             "name": "Email and password login",
-            "body": "**As a** customer\n**I want** to log in with my email and password\n**So that** only I can see my accounts\n\n## Acceptance criteria\n- [x] Passwords are never shown or logged\n- [x] The error is the same for a wrong email and a wrong password",
+            "body": "**As a** customer\n**I want** to log in with my email and password\n**So that** only I can see my accounts\n\nSecurity asked for two things, and both are in:\n\n- Passwords are never shown or logged\n- The error is the same for a wrong email and a wrong password, so nobody can test which emails have accounts",
             "url": "https://phabricator.com/test-company/T202",
             "status": "done",
             "points": 3,
@@ -178,7 +178,7 @@
         [
           {
             "name": "Search contacts",
-            "body": "## Acceptance criteria\n- [x] Finds a saved recipient by name as the customer types\n- [x] Shows the last 4 digits of the account, to tell two people apart\n- [x] Says so plainly when nobody matches",
+            "body": "Finds a saved recipient by name as the customer types.\n\nFrom testing: two customers each had two people called *James* saved. Every result now shows the **last 4 digits** of the account, to tell them apart.\n\n> When nobody matches, say so plainly. Don't show an empty screen.",
             "status": "done",
             "points": 2,
             "tags": [
