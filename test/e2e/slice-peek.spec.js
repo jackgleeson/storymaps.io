@@ -398,3 +398,25 @@ slices:
   await first.locator('.story-card').hover();
   await expect.poll(() => first.evaluate(el => getComputedStyle(el).opacity)).toBe('1');
 });
+
+test('a right-click on a card in a peeked slice offers its link and nothing that changes the story map', async ({ page, createMap, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  const id = await createMap(MAP);
+  await openMap(page, id);
+  await peekToggle(page).click();
+  const card = firstSliceCards(page).first();
+  await expect(card).toBeVisible();
+  const box = await card.boundingBox();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2, { button: 'right' });
+  const items = page.locator('.canvas-context-menu > button');
+  await expect(items.first()).toContainText('Copy link to card');
+  await expect(page.locator('.canvas-context-menu')).not.toContainText('Add step');
+  await page.getByRole('button', { name: 'Copy link to card' }).click();
+  const link = await page.evaluate(() => navigator.clipboard.readText());
+  expect(link).toContain(`/${id}#card-`);
+
+  // The link opens that card
+  await page.goto(link);
+  await expect(page.locator('#cardExpandModal')).toBeVisible();
+  await expect.poll(() => page.locator('#cardExpandModal').evaluate(el => [el.innerText, ...[...el.querySelectorAll('textarea, input')].map(f => f.value)].join(' '))).toContain('Drink list with prices');
+});

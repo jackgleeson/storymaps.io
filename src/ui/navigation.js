@@ -346,7 +346,15 @@ const positionMenu = (menu, x, y) => {
     });
 };
 
-const showContextMenu = (x, y, columnId, columnIndex, cardId = null) => {
+// The cards shown when peeking into a closed slice take no pointer events, so a right-click lands
+// on the row behind them. This finds the card under the pointer by where it is on screen.
+const peekedCardAt = (x, y) => [..._dom.storyMap.querySelectorAll('.slice-peek-col .story-card[data-story-id]')].find((card) => {
+    const box = card.getBoundingClientRect();
+    return x >= box.left && x <= box.right && y >= box.top && y <= box.bottom;
+}) || null;
+
+// cardOnly: show only the items for the card, as on a locked story map
+const showContextMenu = (x, y, columnId, columnIndex, cardId = null, cardOnly = false) => {
     dismissContextMenu();
     const menu = document.createElement('div');
     menu.className = 'canvas-context-menu';
@@ -355,7 +363,7 @@ const showContextMenu = (x, y, columnId, columnIndex, cardId = null) => {
     if (cardId && _copyCardLink) menu.appendChild(makeMenuItem('Copy link to card', ICON_LINK, () => _copyCardLink(cardId)));
     // So does building one card, which only reads the story map. Cards a prompt can't name don't get it.
     if (cardId && _canBuildCard?.(cardId)) menu.appendChild(makeMenuItem('Build with AI', ICON_BUILD, () => _buildCard(cardId)));
-    if (!_isMapEditable() || _selection.columnIds.length > 0) {
+    if (cardOnly || !_isMapEditable() || _selection.columnIds.length > 0) {
         if (menu.childElementCount) positionMenu(menu, x, y);
         return;
     }
@@ -522,8 +530,12 @@ export const initPan = () => {
         if (!panDidMove && e.button === 2 && !window.matchMedia('(pointer: coarse)').matches) {
             const sliceGutter = e.target.closest('.slice-label-container');
             const card = e.target.closest('.story-card[data-story-id]');
+            const peeked = !card && !sliceGutter ? peekedCardAt(e.clientX, e.clientY) : null;
             if (sliceGutter) {
                 showSliceMenu(sliceGutter.dataset.sliceId, e.clientX, e.clientY, sliceGutter);
+            } else if (peeked) {
+                // A card in a closed slice can't be changed, so its menu has only what reads it
+                showContextMenu(e.clientX, e.clientY, null, null, peeked.dataset.storyId, true);
             } else if (card || _isMapEditable()) {
                 const { columnId, columnIndex } = resolveColumn(e.target);
                 showContextMenu(e.clientX, e.clientY, columnId, columnIndex, card?.dataset.storyId);
