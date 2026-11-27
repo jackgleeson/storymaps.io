@@ -988,16 +988,16 @@
     "callouts": []
   },
   "format-card-descriptions-with-markdown/link": {
-    "width": 564,
-    "height": 66,
+    "width": 536,
+    "height": 255,
     "callouts": [
       {
-        "x": 58.8,
-        "y": 17.6
+        "x": 59.2,
+        "y": 31.6
       },
       {
-        "x": 65,
-        "y": 20.6
+        "x": 65.8,
+        "y": 52.4
       }
     ]
   },
