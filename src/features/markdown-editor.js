@@ -27,8 +27,9 @@ const buildPreview = (cm) => {
 
     // The pencil after a link: a click on the link opens it, so this is what puts the cursor in
     // it, to show its Markdown for editing
-    // "end" is set for a web address written on its own. It has no symbols to show, so the pencil
-    // selects the whole address, which makes plain that it is now being edited.
+    // "end" is set for a web address written on its own. The pencil turns it into a link with no
+    // words yet, [](address), and puts the cursor between the square brackets for them. Left
+    // without words, it goes back to the address alone (tidyUnnamedLink).
     class EditLink extends WidgetType {
         constructor(pos, end = pos) { super(); this.pos = pos; this.end = end; }
         eq(other) { return other.pos === this.pos && other.end === this.end; }
@@ -44,7 +45,14 @@ const buildPreview = (cm) => {
             button.addEventListener('click', (e) => {
                 e.preventDefault();
                 view.focus();
-                view.dispatch({ selection: { anchor: this.pos, head: this.end }, scrollIntoView: true });
+                if (this.end === this.pos) {
+                    view.dispatch({ selection: { anchor: this.pos }, scrollIntoView: true });
+                    return;
+                }
+                if (view.state.readOnly) return;
+                const url = view.state.sliceDoc(this.pos, this.end);
+                view.dispatch({ changes: { from: this.pos, to: this.end, insert: `[](${url})` }, selection: { anchor: this.pos + 1 }, userEvent: 'input', scrollIntoView: true });
+                unnamed.set(view, { at: this.pos, url });
             });
             return button;
         }
@@ -193,7 +201,9 @@ const buildPreview = (cm) => {
                     // with the cursor on it, such as straight after typing it
                     add(from, to, Decoration.mark({ class: STYLE[mark.type], attributes: url ? { 'data-url': url, title: url } : undefined }));
                 }
-                if (url && !shown && !state.readOnly) {
+                // The address of a link with no words yet, [](address), is already being edited
+                const unnamedLink = !mark.open && line.text.slice(0, mark.from).endsWith('[](');
+                if (url && !shown && !state.readOnly && !unnamedLink) {
                     const pencil = mark.open ? new EditLink(at + mark.open[1]) : new EditLink(from, to);
                     out.push(Decoration.widget({ widget: pencil, side: 1 }).range(to));
                 }

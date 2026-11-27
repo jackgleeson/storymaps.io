@@ -62,8 +62,9 @@ test('two people type in the notepad at once, each seeing it formatted', async (
   expect(await shown(other)).not.toContain('**From A**');
 });
 
-test('a web address typed in the notepad opens on a click straight away, and its pencil selects it', async ({ page, createMap, context }) => {
-  await openMap(page, await createMap());
+test('a web address typed in the notepad opens on a click straight away, and its pencil starts a link for it', async ({ page, createMap, context, pullMap }) => {
+  const id = await createMap();
+  await openMap(page, id);
   await openNotes(page);
   await notes(page).click();
   // The cursor is still right after the address
@@ -73,11 +74,21 @@ test('a web address typed in the notepad opens on a click straight away, and its
   expect(opened.url()).toBe('https://example.com/now');
   await opened.close();
 
-  // With the cursor elsewhere the pencil shows, and selects the address so typing replaces it
+  // With the cursor elsewhere the pencil shows. It makes a link with no words yet, cursor in the square brackets
   await page.keyboard.press('Home');
   await notes(page).locator('.cm-md-edit').click();
-  await page.keyboard.type('https://example.com/later');
-  expect(await shown(page)).toBe('see https://example.com/later');
+  await expect.poll(async () => (await pullMap(id)).notes).toBe('see [](https://example.com/now)');
+  await expect(notes(page).locator('.cm-md-edit')).toHaveCount(0);
+  // Left without words, it goes back to the address alone
+  await page.keyboard.press('Home');
+  await expect.poll(async () => (await shown(page)).trim()).toBe('see https://example.com/now');
+
+  // With words typed, it stays a link
+  await notes(page).locator('.cm-md-edit').click();
+  await page.keyboard.type('the plan');
+  await page.keyboard.press('Home');
+  expect((await shown(page)).trim()).toBe('see the plan');
+  await expect.poll(async () => (await pullMap(id)).notes).toBe('see [the plan](https://example.com/now)');
 });
 
 test('on a locked story map the notepad shows formatted and nothing in it can be changed', async ({ page, createMap, pullMap, request, context }) => {
