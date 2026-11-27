@@ -1,4 +1,8 @@
 import { sendSSE, fetchWithTimeout, safeJson } from '../http-helpers.js';
+import { htmlToMarkdown } from '../../src/transfer/markup.js';
+
+// A task's notes as Markdown: from its formatted notes where Asana sends them, else its plain ones
+const asanaNotes = (task) => (task.html_notes ? htmlToMarkdown(task.html_notes, { newLines: true }) : (task.notes || '').trim());
 
 export default function register(ctx) {
   const { route } = ctx;
@@ -59,7 +63,7 @@ export default function register(ctx) {
         const params = new URLSearchParams({
           project: projectGid,
           limit: '100',
-          opt_fields: 'name,notes,completed,num_subtasks,gid,memberships.section.gid,memberships.section.name'
+          opt_fields: 'name,notes,html_notes,completed,num_subtasks,gid,memberships.section.gid,memberships.section.name'
         });
         if (offset) params.set('offset', offset);
         const r = await fetchWithTimeout(`${BASE}/tasks?${params}`, { method: 'GET', headers: asanaHeaders }, 30_000);
@@ -105,7 +109,7 @@ export default function register(ctx) {
       const epic = {
         key: task.gid || '',
         summary: task.name || '',
-        description: (task.notes || '').trim() || undefined,
+        description: asanaNotes(task) || undefined,
         status: task.completed ? 'done' : 'planned',
         sectionGid: membership?.section?.gid || '',
         sectionName: membership?.section?.name || '',
@@ -118,7 +122,7 @@ export default function register(ctx) {
           do {
             const params = new URLSearchParams({
               limit: '100',
-              opt_fields: 'name,notes,completed,gid'
+              opt_fields: 'name,notes,html_notes,completed,gid'
             });
             if (subOffset) params.set('offset', subOffset);
             const r = await fetchWithTimeout(`${BASE}/tasks/${task.gid}/subtasks?${params}`, { method: 'GET', headers: asanaHeaders }, 30_000);
@@ -128,7 +132,7 @@ export default function register(ctx) {
               epic.stories.push({
                 key: sub.gid || '',
                 summary: sub.name || '',
-                description: (sub.notes || '').trim() || undefined,
+                description: asanaNotes(sub) || undefined,
                 status: sub.completed ? 'done' : 'planned'
               });
             }

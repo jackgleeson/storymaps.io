@@ -1,4 +1,5 @@
 import { sendSSE, fetchWithTimeout, safeJson } from '../http-helpers.js';
+import { markdownToAsanaHtml } from '../../src/transfer/markup.js';
 import { cleanIssues, invalidIssues, createEach, errorText, uniqueLabels } from '../export-issues.js';
 
 export default function register(ctx) {
@@ -89,10 +90,15 @@ export default function register(ctx) {
     }
 
     await createEach(res, issues, async (issue) => {
-      const data = { name: issue.title, notes: issue.description, projects: [projectGid], completed: issue.status === 'done' };
+      const data = { name: issue.title, projects: [projectGid], completed: issue.status === 'done' };
       const tags = issue.labels.map(name => tagGids.get(name)).filter(Boolean);
       if (tags.length) data.tags = tags;
-      const task = await asana('POST', '/tasks', data);
+      // Formatted notes first. Asana turns down HTML it doesn't like, and then the task goes
+      // with its description as plain text, the Markdown as written.
+      const plain = () => asana('POST', '/tasks', { ...data, notes: issue.description });
+      const task = issue.description.trim()
+        ? await asana('POST', '/tasks', { ...data, html_notes: markdownToAsanaHtml(issue.description) }).catch(plain)
+        : await plain();
       const missing = issue.labels.length - tags.length;
       return { gid: task.gid, ...(missing > 0 && { note: `${missing} tag${missing === 1 ? '' : 's'} left off` }) };
     });

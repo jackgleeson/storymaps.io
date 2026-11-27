@@ -7328,6 +7328,269 @@ html.dark-mode .connection-notice.is-online::before {
     color: var(--card-placeholder);
 }
 
+/* The description as Markdown (src/features/body-editor.js): CodeMirror in place of the textarea.
+   Text shows formatted, and a formatted piece shows its symbols while the cursor is on it. */
+.card-expand-body[hidden] {
+    display: none;
+}
+
+.card-expand-md {
+    cursor: text;
+}
+
+.card-expand-md .cm-editor {
+    background: transparent;
+    color: var(--card-ink);
+}
+
+.card-expand-md .cm-editor.cm-focused {
+    outline: none;
+}
+
+.card-expand-md .cm-scroller {
+    font-family: inherit;
+    line-height: 1.55;
+    overflow: visible;
+}
+
+.card-expand-md .cm-content {
+    padding: 0;
+    min-height: min(140px, 25vh);
+    caret-color: var(--card-ink);
+}
+
+.card-expand-md .cm-line {
+    padding: 0;
+}
+
+.card-expand-md .cm-cursor {
+    border-left-color: var(--card-ink);
+}
+
+.card-expand-md .cm-placeholder {
+    color: var(--card-placeholder);
+}
+
+.card-expand-md .cm-selectionBackground,
+.card-expand-md .cm-content ::selection {
+    background: rgba(0, 0, 0, 0.16);
+}
+
+/* The Markdown symbols of the piece the cursor is on */
+.cm-md-symbol {
+    color: var(--card-muted);
+    font-weight: 400;
+}
+
+.cm-md-heading {
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.cm-md-h1 {
+    font-size: 18px;
+}
+
+.cm-md-h2 {
+    font-size: 16px;
+}
+
+.cm-md-h3 {
+    font-size: 14px;
+}
+
+.cm-md-bold {
+    font-weight: 600;
+}
+
+.cm-md-italic {
+    font-style: italic;
+}
+
+.cm-md-strike {
+    text-decoration: line-through;
+}
+
+.cm-md-code,
+.cm-md-codeblock {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12.5px;
+}
+
+/* Code in a sentence is a soft light chip, so a description full of names stays calm. A block of
+   code is green on near black, like a terminal, whatever the colour of the card. */
+.cm-md-code {
+    padding: 1px 5px;
+    border: 1px solid var(--md-chip-line, rgba(0, 0, 0, 0.1));
+    border-radius: 4px;
+    background: var(--md-chip, rgba(255, 255, 255, 0.6));
+}
+
+.md-editor .cm-line.cm-md-codeblock,
+.md-editor .cm-line.cm-md-fence {
+    padding: 0 10px;
+    background: #0f172a;
+    color: #86efac;
+}
+
+.md-editor .cm-line.cm-md-fence {
+    color: #94a3b8;
+    font-size: 12.5px;
+}
+
+/* The ``` lines round a block are its top and bottom edge until the cursor is in the block */
+.md-editor .cm-line.cm-md-fence-open {
+    border-radius: 6px 6px 0 0;
+}
+
+.md-editor .cm-line.cm-md-fence-close,
+.md-editor .cm-line.cm-md-code-end {
+    border-radius: 0 0 6px 6px;
+}
+
+.md-editor .cm-line.cm-md-fence-hidden {
+    font-size: 0;
+    line-height: 8px;
+    min-height: 8px;
+}
+
+/* The cursor and the selection have to show on the dark background too */
+.md-editor .cm-line.cm-md-codeblock,
+.md-editor .cm-line.cm-md-fence {
+    caret-color: #86efac;
+}
+
+.md-editor .cm-content .cm-md-codeblock::selection,
+.md-editor .cm-content .cm-md-codeblock ::selection,
+.md-editor .cm-content .cm-md-fence::selection {
+    background: rgba(134, 239, 172, 0.3);
+}
+
+.cm-md-link {
+    color: var(--md-link, #1d4ed8);
+    text-decoration: underline;
+}
+
+.cm-md-link[data-url] {
+    cursor: pointer;
+}
+
+/* The pencil that puts the cursor in a link, since a click on the link opens it */
+.cm-md-edit {
+    display: inline-flex;
+    vertical-align: -1px;
+    margin-left: 2px;
+    padding: 2px;
+    border: none;
+    border-radius: 3px;
+    background: none;
+    color: var(--card-muted);
+    cursor: pointer;
+    opacity: 0.55;
+}
+
+.cm-md-edit:hover {
+    background: rgba(0, 0, 0, 0.1);
+    opacity: 1;
+}
+
+/* A list item wraps under its own text, not under the bullet */
+.md-editor .cm-line.cm-md-item {
+    padding-left: 20px;
+    text-indent: -14px;
+}
+
+.cm-md-bullet {
+    display: inline-block;
+    width: 0.6em;
+    text-indent: 0;
+}
+
+.cm-md-number {
+    color: var(--card-muted);
+}
+
+.cm-md-task {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    margin: 0 2px 0 0;
+    vertical-align: -2px;
+    border: 1.5px solid rgba(0, 0, 0, 0.55);
+    border-radius: 3px;
+    background: #fff center / 10px 10px no-repeat;
+    cursor: pointer;
+}
+
+.cm-md-task:checked {
+    border-color: #0f766e;
+    background-color: #0f766e;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.5 6.5l2.5 2.5 4.5-5.5'/%3E%3C/svg%3E");
+}
+
+.cm-md-task-locked {
+    cursor: default;
+}
+
+.md-editor .cm-line.cm-md-quote {
+    padding-left: 10px;
+    border-left: 3px solid var(--card-line);
+    color: var(--card-muted);
+}
+
+/* The notepad shows Markdown the same way (src/features/markdown-editor.js), in its own colours.
+   Its paper is ruled every 25px, so a heading is bold at the size of the text around it and the
+   edges of a block of code are a full line, which keeps every line on its rule. */
+.notes-editor {
+    --card-muted: #64748b;
+    --card-line: rgba(0, 0, 0, 0.18);
+    --md-link: #1d4ed8;
+    --md-chip: rgba(15, 23, 42, 0.06);
+    --md-chip-line: rgba(15, 23, 42, 0.1);
+}
+
+html.dark-mode .notes-editor {
+    --card-muted: #94a3b8;
+    --card-line: rgba(255, 255, 255, 0.25);
+    --md-link: #5eead4;
+    --md-chip: rgba(255, 255, 255, 0.1);
+    --md-chip-line: rgba(255, 255, 255, 0.16);
+}
+
+.notes-editor .cm-md-heading {
+    font-size: inherit;
+    line-height: inherit;
+}
+
+.notes-editor .cm-md-code {
+    padding: 0 5px;
+}
+
+/* In the notepad the ``` lines take no room at all until the cursor is in the block. Each is a
+   whole line when it shows, so the lines below stay on their rules either way. */
+.notes-editor.md-editor .cm-line.cm-md-fence-hidden {
+    height: 0;
+    min-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    font-size: 0;
+    line-height: 0;
+    overflow: hidden;
+}
+
+.notes-editor.md-editor .cm-line.cm-md-code-closed.cm-md-code-first {
+    border-radius: 6px 6px 0 0;
+}
+
+.notes-editor.md-editor .cm-line.cm-md-code-closed.cm-md-code-last {
+    border-radius: 0 0 6px 6px;
+}
+
+.notes-editor.md-editor .cm-line.cm-md-code-closed.cm-md-code-first.cm-md-code-last {
+    border-radius: 6px;
+}
+
 /* Who else is typing in the title or the description, a small pill for each */
 .card-expand-editing {
     display: flex;

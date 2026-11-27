@@ -9,6 +9,7 @@ test('the home page says what the tool does below the welcome area', async ({ pa
   await expect(about(page).locator('.welcome-about-row h3')).toHaveText([
     'Lay out users, activities and steps',
     'Slice out releases your team can ship',
+    'The big picture on the story map, the detail in the card',
     'Import a backlog, export a plan',
   ]);
   await expect(about(page).locator('.welcome-about-tool')).toHaveText(['Jira', 'Linear', 'Asana', 'Azure DevOps', 'Phabricator']);
@@ -19,7 +20,7 @@ test('the home page says what the tool does below the welcome area', async ({ pa
     await shot.scrollIntoViewIfNeeded();
     await expect.poll(() => shot.evaluate(img => img.naturalWidth)).toBeGreaterThan(0);
   }
-  await expect(about(page).locator('.welcome-about-shot img:visible')).toHaveCount(2);
+  await expect(about(page).locator('.welcome-about-shot img:visible')).toHaveCount(3);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
@@ -40,7 +41,7 @@ test('the text is in the page as served, and its links lead to pages that exist'
 test('links in the text lead to guides, and the questions are also in the structured data', async ({ page, request }) => {
   await page.goto('/');
   const hrefs = await about(page).locator('.welcome-about-row a').evaluateAll(as => as.map(a => a.getAttribute('href')));
-  expect(hrefs).toHaveLength(8);
+  expect(hrefs).toHaveLength(9);
   for (const href of hrefs) expect((await request.get(href)).status(), href).toBe(200);
 
   const shown = await about(page).locator('.welcome-about-faq > div').evaluateAll(rows => rows.map(r => [r.querySelector('h3').textContent, r.querySelector('p').textContent]));

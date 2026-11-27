@@ -1,4 +1,5 @@
 import { validateExternalUrl, sendSSE, curlPost } from '../http-helpers.js';
+import { remarkupToMarkdown } from '../../src/transfer/markup.js';
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
@@ -134,7 +135,7 @@ export default function register(ctx) {
         phid: task.phid,
         identifier: `T${task.id}`,
         summary: fields.name || '',
-        description: fields.description?.raw || undefined,
+        description: remarkupToMarkdown(fields.description?.raw) || undefined,
         status: phabStatusToStorymaps(fields.status),
         points: fields.points != null ? Number(fields.points) : undefined,
         parentPhid: fields.subtype === 'default' ? undefined : undefined, // parentage resolved below

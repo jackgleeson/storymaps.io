@@ -368,6 +368,9 @@ html.dark-mode .only-dark { display: block; }
 
 /* The CLI docs: a terminal, a file, the shape of a command and tables of options.
    The terminal stays dark in both themes, like a real one. */
+/* What to type, as written: a small block in the same fixed-width font as code in a sentence */
+.sample { margin: 12px 0 16px; padding: 12px 16px; max-width: 760px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); overflow-x: auto; font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; font-size: 13.5px; line-height: 1.6; }
+.sample code { background: none; border: 0; padding: 0; font-size: inherit; white-space: pre; color: var(--text); }
 .term, .file { margin: 16px 0 20px; border-radius: 10px; overflow: hidden; max-width: 760px; }
 .term { background: #0f172a; }
 html.dark-mode .term { background: #020617; box-shadow: inset 0 0 0 1px var(--border); }

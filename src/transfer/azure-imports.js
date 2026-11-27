@@ -1,6 +1,7 @@
 // Storymaps.io -- AGPL-3.0 -- see LICENCE for details
 // Import Modules -- Azure DevOps Import via server proxy + CSV file upload
 
+import { htmlToMarkdown } from '/src/transfer/markup.js';
 import { state } from '/src/core/state.js';
 import { showConfirm } from '/src/core/modals.js';
 import {
@@ -57,22 +58,6 @@ export const tidyAzureLink = (organizationField, projectField) => {
 
 // ==================== Work items ====================
 
-// Azure DevOps keeps descriptions as HTML. Cards hold plain text, so paragraphs and line
-// breaks become new lines, list items get a dash and the rest of the markup is dropped.
-const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
-export const htmlToText = (html) => String(html || '')
-    .replace(/<(style|script)[^>]*>[\s\S]*?<\/\1>/gi, '')
-    .replace(/\r?\n/g, ' ')
-    .replace(/<br\s*\/?>/gi, '\n')
-    .replace(/<li[^>]*>/gi, '\n- ')
-    .replace(/<\/(p|div|h[1-6]|ul|ol|tr|blockquote|pre)>/gi, '\n')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&#(\d+);/g, (m, code) => String.fromCodePoint(Number(code)))
-    .replace(/&#x([0-9a-f]+);/gi, (m, code) => String.fromCodePoint(parseInt(code, 16)))
-    .replace(/&([a-z]+);/gi, (m, name) => ENTITIES[name.toLowerCase()] ?? m)
-    .split('\n').map(line => line.replace(/[ \t]+/g, ' ').trim()).join('\n')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
 
 // A state by its name, for files and for states the project didn't describe. Each process
 // has its own names: New, Active and Closed, or To Do, Doing and Done, and so on.
@@ -109,7 +94,7 @@ export const groupWorkItems = (items) => {
     live.filter(item => isType(item, 'epic')).forEach(epic => {
         groups.set(epic, {
             key: String(epic.id), summary: epic.title, status: epic.status, ...(epic.state && { stateName: epic.state }),
-            description: htmlToText(epic.description) || undefined, stories: [],
+            description: htmlToMarkdown(epic.description) || undefined, stories: [],
         });
     });
 
@@ -124,7 +109,7 @@ export const groupWorkItems = (items) => {
             type: item.type || undefined,
             status: item.status,
             ...(item.state && { stateName: item.state }),
-            description: htmlToText(item.description) || undefined,
+            description: htmlToMarkdown(item.description) || undefined,
             points: item.points != null ? item.points : undefined,
             labels: item.tags || [],
         };

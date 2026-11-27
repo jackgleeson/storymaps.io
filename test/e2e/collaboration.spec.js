@@ -1,4 +1,4 @@
-import { test, expect, openMap, cardNames, addCard, acceptDialog } from './fixtures.js';
+import { test, expect, openMap, cardNames, addCard, acceptDialog, description } from './fixtures.js';
 
 test('a card added by one person appears for the other', async ({ page, createMap, openSecondTab }) => {
   const id = await createMap();
@@ -70,7 +70,7 @@ const openCard = async (page, n = 0) => {
   const card = page.locator('.slice-container .story-card').nth(n);
   await card.hover();
   await card.locator('.btn-expand').click();
-  await expect(page.locator('#cardExpandBody')).toBeVisible();
+  await expect(description(page)).toBeVisible();
 };
 const firstCard = async (pullMap, id) => (await pullMap(id)).slices[0].stories[0][0];
 
@@ -83,7 +83,7 @@ test('typing in an open card still saves after someone else changes the map', as
   await openCard(page);
   await addCard(other, 'Unrelated');
   await expect.poll(() => cardNames(page)).toContain('Unrelated');
-  await page.locator('#cardExpandBody').click();
+  await description(page).click();
   await page.keyboard.type('Typed after the change.');
   await page.locator('#cardExpandName').click();
   await page.keyboard.type(' too');
@@ -104,7 +104,7 @@ test('an open card shows what someone else changes on it', async ({ page, create
   await expect(page.locator('#cardExpandName')).toHaveValue('One renamed');
 
   // What the first person types next goes on top of the new title, not over it
-  await page.locator('#cardExpandBody').click();
+  await description(page).click();
   await page.keyboard.type('Details');
   await expect(other.locator('#cardExpandBody')).toHaveValue('Details');
   await expect.poll(() => firstCard(pullMap, id)).toMatchObject({ name: 'One renamed', body: 'Details' });
@@ -121,7 +121,7 @@ test('while one person types in the description, the other sees who and has to w
   const note = other.locator('#cardExpandEditing');
   await expect(note).toBeHidden();
 
-  await page.locator('#cardExpandBody').click();
+  await description(page).click();
   await page.keyboard.type('From A. ');
   await expect(note).toHaveText('Tester is editing the description');
   await expect(other.locator('#cardExpandBody')).toHaveJSProperty('readOnly', true);
@@ -132,7 +132,7 @@ test('while one person types in the description, the other sees who and has to w
   // Leaving the description frees it
   await page.locator('#cardExpandName').click();
   await expect(note).toBeHidden();
-  await other.locator('#cardExpandBody').click();
+  await description(other).click();
   await other.keyboard.press('End');
   await other.keyboard.type('From B.');
   await expect(page.locator('#cardExpandBody')).toHaveValue('From A. From B.');
@@ -165,7 +165,7 @@ test('a change made straight after someone else types keeps what they typed', as
 
   // The second person adds a card while the first person's typing is still arriving
   await openCard(page);
-  await page.locator('#cardExpandBody').click();
+  await description(page).click();
   await page.keyboard.type('Before. ');
   await addCard(other, 'Unrelated');
   await page.keyboard.type('After.');

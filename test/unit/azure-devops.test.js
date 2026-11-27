@@ -11,8 +11,9 @@ const { fakeHttps } = await import('./fake-https.js');
 const registerExport = (await import('../../server/routes/export-azure-devops.js')).default;
 const registerImport = (await import('../../server/routes/import-azure-devops.js')).default;
 const { toHtml } = await import('../../server/export-issues.js');
-const { htmlToText, statusFromState, groupWorkItems, parseAzureCsv, azureItemUrl, azureStateNames } = await import('/src/transfer/azure-imports.js');
-const { azureCsv, azureOrganization, azureProject, textToHtml } = await import('/src/transfer/export-issues.js');
+const { statusFromState, groupWorkItems, parseAzureCsv, azureItemUrl, azureStateNames } = await import('/src/transfer/azure-imports.js');
+const { azureCsv, azureOrganization, azureProject } = await import('/src/transfer/export-issues.js');
+const { htmlToMarkdown, markdownToHtml } = await import('/src/transfer/markup.js');
 const { parseCsv } = await import('/src/transfer/csv.js');
 
 // The routes call dev.azure.com and stream progress back as server-sent events. The calls are
@@ -93,7 +94,7 @@ describe('Azure DevOps export', () => {
     assert.equal(first.headers.Authorization, `Basic ${Buffer.from(':pat-secret').toString('base64')}`);
     assert.deepEqual(fieldsOf(first), {
       'System.Title': 'Card',
-      'System.Description': '<div>Visa &amp; &lt;Mastercard&gt;</div><div><br></div><div>Slice: MVP<br>Story map: <a href="https://storymaps.io/abc#card-1">https://storymaps.io/abc#card-1</a></div>',
+      'System.Description': '<p>Visa &amp; &lt;Mastercard&gt;</p><p>Slice: MVP<br>Story map: <a href="https://storymaps.io/abc#card-1">https://storymaps.io/abc#card-1</a></p>',
       'System.Tags': 'mvp; pay',
       'Microsoft.VSTS.Scheduling.Effort': 3,
     });
@@ -243,11 +244,11 @@ describe('Azure DevOps import', () => {
 });
 
 describe('Azure DevOps work items', () => {
-  test('a description loses its markup and keeps its lines', () => {
-    assert.equal(htmlToText('<div>As a shopper&nbsp;I want</div><div><br></div><ul><li>Visa</li><li>Master&amp;card</li></ul><p>See <a href="https://x.test">the &quot;spec&quot;</a></p>'),
-      'As a shopper I want\n\n- Visa\n- Master&card\nSee the "spec"');
-    assert.equal(htmlToText('Plain text'), 'Plain text');
-    assert.equal(htmlToText(undefined), '');
+  test('a description comes in as Markdown and keeps its lines', () => {
+    assert.equal(htmlToMarkdown('<div>As a shopper&nbsp;I want</div><div><br></div><ul><li>Visa</li><li>Master&amp;card</li></ul><p>See <a href="https://x.test">the &quot;spec&quot;</a></p>'),
+      'As a shopper I want\n\n- Visa\n- Master&card\nSee [the "spec"](https://x.test)');
+    assert.equal(htmlToMarkdown('Plain text'), 'Plain text');
+    assert.equal(htmlToMarkdown(undefined), '');
   });
 
   test('a state is read by its name in every process', () => {
@@ -335,7 +336,7 @@ describe('Azure DevOps CSV', () => {
     ], { workItemType: 'Product Backlog Item' }));
     assert.deepEqual(rows, [
       ['Work Item Type', 'Title', 'Description', 'Tags'],
-      ['Product Backlog Item', 'Card', '<div>Visa<br>Mastercard</div><div><br></div><div>Story map: <a href="https://storymaps.io/abc">https://storymaps.io/abc</a></div>', 'mvp; pay'],
+      ['Product Backlog Item', 'Card', '<p>Visa<br>Mastercard</p><p>Story map: <a href="https://storymaps.io/abc">https://storymaps.io/abc</a></p>', 'mvp; pay'],
       ['Product Backlog Item', 'Cash', '', ''],
     ]);
     assert.deepEqual(parseCsv(azureCsv([{ title: 'Cash', description: '', labels: [] }]))[0], ['Work Item Type', 'Title', 'Description'], 'no State column, and no Tags column without tags');
@@ -343,7 +344,8 @@ describe('Azure DevOps CSV', () => {
 
   test('the app and the server write the same HTML', () => {
     const text = 'One & <two>\nthree\n\nhttps://storymaps.io/abc "quoted"';
-    assert.equal(textToHtml(text), toHtml(text));
+    assert.equal(markdownToHtml(text), toHtml(text));
+    assert.equal(toHtml(text), '<p>One &amp; &lt;two&gt;<br>three</p><p><a href="https://storymaps.io/abc">https://storymaps.io/abc</a> &quot;quoted&quot;</p>');
   });
 
   test('the organization is read from its name or from a link', () => {

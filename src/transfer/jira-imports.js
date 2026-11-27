@@ -1,6 +1,7 @@
 // Storymaps.io -- AGPL-3.0 -- see LICENCE for details
 // Import Modules -- Jira Import via server proxy + CSV file upload
 
+import { jiraWikiToMarkdown } from '/src/transfer/markup.js';
 import { state } from '/src/core/state.js';
 import { showConfirm } from '/src/core/modals.js';
 import {
@@ -289,7 +290,7 @@ export const parseJiraCsv = (csvText) => {
         const typeName = (row[iType] || '').trim();
         const type = typeName.toLowerCase();
         const status = iStatus !== -1 ? row[iStatus]?.trim() : '';
-        const description = iDesc !== -1 ? row[iDesc]?.trim() : '';
+        const description = iDesc !== -1 ? jiraWikiToMarkdown(row[iDesc] || '') : '';
         const points = iPoints !== -1 ? parseFloat(row[iPoints]) : NaN;
         const parentKey = iParent !== -1 ? (row[iParent] || '').trim() : '';
 

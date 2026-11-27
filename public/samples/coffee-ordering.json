@@ -85,6 +85,7 @@
         [
           {
             "name": "Drink list with prices",
+            "body": "**As a** customer\n**I want** to see every drink with its price\n**So that** I can choose before I reach the counter\n\n## Acceptance criteria\n- [x] Drinks are grouped by **hot**, **iced** and **tea**\n- [x] Each drink shows its price for a regular size\n- [x] A sold out drink is greyed out and can't be added",
             "url": "https://jira.com/test-company/COF-55",
             "status": "done",
             "points": 3,
@@ -102,6 +103,7 @@
         [
           {
             "name": "Order summary with total",
+            "body": "The last look before paying.\n\n## Acceptance criteria\n- [x] Lists each drink with its size and extras\n- [x] Shows the total, with tax included\n- [x] The pay button says the amount, such as **Pay £4.20**",
             "url": "https://jira.com/test-company/COF-20",
             "status": "done",
             "points": 2,
@@ -111,6 +113,7 @@
         [
           {
             "name": "Apple Pay / Google Pay",
+            "body": "Pay with the wallet already on the phone, so nobody types a card number in a queue.\n\n1. The customer taps **Pay**\n2. The wallet sheet opens with the order total\n3. On success we show the confirmation screen\n\nFollow the [Apple Pay guidelines](https://developer.apple.com/design/human-interface-guidelines/apple-pay) for the button. Google Pay uses the same flow.",
             "url": "https://jira.com/test-company/COF-8",
             "status": "done",
             "points": 5,
@@ -136,12 +139,14 @@
         [
           {
             "name": "Delivery pushed to V1",
+            "body": "Agreed at planning: **pickup only** for the MVP.\n\n> Delivery needs drivers, addresses and tracking. None of that helps us learn whether people will order ahead.",
             "color": "#a5f3fc"
           }
         ],
         [
           {
             "name": "View incoming orders",
+            "body": "**As a** barista\n**I want** new orders to appear on the shop tablet\n**So that** I can start them without checking a phone\n\n## Acceptance criteria\n- [x] The newest order is at the bottom of the queue\n- [x] Each order shows the customer's first name and pickup time\n- [x] The list updates with no refresh",
             "url": "https://jira.com/test-company/COF-26",
             "status": "done",
             "points": 3,
@@ -215,6 +220,7 @@
           },
           {
             "name": "Handle payment failures?",
+            "body": "What does the customer see when a card is declined?\n\n- Keep the cart, so nothing is lost\n- Say *why* in plain words, not an error code\n- Offer another way to pay\n\nNeeds an answer before **Credit card** ships.",
             "color": "#fecdd3"
           }
         ],
@@ -222,6 +228,7 @@
         [
           {
             "name": "Real-time status updates",
+            "body": "Statuses, in order:\n\n1. `received`\n2. `started`\n3. `ready`\n4. `collected`\n\nThe shop moves an order on from **Manage Orders**. The customer's app updates within 5 seconds.",
             "url": "https://jira.com/test-company/COF-52",
             "status": "done",
             "points": 5,
@@ -285,6 +292,7 @@
         [
           {
             "name": "Filter by dietary needs",
+            "body": "## Filters\n- Vegan\n- Dairy free\n- Decaf\n- Nut free\n\nA drink matches only if **every** part of it does, including the default milk. See the open question on how granular to go.",
             "status": "in-progress",
             "tags": ["frontend", "backend"]
           },
@@ -371,6 +379,7 @@
           },
           {
             "name": "86 an item from menu",
+            "body": "*86* is kitchen slang for *we've run out*.\n\n- [ ] Staff can mark a drink as sold out in one tap\n- [ ] It shows as sold out to customers straight away\n- [ ] It comes back on its own at opening time the next day",
             "url": "https://jira.com/test-company/COF-74",
             "status": "planned",
             "tags": ["frontend", "backend"]
@@ -412,6 +421,7 @@
         [
           {
             "name": "Subscription plan: daily coffee",
+            "body": "One drink a day for a fixed monthly price.\n\n**Open points**\n- Does an unused day roll over?\n- Which drinks are included?\n- ~~Annual plan~~ dropped for now",
             "status": "planned",
             "tags": ["frontend", "backend"]
           }
@@ -477,5 +487,5 @@
       "label": "Design"
     }
   ],
-  "notes": "Team standup: Dietary filters are top-voted feature request for V2\n\nPayment: Lock down gift card provider before V2 dev starts\n\nDelivery: Driver tracking API partnership in progress"
+  "notes": "## Planning notes\n**Standup:** dietary filters are the top-voted request, so they lead V2.\n\n## Decisions\n- **Pickup only** for the MVP. Delivery starts in V1.\n- Gift cards wait until a provider is chosen.\n\n## Actions\n- [x] Agree the MVP slice\n- [ ] Lock down the gift card provider before V2 starts\n- [ ] Sign the driver tracking partnership, see [the proposal](https://example.com/driver-tracking)\n\n> Keep the MVP small: order ahead, pay, pick up."
 }

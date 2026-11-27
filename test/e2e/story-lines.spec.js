@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { test, expect, openMap } from './fixtures.js';
+import { test, expect, openMap, description } from './fixtures.js';
 
 const MAP = `name: Recipes
 steps:
@@ -53,9 +53,9 @@ test('the chips write a user story, a scenario and a criteria list, and Enter mo
   await page.keyboard.press('Enter');
   await page.keyboard.press('Enter');
 
-  const expected = 'As a home cook\nI want to search by ingredient\nSo that I can use what I have\n\n'
-    + 'Given chicken and rice\nWhen I search\nThen I see recipes with both\n\n'
-    + 'Acceptance criteria\n- Shows matches first\n- Says when nothing matches\n';
+  const expected = '**As a** home cook\n**I want** to search by ingredient\n**So that** I can use what I have\n\n'
+    + '**Given** chicken and rice\n**When** I search\n**Then** I see recipes with both\n\n'
+    + '## Acceptance criteria\n- [ ] Shows matches first\n- [ ] Says when nothing matches\n';
   await expect(body(page)).toHaveValue(expected);
 
   await page.keyboard.press('Escape');
@@ -65,13 +65,17 @@ test('the chips write a user story, a scenario and a criteria list, and Enter mo
 test('a chip adds its lines below the line the cursor is on, and undo takes them back', async ({ page, createMap }) => {
   await openMap(page, await createMap(MAP), 1);
   await expandSliceCard(page, 1);
-  await body(page).click();
+  await description(page).click();
   await page.keyboard.press('Home');
   await chip(page, 'Given, When, Then').click();
-  await expect(body(page)).toHaveValue('Filter by cuisine\n\nGiven \nWhen \nThen ');
-  expect(await body(page).evaluate(el => el.selectionStart)).toBe('Filter by cuisine\n\nGiven '.length);
+  await expect(body(page)).toHaveValue('Filter by cuisine\n\n**Given** \n**When** \n**Then** ');
+  // The cursor is at the end of the Given line
+  await page.keyboard.type('x');
+  await expect(body(page)).toHaveValue('Filter by cuisine\n\n**Given** x\n**When** \n**Then** ');
 
+  // Undo may take the typed letter and the lines back together or one at a time
   await page.keyboard.press('Control+z');
+  if (await body(page).inputValue() !== 'Filter by cuisine') await page.keyboard.press('Control+z');
   await expect(body(page)).toHaveValue('Filter by cuisine');
 });
 

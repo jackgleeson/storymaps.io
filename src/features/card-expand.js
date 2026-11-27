@@ -10,6 +10,7 @@ import { showToast } from '/src/core/modals.js';
 import { CARD_COLORS, STATUS_OPTIONS, TITLE_MAX_LENGTH, el, isValidUrl } from '/src/core/constants.js';
 import { createPointsInput, createTagEditor, markLegendSwatch, patchCardForItem, sliceClosedLabel } from '/src/ui/ui.js';
 import { STORY_LINES, addLines, enterAction } from '/src/core/story-lines.js';
+import { createBodyBox } from '/src/features/body-editor.js';
 
 let _deps = {};
 
@@ -17,6 +18,8 @@ export const init = (deps) => { _deps = deps; };
 
 let _expandedItem = null;
 let _editable = false;
+// The description box: Markdown, shown formatted (body-editor.js). Made in initListeners.
+let body = null;
 let _footerExpanded = false;
 let _footerShown = '';
 
@@ -54,11 +57,6 @@ const autoResizeExpandName = () => {
     dom.cardExpandName.style.height = dom.cardExpandName.scrollHeight + 'px';
 };
 
-// Fit the body to its text; CSS min-height and max-height keep it between a few lines and 60vh
-const autoResizeExpandBody = () => {
-    dom.cardExpandBody.style.height = 'auto';
-    dom.cardExpandBody.style.height = dom.cardExpandBody.scrollHeight + 'px';
-};
 
 // Story line chips are for cards in slices, not the user, activity and step rows above them
 const inCards = (cardMap, item) => Object.values(cardMap || {}).some(cards => cards.includes(item));
@@ -96,20 +94,6 @@ const renderPlace = (item) => {
         parts.push(where);
     }
     dom.cardExpandPlace.replaceChildren(...parts);
-};
-
-// Replace part of the body as if typed, so the textarea's own undo can take it back, and fire the
-// input event that saves it. setRangeText is the fallback where execCommand isn't supported.
-const editBody = ({ from, to, insert, caret }) => {
-    const body = dom.cardExpandBody;
-    body.focus();
-    body.setSelectionRange(from, to);
-    const done = insert ? document.execCommand('insertText', false, insert) : document.execCommand('delete');
-    if (!done) {
-        body.setRangeText(insert, from, to, 'end');
-        body.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-    body.setSelectionRange(caret, caret);
 };
 
 // Footer icons, one per property row
@@ -376,7 +360,7 @@ export const refreshFromRemote = () => {
     }
     _expandedItem = card;
     showText(dom.cardExpandName, card.name, autoResizeExpandName);
-    showText(dom.cardExpandBody, card.body, autoResizeExpandBody);
+    body.show(card.body || '');
     setModalColour(card.color);
     dom.cardExpandChips.hidden = !_editable || !isSliceCard(card);
     renderPlace(card);
@@ -388,7 +372,7 @@ export const refreshFromRemote = () => {
 // the browsers on the map, and isn't stored.
 const TEXT_FIELDS = {
     name: { box: () => dom.cardExpandName, label: 'title' },
-    body: { box: () => dom.cardExpandBody, label: 'description' }
+    body: { box: () => body, label: 'description' }
 };
 const IDLE_MS = 30_000;
 let _claimed = null;
@@ -448,7 +432,7 @@ const showEditors = () => {
     }
     dom.cardExpandEditing.replaceChildren(...pills);
     dom.cardExpandEditing.hidden = pills.length === 0;
-    dom.cardExpandChips.querySelectorAll('button').forEach(chip => { chip.disabled = dom.cardExpandBody.readOnly; });
+    dom.cardExpandChips.querySelectorAll('button').forEach(chip => { chip.disabled = body.readOnly; });
 };
 
 const watchEditors = () => {
@@ -475,8 +459,9 @@ const setBehindInert = (inert) => behindCard().forEach(part => { part.inert = in
 // Tab past the last control in the open card goes to the first, and Shift+Tab the other way
 const keepTabInCard = (e) => {
     if (e.key !== 'Tab' || e.ctrlKey || e.metaKey) return;
-    const stops = [...dom.cardExpandModal.querySelectorAll('button, input, textarea, a[href]')]
-        .filter(stop => !stop.disabled && stop.tabIndex >= 0 && stop.getClientRects().length > 0);
+    const stops = [...dom.cardExpandModal.querySelectorAll('button, input, textarea, a[href], .cm-content[contenteditable="true"]')]
+        // The description editor is a tab stop, though the browser gives it no tabIndex
+        .filter(stop => !stop.disabled && (stop.tabIndex >= 0 || stop.isContentEditable) && stop.getClientRects().length > 0);
     if (!stops.length) return;
     const from = stops.indexOf(document.activeElement);
     const leaving = e.shiftKey ? from <= 0 : from === -1 || from === stops.length - 1;
@@ -497,9 +482,10 @@ export const openExpandModal = (item, { readOnly = false, focus = true } = {}) =
     const editable = !readOnly && isMapEditable();
     _editable = editable;
     dom.cardExpandName.value = item.name || '';
-    dom.cardExpandBody.value = item.body || '';
+    body.open(item.body || '');
+    body.load();
     dom.cardExpandName.readOnly = !editable;
-    dom.cardExpandBody.readOnly = !editable;
+    body.readOnly = !editable;
     setModalColour(item.color);
     dom.cardExpandChips.hidden = !editable || !isSliceCard(item);
     renderPlace(item);
@@ -509,7 +495,7 @@ export const openExpandModal = (item, { readOnly = false, focus = true } = {}) =
     dom.cardExpandModal.classList.add('visible');
     requestAnimationFrame(() => {
         autoResizeExpandName();
-        autoResizeExpandBody();
+        body.resize();
     });
     if (editable) {
         if (focus) dom.cardExpandName.focus();
@@ -562,34 +548,26 @@ export const initListeners = () => {
         _deps.saveToStorage();
     });
 
-    dom.cardExpandBody.addEventListener('input', () => {
-        if (!_expandedItem) return;
-        _expandedItem.body = dom.cardExpandBody.value;
-        log.logTextEdit('card body', _expandedItem.id);
-        autoResizeExpandBody();
-        _deps.saveToStorage();
+    body = createBodyBox(dom.cardExpandBody, {
+        onInput: () => {
+            if (!_expandedItem) return;
+            _expandedItem.body = body.value;
+            log.logTextEdit('card body', _expandedItem.id);
+            body.resize();
+            _deps.saveToStorage();
+            claim('body');
+        },
+        onBlur: () => { if (_claimed === 'body') release(); },
+        enterAction: (text, from, to) => (_expandedItem ? enterAction(text, from, to) : null)
     });
 
-    for (const [field, { box }] of Object.entries(TEXT_FIELDS)) {
-        box().addEventListener('input', () => claim(field));
-        box().addEventListener('blur', () => { if (_claimed === field) release(); });
-    }
+    dom.cardExpandName.addEventListener('input', () => claim('name'));
+    dom.cardExpandName.addEventListener('blur', () => { if (_claimed === 'name') release(); });
 
     dom.cardExpandChips.addEventListener('click', (e) => {
         const chip = e.target.closest('[data-lines]');
-        if (!chip || !_expandedItem || dom.cardExpandBody.readOnly) return;
-        const body = dom.cardExpandBody;
-        editBody(addLines(body.value, body.selectionEnd, STORY_LINES[chip.dataset.lines]));
-    });
-
-    dom.cardExpandBody.addEventListener('keydown', (e) => {
-        if (e.key !== 'Enter' || e.shiftKey || e.isComposing || !_expandedItem || dom.cardExpandBody.readOnly) return;
-        const body = dom.cardExpandBody;
-        const action = enterAction(body.value, body.selectionStart, body.selectionEnd);
-        if (!action) return;
-        e.preventDefault();
-        if (action.insert === undefined) body.setSelectionRange(action.caret, action.caret);
-        else editBody(action);
+        if (!chip || !_expandedItem || body.readOnly) return;
+        body.replace(addLines(body.value, body.selectionEnd, STORY_LINES[chip.dataset.lines]));
     });
 
     dom.cardExpandModal.addEventListener('keydown', keepTabInCard);

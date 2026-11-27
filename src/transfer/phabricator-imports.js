@@ -1,6 +1,7 @@
 // Storymaps.io -- AGPL-3.0 -- see LICENCE for details
 // Import Modules -- Phabricator Maniphest API + CSV file upload
 
+import { remarkupToMarkdown } from '/src/transfer/markup.js';
 import { state } from '/src/core/state.js';
 import { showConfirm } from '/src/core/modals.js';
 import {
@@ -315,7 +316,7 @@ export const parsePhabricatorCsv = (csvText) => {
         }
 
         const status = iStatus !== -1 ? (row[iStatus] || '').trim() : '';
-        const description = iDesc !== -1 ? (row[iDesc] || '').trim() : '';
+        const description = iDesc !== -1 ? remarkupToMarkdown(row[iDesc] || '') : '';
 
         // Points: prefer Final Story Points, fall back to Points
         let points;

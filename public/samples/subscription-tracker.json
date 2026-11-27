@@ -63,6 +63,7 @@
         [
           {
             "name": "Enter name, cost, and billing cycle",
+            "body": "## Fields\n- Name\n- Cost\n- Billing cycle: `weekly`, `monthly` or `yearly`\n\nOnly the **name** and **cost** are required. The cycle starts as monthly.",
             "url": "https://linear.app/test-company/SUB-37",
             "status": "done",
             "points": 2,
@@ -82,6 +83,7 @@
         [
           {
             "name": "List all active subscriptions",
+            "body": "## Acceptance criteria\n- [x] Shows the name, the cost and the next renewal date\n- [x] The soonest renewal is at the top\n- [x] An empty list explains how to add the first one",
             "status": "done",
             "points": 3,
             "tags": [
@@ -93,6 +95,7 @@
         [
           {
             "name": "Email reminder 3 days before renewal",
+            "body": "**As a** subscriber\n**I want** an email before a subscription renews\n**So that** I can cancel in time\n\n## Acceptance criteria\n- [x] Sent 3 days before the renewal date\n- [x] Says the name, the cost and the date\n- [x] One email a day at most, however many renew",
             "status": "done",
             "points": 3,
             "tags": [
@@ -115,6 +118,7 @@
         [
           {
             "name": "Mark subscription as cancelled",
+            "body": "Cancelling here only stops the tracking. It does **not** cancel with the provider.\n\n## Acceptance criteria\n- [x] Asks for the date the subscription ends\n- [x] Says clearly that the provider still needs telling\n- [x] No more reminders are sent for it",
             "url": "https://linear.app/test-company/SUB-1",
             "status": "done",
             "points": 1,
@@ -208,7 +212,7 @@
           },
           {
             "name": "Chart.js vs D3 for charts",
-            "body": "Keep it lightweight",
+            "body": "Two options for the spending graphs:\n\n- [Chart.js](https://www.chartjs.org/): quick to set up, covers bar and line charts\n- [D3](https://d3js.org/): can draw anything, takes far longer\n\n**Decision:** Chart.js. We only need two kinds of chart.",
             "color": "#d8b4fe"
           }
         ],
@@ -224,6 +228,7 @@
           },
           {
             "name": "Keep cancelled subs in history or delete?",
+            "body": "> If it disappears, people lose the record of what they used to pay.\n\nLeaning towards keeping them in a **Cancelled** list, with a delete button for anyone who wants it gone.",
             "color": "#bef264"
           }
         ],
@@ -313,6 +318,7 @@
           },
           {
             "name": "Free trial expiry alerts",
+            "body": "A free trial is the renewal people most often forget.\n\n1. Mark a subscription as a *free trial* with an end date\n2. Remind 3 days and 1 day before it ends\n3. Say what it will cost after the trial",
             "status": "planned",
             "tags": [
               "backend",
@@ -378,6 +384,7 @@
         [
           {
             "name": "Bank account sync via Plaid",
+            "body": "Find subscriptions from bank transactions, with no typing.\n\n- [ ] Connect an account through [Plaid Link](https://plaid.com/docs/link/)\n- [ ] Spot payments that repeat\n- [ ] Ask before adding each one\n\nSee the note on cost: Plaid charges for every connected account.",
             "url": "https://linear.app/test-company/SUB-47",
             "status": "planned",
             "tags": [
@@ -505,5 +512,5 @@
       "label": "Design Decisions"
     }
   ],
-  "notes": "MVP looks good - core tracking and basic reminders.\n\nV2 focus: email auto-detect is highest priority, most-requested feature\n\nPlaid integration deferred to V3 due to cost and compliance review\n\nAccessibility: screen reader audit planned for post-V2"
+  "notes": "## Where we are\nThe MVP looks good: core tracking and basic reminders.\n\n## Next\n1. **V2:** detect subscriptions from email, the most requested feature\n2. **V3:** bank sync through [Plaid](https://plaid.com/docs/), after the cost and compliance review\n\n## To do\n- [x] Ship reminders\n- [ ] Screen reader audit after V2\n- [ ] Price up Plaid per connected account\n\n> Charts use `Chart.js`. The note on the story map says why."
 }

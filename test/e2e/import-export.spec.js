@@ -194,7 +194,7 @@ test('Azure DevOps CSV export makes the work item type of the chosen process, wi
   const csv = readFileSync(await download.path(), 'utf-8');
   expect(csv.split('\n')[0]).toBe('Work Item Type,Title,Description,Tags');
   expect(csv).toContain('Issue,Drink list,');
-  expect(csv).toContain('<div>Slice: MVP<br>Step: Browse Menu<br>Story map: <a href=');
+  expect(csv).toContain('<p>Slice: MVP<br>Step: Browse Menu<br>Story map: <a href=');
   expect(csv).toContain(',mvp; browse-menu; frontend');
   expect(csv).not.toContain('Done');
   await expect(modal).toBeHidden();

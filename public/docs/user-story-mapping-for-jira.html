@@ -20,7 +20,7 @@
     <meta name="twitter:description" content="Turn a Jira project into a story map, through the Jira API or a CSV export, and send the cards back to Jira as stories labelled with their slice and step.">
     <meta name="twitter:image" content="https://storymaps.io/resources/screenshot.png">
     <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Docs","item":"https://storymaps.io/docs"},{"@type":"ListItem","position":2,"name":"User story mapping for Jira","item":"https://storymaps.io/docs/user-story-mapping-for-jira"}]}</script>
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"User story mapping for Jira","description":"Turn a Jira project into a story map, through the Jira API or a CSV export, and send the cards back to Jira as stories labelled with their slice and step.","url":"https://storymaps.io/docs/user-story-mapping-for-jira","inLanguage":"en","dateModified":"2026-11-18","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"TechArticle","headline":"User story mapping for Jira","description":"Turn a Jira project into a story map, through the Jira API or a CSV export, and send the cards back to Jira as stories labelled with their slice and step.","url":"https://storymaps.io/docs/user-story-mapping-for-jira","inLanguage":"en","dateModified":"2026-11-26","publisher":{"@type":"Organization","name":"Storymaps.io","url":"https://storymaps.io/"}}</script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/fonts.css">
     <script>
@@ -32,7 +32,7 @@
         } catch(e) {}
     })();
     </script>
-    <link rel="stylesheet" href="/docs/docs.css?v=553718ce">
+    <link rel="stylesheet" href="/docs/docs.css?v=f73e57f7">
     <script src="/docs/docs.js?v=432529a8" defer></script>
 </head>
 <body class="docs-guide">
@@ -114,6 +114,7 @@
             <li><a href="/docs/define-the-story-map-backbone">Define the story map backbone</a></li>
             <li><a href="/docs/add-tasks-to-a-story-map">Add tasks to a story map</a></li>
             <li><a href="/docs/write-user-stories-on-a-story-map">Write user stories on a story map</a></li>
+            <li><a href="/docs/format-card-descriptions-with-markdown">Format card descriptions with Markdown</a></li>
             <li><a href="/docs/customise-story-map-cards">Customise story map cards</a></li>
             <li><a href="/docs/plan-releases-with-story-map-slices">Plan releases with story map slices</a></li>
             <li><a href="/docs/reduce-duplication-with-partials">Reduce duplication with partials</a></li>
@@ -247,7 +248,7 @@
 <p>A new story map that nobody has worked on isn't asked. The import fills it, and the button reads <strong>Import to Map</strong>.</p>
 <h2 id="what-you-get-on-the-story-map">What you get on the story map</h2>
 <p>The cards land in a slice called <strong>Imported</strong>, under a blank backbone. A new story map also gets an empty slice above it, with no name, for your first release.</p>
-<ul><li><strong>Epics</strong> become lime green cards, tagged with their own key, such as <strong>COF-1</strong>. Each one carries the description, status and link of the epic, so you don't need Jira open while you arrange the story map. Delete the ones you don't need.</li><li><strong>Issues</strong> become cards tagged with the key of their epic, plus their Jira labels. Issues with no epic get no tag.</li><li><strong>Descriptions</strong> go in the body of the card.</li><li><strong>Statuses</strong> become done, in progress or planned.</li><li><strong>Story points</strong> become the points on the card.</li><li><strong>Links</strong> open the issue in Jira.</li></ul>
+<ul><li><strong>Epics</strong> become lime green cards, tagged with their own key, such as <strong>COF-1</strong>. Each one carries the description, status and link of the epic, so you don't need Jira open while you arrange the story map. Delete the ones you don't need.</li><li><strong>Issues</strong> become cards tagged with the key of their epic, plus their Jira labels. Issues with no epic get no tag.</li><li><strong>Descriptions</strong> go in the description of the card, with their formatting. Headings, lists, bold text and links come in as <a href="/docs/format-card-descriptions-with-markdown" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>Markdown</span></a>.</li><li><strong>Statuses</strong> become done, in progress or planned.</li><li><strong>Story points</strong> become the points on the card.</li><li><strong>Links</strong> open the issue in Jira.</li></ul>
 <p>The legend names the two colours, <strong>Epic</strong> and <strong>Issue</strong>.</p>
 <p>The cards fill up to eight columns from left to right, each epic followed by its issues. The tags keep them together: <a href="/docs/search-and-filter-a-story-map" title="Docs"><span class="link-start"><span class="link-icon"><svg role="img" aria-label="Docs" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>search</span> and filter</a> by <strong>COF-1</strong> to see one epic at a time.</p>
 <h2 id="build-the-backbone-first">Build the backbone first</h2>
@@ -288,7 +289,7 @@
 </div>
 <figcaption>This part is the same whichever way you export: one card and the story it becomes in Jira.</figcaption>
 </figure>
-<p>Labels are lower case with hyphens, so a card under Browse Menu in the MVP slice is labelled <strong>browse-menu</strong> and <strong>mvp</strong>. The description of each story is the card body, then the slice, the step and a link back to the card.</p>
+<p>Labels are lower case with hyphens, so a card under Browse Menu in the MVP slice is labelled <strong>browse-menu</strong> and <strong>mvp</strong>. The description of each story is the description of the card, with its formatting, then the slice, the step and a link back to the card.</p>
 <h3 id="jira-api">Jira API</h3>
 <ol class="steps"><li><span class="num">1</span><span>Click <strong>Connect to Jira</strong>.</span></li><li><span class="num">2</span><span>Fill in the <strong>Jira Instance URL</strong>, <strong>Project Key</strong>, <strong>Email</strong> and <strong>API Token</strong>.</span></li><li><span class="num">3</span><span>Click <strong>Export to Jira</strong>.</span></li></ol>
 <figure class="shot" style="max-width: 1374px">

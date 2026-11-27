@@ -67,13 +67,13 @@ describe('Jira import', () => {
     assert.equal(done.epicCount, 2);
     assert.equal(done.storyCount, 2, 'subtasks are left out');
     const [checkout, other] = done.epics;
-    assert.equal(checkout.description, 'Paying\nfor things');
+    assert.equal(checkout.description, 'Paying\n\nfor things');
     assert.equal(checkout.status, 'in-progress');
     assert.deepEqual(checkout.stories.map(s => [s.key, s.type, s.status, s.points, s.labels]), [['SHOP-2', 'Story', 'done', 3, ['pay']]]);
     assert.deepEqual([other.key, other.summary, other.stories.map(s => [s.key, s.type])], [null, 'No epic', [['SHOP-3', 'Bug']]]);
   });
 
-  test('a description keeps its line breaks, links and mentions', async () => {
+  test('a description keeps its paragraphs, line breaks, links and mentions', async () => {
     const description = { type: 'doc', content: [
       { type: 'paragraph', content: [{ type: 'text', text: 'Pick a size.' }] },
       { type: 'paragraph', content: [
@@ -92,7 +92,7 @@ describe('Jira import', () => {
       : [200, { issues: [issue('SHOP-2', { summary: 'Choose size', issuetype: { name: 'Story' }, description })] }]);
     const { done } = await call('/api/import/jira', body);
     assert.equal(done.epics[0].stories[0].description,
-      'Pick a size.\nSlice: MVP\nStep: Customize Drink\nStory map: https://storymaps.io/abc#card-1\nSee https://example.com/spec from @Sam');
+      'Pick a size.\n\nSlice: MVP\nStep: Customize Drink\nStory map: https://storymaps.io/abc#card-1\n\nSee https://example.com/spec from @Sam');
   });
 
   test('calls the Jira API for the project with basic auth', async () => {

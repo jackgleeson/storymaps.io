@@ -57,6 +57,7 @@
         [
           {
             "name": "Hero banner with headline",
+            "body": "## Acceptance criteria\n- [x] The headline says what we do in under 10 words\n- [x] One button, leading to **Get in Touch**\n- [x] Readable on a phone with no sideways scrolling\n- [x] The image loads in under 2 seconds on 4G",
             "status": "done",
             "points": 2,
             "tags": [
@@ -78,6 +79,7 @@
         [
           {
             "name": "Service list",
+            "body": "One card per service, in the order sales pitch them.\n\n## Acceptance criteria\n- [x] Each card has a title and one sentence\n- [x] Cards stack in a single column on a phone\n- [ ] Each card links to its detail page, *once those exist in V2*",
             "url": "https://asana.com/test-company/WEB-36",
             "status": "done",
             "points": 2,
@@ -100,6 +102,7 @@
         [
           {
             "name": "Contact form",
+            "body": "## Fields\n- Name\n- Email\n- Message\n\n## Acceptance criteria\n- [x] A sent form shows a thank you message\n- [x] The enquiry reaches the `hello@` inbox within a minute\n- [x] Spam is caught without a puzzle to solve",
             "url": "https://asana.com/test-company/WEB-28",
             "status": "done",
             "points": 2,
@@ -135,6 +138,7 @@
           },
           {
             "name": "Need brand guidelines from client",
+            "body": "Waiting on the client for:\n\n- [x] Logo files\n- [ ] Colour palette\n- [ ] Fonts\n\n*Chased on Monday.* Design can't finish without these.",
             "color": "#a5f3fc"
           }
         ],
@@ -159,6 +163,7 @@
           },
           {
             "name": "Add SEO meta tags",
+            "body": "Each page needs:\n\n1. A `title` under 60 characters\n2. A `meta description` under 160\n3. Open Graph tags for sharing\n\nCheck each page with [Google's rich results test](https://search.google.com/test/rich-results) before launch.",
             "status": "done",
             "points": 2,
             "tags": [
@@ -241,6 +246,7 @@
           },
           {
             "name": "Pricing info",
+            "body": "Three plans side by side, with the middle one marked **most popular**.\n\n> Do we show prices, or *from* prices with a call to action? Sales prefer the second.",
             "url": "https://asana.com/test-company/WEB-1",
             "status": "planned",
             "tags": [
@@ -288,6 +294,7 @@
           },
           {
             "name": "Form queues if connection drops",
+            "body": "If the visitor goes offline while sending:\n\n1. Keep what they typed\n2. Say the message is **not sent yet**\n3. Send it when the connection is back",
             "color": "#fecdd3"
           }
         ]
@@ -349,6 +356,7 @@
           },
           {
             "name": "FAQ section",
+            "body": "Start with the questions sales hear most:\n\n- How long does a project take?\n- What does it cost?\n- Do you work with our tools?\n\nMark up the page with [FAQ structured data](https://schema.org/FAQPage).",
             "url": "https://asana.com/test-company/WEB-24",
             "status": "planned",
             "tags": [
@@ -413,5 +421,5 @@
       "label": "Edge cases"
     }
   ],
-  "notes": "Alice: Client wants the site live for their trade show, no scope creep\n\nLeo: Stock photos are placeholder, real shoot next week\n\nAlice: V1 is parked until MVP is live\n\nLeo: Waiting on brand guidelines from client before finalising fonts and colours"
+  "notes": "## Client notes\n**Alice:** the client wants the site live for their trade show, so no scope creep.\n\n## Waiting on the client\n- [x] Logo files\n- [ ] Brand guidelines, for fonts and colours\n- [ ] Testimonial copy\n\n## Decisions\n- **Leo:** stock photos are placeholders. The real shoot is next week.\n- V1 is parked until the MVP is live.\n\nBefore launch, run through the [launch checklist](https://example.com/launch-checklist)."
 }

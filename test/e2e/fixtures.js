@@ -85,6 +85,10 @@ export const test = base.extend({
 });
 
 // Open a map and wait until its steps are on the page
+// The description of an open card: the Markdown editor that takes over from #cardExpandBody,
+// which stays in the page, hidden, with a copy of the text
+export const description = (page) => page.locator('.card-expand-md .cm-content');
+
 export const openMap = async (page, id, stepCount = 3) => {
   await page.goto(`/${id}`);
   await expect(page.locator('.step')).toHaveCount(stepCount);

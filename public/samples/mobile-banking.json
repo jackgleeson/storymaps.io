@@ -155,6 +155,7 @@
         [
           {
             "name": "Email and password login",
+            "body": "**As a** customer\n**I want** to log in with my email and password\n**So that** only I can see my accounts\n\n## Acceptance criteria\n- [x] Passwords are never shown or logged\n- [x] The error is the same for a wrong email and a wrong password",
             "url": "https://phabricator.com/test-company/T202",
             "status": "done",
             "points": 3,
@@ -177,6 +178,7 @@
         [
           {
             "name": "Search contacts",
+            "body": "## Acceptance criteria\n- [x] Finds a saved recipient by name as the customer types\n- [x] Shows the last 4 digits of the account, to tell two people apart\n- [x] Says so plainly when nobody matches",
             "status": "done",
             "points": 2,
             "tags": [
@@ -197,6 +199,7 @@
         [
           {
             "name": "Summary screen",
+            "body": "The customer checks everything before any money moves.\n\n## Acceptance criteria\n- [x] Shows the recipient's name and account number\n- [x] Shows the amount and the account it leaves\n- [x] **Edit** goes back with nothing lost\n- [x] Nothing is sent until **Confirm** is pressed",
             "url": "https://phabricator.com/test-company/T275",
             "status": "done",
             "points": 2,
@@ -217,6 +220,7 @@
           },
           {
             "name": "SMS one-time code",
+            "body": "Every transfer is confirmed with a code sent by text.\n\n1. The customer confirms the transfer\n2. We text a 6 digit code\n3. The code works **once**, for 5 minutes\n\n- [x] Three wrong codes cancel the transfer\n- [x] A new code can be asked for after 30 seconds",
             "url": "https://en.wikipedia.org/wiki/Payment_Services_Directive",
             "status": "done",
             "points": 3,
@@ -290,6 +294,7 @@
           },
           {
             "name": "Daily transfer limit policy",
+            "body": "Limits set by compliance:\n\n- **£2,000** a day to a new recipient\n- **£10,000** a day to a saved recipient\n\nOver the limit, say what the limit is and when it resets. *Do not* offer a way round it.",
             "url": "https://phabricator.com/test-company/T270",
             "status": "done",
             "points": 2,
@@ -312,6 +317,7 @@
         [
           {
             "name": "Insufficient funds after review",
+            "body": "The balance can drop between **Review** and **Confirm**, for example when a card payment clears.\n\n- Check the balance again on confirm\n- Take no money if it falls short\n- Send the customer back to the amount, with the new balance shown",
             "color": "#fecdd3"
           }
         ],
@@ -462,6 +468,7 @@
         [
           {
             "name": "Biometric login",
+            "body": "Face or fingerprint in place of the password.\n\n- [x] Offered after the first password login\n- [x] Falls back to the password after 3 failed tries\n- [ ] Asks for the password again every 30 days\n\nSee the note on devices with no biometrics.",
             "url": "https://phabricator.com/test-company/T295",
             "status": "done",
             "points": 3,
@@ -690,6 +697,7 @@
         [
           {
             "name": "Scan QR code",
+            "body": "**Blocked:** waiting on the security review of camera access.\n\nThe code holds the recipient's name and account number, so nothing is typed. The customer still checks both on the review screen.",
             "status": "blocked",
             "tags": [
               "ux",
@@ -795,5 +803,5 @@
       "label": "Edge cases"
     }
   ],
-  "notes": "Kevin: MVP scope locked, sprint starts Monday\n\nTanya: QR scanning blocked on camera API decision, parked for V3\n\nKevin: Legal flagged PSD2 strong customer auth, need compliance sign-off before launch\n\nMarcus: Product applications flow scoped as lightweight V1, expand after Send Money ships"
+  "notes": "## Status\n**Kevin:** MVP scope is locked. The sprint starts Monday.\n\n## Before launch\n- [x] Scope signed off\n- [ ] Compliance sign-off on strong customer authentication\n- [ ] Security test booked\n\n## Parked\n- **Tanya:** QR scanning is ~~in V2~~ parked for V3, waiting on the camera decision.\n- **Marcus:** product applications stay lightweight in V1, and grow after Send Money ships.\n\n> Legal flagged strong customer authentication under PSD2. Nothing ships without their sign-off."
 }

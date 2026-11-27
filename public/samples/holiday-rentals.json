@@ -147,7 +147,7 @@
           {
             "name": "Listing cards with key details",
             "url": "https://jira.com/test-company/HOL-67",
-            "body": "Photo, price, and rating",
+            "body": "Each card shows:\n\n- The first photo\n- **Price per night**\n- Rating and number of reviews",
             "status": "done",
             "points": 3,
             "tags": ["frontend"]
@@ -164,12 +164,14 @@
         [
           {
             "name": "Select dates and guest count",
+            "body": "## Acceptance criteria\n- [x] Dates that are already booked can't be picked\n- [x] Check-out must be after check-in\n- [x] The guest count can't go over what the listing sleeps\n- [x] The price updates as the dates change",
             "status": "done",
             "points": 2,
             "tags": ["frontend"]
           },
           {
             "name": "Stripe payment integration",
+            "body": "Take payment when the guest books, and hold it until check-in.\n\n- [x] Card payments through [Stripe Checkout](https://stripe.com/docs/payments/checkout)\n- [x] A failed payment leaves the dates free\n- [x] A receipt is emailed to the guest\n\n**Out of scope:** refunds, which come with cancellations in V1.",
             "status": "done",
             "points": 5,
             "tags": ["backend", "api"]
@@ -186,6 +188,7 @@
         [
           {
             "name": "View check-in instructions",
+            "body": "Shown to the guest from **48 hours** before check-in.\n\n## Acceptance criteria\n- [x] Address, with a link to open it in a maps app\n- [x] Check-in time and how to get the key\n- [x] Works offline once it has been opened",
             "url": "https://jira.com/test-company/HOL-48",
             "status": "done",
             "points": 2,
@@ -215,7 +218,7 @@
           {
             "name": "Add property details",
             "url": "https://jira.com/test-company/HOL-60",
-            "body": "Title, type, beds, baths",
+            "body": "## Required\n- Title\n- Property type\n- Beds and baths\n\nEverything else can wait until the listing is published.",
             "status": "done",
             "points": 3,
             "tags": ["frontend"]
@@ -240,6 +243,7 @@
         [
           {
             "name": "Accept or decline booking",
+            "body": "**As a** host\n**I want** to accept or decline a booking request\n**So that** I stay in control of who stays\n\nThe host has **24 hours** to answer. After that the request expires and the guest is told.",
             "status": "done",
             "points": 3,
             "tags": ["frontend", "backend"]
@@ -328,8 +332,8 @@
         [
           {
             "name": "Price breakdown with all fees",
+            "body": "Show every charge before the guest pays:\n\n1. Nightly rate × nights\n2. Cleaning fee\n3. Service fee\n4. Taxes\n5. **Total**\n\nNo fee may appear for the first time on the payment screen.",
             "url": "https://jira.com/test-company/HOL-73",
-            "body": "Nightly rate, cleaning, service fee, taxes",
             "status": "done",
             "points": 3,
             "tags": ["frontend", "backend"]
@@ -348,7 +352,7 @@
           },
           {
             "name": "Define cancellation policies",
-            "body": "Flexible, moderate, strict",
+            "body": "Three policies for a host to choose from:\n\n1. **Flexible:** full refund up to 1 day before\n2. **Moderate:** full refund up to 5 days before\n3. **Strict:** half back up to 7 days before",
             "color": "#a5f3fc"
           }
         ],
@@ -382,7 +386,7 @@
           },
           {
             "name": "Should reviews be mutual?",
-            "body": "Both guest and host review each other",
+            "body": "Both guest and host review each other.\n\n> Neither sees the other's review until both are in, or 14 days have passed.",
             "color": "#bef264"
           }
         ],
@@ -447,7 +451,7 @@
           },
           {
             "name": "What if host doesn't respond?",
-            "body": "Auto-decline after 24h timeout",
+            "body": "> A guest should never be left waiting with no answer.\n\nOptions:\n- Expire the request after 24 hours\n- Remind the host at 12 hours\n- Lower the host's *response rate*\n\nLeaning towards all three.",
             "color": "#fecdd3"
           }
         ],
@@ -483,7 +487,7 @@
         [
           {
             "name": "Advanced filters",
-            "body": "Price, amenities, property type",
+            "body": "- Price range\n- Amenities\n- Property type\n\n*Instant book* joins the list once it ships.",
             "status": "in-progress",
             "tags": ["frontend", "backend"]
           },
@@ -598,7 +602,7 @@
           },
           {
             "name": "How to handle emergencies?",
-            "body": "Safety issues, urgent maintenance",
+            "body": "During a stay, a guest may need help fast.\n\n- **Danger to life:** show the local emergency number first\n- **Locked out:** call the host, then our support line\n- **Something broken:** use *Report issue to host*",
             "color": "#bef264"
           }
         ],
@@ -656,6 +660,7 @@
         [
           {
             "name": "iCal sync with Airbnb, VRBO, Google",
+            "body": "Import and export calendars, so a date booked elsewhere is blocked here.\n\n- [x] Import an `.ics` link\n- [ ] Export our calendar as an `.ics` link\n- [ ] Sync again every 30 minutes\n\nThe format is [iCalendar (RFC 5545)](https://datatracker.ietf.org/doc/html/rfc5545).",
             "status": "in-progress",
             "tags": ["backend", "api"]
           },
@@ -855,7 +860,7 @@
         [
           {
             "name": "Dynamic pricing algorithm",
-            "body": "Demand-based rate adjustments",
+            "body": "Suggest a nightly rate from:\n\n- Demand for the dates\n- Local events\n- How far ahead the booking is\n\nThe host always has the final say. Start as a **suggestion**, not an automatic change.",
             "status": "planned",
             "tags": ["ai", "backend"]
           },
@@ -952,5 +957,5 @@
       "label": "Design"
     }
   ],
-  "notes": "Jess: MVP must nail secure payments and payouts. Host profiles, guest reviews and verification follow in V1 and V2\n\nArun: Stripe Connect for host payouts needs careful testing - money movement is high-risk\n\nSofia: Map view is the #1 requested feature from beta testers, prioritize for V2\n\nJess: iCal sync is essential for hosts already on Airbnb/VRBO - without it we lose the multi-platform hosts\n\nArun: Dynamic pricing in V3 depends on having enough booking data from V2 - don't rush it\n\nSofia: Cancellation policy engine is more complex than it looks - flexible/moderate/strict each has different refund timelines"
+  "notes": "## Priorities\n1. **MVP:** secure payments and payouts\n2. **V1:** host profiles, reviews and verification\n3. **V2:** map view, the most requested feature from beta testers\n\n## Risks\n- **Arun:** Stripe Connect payouts need careful testing. Money movement is high risk.\n- **Sofia:** cancellation policies are harder than they look. Flexible, moderate and strict each have their own refund timeline.\n- **Jess:** without iCal sync we lose hosts who also list elsewhere.\n\n## Actions\n- [x] Test payouts end to end in Stripe test mode\n- [ ] Write the refund rules for each cancellation policy\n- [ ] Check the [iCalendar format](https://datatracker.ietf.org/doc/html/rfc5545) for repeating blocks\n\n> Dynamic pricing in V3 needs booking data from V2. Don't rush it."
 }

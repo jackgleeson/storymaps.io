@@ -80,6 +80,7 @@
         [
           {
             "name": "Recipe cards with photo",
+            "body": "## Acceptance criteria\n- [x] Each card shows a photo, the title and the cook time\n- [x] Two cards across on a phone, four on a tablet\n- [x] A recipe with no photo gets a plain placeholder\n- [x] More cards load as the cook scrolls",
             "status": "done",
             "points": 3,
             "tags": [
@@ -99,6 +100,7 @@
           },
           {
             "name": "Step-by-step instructions",
+            "body": "**As a** home cook\n**I want** one step on screen at a time\n**So that** I can follow along with messy hands\n\n- [x] Large text that reads from across the kitchen\n- [x] Swipe or tap to move on\n- [x] The ingredients for the step are shown with it",
             "url": "https://asana.com/test-company/REC-45",
             "status": "done",
             "points": 3,
@@ -149,6 +151,7 @@
           },
           {
             "name": "Add ingredients",
+            "body": "**As a** cook sharing a recipe\n**I want** to list the ingredients one per line\n**So that** others can shop for them\n\n## Acceptance criteria\n- [x] Each ingredient has an amount, a unit and a name\n- [x] Ingredients can be dragged into a new order\n- [x] A recipe can't be saved with no ingredients",
             "url": "https://asana.com/test-company/REC-36",
             "status": "done",
             "points": 3,
@@ -168,6 +171,7 @@
           },
           {
             "name": "Recipe URLs need to work without login",
+            "body": "A shared link must open the recipe for **anyone**, signed in or not.\n\n> Most people will arrive from a link a friend sent them.",
             "color": "#a5f3fc"
           }
         ]
@@ -213,12 +217,14 @@
           },
           {
             "name": "Metric vs imperial units?",
+            "body": "Which units do we show?\n\n1. Follow the phone's region\n2. Let the cook switch on any recipe\n3. Remember the choice\n\nCups and spoons don't convert cleanly to grams, so keep the author's units as written and show the other *beside* them.",
             "color": "#bef264"
           }
         ],
         [
           {
             "name": "Timer button per step",
+            "body": "A step such as *simmer for 10 minutes* gets a timer button.\n\n- Works out the time from the step text\n- Keeps running if the cook moves to another step\n- Rings even when the phone is on silent",
             "status": "done",
             "points": 3,
             "tags": [
@@ -346,6 +352,7 @@
         [
           {
             "name": "Import from URL",
+            "body": "Paste a link and we fill in the recipe.\n\n- [x] Reads [Recipe structured data](https://schema.org/Recipe) where the page has it\n- [ ] Falls back to reading the page text\n- [ ] Always shows the result for the cook to **check before saving**",
             "status": "in-progress",
             "tags": [
               "backend",
@@ -432,6 +439,7 @@
           },
           {
             "name": "Nearby store availability",
+            "body": "**Blocked:** no supermarket has agreed to share stock data yet.\n\nTalks so far:\n- ~~FreshMart~~ said no\n- GreenGrocer, waiting for a reply",
             "status": "blocked",
             "tags": [
               "api",
@@ -504,5 +512,5 @@
       "label": "Design"
     }
   ],
-  "notes": "Maya: Dietary filters are V2 priority, highest-voted feature request\n\nTom: Lock down recipe data schema before API work starts\n\nAlex: Accessibility audit booked for post-V2, don't let it slip\n\nMaya: Grocery API partner search ongoing, blocked for V3 until signed"
+  "notes": "## Notes\n**Maya:** dietary filters lead V2. They are the most voted for request.\n\n## Actions\n- [ ] Lock down the recipe data schema before API work starts (Tom)\n- [ ] Book the accessibility audit for after V2 (Alex)\n- [ ] Keep looking for a grocery API partner (Maya)\n\n## Blocked\nShopping lists in V3 wait on a signed grocery partner.\n\nRecipes follow the [schema.org Recipe](https://schema.org/Recipe) shape, so imports and search engines can read them."
 }

@@ -14,5 +14,5 @@ test('the story chips fit the expanded card on a phone and add lines when tapped
   }
 
   await chips.getByRole('button', { name: 'Given, When, Then' }).tap();
-  await expect(page.locator('#cardExpandBody')).toHaveValue('Given \nWhen \nThen ');
+  await expect(page.locator('#cardExpandBody')).toHaveValue('**Given** \n**When** \n**Then** ');
 });

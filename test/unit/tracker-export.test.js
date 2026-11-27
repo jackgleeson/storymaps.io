@@ -285,10 +285,24 @@ describe('Asana export', () => {
     assert.deepEqual(progress.filter(p => p.status === 'created').map(p => p.gid), ['1', '2']);
     const [card, cash] = tasks();
     assert.equal(card.url, 'https://app.asana.com/api/1.0/tasks');
-    assert.deepEqual(card.json.data, { name: 'Card', notes: 'Paying', projects: ['1200'], completed: true, tags: ['tag-mvp', 'tag-pay'] });
+    assert.deepEqual(card.json.data, { name: 'Card', html_notes: '<body>Paying</body>', projects: ['1200'], completed: true, tags: ['tag-mvp', 'tag-pay'] });
     assert.deepEqual(cash.json.data, { name: 'Cash', notes: '', projects: ['1200'], completed: false, tags: ['tag-mvp'] });
     assert.equal(card.headers.Authorization, 'Bearer t');
     assert.equal(requests.some(r => r.url.includes('/sections') || r.url.includes('/subtasks')), false);
+  });
+
+  test('a description goes formatted, and as plain text if Asana turns the formatting down', async () => {
+    respond = answer;
+    const formatted = [{ title: 'Card', description: '## Pay\n- **Visa**', status: 'none', labels: [] }];
+    await call('/api/export/asana', { token: 't', projectGid: '1200', issues: formatted });
+    assert.equal(tasks()[0].json.data.html_notes, '<body><h2>Pay</h2><ul><li><strong>Visa</strong></li></ul></body>');
+
+    requests.length = 0;
+    respond = (req) => (req.url.endsWith('/tasks') && req.json.data.html_notes ? [400, { errors: [{ message: 'XML is invalid' }] }] : answer(req));
+    const { done } = await call('/api/export/asana', { token: 't', projectGid: '1200', issues: formatted });
+    assert.deepEqual(done, { created: 1, failed: 0 });
+    assert.deepEqual(tasks().map(t => Object.keys(t.json.data).filter(k => k.includes('notes'))), [['html_notes'], ['notes']]);
+    assert.equal(tasks()[1].json.data.notes, '## Pay\n- **Visa**');
   });
 
   test('uses a tag that already has the name and makes only the missing ones', async () => {

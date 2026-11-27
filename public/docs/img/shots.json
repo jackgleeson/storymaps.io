@@ -986,5 +986,123 @@
     "width": 334,
     "height": 308,
     "callouts": []
+  },
+  "format-card-descriptions-with-markdown/link": {
+    "width": 564,
+    "height": 66,
+    "callouts": [
+      {
+        "x": 58.8,
+        "y": 17.6
+      },
+      {
+        "x": 65,
+        "y": 20.6
+      }
+    ]
+  },
+  "format-card-descriptions-with-markdown/link-edit": {
+    "width": 548,
+    "height": 71,
+    "callouts": []
+  },
+  "write-user-stories-on-a-story-map/open-card": {
+    "width": 664,
+    "height": 514,
+    "callouts": [
+      {
+        "x": 4.2,
+        "y": 13.3
+      },
+      {
+        "x": 4.2,
+        "y": 21.8
+      },
+      {
+        "x": 4.2,
+        "y": 28
+      },
+      {
+        "x": 4.2,
+        "y": 55.2
+      },
+      {
+        "x": 4.2,
+        "y": 84.2
+      }
+    ]
+  },
+  "write-user-stories-on-a-story-map/story-buttons": {
+    "width": 592,
+    "height": 356,
+    "callouts": []
+  },
+  "format-card-descriptions-with-markdown/formatted": {
+    "width": 592,
+    "height": 434,
+    "callouts": []
+  },
+  "format-card-descriptions-with-markdown/story": {
+    "width": 592,
+    "height": 442,
+    "callouts": []
+  },
+  "format-card-descriptions-with-markdown/bold": {
+    "width": 548,
+    "height": 137,
+    "callouts": []
+  },
+  "format-card-descriptions-with-markdown/heading": {
+    "width": 548,
+    "height": 137,
+    "callouts": []
+  },
+  "format-card-descriptions-with-markdown/tick-boxes": {
+    "width": 548,
+    "height": 137,
+    "callouts": []
+  },
+  "format-card-descriptions-with-markdown/card": {
+    "width": 592,
+    "height": 367,
+    "callouts": []
+  },
+  "edit-a-story-map-together/name": {
+    "width": 464,
+    "height": 193,
+    "callouts": []
+  },
+  "edit-a-story-map-together/pointers": {
+    "width": 228,
+    "height": 88,
+    "callouts": [
+      {
+        "x": 64,
+        "y": 26.1
+      }
+    ]
+  },
+  "edit-a-story-map-together/notepad": {
+    "width": 572,
+    "height": 743,
+    "callouts": []
+  },
+  "edit-a-story-map-together/open-card": {
+    "width": 664,
+    "height": 471,
+    "callouts": [
+      {
+        "x": 4.2,
+        "y": 23.7
+      },
+      {
+        "x": 4.2,
+        "y": 55.5
+      },
+      {
+        "x": 4.2,
+        "y": 82.6
+      }
+    ]
   }
 }

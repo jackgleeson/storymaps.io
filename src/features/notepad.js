@@ -1,6 +1,10 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Notepad module — CodeMirror 6 + y-codemirror.next
 // Dependencies are lazy-loaded to avoid blocking the critical rendering path.
+// Notes are Markdown, shown formatted as in a card description (markdown-editor.js).
+
+import { markdownExtensions } from '/src/features/markdown-editor.js';
+import { enterAction } from '/src/core/story-lines.js';
 
 let view = null;
 let activeYtext = null;
@@ -10,6 +14,8 @@ let _initPromise = null;
 let EditorView, EditorState, Compartment, keymap;
 let defaultKeymap, history, historyKeymap;
 let yCollab;
+// The whole CodeMirror bundle, for the Markdown extensions
+let cmBundle;
 let collabCompartment, readOnlyCompartment;
 
 // Callbacks set via init()
@@ -18,12 +24,14 @@ let _saveToStorage = null;
 let _isMapEditable = null;
 let _logTextEdit = null;
 
-const stripHtmlTags = (text) => text.replace(/<[^>]*>/g, '');
+// A tag has no "<" inside it, which also keeps this quick on notes made of nothing but "<"
+const stripHtmlTags = (text) => text.replace(/<[^<>]*>/g, '');
 
 let _loadPromise = null;
 const loadDeps = () => {
     if (_loadPromise) return _loadPromise;
     _loadPromise = import('/vendor/codemirror.bundle.js').then((mod) => {
+        cmBundle = mod;
         EditorView = mod.EditorView;
         keymap = mod.keymap;
         EditorState = mod.EditorState;
@@ -107,11 +115,14 @@ const _createEditor = (parent) => {
         },
     });
 
+    parent.classList.add('md-editor');
     view = new EditorView({
         parent,
         state: EditorState.create({
             doc: _state.notes || '',
             extensions: [
+                // Formatting, shortcuts, links and lists. Ahead of the usual keys, so Ctrl+I is italic.
+                ...markdownExtensions(cmBundle, { enterAction }),
                 keymap.of([...defaultKeymap, ...historyKeymap]),
                 history(),
                 EditorView.lineWrapping,

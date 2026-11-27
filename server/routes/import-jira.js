@@ -1,21 +1,6 @@
 import { validateExternalUrl, sendSSE, fetchWithTimeout, safeJson } from '../http-helpers.js';
+import { adfToMarkdown } from '../../src/transfer/markup.js';
 
-// Convert Jira ADF (Atlassian Document Format) to plain text
-const adfToPlainText = (node, depth = 0) => {
-  if (!node || depth > 20) return '';
-  if (node.type === 'text') return node.text || '';
-  // A line break inside a paragraph, and the inline pieces that carry their text as attributes
-  if (node.type === 'hardBreak') return '\n';
-  if (node.type === 'inlineCard') return node.attrs?.url || '';
-  if (node.type === 'mention' || node.type === 'emoji') return node.attrs?.text || node.attrs?.shortName || '';
-  if (!Array.isArray(node.content)) return '';
-  const parts = node.content.slice(0, 500).map(c => adfToPlainText(c, depth + 1));
-  if (node.type === 'paragraph' || node.type === 'heading' || node.type === 'bulletList' || node.type === 'orderedList') {
-    return parts.join('') + '\n';
-  }
-  if (node.type === 'listItem') return '- ' + parts.join('');
-  return parts.join('');
-};
 
 // Map Jira statusCategory.key to storymap status
 const jiraStatusToStorymaps = (statusCategoryKey) => {
@@ -113,7 +98,7 @@ export default function register(ctx) {
       const epicObj = {
         key: epic.key,
         summary: epic.fields.summary || '',
-        description: adfToPlainText(epic.fields.description).trim(),
+        description: adfToMarkdown(epic.fields.description),
         status: jiraStatusToStorymaps(epic.fields.status?.statusCategory?.key),
         labels: epic.fields.labels || [],
         stories: []
@@ -129,7 +114,7 @@ export default function register(ctx) {
         key: story.key,
         summary: story.fields.summary || '',
         type: story.fields.issuetype?.name || 'Story',
-        description: adfToPlainText(story.fields.description).trim(),
+        description: adfToMarkdown(story.fields.description),
         status: jiraStatusToStorymaps(story.fields.status?.statusCategory?.key),
         labels: story.fields.labels || [],
         points: ((v) => v != null ? Number(v) : null)(story.fields.story_points ?? story.fields.customfield_10016 ?? null)

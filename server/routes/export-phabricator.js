@@ -1,4 +1,5 @@
 import { validateExternalUrl, curlPost } from '../http-helpers.js';
+import { markdownToRemarkup } from '../../src/transfer/markup.js';
 import { cleanIssues, invalidIssues, createEach } from '../export-issues.js';
 
 export default function register(ctx) {
@@ -71,7 +72,7 @@ export default function register(ctx) {
       txn.set(`transactions[${i}][type]`, 'title');
       txn.set(`transactions[${i++}][value]`, issue.title);
       txn.set(`transactions[${i}][type]`, 'description');
-      txn.set(`transactions[${i++}][value]`, issue.description);
+      txn.set(`transactions[${i++}][value]`, markdownToRemarkup(issue.description));
       txn.set(`transactions[${i}][type]`, 'status');
       txn.set(`transactions[${i++}][value]`, phabStatus[issue.status]);
       if (userTags.length) {

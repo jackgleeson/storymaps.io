@@ -1,0 +1,187 @@
+{
+  "app": "storymap",
+  "v": 1,
+  "name": "Coffee App",
+  "users": [
+    [
+      {
+        "name": "Customer",
+        "color": "#fca5a5"
+      }
+    ],
+    [],
+    [],
+    [],
+    [],
+    []
+  ],
+  "activities": [
+    [
+      {
+        "name": "Order Coffee",
+        "color": "#93c5fd"
+      }
+    ],
+    [],
+    [],
+    [],
+    [],
+    []
+  ],
+  "steps": [
+    {
+      "name": "Browse Menu",
+      "color": "#86efac"
+    },
+    {
+      "name": "Customise Drink",
+      "color": "#86efac"
+    },
+    {
+      "name": "Add To Cart",
+      "color": "#86efac"
+    },
+    {
+      "name": "Pay",
+      "color": "#86efac"
+    },
+    {
+      "name": "Confirm",
+      "color": "#86efac"
+    },
+    {
+      "name": "Collect Order",
+      "color": "#86efac"
+    }
+  ],
+  "slices": [
+    {
+      "name": "MVP",
+      "goal": "Customers can order and pay ahead, then pick up their coffee",
+      "targetDate": "2027-01-04",
+      "stories": [
+        [
+          {
+            "name": "Drink list with prices",
+            "body": "**As a** customer\n**I want** to see every drink with its price\n**So that** I can choose before I reach the counter\n\nThe shop already has this list on its till. See [COF-55](https://example.com/COF-55) for the design.\n\n## Acceptance criteria\n- [x] Drinks are grouped by **hot**, **iced** and **tea**\n- [x] Each drink shows its price\n- [ ] A sold out drink shows **Sold out**\n- [ ] The search box clears with `Esc`"
+          }
+        ],
+        [
+          {
+            "name": "Choose size"
+          }
+        ],
+        [
+          {
+            "name": "Order summary with total",
+            "body": "The last look before paying. The layout is in the [checkout designs](https://example.com/designs/checkout).\n\n## Acceptance criteria\n- [x] Lists each drink with its **size** and extras\n- [x] Shows the total, with tax included\n- [ ] The pay button says the amount, such as `Pay £4.20`\n- [ ] An empty cart sends the customer back to the menu\n\n> Agreed with the shop: no tipping in the first release."
+          }
+        ],
+        [
+          {
+            "name": "Apple Pay / Google Pay",
+            "body": "## How it works\n1. The customer taps **Pay**\n2. The wallet opens with the order total\n3. The order goes to the shop\n\n> Agreed with the shop: no cash orders in the app.\n\n~~Split the bill~~ moved to a later release.\n\n```\nPOST /orders/42/pay\n```"
+          }
+        ],
+        [
+          {
+            "name": "Submit order"
+          }
+        ],
+        [
+          {
+            "name": "Notify when ready"
+          }
+        ]
+      ]
+    },
+    {
+      "name": "V1",
+      "goal": "More choice and more ways to pay",
+      "targetDate": "2027-03-01",
+      "stories": [
+        [
+          {
+            "name": "Search by name"
+          },
+          {
+            "name": "Photo on each drink"
+          }
+        ],
+        [
+          {
+            "name": "Select milk type"
+          },
+          {
+            "name": "Extra shots and syrups"
+          }
+        ],
+        [
+          {
+            "name": "Add multiple drinks"
+          },
+          {
+            "name": "Edit or remove items"
+          }
+        ],
+        [
+          {
+            "name": "Credit card"
+          }
+        ],
+        [],
+        []
+      ]
+    },
+    {
+      "name": "V2",
+      "goal": "Make repeat and group orders quicker",
+      "targetDate": "2027-05-31",
+      "stories": [
+        [
+          {
+            "name": "Recommend popular combos"
+          }
+        ],
+        [
+          {
+            "name": "Save custom drinks"
+          }
+        ],
+        [
+          {
+            "name": "Group ordering"
+          }
+        ],
+        [
+          {
+            "name": "Split payment"
+          },
+          {
+            "name": "Gift cards"
+          }
+        ],
+        [],
+        []
+      ]
+    }
+  ],
+  "legend": [
+    {
+      "color": "#fef08a",
+      "label": "Tasks"
+    },
+    {
+      "color": "#a5f3fc",
+      "label": "Notes"
+    },
+    {
+      "color": "#bef264",
+      "label": "Questions"
+    },
+    {
+      "color": "#fecdd3",
+      "label": "Edge cases"
+    }
+  ]
+}

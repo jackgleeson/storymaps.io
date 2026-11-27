@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://storymaps.io/</loc>
-    <lastmod>2026-11-24</lastmod>
+    <lastmod>2026-11-26</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/tour</loc>
@@ -58,7 +58,7 @@
   </url>
   <url>
     <loc>https://storymaps.io/docs/what-is-a-story-mapping-tool</loc>
-    <lastmod>2026-11-18</lastmod>
+    <lastmod>2026-11-26</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/take-the-story-mapping-tour</loc>
@@ -98,11 +98,15 @@
   </url>
   <url>
     <loc>https://storymaps.io/docs/write-user-stories-on-a-story-map</loc>
-    <lastmod>2026-11-24</lastmod>
+    <lastmod>2026-11-26</lastmod>
+  </url>
+  <url>
+    <loc>https://storymaps.io/docs/format-card-descriptions-with-markdown</loc>
+    <lastmod>2026-11-26</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/customise-story-map-cards</loc>
-    <lastmod>2026-11-13</lastmod>
+    <lastmod>2026-11-26</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/plan-releases-with-story-map-slices</loc>
@@ -170,7 +174,7 @@
   </url>
   <url>
     <loc>https://storymaps.io/docs/edit-a-story-map-together</loc>
-    <lastmod>2026-11-26</lastmod>
+    <lastmod>2026-11-27</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/track-changes-to-a-story-map</loc>
@@ -218,23 +222,23 @@
   </url>
   <url>
     <loc>https://storymaps.io/docs/user-story-mapping-for-jira</loc>
-    <lastmod>2026-11-18</lastmod>
+    <lastmod>2026-11-26</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/user-story-mapping-for-asana</loc>
-    <lastmod>2026-11-18</lastmod>
+    <lastmod>2026-11-26</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/user-story-mapping-for-phabricator</loc>
-    <lastmod>2026-11-24</lastmod>
+    <lastmod>2026-11-26</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/user-story-mapping-for-linear</loc>
-    <lastmod>2026-11-24</lastmod>
+    <lastmod>2026-11-26</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/user-story-mapping-for-azure-devops</loc>
-    <lastmod>2026-11-24</lastmod>
+    <lastmod>2026-11-26</lastmod>
   </url>
   <url>
     <loc>https://storymaps.io/docs/import-a-big-backlog</loc>

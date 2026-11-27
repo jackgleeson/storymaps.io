@@ -4,6 +4,7 @@
 // lines in the description. Nothing here touches the page, so it can be tested on its own.
 
 import { escapeCSV } from '/src/transfer/csv.js';
+import { markdownToHtml, markdownToJiraWiki, markdownToRemarkup } from '/src/transfer/markup.js';
 
 export const STATUSES = ['none', 'planned', 'in-progress', 'blocked', 'done'];
 export const STATUS_NAMES = { none: 'No Status', planned: 'Planned', 'in-progress': 'In Progress', blocked: 'Blocked', done: 'Done' };
@@ -95,7 +96,8 @@ export const jiraCsv = (issues, { projectName = '', projectKey = '', projectType
     ];
     const rows = issues.map(issue => [
         ...(hasProject ? [projectName, projectKey] : []),
-        'Story', issue.title, issue.description, statusNames[issue.status] ?? '', projectType,
+        // Jira reads the description of a CSV file as its wiki markup
+        'Story', issue.title, markdownToJiraWiki(issue.description), statusNames[issue.status] ?? '', projectType,
         ...issue.labels, ...Array(labelColumns - issue.labels.length).fill(''),
     ]);
     return csvRows([header, ...rows]);
@@ -112,15 +114,6 @@ export const asanaCsv = (cards, { link = () => '', slice = true, step = true, ta
     return csvRows([header, ...rows]);
 };
 
-// Azure DevOps reads descriptions as HTML. Blank lines split paragraphs, single line breaks
-// stay as line breaks, and web addresses become links.
-export const textToHtml = (text) => {
-    const escape = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-    const inline = (line) => line.split(/(https?:\/\/\S+)/).filter(Boolean).map(part =>
-        (/^https?:\/\//.test(part) ? `<a href="${escape(part)}">${escape(part)}</a>` : escape(part))).join('');
-    return String(text || '').split(/\n{2,}/).map(p => p.trim()).filter(Boolean)
-        .map(paragraph => `<div>${paragraph.split('\n').map(inline).join('<br>')}</div>`).join('<div><br></div>');
-};
 
 // The work item type for backlog work, and the state new work starts in, depend on the
 // process a project uses
@@ -137,7 +130,8 @@ export const azureCsv = (issues, { workItemType = AZURE_PROCESSES.agile.type } =
     const hasTags = issues.some(issue => issue.labels.length);
     const header = ['Work Item Type', 'Title', 'Description', ...(hasTags ? ['Tags'] : [])];
     const rows = issues.map(issue => [
-        workItemType, issue.title.slice(0, 255), textToHtml(issue.description),
+        // Azure DevOps reads descriptions as HTML
+        workItemType, issue.title.slice(0, 255), markdownToHtml(issue.description),
         ...(hasTags ? [issue.labels.join('; ')] : []),
     ]);
     return csvRows([header, ...rows]);
@@ -192,7 +186,7 @@ export const phabConsoleFunction = (baseUrl) => `async function importTasks(toke
 }`;
 
 export const phabConsoleCall = (token, issues, tags) => {
-    const tasks = issues.map(issue => ({ title: issue.title, description: issue.description, status: PHAB_STATUS[issue.status] || 'open' }));
+    const tasks = issues.map(issue => ({ title: issue.title, description: markdownToRemarkup(issue.description), status: PHAB_STATUS[issue.status] || 'open' }));
     return `importTasks(${JSON.stringify(token)}, ${JSON.stringify(tasks, null, 2)}, ${JSON.stringify(tags)});`;
 };
 
