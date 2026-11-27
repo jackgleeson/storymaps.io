@@ -99,7 +99,9 @@ function updateBuildPrompt() {
     _lastTargetId = targetId;
     const sel = dom.buildAiSlice;
     const sliceVal = sel.value;
-    const sliceName = sel.options[sel.selectedIndex]?.text || 'Slice 1';
+    // The name alone: the list adds (closed) after a closed slice, which isn't part of its name
+    const picking = sel.options[sel.selectedIndex];
+    const sliceName = picking?.dataset.name || picking?.text || 'Slice 1';
     const extra = dom.buildAiInstructionsInput.value.trim();
     const isChat = chatTargets.has(targetId);
     const hasPromptSuffix = promptSuffixTargets.has(targetId);
@@ -191,14 +193,23 @@ const openWindow = () => {
     sel.innerHTML = '';
     state.slices.forEach((s, i) => {
         const opt = document.createElement('option');
+        const name = s.name || `Slice ${i + 1}`;
+        const closed = closedState(s);
         opt.value = i;
-        opt.textContent = s.name || `Slice ${i + 1}`;
+        opt.dataset.name = name;
+        opt.textContent = closed ? `${name} (${closed})` : name;
+        // A complete slice is built already, so it is listed and can't be picked. A closed one
+        // is only folded away, and can.
+        opt.disabled = closed === 'complete';
         sel.appendChild(opt);
     });
     const allOpt = document.createElement('option');
     allOpt.value = 'all';
     allOpt.textContent = 'All Slices';
     sel.appendChild(allOpt);
+    // Start on the first slice that can be picked
+    const first = [...sel.options].find(opt => !opt.disabled);
+    sel.value = first.value;
     allTargetGrids().forEach(g => g.querySelectorAll('.build-ai-target').forEach(b => b.classList.remove('selected')));
     dom.buildAiTargets.querySelector('.build-ai-target').classList.add('selected');
     _lastTargetId = null;
@@ -208,10 +219,14 @@ const openWindow = () => {
     dom.buildAiModal.classList.add('visible');
 };
 
-// Where a card sits in the slices, if a prompt can name it
+// "complete" or "closed" for a slice that is closed, as the story map shows it
+const closedState = (slice) => (slice.collapsed ? (slice.closedReason === 'closed' ? 'closed' : 'complete') : null);
+
+// Where a card sits in the slices, if a prompt can name it. Not in a complete slice, which can't be built.
 const findSliceCard = (cardId) => {
     const { state } = _deps;
     for (let sliceIdx = 0; sliceIdx < state.slices.length; sliceIdx++) {
+        if (closedState(state.slices[sliceIdx]) === 'complete') continue;
         if (sliceCards(state.slices[sliceIdx]).some(c => c.card.id === cardId)) return sliceIdx;
     }
     return -1;

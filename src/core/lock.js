@@ -326,8 +326,9 @@ const unlockMap = async (password) => {
 
 // Update lock menu item and banner UI
 // Told each time the lock state of the open map is shown
-let _onLockChange = null;
-export const onLockChange = (fn) => { _onLockChange = fn; };
+// Called after every change to whether the story map can be edited
+const _lockListeners = [];
+export const onLockChange = (fn) => { _lockListeners.push(fn); };
 
 export const updateLockUI = () => {
     if (!_dom.lockMapBtn || !_dom.readOnlyBanner) return;
@@ -376,7 +377,7 @@ export const updateLockUI = () => {
         _dom.samplesSubmenuTrigger?.classList.remove('disabled');
         _dom.importSubmenuTrigger?.classList.remove('disabled');
     }
-    _onLockChange?.();
+    for (const fn of _lockListeners) fn();
 };
 
 // Fields that never edit the map, so typing in them is fine on a locked map: dialogs (including the

@@ -136,3 +136,34 @@ test('in full screen the floating buttons sit over the read-only banner, not und
   const bannerBottom = await page.locator('#readOnlyBanner').evaluate((el) => el.getBoundingClientRect().bottom);
   expect(mapTop).toBeGreaterThanOrEqual(bannerBottom);
 });
+
+test('a locked story map is read-only from the first draw, while the name prompt is still up', async ({ page, createMap, request, pullMap }) => {
+  const id = await createMap(`name: Locked
+steps:
+  - Browse
+slices:
+  - name: Now
+    stories:
+      Browse:
+        - name: Drink list
+          body: See the menu
+`);
+  expect((await request.post(`/api/lock/${id}`, { data: { passwordHash: hash('secret') } })).status()).toBe(200);
+  // No name saved, so the app asks for one, as it does for a first visit
+  await page.addInitScript(() => localStorage.removeItem('presenceName'));
+  await page.goto(`/${id}`);
+  await expect(page.getByText('Enter your name for live collaboration')).toBeVisible();
+  await expect(page.locator('body')).toHaveClass(/read-only-mode/);
+  await expect(page.locator('.slice-container .story-card textarea.story-text')).toHaveCount(1);
+  await expect(page.locator('.btn-add-story').first()).toBeHidden();
+
+  // A card opened from its link behind the prompt can't be changed either
+  const cardId = await page.locator('.slice-container .story-card').first().getAttribute('data-story-id');
+  await page.goto('about:blank');
+  await page.goto(`/${id}#card-${cardId}`);
+  await expect(page.getByText('Enter your name for live collaboration')).toBeVisible();
+  await expect(page.locator('#cardExpandModal')).toBeVisible();
+  await expect(page.locator('#cardExpandChips')).toBeHidden();
+  await expect(page.locator('#cardExpandName')).toHaveJSProperty('readOnly', true);
+  await expect(page.locator('.card-expand-md .cm-content')).toHaveAttribute('contenteditable', 'false');
+});

@@ -253,3 +253,31 @@ test('opening a card and clicking the end of a line leave the last link as a lin
   await description(page).locator('.cm-md-edit').last().click();
   expect(await shown(page)).toContain('[here](https://example.com/work)');
 });
+
+test('a card open when the story map is locked loses its story buttons and can no longer be typed in', async ({ page, createMap, request, pullMap }) => {
+  const { createHash } = await import('node:crypto');
+  const id = await createMap(MAP);
+  await openMap(page, id, 1);
+  await open(page);
+  const chips = page.locator('#cardExpandChips');
+  await expect(chips).toBeVisible();
+
+  // Someone else locks the story map while the card is open
+  const passwordHash = createHash('sha256').update('secret').digest('hex');
+  expect((await request.post(`/api/lock/${id}`, { data: { passwordHash } })).status()).toBe(200);
+  await expect(page.locator('body')).toHaveClass(/read-only-mode/, { timeout: 10000 });
+  await expect(chips).toBeHidden();
+  await expect(description(page)).toHaveAttribute('contenteditable', 'false');
+
+  // A card opened straight from its link on the locked story map has none either
+  const cardId = (await page.locator('.slice-container .story-card').first().getAttribute('data-story-id'));
+  await page.goto('about:blank');
+  await page.goto(`/${id}#card-${cardId}`);
+  await expect(page.locator('#cardExpandModal')).toBeVisible();
+  await expect(page.locator('body')).toHaveClass(/read-only-mode/);
+  await expect(chips).toBeHidden();
+  const before = JSON.stringify((await pullMap(id)).slices);
+  await chips.locator('button').first().evaluate(el => el.click());
+  await page.waitForTimeout(500);
+  expect(JSON.stringify((await pullMap(id)).slices)).toBe(before);
+});

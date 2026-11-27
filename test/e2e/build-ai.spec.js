@@ -204,3 +204,44 @@ test('Build with AI on a card menu opens the window on that card', async ({ page
   await expect(prompt).toHaveValue(/of only the "Drink list" card\. It is in the "MVP" slice, under the "Browse" step\./);
   await page.locator('#buildAiModalClose').click();
 });
+
+test('Build with AI marks complete and closed slices, and a complete slice cannot be picked', async ({ page, createMap }) => {
+  const id = await createMap(`name: States
+steps:
+  - Browse
+slices:
+  - name: Phase 1
+    collapsed: true
+    closedReason: complete
+    stories:
+      Browse:
+        - name: Drink list
+  - name: Phase 2
+    stories:
+      Browse:
+        - name: Search by name
+  - name: Later
+    collapsed: true
+    closedReason: closed
+    stories:
+      Browse:
+        - name: Gift cards
+`);
+  await openMap(page, id, 1);
+  await page.locator('#buildAiBtn').click();
+  const slice = page.locator('#buildAiSlice');
+  const options = slice.locator('option');
+  await expect(options).toHaveText(['Phase 1 (complete)', 'Phase 2', 'Later (closed)', 'All Slices']);
+  await expect(options.nth(0)).toBeDisabled();
+  await expect(options.nth(2)).toBeEnabled();
+  // The window opens on the first slice that can be built
+  await expect(slice).toHaveValue('1');
+  const prompt = page.locator('#buildAiPrompt');
+  await expect(prompt).toHaveValue(/"Phase 2" slice/);
+
+  // A closed slice can be picked, and the prompt uses its name alone
+  await slice.selectOption({ label: 'Later (closed)' });
+  await expect(prompt).toHaveValue(/"Later" slice/);
+  expect(await prompt.inputValue()).not.toContain('(closed)');
+  await expect(page.locator('#buildAiCard option')).toHaveText(['All cards', 'Gift cards']);
+});

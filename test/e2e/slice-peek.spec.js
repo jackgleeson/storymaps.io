@@ -420,3 +420,22 @@ test('a right-click on a card in a peeked slice offers its link and nothing that
   await expect(page.locator('#cardExpandModal')).toBeVisible();
   await expect.poll(() => page.locator('#cardExpandModal').evaluate(el => [el.innerText, ...[...el.querySelectorAll('textarea, input')].map(f => f.value)].join(' '))).toContain('Drink list with prices');
 });
+
+test('in focus mode a card with a description keeps its expand button, in an open slice and a peeked one', async ({ page, createMap, request }) => {
+  const id = await createMap(MAP.replace('- name: Search by name', '- name: Search by name\n          body: Search as you type').replace('- name: Pick size', '- name: Pick size\n          body: Small, medium or large'));
+  const passwordHash = createHash('sha256').update('secret').digest('hex');
+  expect((await request.post(`/api/lock/${id}`, { data: { passwordHash } })).status()).toBe(200);
+  await openMap(page, id);
+  await page.locator('#toggleFocusModeBtn').click();
+  await expect(page.locator('body')).toHaveClass(/focus-mode/);
+  // A card in an open slice, which is a text box and not plain text
+  const open = page.locator('.slice-container').nth(1).locator('.story-card .btn-expand').first();
+  await page.mouse.move(5, 5);
+  await expect.poll(() => open.evaluate(el => getComputedStyle(el).opacity)).toBe('0.5');
+  await peekToggle(page).click();
+  const expand = firstSliceCards(page).filter({ hasText: 'Search by name' }).locator('.btn-expand');
+  await expect.poll(() => expand.evaluate(el => getComputedStyle(el).opacity)).toBe('0.5');
+  await expand.click();
+  await expect(page.locator('#cardExpandModal')).toBeVisible();
+  await expect(page.locator('#cardExpandChips')).toBeHidden();
+});

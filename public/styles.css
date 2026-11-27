@@ -9269,16 +9269,8 @@ body.focus-mode .slice-points-text {
     display: none !important;
 }
 
-body.focus-mode .btn-expand {
-    opacity: 0 !important;
-}
-
-body.focus-mode .story-card:hover .btn-expand,
-body.focus-mode .step:hover .btn-expand,
-body.focus-mode .story-card.card-hovered .btn-expand,
-body.focus-mode .step.card-hovered .btn-expand {
-    opacity: 1 !important;
-}
+/* Focus mode leaves the expand button alone: a card with a description keeps its faint button,
+   as it is the only sign the card has more to read */
 
 /* Build with AI Modal */
 @keyframes bai-glow-sweep {

@@ -3,7 +3,7 @@
 
 import { dom } from '/src/ui/dom.js';
 import { state, pushUndo } from '/src/core/state.js';
-import { isMapEditable } from '/src/core/lock.js';
+import { isMapEditable, onLockChange } from '/src/core/lock.js';
 import * as log from '/src/core/log.js';
 import { getProvider } from '/src/core/yjs.js';
 import { showToast } from '/src/core/modals.js';
@@ -471,6 +471,27 @@ const keepTabInCard = (e) => {
 };
 
 // focus: false leaves the title unfocused, so a card opened from a link doesn't bring up a phone keyboard
+// Whether the card was opened read-only for a reason of its own, such as sitting in a closed slice
+let _openedReadOnly = false;
+
+// The story map was locked or unlocked while a card is open. A card opened from a link can be up
+// before the lock is known, so it starts out editable and has to be shut here.
+const applyLock = () => {
+    if (!_expandedItem || !dom.cardExpandModal.classList.contains('visible')) return;
+    const editable = !_openedReadOnly && isMapEditable();
+    if (editable === _editable) return;
+    _editable = editable;
+    if (!editable) {
+        release();
+        dom.cardExpandEditing.hidden = true;
+    }
+    dom.cardExpandName.readOnly = !editable;
+    body.readOnly = !editable;
+    dom.cardExpandChips.hidden = !editable || !isSliceCard(_expandedItem);
+    renderFooter(openCard, editable);
+    showEditors();
+};
+
 export const openExpandModal = (item, { readOnly = false, focus = true } = {}) => {
     // A guide that asks for typing lights the card itself: the big view of it stays shut
     if (document.body.classList.contains('tour-typing')) return;
@@ -479,6 +500,7 @@ export const openExpandModal = (item, { readOnly = false, focus = true } = {}) =
         _poppingExpandState = false;
     }
     _expandedItem = item;
+    _openedReadOnly = readOnly;
     const editable = !readOnly && isMapEditable();
     _editable = editable;
     dom.cardExpandName.value = item.name || '';
@@ -571,6 +593,7 @@ export const initListeners = () => {
     });
 
     dom.cardExpandModal.addEventListener('keydown', keepTabInCard);
+    onLockChange(applyLock);
 
     document.getElementById('cardExpandModalClose')?.addEventListener('click', closeExpandModal);
     dom.cardExpandModal.addEventListener('click', (e) => {

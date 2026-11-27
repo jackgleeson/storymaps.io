@@ -63,9 +63,15 @@ const newMapId = async () => {
 const subscribeToMap = async (mapId) => {
     clearUndoHistory();
     projects.load(mapId);
+    // The lock is read while the story map loads, and known before the first draw. Read later, a
+    // locked story map showed as editable until then, and for as long as the name prompt stayed up.
+    const lockRead = loadLockState(mapId);
     if (!getYdoc()) {
         await createYjsDoc(mapId);
     }
+    await lockRead;
+    restoreSessionUnlock(mapId);
+    updateLockUI();
 
     syncFromYjs();
     render();
@@ -73,13 +79,12 @@ const subscribeToMap = async (mapId) => {
     bookmarkNudge.start(mapId);
 
     const deferredTracking = async () => {
-        await trackPresence();
-        trackCursor();
-        await loadLockState(mapId);
-        restoreSessionUnlock(mapId);
         subscribeLockState(mapId);
         updateLockUI();
         updateEditability();
+        // After the lock: this can wait on the name prompt
+        await trackPresence();
+        trackCursor();
         // Fetch backup count for menu badge
         fetch(`/api/backups/${mapId}`).then(r => r.json()).then(b => updateBackupBadge(b.length)).catch(() => {});
 
