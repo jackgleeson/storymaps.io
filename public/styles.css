@@ -1533,6 +1533,27 @@ html.dark-mode .map-stats-slice-count.map-stats-closed {
     background: var(--color-border-subtle);
 }
 
+/* Copies a link that opens the story map with the notepad showing, like the one on an open card */
+.notes-copy-link {
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    color: var(--color-text-disabled);
+    cursor: pointer;
+    padding: 4px 6px;
+    margin-right: 2px;
+    border-radius: 4px;
+    transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+@media (hover: hover) {
+    .notes-copy-link:hover {
+        color: var(--color-text-secondary);
+        background: var(--color-border-subtle);
+    }
+}
+
 .notes-editor {
     width: 100%;
     flex: 1 1 auto;

@@ -292,6 +292,7 @@ const initEventListeners = () => {
         if (getYdoc() && !dom.welcomeScreen.classList.contains('visible')) {
             sliceLinks.revealSliceFromHash();
             cardLinks.openCardFromHash();
+            openNotesFromHash();
         }
     });
 
@@ -1433,6 +1434,13 @@ const initEventListeners = () => {
 };
 
 // Unified panel tab switching
+// A link ending in #notes opens the notepad, so a link can send someone straight to the notes
+const openNotesFromHash = () => {
+    if (window.location.hash !== '#notes') return;
+    const section = dom.panelBody?.querySelector('.panel-section[data-section="notepad"]');
+    if (section && !section.classList.contains('open')) switchPanelTab('notepad');
+};
+
 const switchPanelTab = (sectionKey) => {
     const sections = dom.panelBody?.querySelectorAll('.panel-section');
     const tabs = document.querySelectorAll('.panel-tab');
@@ -1670,6 +1678,7 @@ const openMapInPage = async (mapId) => {
     requestAnimationFrame(() => {
         sliceLinks.revealSliceFromHash(350);
         cardLinks.openCardFromHash();
+        openNotesFromHash();
     });
 };
 
@@ -1828,6 +1837,7 @@ const init = async () => {
                 zoomToFit();
                 sliceLinks.revealSliceFromHash(350);
                 cardLinks.openCardFromHash();
+                openNotesFromHash();
             });
             // A card link opens the card, so the tip about moving around the map would only get in the way
             if (!isCardHash(window.location.hash)) setTimeout(showTutorialToast, 800);

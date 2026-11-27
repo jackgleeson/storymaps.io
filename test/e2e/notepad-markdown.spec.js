@@ -175,3 +175,30 @@ test('a link keeps its Markdown hidden with the cursor resting beside it', async
   await page.keyboard.press('ArrowLeft');
   expect(await shown(page)).toContain('[the plan]');
 });
+
+test('a link ending in #notes opens the story map with the notepad showing', async ({ page, createMap, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  const id = await createMap();
+  await page.goto(`/${id}#notes`);
+  await expect(page.locator('.step')).toHaveCount(3);
+  await expect(notes(page)).toBeVisible();
+  await expect(page.locator('.panel-tab[data-section="notepad"]')).toHaveClass(/active/);
+
+  // Closed by hand it stays closed, and the same link typed again on the open story map opens it
+  await page.locator('#notesToggle').click();
+  await expect(notes(page)).toBeHidden();
+  await page.evaluate(() => { location.hash = ''; });
+  await page.evaluate(() => { location.hash = '#notes'; });
+  await expect(notes(page)).toBeVisible();
+
+  // The button at the top of the notepad copies that link
+  await page.locator('#notesCopyLink').click();
+  const link = await page.evaluate(() => navigator.clipboard.readText());
+  expect(link).toBe(`${new URL(page.url()).origin}/${id}#notes`);
+
+  // A plain link leaves the notepad shut
+  await page.goto('about:blank');
+  await page.goto(`/${id}`);
+  await expect(page.locator('.step')).toHaveCount(3);
+  await expect(notes(page)).toBeHidden();
+});

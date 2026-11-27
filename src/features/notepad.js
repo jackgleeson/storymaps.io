@@ -5,6 +5,7 @@
 
 import { markdownExtensions } from '/src/features/markdown-editor.js';
 import { enterAction } from '/src/core/story-lines.js';
+import { mapLinkUrl, copyLink } from '/src/features/slice-links.js';
 
 let view = null;
 let activeYtext = null;
@@ -62,6 +63,10 @@ export const init = (opts) => {
     // Close button closes the entire unified panel
     const close = document.getElementById('notesClose');
     const controlsRight = document.getElementById('controlsRight');
+    // The link opens the story map with the notepad showing (#notes, read in app.js)
+    document.getElementById('notesCopyLink')?.addEventListener('click', () => {
+        copyLink(mapLinkUrl('#notes'), 'Copy this link to the notes:');
+    });
     close?.addEventListener('click', () => {
         controlsRight?.classList.remove('panel-open');
         document.querySelectorAll('.panel-section').forEach(s => s.classList.remove('open'));
