@@ -7563,6 +7563,18 @@ html.dark-mode .notes-editor {
     line-height: inherit;
 }
 
+.notes-editor .cm-md-heading,
+.notes-editor .cm-md-bold {
+    font-weight: 700;
+}
+
+/* Android has one weight of its fixed-width font, so bold text there gets a thin outline in its
+   own colour (the class is set in src/features/notepad.js) */
+.notes-editor.drawn-bold .cm-md-heading,
+.notes-editor.drawn-bold .cm-md-bold {
+    -webkit-text-stroke: 0.6px currentColor;
+}
+
 .notes-editor .cm-md-code {
     padding: 0 5px;
 }

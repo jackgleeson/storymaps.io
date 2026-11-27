@@ -208,3 +208,29 @@ test('a web address pasted on its own becomes a link waiting for its words', asy
   await page.keyboard.press('Control+v');
   await expect.poll(body).toContain('`ahttps://example.com/specb`');
 });
+
+test('a typed tick box item keeps its dash until the box is finished', async ({ page, createMap }) => {
+  await openMap(page, await createMap(MAP), 1);
+  await open(page);
+  await description(page).click();
+  await page.keyboard.press('Control+End');
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Enter');
+  // The dash stays a dash while the item is being started, so the box can be typed after it
+  for (const typed of ['- ', '[', ' ', ']']) {
+    await page.keyboard.type(typed);
+    await expect(description(page).locator('.cm-md-bullet')).toHaveCount(1);
+    expect((await shown(page)).trimEnd().split('\n').pop().startsWith('-')).toBe(true);
+  }
+  await page.keyboard.type(' item');
+  await expect(description(page).locator('.cm-md-task')).toHaveCount(2);
+  await expect(description(page).locator('.cm-md-bullet')).toHaveCount(1);
+  // A plain item gets its bullet at the first letter
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('Backspace');
+  await page.keyboard.press('Backspace');
+  await page.keyboard.press('Backspace');
+  await page.keyboard.press('Backspace');
+  await page.keyboard.type('a');
+  await expect(description(page).locator('.cm-md-bullet')).toHaveCount(2);
+});

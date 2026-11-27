@@ -116,6 +116,8 @@ const _createEditor = (parent) => {
     });
 
     parent.classList.add('md-editor');
+    // The notepad font on Android has no bold, and Chrome there doesn't thicken it, so bold is drawn
+    if (/Android/i.test(navigator.userAgent)) parent.classList.add('drawn-bold');
     view = new EditorView({
         parent,
         state: EditorState.create({

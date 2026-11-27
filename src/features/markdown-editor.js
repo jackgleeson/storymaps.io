@@ -161,8 +161,11 @@ const buildPreview = (cm) => {
                     const from = at + block.markerFrom;
                     // The "- " itself, up to the space after it
                     const to = at + block.marker;
+                    // An item being started, such as "- " or "- [ ", keeps its dash while the cursor
+                    // is on the line, so a tick box can be typed without the dash turning into a bullet
+                    const starting = !block.box && on(at, line.to) && /^(\[([ xX]\]?)?)?$/.test(line.text.slice(block.marker));
                     // A task item shows its tick box and no bullet
-                    if (inside(from, to)) add(from, to, symbol);
+                    if (inside(from, to) || starting) add(from, to, symbol);
                     else if (block.box) add(from, to, hide);
                     else add(from, to - 1, Decoration.replace({ widget: new Bullet() }));
                     if (block.box) {
