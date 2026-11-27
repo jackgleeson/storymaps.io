@@ -1,12 +1,12 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
-// Remember the tracker details typed into the import and export windows, so they don't have
+// Remember the issue tracker details typed into the import and export windows, so they don't have
 // to be found again next time: the site address, project, email, team and tags. They are kept
 // in this browser only. API tokens and keys are never kept.
 
 const STORAGE_KEY = 'trackerDetails';
 
 // Each remembered detail, and every field that shows it. An import and an export to the same
-// tracker share their details. No token or key field may ever be listed here.
+// issue tracker share their details. No token or key field may ever be listed here.
 export const DETAILS = {
     'jira.instanceUrl': ['jiraImportInstanceUrl', 'jiraCsvInstanceUrl', 'jiraProxyInstanceUrl'],
     'jira.projectKey': ['jiraImportProjectKey', 'jiraProxyProjectKey'],
@@ -57,7 +57,7 @@ export const initTrackerDetails = () => {
         fieldsFor(key).forEach(field => {
             field.addEventListener('input', () => {
                 saveDetail(key, field.value);
-                // The other windows for the same tracker show the same detail
+                // The other windows for the same issue tracker show the same detail
                 fieldsFor(key).forEach(other => { if (other !== field) other.value = field.value; });
             });
         });

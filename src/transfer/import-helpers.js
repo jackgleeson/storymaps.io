@@ -88,7 +88,7 @@ export const groupTags = (epics, entityName = DEFAULT_WORDS.entityName) => {
 // Groups first, then the issues that belong to nothing
 const groupsFirst = (epics) => [...epics.filter(isGroup), ...epics.filter(epic => !isGroup(epic))];
 
-// An import of more than this many cards gets a warning, in the review step of a tracker import
+// An import of more than this many cards gets a warning, in the review step of an issue tracker import
 // and before a file is imported. It is nearly always more than was meant: a whole project where
 // one release would do.
 export const BIG_IMPORT_CARDS = 1000;
@@ -98,7 +98,7 @@ export const BIG_IMPORT_REASON = `More than ${BIG_IMPORT_CARDS.toLocaleString('e
 // 1240 as 1,240
 const withCommas = (n) => Number(n).toLocaleString('en-GB');
 
-// The plural of an issue type as a tracker names it: Bug, Story, Sub-task, User Story
+// The plural of an issue type as an issue tracker names it: Bug, Story, Sub-task, User Story
 export const pluralType = (type) => {
     if (/s$/i.test(type)) return type;
     if (/[^aeiou]y$/i.test(type)) return `${type.slice(0, -1)}ies`;
@@ -168,7 +168,7 @@ const labelImportButton = (stage) => {
     else button.textContent = mode ? MODE_BUTTON[mode] : 'Import to Map';
 };
 
-// The review step of every tracker import: what was found, filters by type and status, and
+// The review step of every issue tracker import: what was found, filters by type and status, and
 // one row per card that will be made. Group rows come first, each followed by its issues.
 export const renderImportPreview = (epics, projectKey, domRefs, updateCountFn, opts = {}) => {
     const words = wordsFor(opts);
@@ -265,7 +265,7 @@ export const renderImportPreview = (epics, projectKey, domRefs, updateCountFn, o
     // What each quick trim would leave out, with the filter box it ticks and unticks
     const trims = [];
 
-    // Filter by type, when the tracker has types: Epic, Story, Task, Bug
+    // Filter by type, when the issue tracker has types: Epic, Story, Task, Bug
     const types = [...new Set(items.map(story => story.type).filter(Boolean))];
     if (types.length) {
         const typeChips = [];
@@ -298,7 +298,7 @@ export const renderImportPreview = (epics, projectKey, domRefs, updateCountFn, o
             const statusChip = chip(statusNames[status], withStatus, !excludedStatuses.has(status), 'status', status, (on) => {
                 rows.filter(row => hasStatus(row, status)).forEach(row => setIncluded(row, on));
             });
-            // Done goes first: it is the one trim every tracker has, and often the biggest
+            // Done goes first: it is the one trim every issue tracker has, and often the biggest
             if (status === 'done') trims.unshift({ kind: 'status', value: status, name: statusNames[status], box: statusChip.querySelector('input'), takes: (row) => hasStatus(row, status) });
             return statusChip;
         })));
@@ -590,7 +590,7 @@ export const renderImportPreview = (epics, projectKey, domRefs, updateCountFn, o
 
         const status = document.createElement('span');
         status.className = 'import-row-status';
-        // A tracker that names its own states shows the name this row has there
+        // An issue tracker that names its own states shows the name this row has there
         status.textContent = group && !data.status ? '' : (data.stateName || statusNames[statusOf(data)]);
 
         el.append(checkbox, key, summary, tagCell, status);

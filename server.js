@@ -431,7 +431,7 @@ const server = createServer(async (req, res) => {
       }
     }
 
-    // Tell the app when imports and exports through tracker APIs are turned off
+    // Tell the app when imports and exports through issue tracker APIs are turned off
     if (content && cacheKey === '/index.html' && !IMPORT_EXPORT_ENABLED) {
       content = Buffer.from(content.toString().replace('<html lang="en">', '<html lang="en" data-integrations="off">'));
     }

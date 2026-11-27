@@ -1,5 +1,5 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
-// The guide that follows a tracker import. The cards arrive as one big pile, and the way to
+// The guide that follows an issue tracker import. The cards arrive as one big pile, and the way to
 // turn a pile into a story map is to build the backbone first: who it's for, what they're
 // trying to do, and the steps they take. Only then do the cards have somewhere to go.
 //
@@ -14,7 +14,7 @@ import * as tour from '/src/features/tour.js';
 import { zoomToFit, zoomForTyping } from '/src/ui/navigation.js';
 
 export const IMPORTED_SLICE = 'Imported';
-// The guide to the backbone, for people who arrive from a tracker without the idea
+// The guide to the backbone, for people who arrive from an issue tracker without the idea
 const BACKBONE_DOCS = '/docs/define-the-story-map-backbone';
 const DELETE_SLICE_DOCS = '/docs/plan-releases-with-story-map-slices#delete-a-slice';
 

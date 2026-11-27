@@ -1,5 +1,5 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
-// Tracker exports: Jira, Linear, Asana, Phabricator and Azure DevOps, by file, by API or from the console.
+// Issue tracker exports: Jira, Linear, Asana, Phabricator and Azure DevOps, by file, by API or from the console.
 // Every export makes one issue per card. The slice and the step go across as labels.
 // All nine windows share one layout: filters, one example of what a card becomes, the
 // label choices, and the list of cards, closed until it's wanted.
@@ -23,7 +23,7 @@ const byId = (id) => document.getElementById(id);
 const value = (id) => byId(id).value.trim();
 const withScheme = (url) => (url.includes('://') ? url : `https://${url}`).replace(/\/+$/, '');
 
-// ==================== What each tracker makes ====================
+// ==================== What each issue tracker makes ====================
 
 const DEFAULT_CARD_COLOR = '#fef08a';
 const JIRA_STATUS = { none: 'To Do', planned: 'To Do', 'in-progress': 'In Progress', blocked: 'To Do', done: 'Done' };
@@ -542,7 +542,7 @@ const showConnect = (kind) => {
     clearProgress(kind);
     part(kind, 'run').disabled = false;
     part(kind, 'run').hidden = false;
-    // Only the windows that send cards to a tracker swap to this button when they finish
+    // Only the windows that send cards to an issue tracker swap to this button when they finish
     if (part(kind, 'done') && part(kind, 'run')) part(kind, 'done').hidden = true;
     part(kind, 'back').disabled = false;
     part(kind, 'verify').disabled = false;

@@ -1,5 +1,5 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
-// Tracker exports: turn the cards on a story map into one issue per card. No epics, parent
+// Issue tracker exports: turn the cards on a story map into one issue per card. No epics, parent
 // tasks or sections are made. The slice and the step travel with the card as labels and as
 // lines in the description. Nothing here touches the page, so it can be tested on its own.
 
@@ -9,7 +9,7 @@ import { markdownToHtml, markdownToJiraWiki, markdownToRemarkup } from '/src/tra
 export const STATUSES = ['none', 'planned', 'in-progress', 'blocked', 'done'];
 export const STATUS_NAMES = { none: 'No Status', planned: 'Planned', 'in-progress': 'In Progress', blocked: 'Blocked', done: 'Done' };
 
-// Jira labels can't hold spaces, so every label is lower case with hyphens, in every tracker
+// Jira labels can't hold spaces, so every label is lower case with hyphens, in every issue tracker
 export const labelSlug = (name) => String(name || '').trim().toLowerCase().replace(/\s+/g, '-');
 
 // A card with no colour of its own is a task card, which shows yellow. The other colours are for
@@ -58,7 +58,7 @@ export const cardLabels = (card, { slice = true, step = true, tags = true } = {}
 };
 
 // The lines added under the card's own description, so the place it had on the story map is
-// kept even where the tracker has no labels
+// kept even where the issue tracker has no labels
 export const descriptionLines = (card, { link = '', tagsLine = false } = {}) => {
     const lines = [];
     if (card.sliceName) lines.push(`Slice: ${card.sliceName}`);
@@ -71,7 +71,7 @@ export const descriptionLines = (card, { link = '', tagsLine = false } = {}) => 
 export const issueDescription = (card, opts = {}) =>
     [card.body.trim(), descriptionLines(card, opts).join('\n')].filter(Boolean).join('\n\n');
 
-// One issue for the trackers' APIs. `labelOptions: null` sends no labels at all.
+// One issue for the issue trackers' APIs. `labelOptions: null` sends no labels at all.
 export const toIssue = (card, { link = '', labelOptions = {}, tagsLine = false } = {}) => {
     const issue = {
         title: card.name,

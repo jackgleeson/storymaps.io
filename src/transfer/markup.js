@@ -1,5 +1,5 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
-// Card descriptions are Markdown. Each tracker keeps descriptions in a format of its own, so an
+// Card descriptions are Markdown. Each issue tracker keeps descriptions in a format of its own, so an
 // import turns that format into Markdown and an export turns Markdown back into it:
 //
 //   Linear          Markdown, so nothing to do
@@ -15,7 +15,7 @@ import { lineBlock, isFence, inlineMarks, markdownToHtml, searchable } from '../
 
 export { markdownToHtml };
 
-// No real description comes near this size. Anything longer is cut here, so a tracker, or a page
+// No real description comes near this size. Anything longer is cut here, so an issue tracker, or a page
 // posing as one, can't hand the server a description that takes minutes to read.
 export const MAX_DESCRIPTION = 500_000;
 const bounded = (text) => String(text || '').slice(0, MAX_DESCRIPTION);
@@ -91,7 +91,7 @@ const isWebLink = (url) => /^https?:\/\//i.test(url || '');
 const taskBox = (item, done = '[x] ', open = '[ ] ') => (item.checked === undefined ? '' : item.checked ? done : open);
 
 // =============================================================================
-// Markdown out to each tracker
+// Markdown out to each issue tracker
 // =============================================================================
 
 // Jira wiki markup, which Jira reads in the Description column of a CSV file. Square brackets
@@ -197,7 +197,7 @@ export const markdownToAsanaHtml = (text) => {
 };
 
 // =============================================================================
-// Each tracker's format in to Markdown
+// Each issue tracker's format in to Markdown
 // =============================================================================
 
 // Wrap text in a Markdown symbol, keeping any space at its ends outside the symbols, and each

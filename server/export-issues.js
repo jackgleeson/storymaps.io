@@ -1,4 +1,4 @@
-// Shared by the tracker export routes. An export is a flat list of issues, one per card:
+// Shared by the issue tracker export routes. An export is a flat list of issues, one per card:
 // { title, description, status, labels, points }. No epics, parent tasks or sections.
 
 import { sendSSE } from './http-helpers.js';

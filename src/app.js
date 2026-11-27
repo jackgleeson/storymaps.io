@@ -256,7 +256,7 @@ const initEventListeners = () => {
     document.querySelector('.welcome-integrations')?.addEventListener('click', (e) => {
         const btn = e.target.closest('.welcome-integration');
         if (!btn?.dataset.import) return;
-        // When the server has imports through tracker APIs turned off, offer the CSV import instead
+        // When the server has imports through issue tracker APIs turned off, offer the CSV import instead
         const importMap = document.documentElement.dataset.integrations === 'off' ? {
             jira: showJiraCsvImportModal,
             asana: showAsanaCsvImportModal,
@@ -807,7 +807,7 @@ const initEventListeners = () => {
     });
     dom.azureCsvImportCancel.addEventListener('click', confirmCloseAzureImportModal);
 
-    // Tracker exports: each menu item opens its own export window
+    // Issue tracker exports: each menu item opens its own export window
     [
         ['exportJiraBtn', 'jiraCsv'], ['exportJiraProxyBtn', 'jiraApi'],
         ['exportAsanaCsvBtn', 'asanaCsv'], ['exportAsanaProxyBtn', 'asanaApi'],

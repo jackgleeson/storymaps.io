@@ -64,7 +64,7 @@ const api = createLimiter(60, 60_000);
 // Backups have their own allowance. A map keeps only its newest few, so many requests can't fill the
 // disk, and the backup made before an import must not be refused for a class importing together.
 const backups = createLimiter(60, 60_000);
-// Locking and removing a lock refuse a wrong password, and the tracker routes call other services
+// Locking and removing a lock refuse a wrong password, and the issue tracker routes call other services
 // for the visitor, so these stay tight
 const proxy = createLimiter(10, 60_000);
 const passwordAttempts = createLimiter(10, 60_000);

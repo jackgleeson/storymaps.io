@@ -368,7 +368,7 @@ const withUndrawn = (drawnOrder, all) => {
 // cards move aside without sliding unless the map is at 100%. Set as a drag starts, as zoom changes.
 //
 // To slide cards aside, Sortable measures every card in the column on each move of the pointer, and
-// each measurement lays the page out again. On a story map of 1,750 cards, from a tracker import,
+// each measurement lays the page out again. On a story map of 1,750 cards, from an issue tracker import,
 // each move took seconds, and one of 400 cards already drags less smoothly than a small one. So a
 // story map of BIG_MAP_CARDS cards or more moves cards aside without sliding. Everything
 // smaller keeps the slide.

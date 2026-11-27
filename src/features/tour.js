@@ -1,6 +1,6 @@
 // Storymaps.io - AGPL-3.0 - see LICENCE for details
 // Guided tour module - spotlight + tooltip walkthrough
-// The tour itself is the list of steps below. Other guides, such as the one after a tracker
+// The tour itself is the list of steps below. Other guides, such as the one after an issue tracker
 // import (import-guide.js), run their own steps through runSteps and look the same.
 
 let _zoomToFit = null;

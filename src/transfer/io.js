@@ -77,7 +77,7 @@ export const init = (deps) => {
             if (isFromWelcome) {
                 _deps.subscribeToMap(state.mapId);
             }
-            // Every tracker import ends here, so the guide follows all of them
+            // Every issue tracker import ends here, so the guide follows all of them
             importGuide.start({ renderAndSave: _deps.renderAndSave });
         } catch (e) {
             console.error('Import failed', e);
