@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { arrivalHook, clickEvent, CLICKS, installsCli } from '../../src/features/analytics.js';
+import { arrivalHook, clickEvent, CLICKS, importStep, installsCli } from '../../src/features/analytics.js';
 import { readFileSync } from 'node:fs';
 
 test('the first hit uses the address the visitor arrived on, without a slice or card link', () => {
@@ -83,4 +83,27 @@ test('every button the table names by ID is on the page', () => {
   const ids = CLICKS.flatMap(([selector]) => selector.split(', ')).filter(s => s.startsWith('#')).map(s => s.slice(1));
   assert.ok(ids.length > 30);
   assert.deepEqual(ids.filter(id => !page.includes(`id="${id}"`)), []);
+});
+
+test('an issue tracker import reports the step to the review and the last click, by the way in', () => {
+  // Through the API: Fetch, then Import to Map
+  assert.equal(importStep('azureImportFetchBtn'), 'import-azure-devops-continued');
+  assert.equal(importStep('azureImportConfirmBtn'), 'import-azure-devops-confirmed');
+  // From a file: Continue, then Import to Map
+  assert.equal(importStep('azureCsvImportParseBtn'), 'import-azure-devops-csv-continued');
+  assert.equal(importStep('azureImportConfirmBtn'), 'import-azure-devops-csv-confirmed');
+  // Each issue tracker keeps its own way in
+  assert.equal(importStep('phabImportFetchBtn'), 'import-phabricator-continued');
+  assert.equal(importStep('azureImportConfirmBtn'), 'import-azure-devops-csv-confirmed');
+  assert.equal(importStep('phabImportConfirmBtn'), 'import-phabricator-confirmed');
+  assert.equal(importStep('somethingElseBtn'), null);
+
+  // Every import window in the page has the three buttons these names are built from
+  const html = readFileSync(new URL('../../public/index.html', import.meta.url), 'utf8');
+  for (const key of ['jira', 'asana', 'phab', 'linear', 'azure']) {
+    for (const id of [`${key}ImportFetchBtn`, `${key}CsvImportParseBtn`, `${key}ImportConfirmBtn`]) {
+      assert.ok(html.includes(`id="${id}"`), id);
+      assert.ok(importStep(id), id);
+    }
+  }
 });

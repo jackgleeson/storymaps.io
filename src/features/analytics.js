@@ -55,6 +55,9 @@ export const CLICKS = [
     ['#importAzureBtn', 'import-azure-devops'],
     ['#importAzureCsvBtn', 'import-azure-devops-csv'],
 
+    // Inside an issue tracker import window (the events above are for opening it)
+    ['[id$="ImportFetchBtn"], [id$="ImportParseBtn"], [id$="ImportConfirmBtn"]', (el) => importStep(el.id)],
+
     // Exports, on the button that does the export
     ['#exportCopyBtn, #exportDownloadBtn', 'export-json'],
     ['#exportYamlCopyBtn, #exportYamlDownloadBtn', 'export-yaml'],
@@ -83,6 +86,20 @@ export const CLICKS = [
     ['#buildAiBtn', 'build-with-ai'],
     ['#buildAiCopy', 'ai-prompt-copied'],
 ];
+
+// The steps inside an issue tracker import window. Fetch (through the API) and Continue (a file)
+// lead to the review step, and Import to Map is the last click. The last click has no way of its
+// own to tell a file from the API, so it is named after the way in that was clicked before it.
+const IMPORT_TRACKERS = { jira: 'jira', asana: 'asana', phab: 'phabricator', linear: 'linear', azure: 'azure-devops' };
+const _importRoute = {};
+export const importStep = (id) => {
+    const [, key, csv, step] = /^(jira|asana|phab|linear|azure)(Csv)?Import(Fetch|Parse|Confirm)Btn$/.exec(id || '') || [];
+    if (!key) return null;
+    const tracker = IMPORT_TRACKERS[key];
+    if (step === 'Confirm') return `import-${tracker}${_importRoute[tracker] || ''}-confirmed`;
+    _importRoute[tracker] = csv ? '-csv' : '';
+    return `import-${tracker}${_importRoute[tracker]}-continued`;
+};
 
 // The event for a click on this element, or null if it isn't one of the buttons above
 export const clickEvent = (target) => {
