@@ -57,6 +57,15 @@ describe('buildStorymapFromImport', () => {
     assert.deepEqual([...groupTags(groups, 'project').values()], ['COFFEE-3', 'ENG-12', 'T123', 'project-04']);
   });
 
+  test('a prefix says what the key is, and an item tag marks every issue in a group', () => {
+    const groups = [epic('T123', 'Parent', [story('T124', 'Child')]), epic(null, 'Other', [story('T125', 'Loose')])];
+    assert.deepEqual([...groupTags(groups, 'parent', 'epic').values()], ['epic-T123']);
+    groups.forEach(g => { g._included = true; g.stories.forEach(s => { s._included = true; }); });
+    groups[0].stories[0].labels = ['frontend'];
+    const map = buildStorymapFromImport(groups, 'Phab', () => '', { entityName: 'parent', tagPrefix: 'epic', itemTag: 'subtask' });
+    assert.deepEqual(cards(map).map(c => c.tags), [['epic-T123'], ['epic-T123', 'subtask', 'frontend'], undefined]);
+  });
+
   test('an unticked epic is left out but its ticked issues stay, still tagged', () => {
     const map = buildStorymapFromImport([
       epic('A-1', 'Dropped epic', [story('A-2', 'Kept'), story('A-3', 'Dropped', { _included: false })], { _included: false }),

@@ -246,7 +246,7 @@ const phabPreviewDomRefs = () => ({
 });
 
 // Resolved tasks start unticked: a Phabricator tag usually holds far more closed tasks than open ones
-const phabWords = { group: ['parent task', 'parent tasks'], item: ['task', 'tasks'], entityName: 'parent', defaultExcludedStatuses: ['done'] };
+const phabWords = { group: ['parent task', 'parent tasks'], item: ['task', 'tasks'], entityName: 'parent', tagPrefix: 'epic', itemTag: 'subtask', defaultExcludedStatuses: ['done'] };
 
 const phabUpdateCount = () => updateImportCount(phabImportState.epics, dom.phabImportCount, phabWords);
 

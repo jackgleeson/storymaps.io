@@ -45,6 +45,41 @@ export const saveDetail = (key, value, storage = globalThis.localStorage) => {
 
 const fieldsFor = (key) => DETAILS[key].map(id => document.getElementById(id)).filter(Boolean);
 
+// A link to a Phabricator project, such as https://phabricator.example.com/tag/my-project/, holds
+// both the site and a tag. Split it: the site alone, and the tag added to the tags already there.
+// Anything else returns null.
+export const splitPhabLink = (link, tags = '') => {
+    const text = String(link || '').trim();
+    const match = /^((?:https?:\/\/)?[^/\s]+)\/tag\/([^/?#\s]+)/i.exec(text);
+    if (!match) return null;
+    let tag = match[2];
+    try { tag = decodeURIComponent(tag); } catch { /* keep it as typed */ }
+    const have = String(tags || '').split(',').map(t => t.trim()).filter(Boolean);
+    if (!have.some(t => t.toLowerCase() === tag.toLowerCase())) have.push(tag);
+    return { instanceUrl: match[1], tags: have.join(', ') };
+};
+
+// When a project link is pasted into a Phabricator site field, or left there, move its tag into
+// the tags field of the same window
+const initPhabLinks = () => {
+    const sites = fieldsFor('phabricator.instanceUrl');
+    DETAILS['phabricator.instanceUrl'].forEach((id, i) => {
+        const site = document.getElementById(id);
+        const tags = document.getElementById(DETAILS['phabricator.tags'][i]);
+        if (!site || !tags || !sites.includes(site)) return;
+        const split = () => {
+            const parts = splitPhabLink(site.value, tags.value);
+            if (!parts) return;
+            site.value = parts.instanceUrl;
+            tags.value = parts.tags;
+            // Remembered and shown in the other windows, as if typed
+            [site, tags].forEach(field => field.dispatchEvent(new Event('input', { bubbles: true })));
+        };
+        site.addEventListener('paste', () => setTimeout(split));
+        site.addEventListener('change', split);
+    });
+};
+
 // Put the remembered details back into their fields
 export const fillTrackerDetails = () => {
     const details = loadDetails();
@@ -62,4 +97,5 @@ export const initTrackerDetails = () => {
             });
         });
     });
+    initPhabLinks();
 };

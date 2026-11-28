@@ -74,13 +74,14 @@ export const isGroup = (epic) => !!epic.key;
 
 // The tag is the group's own key when it reads like one (COFFEE-3, ENG-12, T123). Names can
 // be long, so a group whose key is just an ID is numbered instead: section-01, project-02.
+// With a prefix the key says what it is: epic-T123, so the tag is not read as the card's own ID.
 const looksLikeKey = (key) => /^[A-Za-z][A-Za-z0-9]*-?\d+$/.test(key);
-export const groupTags = (epics, entityName = DEFAULT_WORDS.entityName) => {
+export const groupTags = (epics, entityName = DEFAULT_WORDS.entityName, tagPrefix = '') => {
     const tags = new Map();
     let n = 0;
     epics.filter(isGroup).forEach(epic => {
         n++;
-        tags.set(epic, looksLikeKey(epic.key) ? epic.key : `${entityName}-${String(n).padStart(2, '0')}`);
+        tags.set(epic, looksLikeKey(epic.key) ? `${tagPrefix ? tagPrefix + '-' : ''}${epic.key}` : `${entityName}-${String(n).padStart(2, '0')}`);
     });
     return tags;
 };
@@ -175,7 +176,7 @@ export const renderImportPreview = (epics, projectKey, domRefs, updateCountFn, o
     const statusNames = { ...STATUS_NAMES, ...opts.statusNames };
     const ordered = groupsFirst(epics);
     const groups = ordered.filter(isGroup);
-    const tags = groupTags(epics, words.entityName);
+    const tags = groupTags(epics, words.entityName, words.tagPrefix);
     const items = ordered.flatMap(epic => epic.stories);
     const excludedStatuses = new Set(opts.defaultExcludedStatuses || []);
 
@@ -660,7 +661,7 @@ const ITEM_COLOR = CARD_COLORS.yellow;
 // no group come last, with no tag. The legend says which colour is which.
 export const buildStorymapFromImport = (epics, projectName, buildUrlFn, opts = {}) => {
     const words = wordsFor(opts);
-    const tags = groupTags(epics, words.entityName);
+    const tags = groupTags(epics, words.entityName, words.tagPrefix);
     const allCards = [];
     let groupCards = 0;
 
@@ -684,7 +685,8 @@ export const buildStorymapFromImport = (epics, projectName, buildUrlFn, opts = {
         epic.stories.forEach(story => {
             if (!story._included) return;
             const card = { name: story.summary };
-            const cardTags = [...(tag ? [tag] : []), ...(story.labels || [])];
+            // An import can also tag every issue in a group with what it is, such as subtask
+            const cardTags = [...(tag ? [tag] : []), ...(tag && words.itemTag ? [words.itemTag] : []), ...(story.labels || [])];
             if (cardTags.length) card.tags = cardTags;
             allCards.push(fill(card, story));
         });

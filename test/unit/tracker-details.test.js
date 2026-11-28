@@ -67,3 +67,14 @@ describe('remembered tracker details', () => {
     assert.deepEqual(loadDetails(fakeStorage({ trackerDetails: '[1,2]' })), {});
   });
 });
+
+test('a Phabricator project link is split into the site and its tag', async () => {
+  const { splitPhabLink } = await import('/src/transfer/tracker-details.js');
+  assert.deepEqual(splitPhabLink('https://phabricator.example.org/tag/my-project/'), { instanceUrl: 'https://phabricator.example.org', tags: 'my-project' });
+  assert.deepEqual(splitPhabLink('phabricator.example.org/tag/my-project', 'other'), { instanceUrl: 'phabricator.example.org', tags: 'other, my-project' });
+  assert.deepEqual(splitPhabLink('https://phabricator.example.org/tag/My-Project/board/?x=1', 'my-project, other').tags, 'my-project, other');
+  assert.deepEqual(splitPhabLink('https://phabricator.example.org/tag/caf%C3%A9/').tags, 'café');
+  assert.equal(splitPhabLink('https://phabricator.example.org'), null);
+  assert.equal(splitPhabLink('https://phabricator.example.org/T123'), null);
+  assert.equal(splitPhabLink(''), null);
+});

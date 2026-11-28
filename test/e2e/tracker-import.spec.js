@@ -257,6 +257,35 @@ test('tracker details are remembered in the browser for next time, but never the
   expect(JSON.parse(await page.evaluate(() => localStorage.getItem('trackerDetails')))).toEqual({ 'jira.instanceUrl': 'acme.atlassian.net', 'jira.projectKey': 'SHOP' });
 });
 
+test('a Phabricator project link in the site field is split into the site and its tag', async ({ page, createMap }) => {
+  await openMap(page, await createMap());
+  await page.locator('#menuBtn').click();
+  await page.locator('#importSubmenuTrigger').click();
+  await page.locator('#importSubmenu [data-integration="phabricator"]').click();
+  await page.locator('#importPhabBtn').click();
+  await page.locator('#phabImportProjectTags').fill('other-tag');
+
+  // Pasted
+  await page.locator('#phabImportInstanceUrl').focus();
+  await page.evaluate(() => {
+    const field = document.getElementById('phabImportInstanceUrl');
+    field.value = 'https://phabricator.example.org/tag/my-project/';
+    field.dispatchEvent(new Event('paste', { bubbles: true }));
+  });
+  await expect(page.locator('#phabImportInstanceUrl')).toHaveValue('https://phabricator.example.org');
+  await expect(page.locator('#phabImportProjectTags')).toHaveValue('other-tag, my-project');
+
+  // Typed, then left: the same tag is not added twice
+  await page.locator('#phabImportInstanceUrl').fill('phabricator.example.org/tag/my-project');
+  await page.locator('#phabImportToken').focus();
+  await expect(page.locator('#phabImportInstanceUrl')).toHaveValue('phabricator.example.org');
+  await expect(page.locator('#phabImportProjectTags')).toHaveValue('other-tag, my-project');
+
+  // Remembered, and shown in the export window too
+  expect(JSON.parse(await page.evaluate(() => localStorage.getItem('trackerDetails')))).toEqual({ 'phabricator.instanceUrl': 'phabricator.example.org', 'phabricator.tags': 'other-tag, my-project' });
+  await expect(page.locator('#phabProxyTags')).toHaveValue('other-tag, my-project');
+});
+
 // After any tracker import a guide lights one thing at a time, like the tour: the backbone
 // first, then the cards.
 const guide = (page) => page.locator('#tourTooltip');
