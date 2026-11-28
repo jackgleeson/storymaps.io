@@ -197,6 +197,27 @@ test('changing the colour of an open card changes the card and keeps the text ne
   expect(await colours(page)).toEqual({ backdrop: BACKDROP, card: 'rgb(147, 197, 253)', title: NEAR_BLACK, body: NEAR_BLACK });
 });
 
+test('a user card holds a colour only when it is given one other than the colour of its row', async ({ page, createMap, pullMap }) => {
+  const id = await createMap('name: Users\nsteps:\n  - Browse\nusers:\n  - name: Home cook\n    step: Browse\nslices:\n  - name: MVP\n    stories:\n      Browse:\n        - name: One\n');
+  await openMap(page, id, 1);
+  const card = page.locator('.users-row .story-card').first();
+  await expect(card).toHaveCSS('background-color', 'rgb(252, 165, 165)');
+  await expect(page.locator('.step').first()).toHaveCSS('background-color', 'rgb(134, 239, 172)');
+  await openCard(card);
+  await page.locator('#cardExpandFooter .card-expand-toggle').click();
+  await expect(page.locator('.card-expand-swatch.selected')).toHaveAttribute('title', /red/);
+
+  await page.locator('.card-expand-swatch[title*="lime"]').click();
+  await expect(card).toHaveCSS('background-color', 'rgb(190, 242, 100)');
+  await expect.poll(async () => (await pullMap(id)).users[0][0].color).toBe('#bef264');
+
+  // Back to the row colour: nothing is stored
+  await page.locator('.card-expand-swatch[title*="red"]').click();
+  await expect(card).toHaveCSS('background-color', 'rgb(252, 165, 165)');
+  await expect.poll(async () => (await pullMap(id)).users[0][0].color).toBe(undefined);
+  expect((await pullMap(id)).steps[0].color).toBe(undefined);
+});
+
 test('placeholder text is clearly fainter than real text', async ({ page, createMap }) => {
   await openMap(page, await createMap());
   await openCard(page.locator('.slice-container .story-card').first());

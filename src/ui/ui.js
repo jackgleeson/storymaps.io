@@ -1,9 +1,9 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // UI component builders
 
-import { CARD_COLORS, DEFAULT_CARD_COLORS, STATUS_OPTIONS, TITLE_MAX_LENGTH, el, isValidUrl } from '/src/core/constants.js';
+import { CARD_COLORS, DEFAULT_CARD_COLORS, STATUS_OPTIONS, TITLE_MAX_LENGTH, el, isValidUrl, ownColor } from '/src/core/constants.js';
 import { standIn, signed, resign, unsettle, keyed, leaf } from '/src/ui/keep.js';
-import { createSlice, partialMapEditState } from '/src/core/state.js';
+import { createSlice, partialMapEditState, rowOf, shownColorOf } from '/src/core/state.js';
 import { showAlert, showChoice, showConfirm, showPrompt } from '/src/core/modals.js';
 import { quoted } from '/src/core/log.js';
 import { copySliceLink, createSliceInfo, openSliceDetails, setSliceNameText } from '/src/features/slice-links.js';
@@ -481,7 +481,7 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
         colorOption.appendChild(el('span', null, { text: 'Color' }));
         const colorSwatches = el('div', 'color-swatches');
         colorSwatches.addEventListener('click', (e) => e.stopPropagation());
-        const itemColor = item.color?.toLowerCase();
+        const itemColor = shownColorOf(item).toLowerCase();
         Object.entries(colors).forEach(([name, hex]) => {
             const swatch = el('button', 'color-swatch', { title: name });
             swatch.style.backgroundColor = hex;
@@ -643,7 +643,7 @@ export const createOptionsMenu = (item, colors, onDelete, deleteMessage, onColor
     // Swatches are marked when the menu is built, but status, colour and points changes patch the
     // card without rebuilding it, so refresh the marks from the item each time the menu opens
     const syncSelection = () => {
-        const color = item.color?.toLowerCase();
+        const color = shownColorOf(item).toLowerCase();
         menu.querySelectorAll('.color-swatch').forEach(s => s.classList.toggle('selected', s.dataset.color === color));
         menu.querySelectorAll('.status-swatch').forEach(s => s.classList.toggle('selected', s.dataset.status === (item.status || '')));
         pointsInput.value = item.points != null ? item.points : '';
@@ -775,7 +775,7 @@ const createColumnPlaceholder = (column) => {
 
     placeholder.addEventListener('click', () => {
         column.hidden = false;
-        column.color = CARD_COLORS.green;
+        column.color = null;
         _renderAndSave();
     });
 
@@ -1094,7 +1094,7 @@ export const createColumnCard = (column) => {
         null,
         (color) => {
             _pushUndo();
-            column.color = color;
+            column.color = ownColor(color, 'step');
             patchCard(card, column);
             _saveToStorage();
         },
@@ -1173,7 +1173,7 @@ export const createStoryCard = (story, columnId, sliceId, isBackboneRow = false,
         deleteMessage,
         (color) => {
             _pushUndo();
-            story.color = color;
+            story.color = ownColor(color, rowOf(story));
             patchCard(card, story);
             _saveToStorage();
         },

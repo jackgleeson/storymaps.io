@@ -1,7 +1,7 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Yjs document management, CRDT helpers, sync
 
-import { CARD_COLORS, copySliceDetails } from '/src/core/constants.js';
+import { CARD_COLORS, copySliceDetails, ownColor } from '/src/core/constants.js';
 import { heldObjects, keepHeldObjects } from '/src/core/keep-objects.js';
 
 let _state = null;
@@ -232,13 +232,21 @@ const uniqueById = (items) => {
 
 const readCardsFromYjs = (cards) => Array.isArray(cards) ? uniqueById(cards.map(cardFromYjs)) : [];
 
-const readBackboneRowFromYjs = (yRow) => {
+// Users, activities and steps take the colour of their row and hold none of their own unless it
+// differs. Maps saved before that rule hold the row colour on every such card, so it is dropped
+// as the map is read, and leaves the saved map the next time the card is saved.
+const withoutRowColor = (cards, row) => {
+    (cards || []).forEach(card => { if (card) card.color = ownColor(card.color, row); });
+    return cards;
+};
+
+const readBackboneRowFromYjs = (yRow, row) => {
     const cardMap = {};
     if (!yRow) return cardMap;
     const rowData = typeof yRow.toJSON === 'function' ? yRow.toJSON() : yRow;
     if (typeof rowData === 'object' && rowData !== null) {
         for (const [colId, cards] of Object.entries(rowData)) {
-            cardMap[colId] = readCardsFromYjs(cards);
+            cardMap[colId] = withoutRowColor(readCardsFromYjs(cards), row);
         }
     }
     return cardMap;
@@ -256,18 +264,18 @@ export const syncFromYjs = () => {
     if (yColumns) {
         const columnsData = typeof yColumns.toJSON === 'function' ? yColumns.toJSON() : yColumns;
         if (Array.isArray(columnsData)) {
-            _state.columns = uniqueById(columnsData.map(cardFromYjs));
+            _state.columns = withoutRowColor(uniqueById(columnsData.map(cardFromYjs)), 'step');
         }
     }
 
     // Read users/activities from their own Yjs maps
     const yUsers = ymap.get('users');
     if (yUsers) {
-        _state.users = readBackboneRowFromYjs(yUsers);
+        _state.users = readBackboneRowFromYjs(yUsers, 'users');
     }
     const yActivities = ymap.get('activities');
     if (yActivities) {
-        _state.activities = readBackboneRowFromYjs(yActivities);
+        _state.activities = readBackboneRowFromYjs(yActivities, 'activities');
     }
 
     // Ensure all columns have entries
@@ -292,12 +300,12 @@ export const syncFromYjs = () => {
                     if (sliceData.rowType === 'Users') {
                         _state.columns.forEach(col => {
                             const columnStories = storiesData[col.id];
-                            _state.users[col.id] = readCardsFromYjs(columnStories);
+                            _state.users[col.id] = withoutRowColor(readCardsFromYjs(columnStories), 'users');
                         });
                     } else if (sliceData.rowType === 'Activities') {
                         _state.columns.forEach(col => {
                             const columnStories = storiesData[col.id];
-                            _state.activities[col.id] = readCardsFromYjs(columnStories);
+                            _state.activities[col.id] = withoutRowColor(readCardsFromYjs(columnStories), 'activities');
                         });
                     } else {
                         releaseSlices.push(sliceData);
@@ -361,7 +369,14 @@ export const syncFromYjs = () => {
     if (yPartialMaps) {
         try {
             const pmData = typeof yPartialMaps === 'string' ? JSON.parse(yPartialMaps) : yPartialMaps;
-            if (Array.isArray(pmData)) _state.partialMaps = pmData;
+            if (Array.isArray(pmData)) {
+                pmData.forEach(pm => {
+                    withoutRowColor(pm?.columns, 'step');
+                    Object.values(pm?.users || {}).forEach(cards => withoutRowColor(cards, 'users'));
+                    Object.values(pm?.activities || {}).forEach(cards => withoutRowColor(cards, 'activities'));
+                });
+                _state.partialMaps = pmData;
+            }
         } catch { /* ignore parse errors */ }
     }
 

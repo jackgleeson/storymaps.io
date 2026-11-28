@@ -4,7 +4,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 export const fullMap = () => ({
   name: 'Coffee app',
   steps: [
-    { name: 'Browse', body: 'The menu', color: '#86efac', url: 'https://example.com/browse', status: 'done', points: 3, tags: ['ux'] },
+    { name: 'Browse', body: 'The menu', color: '#fecdd3', url: 'https://example.com/browse', status: 'done', points: 3, tags: ['ux'] },
     { name: 'Order', hidden: true },
     { partialMapId: 'pm000001', partialMapOrigin: true },
   ],

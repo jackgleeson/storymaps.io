@@ -17,7 +17,7 @@ export const materializePhantomColumn = (phantomIndex = 0) => {
     let targetColumn = null;
     for (let i = 0; i <= phantomIndex; i++) {
         const hidden = i < phantomIndex;
-        const column = createColumn('', CARD_COLORS.green, null, hidden);
+        const column = createColumn('', null, null, hidden);
         state.columns.push(column);
         state.users[column.id] = [];
         state.activities[column.id] = [];
@@ -275,7 +275,7 @@ export const deletePartialMap = (partialMapId) => {
 
     // Ensure at least one column remains
     if (state.columns.length === 0) {
-        const col = createColumn('New Step', CARD_COLORS.green, null, false);
+        const col = createColumn('New Step', null, null, false);
         state.columns.push(col);
         state.users[col.id] = [];
         state.activities[col.id] = [];

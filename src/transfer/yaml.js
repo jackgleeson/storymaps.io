@@ -453,9 +453,11 @@ export function yamlObjToJson(obj) {
         }
         const rawName = typeof step === 'string' ? step : String(step?.name ?? '');
         const displayName = rawName.replace(/:\[\d+\]\s*/, ': ').replace(/\[\d+\]$/, '');
-        const color = typeof step === 'string' ? DEFAULT_STEP_COLOR : (step.color || DEFAULT_STEP_COLOR);
+        // A step is green unless it is given another colour, so green is never written
+        const color = typeof step === 'string' ? null : step?.color;
         stepNameToIndex[rawName] = jsonSteps.length;
-        const s = { name: displayName, color };
+        const s = { name: displayName };
+        if (color && String(color).toLowerCase() !== DEFAULT_STEP_COLOR) s.color = color;
         if (typeof step === 'object' && step !== null) {
             if (step.body) s.body = step.body;
             if (step.url) s.url = step.url;
@@ -501,7 +503,7 @@ export function yamlObjToJson(obj) {
     const jsonPartialMaps = [];
     for (const [slug, def] of Object.entries(yamlPartials)) {
         const pmNames = def.steps || [];
-        const pmSteps = pmNames.map(name => ({ name, color: DEFAULT_STEP_COLOR }));
+        const pmSteps = pmNames.map(name => ({ name }));
         const pmN = pmSteps.length;
         const pmIdx = {};
         pmNames.forEach((name, i) => { pmIdx[name] = i; });
@@ -596,11 +598,11 @@ function cardToYaml(card) {
     return obj;
 }
 
-// A user or activity card with no colour gets the colour of its row, as a card added in the app does
-function cardToJson(card, defaultColor = null) {
+// A user or activity card takes the colour of its row, so that colour is never written
+function cardToJson(card, rowColor = null) {
     const obj = { name: card.name || '' };
     if (card.body) obj.body = card.body;
-    if (card.color || defaultColor) obj.color = card.color || defaultColor;
+    if (card.color && String(card.color).toLowerCase() !== rowColor) obj.color = card.color;
     if (card.url) obj.url = card.url;
     if (card.status) obj.status = card.status;
     if (card.points != null) obj.points = card.points;

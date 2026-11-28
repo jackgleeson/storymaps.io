@@ -7,10 +7,14 @@ const DEFAULT_STEP_COLOR = '#86efac';
 const DEFAULT_STORY_COLOR = '#fef08a';
 const DEFAULT_USER_COLOR = '#fca5a5';
 const DEFAULT_ACTIVITY_COLOR = '#93c5fd';
-// A user or activity card in the colour of its row is written without it, as steps and tasks are.
-// A card with no name keeps it, or its cell would be empty and the card lost.
-const withoutRowColor = (card, rowColor) =>
-    card.name && card.color && card.color.toLowerCase() === rowColor ? { ...card, color: null } : card;
+// A user or activity card takes the colour of its row, so that colour is not written. A card
+// with no name is the exception: its colour is written, or its cell would be empty and the card lost.
+const withoutRowColor = (card, rowColor) => {
+    if (!card.name) return { ...card, color: card.color || rowColor };
+    return card.color && card.color.toLowerCase() === rowColor ? { ...card, color: null } : card;
+};
+// Read back in, the row colour is dropped again
+const ownColor = (color, rowColor) => (color && color.toLowerCase() !== rowColor ? color : null);
 const VALID_STATUSES = new Set(['done', 'in-progress', 'planned', 'blocked']);
 const VALID_CLOSED_REASONS = new Set(['complete', 'closed']);
 
@@ -542,7 +546,7 @@ export function importFromCsv(csvString) {
         if (!raw) {
             prevPartialSlug = null;
             const stepIdx = jsonSteps.length;
-            jsonSteps.push({ name: '', color: DEFAULT_STEP_COLOR, hidden: true });
+            jsonSteps.push({ name: '', hidden: true });
             stepColMap.set(col, stepIdx);
             return;
         }
@@ -583,7 +587,8 @@ export function importFromCsv(csvString) {
             if (realName.startsWith('step:')) realName = realName.slice(5);
 
             const stepIdx = jsonSteps.length;
-            const step = { name: realName, color: parsed.color || DEFAULT_STEP_COLOR };
+            const step = { name: realName };
+            if (ownColor(parsed.color, DEFAULT_STEP_COLOR)) step.color = parsed.color;
             if (parsed.status) step.status = parsed.status;
             if (parsed.points != null) step.points = parsed.points;
             if (parsed.tags?.length) step.tags = parsed.tags;
@@ -607,7 +612,8 @@ export function importFromCsv(csvString) {
             const parsed = parseInlineNotation(cardText);
             const stepIdx = stepColMap.get(c);
             if (stepIdx != null) {
-                const card = { name: parsed.name, color: parsed.color || DEFAULT_USER_COLOR };
+                const card = { name: parsed.name };
+                if (ownColor(parsed.color, DEFAULT_USER_COLOR)) card.color = parsed.color;
                 if (parsed.status) card.status = parsed.status;
                 if (parsed.points != null) card.points = parsed.points;
                 if (parsed.tags?.length) card.tags = parsed.tags;
@@ -629,7 +635,8 @@ export function importFromCsv(csvString) {
             const parsed = parseInlineNotation(cardText);
             const stepIdx = stepColMap.get(c);
             if (stepIdx != null) {
-                const card = { name: parsed.name, color: parsed.color || DEFAULT_ACTIVITY_COLOR };
+                const card = { name: parsed.name };
+                if (ownColor(parsed.color, DEFAULT_ACTIVITY_COLOR)) card.color = parsed.color;
                 if (parsed.status) card.status = parsed.status;
                 if (parsed.points != null) card.points = parsed.points;
                 if (parsed.tags?.length) card.tags = parsed.tags;
@@ -683,7 +690,7 @@ export function importFromCsv(csvString) {
     // Build partial maps
     const jsonPartialMaps = [];
     for (const [slug, def] of Object.entries(partialDefs)) {
-        const pmSteps = def.stepNames.map(name => ({ name, color: DEFAULT_STEP_COLOR }));
+        const pmSteps = def.stepNames.map(name => ({ name }));
         const pmN = pmSteps.length;
         const pmUsers = Array.from({ length: pmN }, () => []);
         const pmActivities = Array.from({ length: pmN }, () => []);

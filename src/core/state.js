@@ -1,7 +1,7 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // State management, undo/redo, and factory functions
 
-import { generateId, CARD_COLORS } from '/src/core/constants.js';
+import { generateId, CARD_COLORS, rowColor } from '/src/core/constants.js';
 import { showConfirm } from '/src/core/modals.js';
 import { heldObjects, keepHeldObjects } from '/src/core/keep-objects.js';
 
@@ -275,15 +275,15 @@ const highlightChangedElements = (changes) => {
 export const STARTER_NAMES = new Set(['User Type', 'New Activity', 'New Step', 'New Task', 'New Task or Detail']);
 
 export const initState = () => {
-    const column = createColumn('New Step', CARD_COLORS.green, null, false);
+    const column = createColumn('New Step');
     state.name = '';
     state.columns = [column];
     state.partialMaps = [];
     partialMapEditState.activeId = null;
     partialMapEditState.expandedIds.clear();
     partialMapEditState.editingColIds.clear();
-    state.users = { [column.id]: [createStory('User Type', '#fca5a5')] };
-    state.activities = { [column.id]: [createStory('New Activity', '#93c5fd')] };
+    state.users = { [column.id]: [createStory('User Type')] };
+    state.activities = { [column.id]: [createStory('New Activity')] };
     state.legend = [
         { id: generateId(), color: CARD_COLORS.yellow, label: 'Tasks' },
         { id: generateId(), color: CARD_COLORS.cyan, label: 'Notes' },
@@ -347,6 +347,22 @@ export const isUntouched = () => {
 export const confirmOverwrite = async () => {
     return !hasContent() || isUntouched() || await showConfirm('This will replace your current story map. Continue?\n\nIf a backup of it doesn\'t already exist, an automatic one will be created, so you can undo the import from Menu → Backups.');
 };
+
+// Which row each card and step is in, by ID: 'users', 'activities' or 'step'. Anything not listed
+// is a task. Partial maps have the same three rows.
+export const rowsById = () => {
+    const rows = new Map();
+    const add = (cardMap, row) => Object.values(cardMap || {}).forEach(cards => (cards || []).forEach(card => rows.set(card.id, row)));
+    [state, ...(state.partialMaps || [])].forEach(map => {
+        (map.columns || []).forEach(column => rows.set(column.id, 'step'));
+        add(map.users, 'users');
+        add(map.activities, 'activities');
+    });
+    return rows;
+};
+export const rowOf = (item, rows = rowsById()) => rows.get(item?.id) || 'story';
+// The colour a card or step is drawn in: its own, or the colour of its row
+export const shownColorOf = (item, rows) => item?.color || rowColor(rowOf(item, rows));
 
 export const createColumn = (name = '', color = null, url = null, hidden = false, status = null, points = null, tags = [], body = '') => ({ id: generateId(), name, body, color, url, hidden, status, points, tags });
 export const createRefColumn = (partialMapId, origin = true) => ({ id: generateId(), name: '', body: '', color: null, url: null, hidden: false, status: null, points: null, tags: [], partialMapId, partialMapOrigin: origin });

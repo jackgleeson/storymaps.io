@@ -177,6 +177,30 @@ describe('reading from the shared document', () => {
     assert.deepEqual(exported(a), fullMap());
   });
 
+  test('a row colour saved by an older version is dropped when read, and leaves the saved map on the next save', async () => {
+    const serverDoc = new Y.Doc();
+    writeDocFromJson(serverDoc, { name: 'x', steps: [{ name: 'Browse' }], users: [[{ name: 'Customer' }, { name: 'Barista', color: '#bef264' }]], activities: [[{ name: 'Order' }]], slices: [{ name: 'MVP', stories: [[{ name: 'List' }]] }] }, Y);
+    const ymap = serverDoc.getMap('storymap');
+    ymap.get('columns').get(0).set('color', '#86efac');
+    ymap.get('users').forEach(cards => cards.get(0).set('color', '#fca5a5'));
+    ymap.get('activities').forEach(cards => cards.get(0).set('color', '#93c5fd'));
+
+    const a = await makeClient();
+    Y.applyUpdate(a.doc, Y.encodeStateAsUpdate(serverDoc), 'remote');
+    a.yjs.syncFromYjs();
+    const [col] = a.state.columns;
+    assert.equal(col.color, null);
+    assert.deepEqual(a.state.users[col.id].map(c => c.color), [null, '#bef264']);
+    assert.equal(a.state.activities[col.id][0].color, null);
+
+    a.state.name = 'renamed';
+    a.yjs.syncToYjs();
+    const saved = a.doc.getMap('storymap').toJSON();
+    assert.ok(!saved.columns[0].color);
+    assert.deepEqual(Object.values(saved.users)[0].map(c => c.color), [undefined, '#bef264']);
+    assert.equal(Object.values(saved.activities)[0][0].color, undefined);
+  });
+
   test('reports no change when nothing changed', async () => {
     const a = await makeClient();
     load(a, smallMap());

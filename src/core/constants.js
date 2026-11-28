@@ -90,7 +90,23 @@ export const CARD_COLORS = {
 export const DEFAULT_CARD_COLORS = {
     Users: '#fca5a5',       // red
     Activities: '#93c5fd',  // blue
+    Steps: '#86efac',       // green
     story: '#fef08a'        // yellow
+};
+
+// Users, activities and steps take the colour of their row. A card in one of those rows holds a
+// colour of its own only when it was given a different one, so nothing stores the row colour:
+// not the map as the app holds it, the saved map, or any export.
+export const ROW_COLORS = { users: DEFAULT_CARD_COLORS.Users, activities: DEFAULT_CARD_COLORS.Activities, step: DEFAULT_CARD_COLORS.Steps };
+
+// The colour a card in this row ('users', 'activities', 'step', anything else is a task) is drawn in
+export const rowColor = (row) => ROW_COLORS[row] || DEFAULT_CARD_COLORS.story;
+export const shownColor = (card, row) => card?.color || rowColor(row);
+
+// The colour to store for a card in this row: nothing when it is the row colour
+export const ownColor = (color, row) => {
+    if (!color) return null;
+    return ROW_COLORS[row] && String(color).toLowerCase() === ROW_COLORS[row] ? null : color;
 };
 
 export const STATUS_OPTIONS = {

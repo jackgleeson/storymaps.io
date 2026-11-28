@@ -89,8 +89,8 @@ describe('CSV round trip', () => {
       { name: '', hidden: true },
       { name: 'Order' },
     ],
-    users: [[{ name: 'Customer', color: '#fca5a5' }], [], []],
-    activities: [[{ name: 'Find a drink', status: 'planned', color: '#93c5fd' }], [], [{ name: 'Pay', url: 'https://example.com/pay', color: '#93c5fd' }]],
+    users: [[{ name: 'Customer' }], [], []],
+    activities: [[{ name: 'Find a drink', status: 'planned' }], [], [{ name: 'Pay', url: 'https://example.com/pay' }]],
     slices: [{
       name: 'MVP',
       stories: [
@@ -118,12 +118,16 @@ describe('CSV round trip', () => {
     assert.deepEqual(out.slices[0].stories, csvMap().slices[0].stories);
   });
 
-  test('the colour of the row is left out of the CSV and comes back on import', () => {
-    const csv = exportToCsv(csvMap());
-    assert.ok(!/fca5a5|93c5fd/i.test(csv));
-    const out = importFromCsv(csv);
-    assert.equal(out.users[0][0].color, '#fca5a5');
-    assert.equal(out.activities[2][0].color, '#93c5fd');
+  test('the colour of a row is never written, and is dropped when a file lists it', () => {
+    const map = csvMap();
+    map.users[0][0].color = '#fca5a5';
+    map.activities[2][0].color = '#93C5FD';
+    map.steps[2].color = '#86efac';
+    const csv = exportToCsv(map);
+    assert.ok(!/fca5a5|93c5fd|86efac/i.test(csv));
+    const listed = importFromCsv(csv.replace('Customer', 'Customer [color:#fca5a5]'));
+    assert.equal(listed.users[0][0].color, undefined);
+    assert.equal(listed.steps[2].color, undefined);
   });
 
   test('keeps the legend and notes', () => {

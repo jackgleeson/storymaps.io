@@ -1,9 +1,9 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Rendering and state mutations
 
-import { el, escHtml, DEFAULT_CARD_COLORS, CARD_COLORS, STATUS_OPTIONS, generateId } from '/src/core/constants.js';
+import { el, escHtml, DEFAULT_CARD_COLORS, CARD_COLORS, STATUS_OPTIONS, generateId, ownColor } from '/src/core/constants.js';
 import { createColumnCard, createStoryCard, createStoryColumn, createSliceContainer, createBackboneRow, createEmptyBackboneRow, createPhantomStep, PHANTOM_BUFFER, renderLegend as uiRenderLegend, getAllTagsInMap, markLegendSwatch, createPartialMapRef, createPartialMapRefCell, renderPartialsList as uiRenderPartialsList, patchCard } from '/src/ui/ui.js';
-import { partialMapEditState } from '/src/core/state.js';
+import { partialMapEditState, rowsById, rowOf, shownColorOf } from '/src/core/state.js';
 import { showAlert, showConfirm, showPrompt } from '/src/core/modals.js';
 import { quoted } from '/src/core/log.js';
 import { openSliceDetails } from '/src/features/slice-links.js';
@@ -682,7 +682,7 @@ export const initSortable = async () => {
                         const slice = _state.slices.find(s => s.id === sliceId);
                         story = slice?.stories[columnId]?.find(s => s.id === storyId);
                     }
-                    _broadcastDragStart({ type: 'story', storyId, color: story?.color || '#fef08a' });
+                    _broadcastDragStart({ type: 'story', storyId, color: shownColorOf(story) });
                 }
             },
             onEnd: (evt) => afterDrag(() => {
@@ -1091,13 +1091,13 @@ export const updateSelectionUI = () => {
         ], onColumnModeChange));
 
         // Detect common color/status across selected cards
+        const rows = rowsById();
         const selectedColors = new Set();
         const selectedStatuses = new Set();
         for (const card of selection.clickedCards) {
             const item = getItemForCard(card);
             if (item) {
-                const defaultColor = card.type === 'step' ? DEFAULT_CARD_COLORS.Activities : DEFAULT_CARD_COLORS.story;
-                selectedColors.add(item.color || defaultColor);
+                selectedColors.add(shownColorOf(item, rows));
                 selectedStatuses.add(item.status || null);
             }
         }
@@ -1502,7 +1502,7 @@ export const deleteSelectedColumns = async () => {
 
     // Ensure at least one column remains
     if (_state.columns.filter(c => !c.partialMapId).length === 0) {
-        const col = _createColumn('New Step', CARD_COLORS.green, null, false);
+        const col = _createColumn('New Step', null, null, false);
         _state.columns.push(col);
         _state.users[col.id] = [];
         _state.activities[col.id] = [];
@@ -1583,10 +1583,11 @@ const bulkChangeColor = (color) => {
     _pushUndo();
     const n = selection.clickedCards.length;
     const ids = getSelectedIds();
+    const rows = rowsById();
     for (const card of selection.clickedCards) {
         const item = getItemForCard(card);
         if (item) {
-            item.color = color;
+            item.color = ownColor(color, rowOf(item, rows));
             const domEl = card.type === 'step'
                 ? _dom.storyMap.querySelector(`.step[data-column-id="${card.columnId}"]`)
                 : _dom.storyMap.querySelector(`.story-card[data-story-id="${card.storyId}"]`);
@@ -1663,7 +1664,7 @@ const focusLastElement = (selector, textareaClass) => {
 
 export const addColumn = (hidden = true) => {
     _pushUndo();
-    const column = _createColumn('', CARD_COLORS.green, null, hidden);
+    const column = _createColumn('', null, null, hidden);
     _state.columns.push(column);
     _state.users[column.id] = [];
     _state.activities[column.id] = [];
@@ -1684,7 +1685,7 @@ export const addColumn = (hidden = true) => {
 
 export const addColumnAt = (index, hidden = false) => {
     _pushUndo();
-    const column = _createColumn('', CARD_COLORS.green, null, hidden);
+    const column = _createColumn('', null, null, hidden);
     _state.columns.splice(index, 0, column);
     _state.users[column.id] = [];
     _state.activities[column.id] = [];
@@ -1712,12 +1713,12 @@ export const addStory = (columnId, sliceId, rowType = null, { skipFocus = false 
 
     if (rowType === 'users') {
         _state.users[columnId] = _state.users[columnId] || [];
-        color = DEFAULT_CARD_COLORS.Users;
+        color = null;
         _state.users[columnId].push(_createStory('', color));
         storiesArray = _state.users[columnId];
     } else if (rowType === 'activities') {
         _state.activities[columnId] = _state.activities[columnId] || [];
-        color = DEFAULT_CARD_COLORS.Activities;
+        color = null;
         _state.activities[columnId].push(_createStory('', color));
         storiesArray = _state.activities[columnId];
     } else {

@@ -2,8 +2,8 @@
 // Search and filter panel
 
 import { dom } from '/src/ui/dom.js';
-import { state } from '/src/core/state.js';
-import { el, CARD_COLORS, DEFAULT_CARD_COLORS, STATUS_OPTIONS } from '/src/core/constants.js';
+import { state, rowsById, shownColorOf } from '/src/core/state.js';
+import { el, CARD_COLORS, STATUS_OPTIONS, rowColor } from '/src/core/constants.js';
 import { getAllTagsInMap, markLegendSwatch } from '/src/ui/ui.js';
 
 let searchDebounceTimer = null;
@@ -78,14 +78,15 @@ export const getItemForStoryCard = (card) => {
     return undefined;
 };
 
-export const itemMatchesFilters = (item) => {
+// rows is the lookup from rowsById(), passed in when many cards are checked in one go
+export const itemMatchesFilters = (item, rows) => {
     if (!item) return false;
     if (filterState.statuses.size > 0) {
         const itemStatus = item.status || 'none';
         if (!filterState.statuses.has(itemStatus)) return false;
     }
     if (filterState.colors.size > 0) {
-        const itemColor = (item.color || DEFAULT_CARD_COLORS.story).toLowerCase();
+        const itemColor = shownColorOf(item, rows).toLowerCase();
         if (!filterState.colors.has(itemColor)) return false;
     }
     if (filterState.tags.size > 0) {
@@ -101,12 +102,13 @@ export const applySearchFilter = (query) => {
     const filtering = hasActiveFilters();
 
     if (!q && !filtering) return;
+    const rows = filtering ? rowsById() : null;
 
     // Dim non-matching step cards
     dom.storyMap.querySelectorAll('.step').forEach(step => {
         const text = step.querySelector('.step-text')?.value?.toLowerCase() || '';
         const textMatch = !q || text.includes(q);
-        const filterMatch = !filtering || itemMatchesFilters(getItemForStep(step));
+        const filterMatch = !filtering || itemMatchesFilters(getItemForStep(step), rows);
         if (!textMatch || !filterMatch) step.classList.add('search-dimmed');
     });
 
@@ -115,7 +117,7 @@ export const applySearchFilter = (query) => {
         const text = (card.querySelector('.story-text')?.value
             || card.querySelector('.story-text-preview')?.textContent || '').toLowerCase();
         const textMatch = !q || text.includes(q);
-        const filterMatch = !filtering || itemMatchesFilters(getItemForStoryCard(card));
+        const filterMatch = !filtering || itemMatchesFilters(getItemForStoryCard(card), rows);
         if (!textMatch || !filterMatch) card.classList.add('search-dimmed');
     });
 };
@@ -124,25 +126,26 @@ export const applySearchFilter = (query) => {
 const getUsedStatusesAndColors = () => {
     const statuses = new Set();
     const colors = new Set();
-    state.columns.forEach(c => { if (c.color && !c.hidden) colors.add(c.color.toLowerCase()); });
-    const addFromCards = (cards) => {
+    const addStep = (c) => { if (!c.hidden && !c.partialMapId) colors.add((c.color || rowColor('step')).toLowerCase()); };
+    state.columns.forEach(addStep);
+    const addFromCards = (cards, row) => {
         cards.forEach(s => {
             if (s.status) statuses.add(s.status);
             else statuses.add('none');
-            colors.add((s.color || DEFAULT_CARD_COLORS.story).toLowerCase());
+            colors.add((s.color || rowColor(row)).toLowerCase());
         });
     };
-    Object.values(state.users || {}).forEach(addFromCards);
-    Object.values(state.activities || {}).forEach(addFromCards);
+    Object.values(state.users || {}).forEach(cards => addFromCards(cards, 'users'));
+    Object.values(state.activities || {}).forEach(cards => addFromCards(cards, 'activities'));
     state.slices.forEach(slice => {
-        Object.values(slice.stories || {}).forEach(addFromCards);
+        Object.values(slice.stories || {}).forEach(cards => addFromCards(cards));
     });
     (state.partialMaps || []).forEach(pm => {
-        pm.columns.forEach(c => { if (c.color && !c.hidden) colors.add(c.color.toLowerCase()); });
-        Object.values(pm.users || {}).forEach(addFromCards);
-        Object.values(pm.activities || {}).forEach(addFromCards);
+        pm.columns.forEach(addStep);
+        Object.values(pm.users || {}).forEach(cards => addFromCards(cards, 'users'));
+        Object.values(pm.activities || {}).forEach(cards => addFromCards(cards, 'activities'));
         Object.values(pm.stories || {}).forEach(sliceStories => {
-            Object.values(sliceStories).forEach(addFromCards);
+            Object.values(sliceStories).forEach(cards => addFromCards(cards));
         });
     });
     return { statuses, colors };

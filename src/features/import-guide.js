@@ -48,7 +48,7 @@ const hasName = (item) => !!(item.name || '').trim();
 
 // Add a blank step at the end of the backbone, so the journey can be as long as it needs to be
 export const addStep = (map) => {
-    const column = createColumn('', CARD_COLORS.green);
+    const column = createColumn('');
     map.columns.push(column);
     map.users[column.id] = [];
     map.activities[column.id] = [];

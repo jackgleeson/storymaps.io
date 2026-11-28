@@ -106,7 +106,7 @@ const addCardSet = async (state, renderAndSave, name) => {
     const have = new Set(state.slices.flatMap(sl => Object.values(sl.stories).flat().map(c => norm(c.name))));
     if (!set.cards.some(c => have.has(norm(c)))) {
         pushUndo();
-        const column = createColumn(set.step, CARD_COLORS.green);
+        const column = createColumn(set.step);
         state.columns.push(column);
         state.users[column.id] = [];
         state.activities[column.id] = [];

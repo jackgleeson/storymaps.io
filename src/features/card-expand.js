@@ -2,12 +2,12 @@
 // Card detail expand modal
 
 import { dom } from '/src/ui/dom.js';
-import { state, pushUndo } from '/src/core/state.js';
+import { state, pushUndo, rowOf, shownColorOf } from '/src/core/state.js';
 import { isMapEditable, onLockChange } from '/src/core/lock.js';
 import * as log from '/src/core/log.js';
 import { getProvider } from '/src/core/yjs.js';
 import { showToast } from '/src/core/modals.js';
-import { CARD_COLORS, STATUS_OPTIONS, TITLE_MAX_LENGTH, el, isValidUrl } from '/src/core/constants.js';
+import { CARD_COLORS, STATUS_OPTIONS, TITLE_MAX_LENGTH, el, isValidUrl, ownColor } from '/src/core/constants.js';
 import { createPointsInput, createTagEditor, markLegendSwatch, patchCardForItem, sliceClosedLabel } from '/src/ui/ui.js';
 import { STORY_LINES, addLines, enterAction } from '/src/core/story-lines.js';
 import { createBodyBox } from '/src/features/body-editor.js';
@@ -222,15 +222,15 @@ const buildColourField = (item, editable, onChange) => {
         swatch.style.backgroundColor = hex;
         markLegendSwatch(swatch, name, hex);
         swatch.addEventListener('click', () => {
-            if (item.color?.toLowerCase() === swatch.dataset.color) return;
+            if (shownColorOf(item).toLowerCase() === swatch.dataset.color) return;
             pushUndo();
-            item.color = hex;
+            item.color = ownColor(hex, rowOf(item));
             log.logEvent(`Changed card color${log.quoted(item.name)}`, [item.id]);
             setModalColour(hex);
             swatches.forEach(s => s.classList.toggle('selected', s === swatch));
             onChange();
         });
-        swatch.classList.toggle('selected', item.color?.toLowerCase() === swatch.dataset.color);
+        swatch.classList.toggle('selected', shownColorOf(item).toLowerCase() === swatch.dataset.color);
         return swatch;
     });
     row.append(...swatches);
@@ -361,7 +361,7 @@ export const refreshFromRemote = () => {
     _expandedItem = card;
     showText(dom.cardExpandName, card.name, autoResizeExpandName);
     body.show(card.body || '');
-    setModalColour(card.color);
+    setModalColour(shownColorOf(card));
     dom.cardExpandChips.hidden = !_editable || !isSliceCard(card);
     renderPlace(card);
     if (footerValues(card) !== _footerShown) refreshFooter();
@@ -508,7 +508,7 @@ export const openExpandModal = (item, { readOnly = false, focus = true } = {}) =
     body.load();
     dom.cardExpandName.readOnly = !editable;
     body.readOnly = !editable;
-    setModalColour(item.color);
+    setModalColour(shownColorOf(item));
     dom.cardExpandChips.hidden = !editable || !isSliceCard(item);
     renderPlace(item);
     renderFooter(openCard, editable);

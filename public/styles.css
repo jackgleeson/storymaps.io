@@ -2936,6 +2936,10 @@ body.tour-active .log-stats {
     min-height: 60px;
 }
 
+/* Users and activities take the colour of their row, unless a card has its own */
+.story-card[data-row-type="users"] { background-color: #fca5a5; }
+.story-card[data-row-type="activities"] { background-color: #93c5fd; }
+
 /* Story Card (Tasks) */
 .story-card {
     background-color: #fef08a;

@@ -1,22 +1,21 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Serialization / deserialization (pure functions)
 
-import { CARD_COLORS, DEFAULT_CARD_COLORS, isValidUrl, copySliceDetails, normalizePoints } from '/src/core/constants.js';
+import { CARD_COLORS, ownColor, isValidUrl, copySliceDetails, normalizePoints } from '/src/core/constants.js';
 import { state, createColumn, createStory, createRefColumn, STARTER_NAMES } from '/src/core/state.js';
 import { generateId } from '/src/core/constants.js';
 
 // Sanitize URL - only allow valid http/https URLs
 const sanitizeUrl = (url) => isValidUrl(url) ? url : null;
 
-// A user or activity card in the colour of its row (red or blue) is written without it, and gets
-// it back when read, as a card with no colour does
-const USER_COLOR = DEFAULT_CARD_COLORS.Users;
-const ACTIVITY_COLOR = DEFAULT_CARD_COLORS.Activities;
-
-const serializeCard = (card, rowColor = null) => {
+// Users, activities and steps take the colour of their row, so a card in one of those rows is
+// written with a colour only when it has a different one. Read in, the row colour is dropped the
+// same way, so older files that list it come out the same. row is 'users', 'activities' or 'step'.
+const serializeCard = (card, row = null) => {
     const obj = { name: card.name };
     if (card.body) obj.body = card.body;
-    if (card.color && card.color.toLowerCase() !== rowColor) obj.color = card.color;
+    const color = ownColor(card.color, row);
+    if (color) obj.color = color;
     if (card.url) obj.url = card.url;
     if (card.hidden) obj.hidden = true;
     if (card.status) obj.status = card.status;
@@ -25,10 +24,10 @@ const serializeCard = (card, rowColor = null) => {
     return obj;
 };
 
-const deserializeCard = (obj, rowColor = null) => {
+const deserializeCard = (obj, row = null) => {
     return createStory(
         obj.name || obj.n || '',
-        obj.color || obj.c || rowColor,
+        ownColor(obj.color || obj.c, row),
         sanitizeUrl(obj.url || obj.u),
         !!(obj.hidden || obj.h),
         obj.status || obj.st || null,
@@ -41,7 +40,7 @@ const deserializeCard = (obj, rowColor = null) => {
 const deserializeColumn = (obj) => {
     return createColumn(
         obj.name || obj.n || '',
-        obj.color || obj.c || null,
+        ownColor(obj.color || obj.c, 'step'),
         sanitizeUrl(obj.url || obj.u),
         !!(obj.hidden || obj.h),
         obj.status || obj.st || null,
@@ -60,15 +59,15 @@ export const serialize = () => ({
     // The site with its port, if it has one, as the server writes it, so the CLI finds the same
     // server again and never guesses a port
     site: window.location.host,
-    users: state.columns.map(col => (state.users[col.id] || []).map(c => serializeCard(c, USER_COLOR))),
-    activities: state.columns.map(col => (state.activities[col.id] || []).map(c => serializeCard(c, ACTIVITY_COLOR))),
+    users: state.columns.map(col => (state.users[col.id] || []).map(c => serializeCard(c, 'users'))),
+    activities: state.columns.map(col => (state.activities[col.id] || []).map(c => serializeCard(c, 'activities'))),
     steps: state.columns.map(col => {
         if (col.partialMapId) {
             const obj = { partialMapId: col.partialMapId };
             if (col.partialMapOrigin) obj.partialMapOrigin = true;
             return obj;
         }
-        return serializeCard(col);
+        return serializeCard(col, 'step');
     }),
     slices: state.slices.map(slice => {
         const obj = {
@@ -88,9 +87,9 @@ export const serialize = () => ({
         partialMaps: state.partialMaps.map(pm => ({
             id: pm.id,
             name: pm.name,
-            users: pm.columns.map(c => (pm.users?.[c.id] || []).map(c => serializeCard(c, USER_COLOR))),
-            activities: pm.columns.map(c => (pm.activities?.[c.id] || []).map(c => serializeCard(c, ACTIVITY_COLOR))),
-            steps: pm.columns.map(c => serializeCard(c)),
+            users: pm.columns.map(c => (pm.users?.[c.id] || []).map(c => serializeCard(c, 'users'))),
+            activities: pm.columns.map(c => (pm.activities?.[c.id] || []).map(c => serializeCard(c, 'activities'))),
+            steps: pm.columns.map(c => serializeCard(c, 'step')),
             stories: state.slices.map(slice =>
                 pm.columns.map(c => (pm.stories[slice.id]?.[c.id] || []).map(c => serializeCard(c)))
             )
@@ -109,14 +108,14 @@ const deserializeV1 = (data) => {
     state.users = {};
     const usersArr = Array.isArray(data.users) ? data.users : [];
     state.columns.forEach((col, i) => {
-        state.users[col.id] = (usersArr[i] || []).map(c => deserializeCard(c, USER_COLOR));
+        state.users[col.id] = (usersArr[i] || []).map(c => deserializeCard(c, 'users'));
     });
 
     // Activities: positional array → keyed by column ID
     state.activities = {};
     const activitiesArr = Array.isArray(data.activities) ? data.activities : [];
     state.columns.forEach((col, i) => {
-        state.activities[col.id] = (activitiesArr[i] || []).map(c => deserializeCard(c, ACTIVITY_COLOR));
+        state.activities[col.id] = (activitiesArr[i] || []).map(c => deserializeCard(c, 'activities'));
     });
 
     // Slices (releases only)
@@ -151,11 +150,11 @@ const deserializeV1 = (data) => {
         const stories = {};
         const usersArr = Array.isArray(pm.users) ? pm.users : [];
         columns.forEach((col, i) => {
-            users[col.id] = (usersArr[i] || []).map(c => deserializeCard(c, USER_COLOR));
+            users[col.id] = (usersArr[i] || []).map(c => deserializeCard(c, 'users'));
         });
         const activitiesArr = Array.isArray(pm.activities) ? pm.activities : [];
         columns.forEach((col, i) => {
-            activities[col.id] = (activitiesArr[i] || []).map(c => deserializeCard(c, ACTIVITY_COLOR));
+            activities[col.id] = (activitiesArr[i] || []).map(c => deserializeCard(c, 'activities'));
         });
         const storiesArr = Array.isArray(pm.stories) ? pm.stories : [];
         state.slices.forEach((slice, si) => {
@@ -188,11 +187,11 @@ const deserializeLegacy = (data) => {
 
         if (rowType === 'Users') {
             state.columns.forEach((col, i) => {
-                state.users[col.id] = (stories[i] || []).map(c => deserializeCard(c, USER_COLOR));
+                state.users[col.id] = (stories[i] || []).map(c => deserializeCard(c, 'users'));
             });
         } else if (rowType === 'Activities') {
             state.columns.forEach((col, i) => {
-                state.activities[col.id] = (stories[i] || []).map(c => deserializeCard(c, ACTIVITY_COLOR));
+                state.activities[col.id] = (stories[i] || []).map(c => deserializeCard(c, 'activities'));
             });
         } else {
             const newSlice = {
@@ -239,8 +238,8 @@ export const appendImport = (data) => {
     const usersArr = Array.isArray(data.users) ? data.users : [];
     const activitiesArr = Array.isArray(data.activities) ? data.activities : [];
     newCols.forEach((col, i) => {
-        state.users[col.id] = (usersArr[i] || []).map(c => deserializeCard(c, USER_COLOR));
-        state.activities[col.id] = (activitiesArr[i] || []).map(c => deserializeCard(c, ACTIVITY_COLOR));
+        state.users[col.id] = (usersArr[i] || []).map(c => deserializeCard(c, 'users'));
+        state.activities[col.id] = (activitiesArr[i] || []).map(c => deserializeCard(c, 'activities'));
     });
 
     // Append new slices, merging into existing slices with matching names

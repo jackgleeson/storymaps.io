@@ -408,10 +408,11 @@ describe('the colour of the user and activity rows', () => {
   const plain = map([{ name: 'Customer' }, { name: 'Barista', color: '#bef264' }], [{ name: 'Order', body: 'At the till' }]);
   const coloured = map([{ name: 'Customer', color: '#fca5a5' }, { name: 'Barista', color: '#bef264' }], [{ name: 'Order', body: 'At the till', color: '#93c5fd' }]);
 
-  test('a card with no colour is stored in the colour of its row', () => {
-    const ymap = writeMap(plain).getMap('storymap').toJSON();
-    assert.deepEqual(Object.values(ymap.users)[0].map(c => c.color), ['#fca5a5', '#bef264']);
-    assert.equal(Object.values(ymap.activities)[0][0].color, '#93c5fd');
+  test('the colour of a row is not stored, and another colour is', () => {
+    const ymap = writeMap({ ...coloured, steps: [{ name: 'Browse', color: '#86efac' }] }).getMap('storymap').toJSON();
+    assert.deepEqual(Object.values(ymap.users)[0].map(c => c.color), [undefined, '#bef264']);
+    assert.equal(Object.values(ymap.activities)[0][0].color, undefined);
+    assert.ok(!ymap.columns[0].color);
   });
 
   test('the colour of the row is left out of the JSON, and another colour is kept', () => {

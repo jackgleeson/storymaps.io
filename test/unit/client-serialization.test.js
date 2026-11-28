@@ -27,14 +27,16 @@ const serverContent = (map) => {
 beforeEach(() => { state.mapId = null; });
 
 describe('serialize and deserialize', () => {
-  test('a user or activity card with no colour gets the colour of its row, which the JSON leaves out', () => {
-    deserialize(asFile({ name: 'x', steps: [{ name: 'Browse' }], users: [[{ name: 'Customer' }, { name: 'Barista', color: '#bef264' }]], activities: [[{ name: 'Order', color: '#93c5fd' }]], slices: [{ name: 'MVP', stories: [[{ name: 'List' }]] }] }));
+  test('users, activities and steps hold no colour unless it differs from the colour of their row', () => {
+    deserialize(asFile({ name: 'x', steps: [{ name: 'Browse', color: '#86EFAC' }, { name: 'Pay', color: '#fecdd3' }], users: [[{ name: 'Customer', color: '#fca5a5' }, { name: 'Barista', color: '#bef264' }]], activities: [[{ name: 'Order', color: '#93c5fd' }]], slices: [{ name: 'MVP', stories: [[{ name: 'List' }]] }] }));
     const [col] = state.columns;
-    assert.deepEqual(state.users[col.id].map(c => c.color), ['#fca5a5', '#bef264']);
-    assert.equal(state.activities[col.id][0].color, '#93c5fd');
+    assert.deepEqual(state.columns.map(c => c.color), [null, '#fecdd3']);
+    assert.deepEqual(state.users[col.id].map(c => c.color), [null, '#bef264']);
+    assert.equal(state.activities[col.id][0].color, null);
+    assert.deepEqual(content().steps, [{ name: 'Browse' }, { name: 'Pay', color: '#fecdd3' }]);
     assert.equal(state.slices[0].stories[col.id][0].color, null);
-    assert.deepEqual(content().users, [[{ name: 'Customer' }, { name: 'Barista', color: '#bef264' }]]);
-    assert.deepEqual(content().activities, [[{ name: 'Order' }]]);
+    assert.deepEqual(content().users, [[{ name: 'Customer' }, { name: 'Barista', color: '#bef264' }], []]);
+    assert.deepEqual(content().activities, [[{ name: 'Order' }], []]);
   });
 
   test('a map with every field survives a round trip', () => {
@@ -89,7 +91,7 @@ describe('serialize and deserialize', () => {
     deserialize({
       app: 'storymap',
       name: 'Old map',
-      a: [{ n: 'Search', c: '#86efac' }, { n: 'Book' }],
+      a: [{ n: 'Search', c: '#fecdd3' }, { n: 'Book' }],
       s: [
         { rt: 'Users', t: [[{ n: 'Guest' }], []] },
         { rt: 'Activities', t: [[{ n: 'Find a place' }], [{ n: 'Pay' }]] },
@@ -100,7 +102,7 @@ describe('serialize and deserialize', () => {
     });
     assert.deepEqual(content(), {
       name: 'Old map',
-      steps: [{ name: 'Search', color: '#86efac' }, { name: 'Book' }],
+      steps: [{ name: 'Search', color: '#fecdd3' }, { name: 'Book' }],
       users: [[{ name: 'Guest' }], []],
       activities: [[{ name: 'Find a place' }], [{ name: 'Pay' }]],
       slices: [{

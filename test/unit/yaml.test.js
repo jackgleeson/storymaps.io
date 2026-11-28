@@ -15,10 +15,10 @@ const richMap = () => ({
   name: 'Coffee app',
   steps: [
     { name: 'Browse', color: '#fecdd3', body: 'The menu', url: 'https://example.com/browse', status: 'done', points: 3, tags: ['ux'] },
-    { name: 'Order', color: '#86efac' },
+    { name: 'Order' },
   ],
-  users: [[{ name: 'Customer', color: '#fca5a5' }], []],
-  activities: [[{ name: 'Find a drink', color: '#93c5fd' }], [{ name: 'Pay', body: 'At the till', color: '#93c5fd' }]],
+  users: [[{ name: 'Customer' }], []],
+  activities: [[{ name: 'Find a drink' }], [{ name: 'Pay', body: 'At the till' }]],
   slices: [
     {
       name: 'MVP',
@@ -100,11 +100,11 @@ describe('YAML round trip', () => {
   test('user and activity cards keep their link, status, points and tags', () => {
     const card = { name: 'Customer', url: 'https://example.com/persona', status: 'done', points: 2, tags: ['persona'] };
     const out = roundTrip({ name: 'x', steps: [{ name: 'Browse' }], users: [[card]], activities: [[card]], slices: [] });
-    assert.deepEqual(out.users[0][0], { ...card, color: '#fca5a5' });
-    assert.deepEqual(out.activities[0][0], { ...card, color: '#93c5fd' });
+    assert.deepEqual(out.users[0][0], card);
+    assert.deepEqual(out.activities[0][0], card);
   });
 
-  test('the colour of the row is left out of the YAML and comes back on import', () => {
+  test('the colour of a row is never written, and is dropped when a file lists it', () => {
     const map = {
       name: 'x',
       steps: [{ name: 'Browse' }],
@@ -116,8 +116,11 @@ describe('YAML round trip', () => {
     assert.ok(!/fca5a5|93c5fd/i.test(yaml));
     assert.match(yaml, /color: "?#bef264/);
     const out = importFromYaml(yaml);
-    assert.deepEqual(out.users[0].map(c => c.color), ['#fca5a5', '#bef264']);
-    assert.equal(out.activities[0][0].color, '#93c5fd');
+    assert.deepEqual(out.users[0].map(c => c.color), [undefined, '#bef264']);
+    assert.equal(out.activities[0][0].color, undefined);
+    const listed = importFromYaml('name: x\nsteps:\n  - name: A\n    color: "#86efac"\nusers:\n  - name: Guest\n    color: "#FCA5A5"\n    step: A\n');
+    assert.deepEqual(listed.steps, [{ name: 'A' }]);
+    assert.deepEqual(listed.users, [[{ name: 'Guest' }]]);
   });
 
   test('task cards with no colour stay without one', () => {
@@ -134,7 +137,7 @@ describe('YAML round trip', () => {
         id: 'pm000001',
         name: 'Checkout',
         users: [[]],
-        activities: [[{ name: 'Pay up', color: '#93c5fd' }]],
+        activities: [[{ name: 'Pay up' }]],
         steps: [{ name: 'Pay' }],
         stories: [[[{ name: 'Apple Pay' }]]],
       }],
@@ -142,7 +145,7 @@ describe('YAML round trip', () => {
     const [pm] = out.partialMaps;
     assert.equal(pm.name, 'Checkout');
     assert.deepEqual(pm.steps.map(s => s.name), ['Pay']);
-    assert.deepEqual(pm.activities, [[{ name: 'Pay up', color: '#93c5fd' }]]);
+    assert.deepEqual(pm.activities, [[{ name: 'Pay up' }]]);
     assert.deepEqual(pm.stories, [[[{ name: 'Apple Pay' }]]]);
     assert.deepEqual(out.steps[1], { partialMapId: pm.id, partialMapOrigin: true });
     assert.deepEqual(out.steps[3], { partialMapId: pm.id });
@@ -158,8 +161,8 @@ describe('importFromYaml', () => {
 
   test('user and activity cards without a step go under the first step', () => {
     const out = importFromYaml('name: x\nsteps:\n  - A\n  - B\nusers:\n  - name: Guest\nactivities:\n  - name: Pay\n    step: B\n');
-    assert.deepEqual(out.users, [[{ name: 'Guest', color: '#fca5a5' }], []]);
-    assert.deepEqual(out.activities, [[], [{ name: 'Pay', color: '#93c5fd' }]]);
+    assert.deepEqual(out.users, [[{ name: 'Guest' }], []]);
+    assert.deepEqual(out.activities, [[], [{ name: 'Pay' }]]);
   });
 
   test('an unquoted target date is read as a date', () => {
