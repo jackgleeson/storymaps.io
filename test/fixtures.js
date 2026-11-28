@@ -8,7 +8,7 @@ export const fullMap = () => ({
     { name: 'Order', hidden: true },
     { partialMapId: 'pm000001', partialMapOrigin: true },
   ],
-  users: [[{ name: 'Customer', color: '#fca5a5' }], [], []],
+  users: [[{ name: 'Customer' }], [], []],
   activities: [[{ name: 'Find a drink' }], [{ name: 'Pay' }], []],
   slices: [
     {

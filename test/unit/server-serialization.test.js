@@ -402,3 +402,21 @@ test('a map says the site it is on with its port, so no port is ever guessed', (
   assert.equal(siteOf('127.0.0.1:8080'), '127.0.0.1:8080');
   assert.equal(siteOf(undefined), '');
 });
+
+describe('the colour of the user and activity rows', () => {
+  const map = (users, activities) => ({ name: 'x', steps: [{ name: 'Browse' }], users: [users], activities: [activities], slices: [] });
+  const plain = map([{ name: 'Customer' }, { name: 'Barista', color: '#bef264' }], [{ name: 'Order', body: 'At the till' }]);
+  const coloured = map([{ name: 'Customer', color: '#fca5a5' }, { name: 'Barista', color: '#bef264' }], [{ name: 'Order', body: 'At the till', color: '#93c5fd' }]);
+
+  test('a card with no colour is stored in the colour of its row', () => {
+    const ymap = writeMap(plain).getMap('storymap').toJSON();
+    assert.deepEqual(Object.values(ymap.users)[0].map(c => c.color), ['#fca5a5', '#bef264']);
+    assert.equal(Object.values(ymap.activities)[0][0].color, '#93c5fd');
+  });
+
+  test('the colour of the row is left out of the JSON, and another colour is kept', () => {
+    const out = serializeDoc(writeMap(coloured));
+    assert.deepEqual(out.users, plain.users);
+    assert.deepEqual(out.activities, plain.activities);
+  });
+});

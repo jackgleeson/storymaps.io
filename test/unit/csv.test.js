@@ -90,7 +90,7 @@ describe('CSV round trip', () => {
       { name: 'Order' },
     ],
     users: [[{ name: 'Customer', color: '#fca5a5' }], [], []],
-    activities: [[{ name: 'Find a drink', status: 'planned' }], [], [{ name: 'Pay', url: 'https://example.com/pay' }]],
+    activities: [[{ name: 'Find a drink', status: 'planned', color: '#93c5fd' }], [], [{ name: 'Pay', url: 'https://example.com/pay', color: '#93c5fd' }]],
     slices: [{
       name: 'MVP',
       stories: [
@@ -116,6 +116,14 @@ describe('CSV round trip', () => {
     assert.deepEqual(out.users, csvMap().users);
     assert.deepEqual(out.activities, csvMap().activities);
     assert.deepEqual(out.slices[0].stories, csvMap().slices[0].stories);
+  });
+
+  test('the colour of the row is left out of the CSV and comes back on import', () => {
+    const csv = exportToCsv(csvMap());
+    assert.ok(!/fca5a5|93c5fd/i.test(csv));
+    const out = importFromCsv(csv);
+    assert.equal(out.users[0][0].color, '#fca5a5');
+    assert.equal(out.activities[2][0].color, '#93c5fd');
   });
 
   test('keeps the legend and notes', () => {

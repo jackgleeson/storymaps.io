@@ -5,6 +5,12 @@ import { generateId, copySliceDetails } from '../core/constants.js';
 
 const DEFAULT_STEP_COLOR = '#86efac';
 const DEFAULT_STORY_COLOR = '#fef08a';
+const DEFAULT_USER_COLOR = '#fca5a5';
+const DEFAULT_ACTIVITY_COLOR = '#93c5fd';
+// A user or activity card in the colour of its row is written without it, as steps and tasks are.
+// A card with no name keeps it, or its cell would be empty and the card lost.
+const withoutRowColor = (card, rowColor) =>
+    card.name && card.color && card.color.toLowerCase() === rowColor ? { ...card, color: null } : card;
 const VALID_STATUSES = new Set(['done', 'in-progress', 'planned', 'blocked']);
 const VALID_CLOSED_REASONS = new Set(['complete', 'closed']);
 
@@ -293,7 +299,7 @@ export function exportToCsv(jsonData) {
             if (vi == null) return;
             const range = stepToExpandedCols.get(vi);
             if (!range) return;
-            row[range.start + 1] = escapeCSV(formatInlineNotation(cards[u]));
+            row[range.start + 1] = escapeCSV(formatInlineNotation(withoutRowColor(cards[u], DEFAULT_USER_COLOR)));
             hasContent = true;
         });
         if (hasContent) rows.push(row);
@@ -312,7 +318,7 @@ export function exportToCsv(jsonData) {
             if (vi == null) return;
             const range = stepToExpandedCols.get(vi);
             if (!range) return;
-            row[range.start + 1] = escapeCSV(formatInlineNotation(cards[a]));
+            row[range.start + 1] = escapeCSV(formatInlineNotation(withoutRowColor(cards[a], DEFAULT_ACTIVITY_COLOR)));
             hasContent = true;
         });
         if (hasContent) rows.push(row);
@@ -601,8 +607,7 @@ export function importFromCsv(csvString) {
             const parsed = parseInlineNotation(cardText);
             const stepIdx = stepColMap.get(c);
             if (stepIdx != null) {
-                const card = { name: parsed.name };
-                if (parsed.color) card.color = parsed.color;
+                const card = { name: parsed.name, color: parsed.color || DEFAULT_USER_COLOR };
                 if (parsed.status) card.status = parsed.status;
                 if (parsed.points != null) card.points = parsed.points;
                 if (parsed.tags?.length) card.tags = parsed.tags;
@@ -624,8 +629,7 @@ export function importFromCsv(csvString) {
             const parsed = parseInlineNotation(cardText);
             const stepIdx = stepColMap.get(c);
             if (stepIdx != null) {
-                const card = { name: parsed.name };
-                if (parsed.color) card.color = parsed.color;
+                const card = { name: parsed.name, color: parsed.color || DEFAULT_ACTIVITY_COLOR };
                 if (parsed.status) card.status = parsed.status;
                 if (parsed.points != null) card.points = parsed.points;
                 if (parsed.tags?.length) card.tags = parsed.tags;

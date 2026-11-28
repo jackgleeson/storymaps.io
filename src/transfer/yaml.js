@@ -6,6 +6,8 @@ import { generateId, copySliceDetails } from '../core/constants.js';
 
 const DEFAULT_STEP_COLOR = '#86efac';
 const DEFAULT_STORY_COLOR = '#fef08a';
+const DEFAULT_USER_COLOR = '#fca5a5';
+const DEFAULT_ACTIVITY_COLOR = '#93c5fd';
 const SPACER_COLOR = '#e5e7eb';
 const VALID_STATUSES = new Set(['done', 'in-progress', 'planned', 'blocked']);
 
@@ -94,10 +96,10 @@ export function jsonToYamlObj(data) {
     if (data.site) result.site = data.site;
     if (data.locked != null) result.locked = data.locked;
 
-    const yamlUsers = backboneToYaml(usersArr, resolvedNames);
+    const yamlUsers = backboneToYaml(usersArr, resolvedNames, DEFAULT_USER_COLOR);
     if (yamlUsers.length) result.users = yamlUsers;
 
-    const yamlActivities = backboneToYaml(activitiesArr, resolvedNames);
+    const yamlActivities = backboneToYaml(activitiesArr, resolvedNames, DEFAULT_ACTIVITY_COLOR);
     if (yamlActivities.length) result.activities = yamlActivities;
 
     // Partials
@@ -109,9 +111,9 @@ export function jsonToYamlObj(data) {
             const pmObj = { name: pm.name || slug };
             if (pmStepNames.length) pmObj.steps = pmStepNames;
 
-            const pmU = backboneToYaml(pm.users || [], pmStepNames);
+            const pmU = backboneToYaml(pm.users || [], pmStepNames, DEFAULT_USER_COLOR);
             if (pmU.length) pmObj.users = pmU;
-            const pmA = backboneToYaml(pm.activities || [], pmStepNames);
+            const pmA = backboneToYaml(pm.activities || [], pmStepNames, DEFAULT_ACTIVITY_COLOR);
             if (pmA.length) pmObj.activities = pmA;
 
             // Stories — pm.stories is [sliceIdx][colIdx] = [cards]
@@ -470,13 +472,13 @@ export function yamlObjToJson(obj) {
     const jsonUsers = Array.from({ length: n }, () => []);
     (obj.users || []).forEach(card => {
         const idx = card.step != null ? stepNameToIndex[card.step] : 0;
-        if (idx != null) jsonUsers[idx].push(cardToJson(card));
+        if (idx != null) jsonUsers[idx].push(cardToJson(card, DEFAULT_USER_COLOR));
     });
 
     const jsonActivities = Array.from({ length: n }, () => []);
     (obj.activities || []).forEach(card => {
         const idx = card.step != null ? stepNameToIndex[card.step] : 0;
-        if (idx != null) jsonActivities[idx].push(cardToJson(card));
+        if (idx != null) jsonActivities[idx].push(cardToJson(card, DEFAULT_ACTIVITY_COLOR));
     });
 
     // Slices
@@ -485,7 +487,7 @@ export function yamlObjToJson(obj) {
         if (slice.stories) {
             for (const [stepName, cards] of Object.entries(slice.stories)) {
                 const idx = stepNameToIndex[stepName];
-                if (idx != null) stories[idx] = (cards || []).map(cardToJson);
+                if (idx != null) stories[idx] = (cards || []).map(c => cardToJson(c));
             }
         }
         const s = { name: slice.name || '', stories };
@@ -507,23 +509,23 @@ export function yamlObjToJson(obj) {
         const pmUsers = Array.from({ length: pmN }, () => []);
         (def.users || []).forEach(card => {
             const i = card.step != null ? pmIdx[card.step] : 0;
-            if (i != null) pmUsers[i].push(cardToJson(card));
+            if (i != null) pmUsers[i].push(cardToJson(card, DEFAULT_USER_COLOR));
         });
 
         const pmActivities = Array.from({ length: pmN }, () => []);
         (def.activities || []).forEach(card => {
             const i = card.step != null ? pmIdx[card.step] : 0;
-            if (i != null) pmActivities[i].push(cardToJson(card));
+            if (i != null) pmActivities[i].push(cardToJson(card, DEFAULT_ACTIVITY_COLOR));
         });
 
         let pmStories;
         if (def.slices) {
             pmStories = jsonSlices.map(slice => {
                 const sliceData = def.slices[slice.name] || {};
-                return pmNames.map(name => (sliceData[name] || []).map(cardToJson));
+                return pmNames.map(name => (sliceData[name] || []).map(c => cardToJson(c)));
             });
         } else if (def.stories) {
-            const base = pmNames.map(name => (def.stories[name] || []).map(cardToJson));
+            const base = pmNames.map(name => (def.stories[name] || []).map(c => cardToJson(c)));
             pmStories = jsonSlices.map(() => base.map(col => col.map(c => ({ ...c }))));
         } else {
             pmStories = jsonSlices.map(() => Array.from({ length: pmN }, () => []));
@@ -561,7 +563,8 @@ export function yamlObjToJson(obj) {
 // Helpers
 // ============================================================================
 
-function backboneToYaml(positionalArr, namesByIndex) {
+// The colour of the row (red for users, blue for activities) is left out, as it is for steps and tasks
+function backboneToYaml(positionalArr, namesByIndex, defaultColor) {
     const result = [];
     positionalArr.forEach((cards, i) => {
         if (!cards?.length) return;
@@ -570,7 +573,7 @@ function backboneToYaml(positionalArr, namesByIndex) {
         cards.forEach(card => {
             const obj = { name: card.name };
             if (card.body) obj.body = card.body;
-            if (card.color) obj.color = card.color;
+            if (card.color && card.color.toLowerCase() !== defaultColor) obj.color = card.color;
             if (card.status) obj.status = card.status;
             if (card.points != null) obj.points = card.points;
             if (card.tags?.length) obj.tags = [...card.tags];
@@ -593,10 +596,11 @@ function cardToYaml(card) {
     return obj;
 }
 
-function cardToJson(card) {
+// A user or activity card with no colour gets the colour of its row, as a card added in the app does
+function cardToJson(card, defaultColor = null) {
     const obj = { name: card.name || '' };
     if (card.body) obj.body = card.body;
-    if (card.color) obj.color = card.color;
+    if (card.color || defaultColor) obj.color = card.color || defaultColor;
     if (card.url) obj.url = card.url;
     if (card.status) obj.status = card.status;
     if (card.points != null) obj.points = card.points;

@@ -1,17 +1,22 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Serialization / deserialization (pure functions)
 
-import { CARD_COLORS, isValidUrl, copySliceDetails, normalizePoints } from '/src/core/constants.js';
+import { CARD_COLORS, DEFAULT_CARD_COLORS, isValidUrl, copySliceDetails, normalizePoints } from '/src/core/constants.js';
 import { state, createColumn, createStory, createRefColumn, STARTER_NAMES } from '/src/core/state.js';
 import { generateId } from '/src/core/constants.js';
 
 // Sanitize URL - only allow valid http/https URLs
 const sanitizeUrl = (url) => isValidUrl(url) ? url : null;
 
-const serializeCard = (card) => {
+// A user or activity card in the colour of its row (red or blue) is written without it, and gets
+// it back when read, as a card with no colour does
+const USER_COLOR = DEFAULT_CARD_COLORS.Users;
+const ACTIVITY_COLOR = DEFAULT_CARD_COLORS.Activities;
+
+const serializeCard = (card, rowColor = null) => {
     const obj = { name: card.name };
     if (card.body) obj.body = card.body;
-    if (card.color) obj.color = card.color;
+    if (card.color && card.color.toLowerCase() !== rowColor) obj.color = card.color;
     if (card.url) obj.url = card.url;
     if (card.hidden) obj.hidden = true;
     if (card.status) obj.status = card.status;
@@ -20,10 +25,10 @@ const serializeCard = (card) => {
     return obj;
 };
 
-const deserializeCard = (obj) => {
+const deserializeCard = (obj, rowColor = null) => {
     return createStory(
         obj.name || obj.n || '',
-        obj.color || obj.c || null,
+        obj.color || obj.c || rowColor,
         sanitizeUrl(obj.url || obj.u),
         !!(obj.hidden || obj.h),
         obj.status || obj.st || null,
@@ -55,8 +60,8 @@ export const serialize = () => ({
     // The site with its port, if it has one, as the server writes it, so the CLI finds the same
     // server again and never guesses a port
     site: window.location.host,
-    users: state.columns.map(col => (state.users[col.id] || []).map(serializeCard)),
-    activities: state.columns.map(col => (state.activities[col.id] || []).map(serializeCard)),
+    users: state.columns.map(col => (state.users[col.id] || []).map(c => serializeCard(c, USER_COLOR))),
+    activities: state.columns.map(col => (state.activities[col.id] || []).map(c => serializeCard(c, ACTIVITY_COLOR))),
     steps: state.columns.map(col => {
         if (col.partialMapId) {
             const obj = { partialMapId: col.partialMapId };
@@ -68,7 +73,7 @@ export const serialize = () => ({
     slices: state.slices.map(slice => {
         const obj = {
             name: slice.name,
-            stories: state.columns.map(col => (slice.stories[col.id] || []).map(serializeCard))
+            stories: state.columns.map(col => (slice.stories[col.id] || []).map(c => serializeCard(c)))
         };
         if (slice.collapsed) obj.collapsed = true;
         if (slice.closedReason) obj.closedReason = slice.closedReason;
@@ -83,11 +88,11 @@ export const serialize = () => ({
         partialMaps: state.partialMaps.map(pm => ({
             id: pm.id,
             name: pm.name,
-            users: pm.columns.map(c => (pm.users?.[c.id] || []).map(serializeCard)),
-            activities: pm.columns.map(c => (pm.activities?.[c.id] || []).map(serializeCard)),
-            steps: pm.columns.map(serializeCard),
+            users: pm.columns.map(c => (pm.users?.[c.id] || []).map(c => serializeCard(c, USER_COLOR))),
+            activities: pm.columns.map(c => (pm.activities?.[c.id] || []).map(c => serializeCard(c, ACTIVITY_COLOR))),
+            steps: pm.columns.map(c => serializeCard(c)),
             stories: state.slices.map(slice =>
-                pm.columns.map(c => (pm.stories[slice.id]?.[c.id] || []).map(serializeCard))
+                pm.columns.map(c => (pm.stories[slice.id]?.[c.id] || []).map(c => serializeCard(c)))
             )
         }))
     })
@@ -104,14 +109,14 @@ const deserializeV1 = (data) => {
     state.users = {};
     const usersArr = Array.isArray(data.users) ? data.users : [];
     state.columns.forEach((col, i) => {
-        state.users[col.id] = (usersArr[i] || []).map(deserializeCard);
+        state.users[col.id] = (usersArr[i] || []).map(c => deserializeCard(c, USER_COLOR));
     });
 
     // Activities: positional array → keyed by column ID
     state.activities = {};
     const activitiesArr = Array.isArray(data.activities) ? data.activities : [];
     state.columns.forEach((col, i) => {
-        state.activities[col.id] = (activitiesArr[i] || []).map(deserializeCard);
+        state.activities[col.id] = (activitiesArr[i] || []).map(c => deserializeCard(c, ACTIVITY_COLOR));
     });
 
     // Slices (releases only)
@@ -126,7 +131,7 @@ const deserializeV1 = (data) => {
         copySliceDetails(slice, newSlice);
         const stories = Array.isArray(slice.stories) ? slice.stories : [];
         state.columns.forEach((col, i) => {
-            newSlice.stories[col.id] = (stories[i] || []).map(deserializeCard);
+            newSlice.stories[col.id] = (stories[i] || []).map(c => deserializeCard(c));
         });
         return newSlice;
     });
@@ -146,18 +151,18 @@ const deserializeV1 = (data) => {
         const stories = {};
         const usersArr = Array.isArray(pm.users) ? pm.users : [];
         columns.forEach((col, i) => {
-            users[col.id] = (usersArr[i] || []).map(deserializeCard);
+            users[col.id] = (usersArr[i] || []).map(c => deserializeCard(c, USER_COLOR));
         });
         const activitiesArr = Array.isArray(pm.activities) ? pm.activities : [];
         columns.forEach((col, i) => {
-            activities[col.id] = (activitiesArr[i] || []).map(deserializeCard);
+            activities[col.id] = (activitiesArr[i] || []).map(c => deserializeCard(c, ACTIVITY_COLOR));
         });
         const storiesArr = Array.isArray(pm.stories) ? pm.stories : [];
         state.slices.forEach((slice, si) => {
             const sliceStories = storiesArr[si] || [];
             stories[slice.id] = {};
             columns.forEach((col, ci) => {
-                stories[slice.id][col.id] = (sliceStories[ci] || []).map(deserializeCard);
+                stories[slice.id][col.id] = (sliceStories[ci] || []).map(c => deserializeCard(c));
             });
         });
         return { id: pm.id || generateId(), name: pm.name || '', columns, users, activities, stories };
@@ -183,11 +188,11 @@ const deserializeLegacy = (data) => {
 
         if (rowType === 'Users') {
             state.columns.forEach((col, i) => {
-                state.users[col.id] = (stories[i] || []).map(deserializeCard);
+                state.users[col.id] = (stories[i] || []).map(c => deserializeCard(c, USER_COLOR));
             });
         } else if (rowType === 'Activities') {
             state.columns.forEach((col, i) => {
-                state.activities[col.id] = (stories[i] || []).map(deserializeCard);
+                state.activities[col.id] = (stories[i] || []).map(c => deserializeCard(c, ACTIVITY_COLOR));
             });
         } else {
             const newSlice = {
@@ -197,7 +202,7 @@ const deserializeLegacy = (data) => {
                 stories: {}
             };
             state.columns.forEach((col, i) => {
-                newSlice.stories[col.id] = (stories[i] || []).map(deserializeCard);
+                newSlice.stories[col.id] = (stories[i] || []).map(c => deserializeCard(c));
             });
             state.slices.push(newSlice);
         }
@@ -234,8 +239,8 @@ export const appendImport = (data) => {
     const usersArr = Array.isArray(data.users) ? data.users : [];
     const activitiesArr = Array.isArray(data.activities) ? data.activities : [];
     newCols.forEach((col, i) => {
-        state.users[col.id] = (usersArr[i] || []).map(deserializeCard);
-        state.activities[col.id] = (activitiesArr[i] || []).map(deserializeCard);
+        state.users[col.id] = (usersArr[i] || []).map(c => deserializeCard(c, USER_COLOR));
+        state.activities[col.id] = (activitiesArr[i] || []).map(c => deserializeCard(c, ACTIVITY_COLOR));
     });
 
     // Append new slices, merging into existing slices with matching names
@@ -247,7 +252,7 @@ export const appendImport = (data) => {
             // Merge: add stories for new columns into existing slice
             newCols.forEach((col, i) => {
                 const stories = Array.isArray(slice.stories) ? slice.stories : [];
-                existing.stories[col.id] = (stories[i] || []).map(deserializeCard);
+                existing.stories[col.id] = (stories[i] || []).map(c => deserializeCard(c));
             });
         } else {
             // Create new slice with empty cells for pre-existing columns
@@ -265,7 +270,7 @@ export const appendImport = (data) => {
                     newSlice.stories[col.id] = [];
                 } else {
                     const stories = Array.isArray(slice.stories) ? slice.stories : [];
-                    newSlice.stories[col.id] = (stories[newColIndex] || []).map(deserializeCard);
+                    newSlice.stories[col.id] = (stories[newColIndex] || []).map(c => deserializeCard(c));
                 }
             });
             state.slices.push(newSlice);

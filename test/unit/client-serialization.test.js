@@ -27,6 +27,16 @@ const serverContent = (map) => {
 beforeEach(() => { state.mapId = null; });
 
 describe('serialize and deserialize', () => {
+  test('a user or activity card with no colour gets the colour of its row, which the JSON leaves out', () => {
+    deserialize(asFile({ name: 'x', steps: [{ name: 'Browse' }], users: [[{ name: 'Customer' }, { name: 'Barista', color: '#bef264' }]], activities: [[{ name: 'Order', color: '#93c5fd' }]], slices: [{ name: 'MVP', stories: [[{ name: 'List' }]] }] }));
+    const [col] = state.columns;
+    assert.deepEqual(state.users[col.id].map(c => c.color), ['#fca5a5', '#bef264']);
+    assert.equal(state.activities[col.id][0].color, '#93c5fd');
+    assert.equal(state.slices[0].stories[col.id][0].color, null);
+    assert.deepEqual(content().users, [[{ name: 'Customer' }, { name: 'Barista', color: '#bef264' }]]);
+    assert.deepEqual(content().activities, [[{ name: 'Order' }]]);
+  });
+
   test('a map with every field survives a round trip', () => {
     deserialize(asFile(fullMap()));
     assert.deepEqual(content(), fullMap());

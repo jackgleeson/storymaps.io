@@ -1,7 +1,12 @@
 import { createHash } from 'node:crypto';
 import { generateCardId } from './data.js';
 import { keepStepIds, keepSliceIds, keepCardIds, groupsByColumn } from './keep-ids.js';
-import { copySliceDetails, normalizePoints } from '../src/core/constants.js';
+import { copySliceDetails, normalizePoints, DEFAULT_CARD_COLORS } from '../src/core/constants.js';
+
+// A user or activity card in the colour of its row (red or blue) is written without it, and gets
+// it back when read, as a card with no colour does. The browser does the same.
+const USER_COLOR = DEFAULT_CARD_COLORS.Users;
+const ACTIVITY_COLOR = DEFAULT_CARD_COLORS.Activities;
 
 export const serializeDoc = (doc) => {
   const ymap = doc.getMap('storymap');
@@ -12,10 +17,10 @@ export const serializeDoc = (doc) => {
   const legendArr = ymap.get('legend')?.toJSON() || [];
   const notes = doc.getText('notes')?.toString() || '';
 
-  const sCard = (c) => {
+  const sCard = (c, rowColor = null) => {
     const o = { name: c.name || '' };
     if (c.body) o.body = c.body;
-    if (c.color) o.color = c.color;
+    if (c.color && c.color.toLowerCase() !== rowColor) o.color = c.color;
     if (c.url) o.url = c.url;
     if (c.hidden) o.hidden = true;
     if (c.status) o.status = c.status;
@@ -25,14 +30,14 @@ export const serializeDoc = (doc) => {
     return o;
   };
 
-  const toPositional = (map) => columns.map(col => (map[col.id] || []).map(sCard));
+  const toPositional = (map, rowColor) => columns.map(col => (map[col.id] || []).map(c => sCard(c, rowColor)));
 
   const result = {
     app: 'storymap', v: 1,
     exported: new Date().toISOString(),
     name: ymap.get('name') || '',
-    users: toPositional(usersMap),
-    activities: toPositional(activitiesMap),
+    users: toPositional(usersMap, USER_COLOR),
+    activities: toPositional(activitiesMap, ACTIVITY_COLOR),
     steps: columns.map(col => {
       if (col.partialMapId) {
         const o = { partialMapId: col.partialMapId };
@@ -43,7 +48,7 @@ export const serializeDoc = (doc) => {
     }),
     slices: slicesArr.map(s => {
       const stories = s.stories || {};
-      const obj = { name: s.name || '', stories: columns.map(col => (stories[col.id] || []).map(sCard)) };
+      const obj = { name: s.name || '', stories: columns.map(col => (stories[col.id] || []).map(c => sCard(c))) };
       if (s.collapsed) obj.collapsed = true;
       if (s.closedReason) obj.closedReason = s.closedReason;
       copySliceDetails(s, obj);
@@ -64,11 +69,11 @@ export const serializeDoc = (doc) => {
         return {
           id: pm.id,
           name: pm.name,
-          users: pmCols.map(c => (pm.users?.[c.id] || []).map(sCard)),
-          activities: pmCols.map(c => (pm.activities?.[c.id] || []).map(sCard)),
-          steps: pmCols.map(sCard),
+          users: pmCols.map(c => (pm.users?.[c.id] || []).map(u => sCard(u, USER_COLOR))),
+          activities: pmCols.map(c => (pm.activities?.[c.id] || []).map(a => sCard(a, ACTIVITY_COLOR))),
+          steps: pmCols.map(c => sCard(c)),
           stories: slicesArr.map(slice =>
-            pmCols.map(c => (pm.stories?.[slice.id]?.[c.id] || []).map(sCard))
+            pmCols.map(c => (pm.stories?.[slice.id]?.[c.id] || []).map(t => sCard(t)))
           )
         };
       });
@@ -325,7 +330,7 @@ export const writeDocFromJson = (doc, data, Y) => {
     (data.users || []).forEach((cards, i) => {
       if (i >= columns.length) return;
       const yArr = new Y.Array();
-      (cards || []).forEach((card, at) => yArr.push([makeYCard(card, userId(columns[i].id, '', at))]));
+      (cards || []).forEach((card, at) => yArr.push([makeYCard({ ...card, color: card.color || USER_COLOR }, userId(columns[i].id, '', at))]));
       yUsers.set(columns[i].id, yArr);
     });
     ymap.set('users', yUsers);
@@ -336,7 +341,7 @@ export const writeDocFromJson = (doc, data, Y) => {
     (data.activities || []).forEach((cards, i) => {
       if (i >= columns.length) return;
       const yArr = new Y.Array();
-      (cards || []).forEach((card, at) => yArr.push([makeYCard(card, activityId(columns[i].id, '', at))]));
+      (cards || []).forEach((card, at) => yArr.push([makeYCard({ ...card, color: card.color || ACTIVITY_COLOR }, activityId(columns[i].id, '', at))]));
       yActivities.set(columns[i].id, yArr);
     });
     ymap.set('activities', yActivities);
@@ -409,12 +414,12 @@ export const writeDocFromJson = (doc, data, Y) => {
         const userId = keepCardIds(rowGroups(pm.users, pmColumnIds), groupsByColumn(old?.users));
         const users = {};
         (pm.users || []).forEach((cards, i) => {
-          if (i < pmColumns.length) users[pmColumns[i].id] = (cards || []).map((c, at) => mkCard(c, userId(pmColumns[i].id, '', at)));
+          if (i < pmColumns.length) users[pmColumns[i].id] = (cards || []).map((c, at) => mkCard({ ...c, color: c.color || USER_COLOR }, userId(pmColumns[i].id, '', at)));
         });
         const activityId = keepCardIds(rowGroups(pm.activities, pmColumnIds), groupsByColumn(old?.activities));
         const activities = {};
         (pm.activities || []).forEach((cards, i) => {
-          if (i < pmColumns.length) activities[pmColumns[i].id] = (cards || []).map((c, at) => mkCard(c, activityId(pmColumns[i].id, '', at)));
+          if (i < pmColumns.length) activities[pmColumns[i].id] = (cards || []).map((c, at) => mkCard({ ...c, color: c.color || ACTIVITY_COLOR }, activityId(pmColumns[i].id, '', at)));
         });
         const pmStoryId = keepCardIds(
           (pm.stories || []).slice(0, sliceIds.length).flatMap((sliceCards, si) => rowGroups(sliceCards, pmColumnIds, sliceIds[si])),
