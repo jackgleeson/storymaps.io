@@ -236,7 +236,7 @@ test('New map in a project keeps full screen, making the map in the page', async
 
   // The new map has only its starter cards, and the one it was made from is untouched
   const texts = () => page.locator('#storyMap textarea').evaluateAll(els => els.map(e => e.value).filter(Boolean));
-  expect(await texts()).toEqual(['User Type', 'New Activity', 'New Step', 'New Task or Detail']);
+  expect(await texts()).toEqual(['User Type', 'New Activity', 'New Step', 'New Task']);
   expect(await pullContent(pullMap, a)).toMatchObject({ name: 'Ordering', steps: [{ name: 'Browse' }, { name: 'Pay' }] });
 
   // Back returns to the first map

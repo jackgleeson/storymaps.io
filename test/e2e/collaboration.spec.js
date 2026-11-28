@@ -110,7 +110,7 @@ test('an open card shows what someone else changes on it', async ({ page, create
   await expect.poll(() => firstCard(pullMap, id)).toMatchObject({ name: 'One renamed', body: 'Details' });
 });
 
-test('while one person types in the description, the other sees who and has to wait', async ({ page, createMap, openSecondTab, pullMap }) => {
+test('while one person types in the details, the other sees who and has to wait', async ({ page, createMap, openSecondTab, pullMap }) => {
   const id = await createMap();
   const other = await openSecondTab();
   await openMap(page, id);
@@ -123,13 +123,13 @@ test('while one person types in the description, the other sees who and has to w
 
   await description(page).click();
   await page.keyboard.type('From A. ');
-  await expect(note).toHaveText('Tester is editing the description');
+  await expect(note).toHaveText('Tester is editing the details');
   await expect(other.locator('#cardExpandBody')).toHaveJSProperty('readOnly', true);
   await expect(other.locator('#cardExpandBody')).toHaveValue('From A. ');
   // The title is still free
   await expect(other.locator('#cardExpandName')).toHaveJSProperty('readOnly', false);
 
-  // Leaving the description frees it
+  // Leaving the details frees them
   await page.locator('#cardExpandName').click();
   await expect(note).toBeHidden();
   await description(other).click();

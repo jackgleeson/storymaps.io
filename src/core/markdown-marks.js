@@ -1,6 +1,6 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Finds the Markdown in one line of a card description: what kind of line it is, and the bold,
-// italic, code and links inside it. The description editor uses the positions to show each piece
+// italic, code and links inside it. The details editor uses the positions to show each piece
 // formatted and hide its symbols. Positions are offsets into the line.
 
 // What kind of line this is, or null for a plain one. "marker" is where the symbols that make it
@@ -111,7 +111,7 @@ const inlineHtml = (line, start = 0) => {
     return html + escapeHtml(line.slice(at));
 };
 
-// A description, or part of one, as HTML: what goes on the clipboard beside the Markdown, so that
+// The details of a card, or part of them, as HTML: what goes on the clipboard beside the Markdown, so that
 // an email or a document pasted into gets real headings, bold and links
 export const markdownToHtml = (text) => {
     const out = [];

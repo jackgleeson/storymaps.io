@@ -390,7 +390,7 @@ test('a new story map nobody has worked on is filled by the import, with no ques
   // Nothing is asked: there was nothing on the story map to lose. The starter cards are gone.
   await expect(guide(page).locator('.tour-tooltip-title')).toHaveText('Who is it for?');
   await expect.poll(async () => (await pullMap(id)).slices.map(slice => slice.name)).toEqual(['', 'Imported']);
-  expect(JSON.stringify(await pullMap(id))).not.toContain('New Task or Detail');
+  expect(JSON.stringify(await pullMap(id))).not.toContain('New Task');
 });
 
 test('cards on a story map with no named steps go beside what is there, and the question says so', async ({ page, createMap }) => {

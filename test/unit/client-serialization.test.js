@@ -152,7 +152,7 @@ describe('a story map nobody has worked on', () => {
       () => { state.columns[0].name = 'Browse Menu'; },
       () => { Object.values(state.users)[0][0].name = 'Customer'; },
       () => { Object.values(state.slices[0].stories)[0][0].body = 'As a customer'; },
-      () => { Object.values(state.slices[0].stories)[0].push({ name: 'New Task or Detail' }); },
+      () => { Object.values(state.slices[0].stories)[0].push({ name: 'New Task' }); },
       () => { state.slices[0].name = 'MVP'; },
       () => { state.columns.push({ id: 'second', name: 'New Step' }); },
     ];

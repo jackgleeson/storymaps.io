@@ -1,5 +1,5 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
-// Card descriptions are Markdown. Each issue tracker keeps descriptions in a format of its own, so an
+// Card details are Markdown. Each issue tracker keeps descriptions in a format of its own, so an
 // import turns that format into Markdown and an export turns Markdown back into it:
 //
 //   Linear          Markdown, so nothing to do

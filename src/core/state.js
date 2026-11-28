@@ -272,7 +272,7 @@ const highlightChangedElements = (changes) => {
 };
 
 // The text cards start with on a new map, or as a new step, which is there to be typed over
-export const STARTER_NAMES = new Set(['User Type', 'New Activity', 'New Step', 'New Task or Detail']);
+export const STARTER_NAMES = new Set(['User Type', 'New Activity', 'New Step', 'New Task', 'New Task or Detail']);
 
 export const initState = () => {
     const column = createColumn('New Step', CARD_COLORS.green, null, false);
@@ -292,7 +292,7 @@ export const initState = () => {
     ];
     state.notes = '';
     state.slices = [
-        { id: generateId(), name: '', collapsed: false, stories: { [column.id]: [createStory('New Task or Detail', '#fef08a')] } }
+        { id: generateId(), name: '', collapsed: false, stories: { [column.id]: [createStory('New Task', '#fef08a')] } }
     ];
 };
 

@@ -1,5 +1,5 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
-// The description box of an open card. The text is Markdown. It shows formatted, and a formatted
+// The details box of an open card. The text is Markdown. It shows formatted, and a formatted
 // piece shows its Markdown symbols only while the cursor or the selection is on it.
 //
 // The box starts as the plain textarea in the page, so a card opens at once. CodeMirror loads in
@@ -15,7 +15,7 @@ const loadCodeMirror = () => {
     return loading;
 };
 
-// textarea: the description textarea in the page.
+// textarea: the details textarea in the page.
 // onInput: called after the person types or pastes. onBlur: called when the box loses focus.
 // enterAction(text, from, to): what Enter does at the cursor, or null for a plain new line.
 export const createBodyBox = (textarea, { onInput, onBlur, enterAction }) => {
@@ -75,7 +75,7 @@ export const createBodyBox = (textarea, { onInput, onBlur, enterAction }) => {
             cm.keymap.of([...cm.defaultKeymap, ...cm.historyKeymap]),
             cm.EditorView.lineWrapping,
             cm.placeholder(textarea.placeholder),
-            cm.EditorView.contentAttributes.of({ 'aria-label': 'Description', spellcheck: 'true' }),
+            cm.EditorView.contentAttributes.of({ 'aria-label': 'Details', spellcheck: 'true' }),
             lock.of(lockExtensions()),
             cm.EditorView.updateListener.of((update) => {
                 // The hidden textarea keeps a copy of the text, for anything that reads the page

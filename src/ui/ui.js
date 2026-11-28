@@ -1148,7 +1148,7 @@ export const createStoryCard = (story, columnId, sliceId, isBackboneRow = false,
     if (story.color) card.style.backgroundColor = story.color;
     if (story.body) card.classList.add('has-body');
 
-    let placeholderText = 'Task or Detail...';
+    let placeholderText = 'Task...';
     if (rowType === 'Users') {
         placeholderText = 'e.g. admin, customer, client';
     } else if (rowType === 'Activities') {

@@ -466,7 +466,7 @@
                 var set = SETS[w.trim()];
                 var last = m.steps[m.steps.length - 1];
                 return !!set && last !== undefined && allTasks(m).some(function (t) {
-                    return norm(t.step) === norm(last) && named(t.name, 'New Task or Detail') && !has(set.cards, t.name);
+                    return norm(t.step) === norm(last) && named(t.name, 'New Task or Detail') && named(t.name, 'New Task') && !has(set.cards, t.name);
                 });
             },
             'release-goal': function (m) { var sl = m.slices[0]; return !!sl && !!sl.name && !!String(sl.goal || '').trim(); },

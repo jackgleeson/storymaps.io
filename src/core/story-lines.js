@@ -1,7 +1,7 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Story line chips for the expanded card body: a user story, a scenario, or an acceptance criteria list
 
-// The lines are Markdown, as the description is: the opening words are bold, and the criteria
+// The lines are Markdown, as the details of a card are: the opening words are bold, and the criteria
 // are a heading over a list of tick boxes.
 export const STORY_LINES = {
     story: { lines: ['**As a** ', '**I want** ', '**So that** '], caretLine: 0 },

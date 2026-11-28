@@ -987,7 +987,7 @@
     "height": 308,
     "callouts": []
   },
-  "format-card-descriptions-with-markdown/link": {
+  "format-card-details-with-markdown/link": {
     "width": 536,
     "height": 255,
     "callouts": [
@@ -1001,7 +1001,7 @@
       }
     ]
   },
-  "format-card-descriptions-with-markdown/link-edit": {
+  "format-card-details-with-markdown/link-edit": {
     "width": 548,
     "height": 71,
     "callouts": []
@@ -1032,37 +1032,37 @@
       }
     ]
   },
-  "write-user-stories-on-a-story-map/story-buttons": {
+  "write-user-stories-on-a-story-map/templates": {
     "width": 592,
     "height": 356,
     "callouts": []
   },
-  "format-card-descriptions-with-markdown/formatted": {
+  "format-card-details-with-markdown/formatted": {
     "width": 592,
     "height": 434,
     "callouts": []
   },
-  "format-card-descriptions-with-markdown/story": {
+  "format-card-details-with-markdown/story": {
     "width": 592,
     "height": 442,
     "callouts": []
   },
-  "format-card-descriptions-with-markdown/bold": {
+  "format-card-details-with-markdown/bold": {
     "width": 548,
     "height": 137,
     "callouts": []
   },
-  "format-card-descriptions-with-markdown/heading": {
+  "format-card-details-with-markdown/heading": {
     "width": 548,
     "height": 137,
     "callouts": []
   },
-  "format-card-descriptions-with-markdown/tick-boxes": {
+  "format-card-details-with-markdown/tick-boxes": {
     "width": 548,
     "height": 137,
     "callouts": []
   },
-  "format-card-descriptions-with-markdown/card": {
+  "format-card-details-with-markdown/card": {
     "width": 592,
     "height": 367,
     "callouts": []
@@ -1104,5 +1104,30 @@
         "y": 82.6
       }
     ]
+  },
+  "format-card-details-with-markdown/code": {
+    "width": 548,
+    "height": 107,
+    "callouts": []
+  },
+  "format-card-details-with-markdown/code-inline": {
+    "width": 524,
+    "height": 26,
+    "callouts": []
+  },
+  "format-card-details-with-markdown/shortcut": {
+    "width": 548,
+    "height": 50,
+    "callouts": []
+  },
+  "format-card-details-with-markdown/copy": {
+    "width": 548,
+    "height": 137,
+    "callouts": []
+  },
+  "format-card-details-with-markdown/import": {
+    "width": 592,
+    "height": 343,
+    "callouts": []
   }
 }

@@ -58,7 +58,7 @@ export const createEach = async (res, issues, create) => {
   res.end();
 };
 
-// Card descriptions are Markdown. Jira takes Atlassian Document Format and Azure DevOps takes
+// Card details are Markdown. Jira takes Atlassian Document Format and Azure DevOps takes
 // HTML (src/transfer/markup.js). Empty text gives null and '' in turn.
 export const toAdf = markdownToAdf;
 export const toHtml = markdownToHtml;

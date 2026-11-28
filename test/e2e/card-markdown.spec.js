@@ -54,7 +54,7 @@ test('a click on a formatted piece shows the Markdown of that piece only, and Es
   expect(text).toContain('## Problem');
   expect(text).not.toContain('**');
 
-  // Esc leaves the description with the card still open, and a second Esc closes the card
+  // Esc leaves the details with the card still open, and a second Esc closes the card
   await page.keyboard.press('Escape');
   expect(await shown(page)).not.toContain('##');
   await expect(page.locator('#cardExpandModal')).toBeVisible();
@@ -254,7 +254,7 @@ test('opening a card and clicking the end of a line leave the last link as a lin
   expect(await shown(page)).toContain('[here](https://example.com/work)');
 });
 
-test('a card open when the story map is locked loses its story buttons and can no longer be typed in', async ({ page, createMap, request, pullMap }) => {
+test('a card open when the story map is locked loses its template buttons and can no longer be typed in', async ({ page, createMap, request, pullMap }) => {
   const { createHash } = await import('node:crypto');
   const id = await createMap(MAP);
   await openMap(page, id, 1);

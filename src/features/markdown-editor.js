@@ -1,6 +1,6 @@
 // Storymaps.io — AGPL-3.0 — see LICENCE for details
 // Markdown in a CodeMirror editor: the text shows formatted, and a formatted piece shows its
-// Markdown symbols only while the cursor or the selection is on it. The description of a card
+// Markdown symbols only while the cursor or the selection is on it. The details of a card
 // (body-editor.js) and the notepad (notepad.js) both use this. Only what is drawn changes: the
 // text stays the plain Markdown that was typed, so saving and syncing carry on as before.
 
@@ -100,7 +100,7 @@ const buildPreview = (cm) => {
         // The same, but a cursor resting just before or just after the range doesn't count
         const within = (from, to) => typing && state.selection.ranges.some(r => (r.empty ? r.from > from && r.from < to : r.from < to && r.to > from));
         const out = [];
-        // A description far longer than anyone writes shows as plain text, so every keystroke in it stays quick
+        // Details far longer than anyone writes show as plain text, so every keystroke in it stays quick
         if (state.doc.length > MAX_FORMATTED_DOC) return Decoration.none;
         const add = (from, to, deco) => { if (to > from) out.push(deco.range(from, to)); };
         // Blocks of code, each from its opening ``` line to its closing one, or to the end. Every

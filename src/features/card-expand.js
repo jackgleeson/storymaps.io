@@ -18,7 +18,7 @@ export const init = (deps) => { _deps = deps; };
 
 let _expandedItem = null;
 let _editable = false;
-// The description box: Markdown, shown formatted (body-editor.js). Made in initListeners.
+// The details box: Markdown, shown formatted (body-editor.js). Made in initListeners.
 let body = null;
 let _footerExpanded = false;
 let _footerShown = '';
@@ -367,12 +367,12 @@ export const refreshFromRemote = () => {
     if (footerValues(card) !== _footerShown) refreshFooter();
 };
 
-// While one person is typing in the title or the description, everyone else with the card open
+// While one person is typing in the title or the details, everyone else with the card open
 // sees who it is and can't type in that box. Who is in which box travels with presence, between
 // the browsers on the map, and isn't stored.
 const TEXT_FIELDS = {
     name: { box: () => dom.cardExpandName, label: 'title' },
-    body: { box: () => body, label: 'description' }
+    body: { box: () => body, label: 'details' }
 };
 const IDLE_MS = 30_000;
 let _claimed = null;
@@ -460,7 +460,7 @@ const setBehindInert = (inert) => behindCard().forEach(part => { part.inert = in
 const keepTabInCard = (e) => {
     if (e.key !== 'Tab' || e.ctrlKey || e.metaKey) return;
     const stops = [...dom.cardExpandModal.querySelectorAll('button, input, textarea, a[href], .cm-content[contenteditable="true"]')]
-        // The description editor is a tab stop, though the browser gives it no tabIndex
+        // The details editor is a tab stop, though the browser gives it no tabIndex
         .filter(stop => !stop.disabled && (stop.tabIndex >= 0 || stop.isContentEditable) && stop.getClientRects().length > 0);
     if (!stops.length) return;
     const from = stops.indexOf(document.activeElement);
